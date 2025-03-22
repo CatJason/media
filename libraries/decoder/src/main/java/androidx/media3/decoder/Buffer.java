@@ -1,104 +1,87 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.decoder;
 
 import androidx.annotation.CallSuper;
 import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
 
-/** Base class for buffers with flags. */
+/** 带有标志的缓冲区的基类。 */
 @UnstableApi
 public abstract class Buffer {
 
   private @C.BufferFlags int flags;
 
-  /** Clears the buffer. */
+  /** 清除缓冲区。 */
   @CallSuper
   public void clear() {
     flags = 0;
   }
 
-  /** Returns whether the {@link C#BUFFER_FLAG_FIRST_SAMPLE} flag is set. */
+  /** 返回是否设置了 {@link C#BUFFER_FLAG_FIRST_SAMPLE} 标志。 */
   public final boolean isFirstSample() {
     return getFlag(C.BUFFER_FLAG_FIRST_SAMPLE);
   }
 
   /**
-   * Returns whether the {@link C#BUFFER_FLAG_END_OF_STREAM} flag is set.
+   * 返回是否设置了 {@link C#BUFFER_FLAG_END_OF_STREAM} 标志。
    *
-   * <p>If this is set, all other attributes of the buffer should be ignored.
+   * <p>如果设置了此标志，则应忽略缓冲区的所有其他属性。
    */
   public final boolean isEndOfStream() {
     return getFlag(C.BUFFER_FLAG_END_OF_STREAM);
   }
 
-  /** Returns whether the {@link C#BUFFER_FLAG_KEY_FRAME} flag is set. */
+  /** 返回是否设置了 {@link C#BUFFER_FLAG_KEY_FRAME} 标志。 */
   public final boolean isKeyFrame() {
     return getFlag(C.BUFFER_FLAG_KEY_FRAME);
   }
 
-  /** Returns whether the {@link C#BUFFER_FLAG_LAST_SAMPLE} flag is set. */
+  /** 返回是否设置了 {@link C#BUFFER_FLAG_LAST_SAMPLE} 标志。 */
   public final boolean isLastSample() {
     return getFlag(C.BUFFER_FLAG_LAST_SAMPLE);
   }
 
-  /** Returns whether the {@link C#BUFFER_FLAG_HAS_SUPPLEMENTAL_DATA} flag is set. */
+  /** 返回是否设置了 {@link C#BUFFER_FLAG_HAS_SUPPLEMENTAL_DATA} 标志。 */
   public final boolean hasSupplementalData() {
     return getFlag(C.BUFFER_FLAG_HAS_SUPPLEMENTAL_DATA);
   }
 
-  /** Returns whether the {@link C#BUFFER_FLAG_NOT_DEPENDED_ON} flag is set. */
+  /** 返回是否设置了 {@link C#BUFFER_FLAG_NOT_DEPENDED_ON} 标志。 */
   public final boolean notDependedOn() {
     return getFlag(C.BUFFER_FLAG_NOT_DEPENDED_ON);
   }
 
   /**
-   * Replaces this buffer's flags with {@code flags}.
+   * 将此缓冲区的标志替换为 {@code flags}。
    *
-   * @param flags The flags to set, which should be a combination of the {@code C.BUFFER_FLAG_*}
-   *     constants.
+   * @param flags 要设置的标志，应为 {@code C.BUFFER_FLAG_*} 常量的组合。
    */
   public final void setFlags(@C.BufferFlags int flags) {
     this.flags = flags;
   }
 
   /**
-   * Adds the {@code flag} to this buffer's flags.
+   * 将 {@code flag} 添加到此缓冲区的标志中。
    *
-   * @param flag The flag to add to this buffer's flags, which should be one of the {@code
-   *     C.BUFFER_FLAG_*} constants.
+   * @param flag 要添加到此缓冲区标志中的标志，应为 {@code C.BUFFER_FLAG_*} 常量之一。
    */
   public final void addFlag(@C.BufferFlags int flag) {
     flags |= flag;
   }
 
   /**
-   * Removes the {@code flag} from this buffer's flags, if it is set.
+   * 如果设置了 {@code flag}，则将其从此缓冲区的标志中移除。
    *
-   * @param flag The flag to remove.
+   * @param flag 要移除的标志。
    */
   public final void clearFlag(@C.BufferFlags int flag) {
     flags &= ~flag;
   }
 
   /**
-   * Returns whether the specified flag has been set on this buffer.
+   * 返回是否在此缓冲区上设置了指定的标志。
    *
-   * @param flag The flag to check.
-   * @return Whether the flag is set.
+   * @param flag 要检查的标志。
+   * @return 是否设置了该标志。
    */
   protected final boolean getFlag(@C.BufferFlags int flag) {
     return (flags & flag) == flag;

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.decoder;
 
 import androidx.annotation.Nullable;
@@ -23,53 +8,50 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
 /**
- * Metadata describing the structure of an encrypted input sample.
+ * 描述加密输入样本结构的元数据。
  *
- * <p>This class is a compatibility wrapper for {@link android.media.MediaCodec.CryptoInfo}.
+ * <p>此类是 {@link android.media.MediaCodec.CryptoInfo} 的兼容性封装类。
  */
 @UnstableApi
 public final class CryptoInfo {
 
   /**
-   * The 16 byte initialization vector. If the initialization vector of the content is shorter than
-   * 16 bytes, 0 byte padding is appended to extend the vector to the required 16 byte length.
+   * 16 字节的初始化向量。如果内容的初始化向量短于 16 字节，则会附加 0 字节填充以将其扩展到所需的 16 字节长度。
    *
    * @see android.media.MediaCodec.CryptoInfo#iv
    */
   @Nullable public byte[] iv;
 
   /**
-   * The 16 byte key id.
+   * 16 字节的密钥 ID。
    *
    * @see android.media.MediaCodec.CryptoInfo#key
    */
   @Nullable public byte[] key;
 
   /**
-   * The type of encryption that has been applied. Must be one of the {@link C.CryptoMode} values.
+   * 已应用的加密类型。必须是 {@link C.CryptoMode} 值之一。
    *
    * @see android.media.MediaCodec.CryptoInfo#mode
    */
   public @C.CryptoMode int mode;
 
   /**
-   * The number of leading unencrypted bytes in each sub-sample. If null, all bytes are treated as
-   * encrypted and {@link #numBytesOfEncryptedData} must be specified.
+   * 每个子样本中前导未加密字节的数量。如果为 null，则所有字节均被视为加密，并且必须指定 {@link #numBytesOfEncryptedData}。
    *
    * @see android.media.MediaCodec.CryptoInfo#numBytesOfClearData
    */
   @Nullable public int[] numBytesOfClearData;
 
   /**
-   * The number of trailing encrypted bytes in each sub-sample. If null, all bytes are treated as
-   * clear and {@link #numBytesOfClearData} must be specified.
+   * 每个子样本中尾部加密字节的数量。如果为 null，则所有字节均被视为未加密，并且必须指定 {@link #numBytesOfClearData}。
    *
    * @see android.media.MediaCodec.CryptoInfo#numBytesOfEncryptedData
    */
   @Nullable public int[] numBytesOfEncryptedData;
 
   /**
-   * The number of subSamples that make up the buffer's contents.
+   * 组成缓冲区内容的子样本数量。
    *
    * @see android.media.MediaCodec.CryptoInfo#numSubSamples
    */
@@ -113,8 +95,7 @@ public final class CryptoInfo {
     this.mode = mode;
     this.encryptedBlocks = encryptedBlocks;
     this.clearBlocks = clearBlocks;
-    // Update frameworkCryptoInfo fields directly because CryptoInfo.set performs an unnecessary
-    // object allocation on Android N.
+    // 直接更新 frameworkCryptoInfo 字段，因为 CryptoInfo.set 在 Android N 上会执行不必要的对象分配。
     frameworkCryptoInfo.numSubSamples = numSubSamples;
     frameworkCryptoInfo.numBytesOfClearData = numBytesOfClearData;
     frameworkCryptoInfo.numBytesOfEncryptedData = numBytesOfEncryptedData;
@@ -127,29 +108,24 @@ public final class CryptoInfo {
   }
 
   /**
-   * Returns an equivalent {@link android.media.MediaCodec.CryptoInfo} instance.
+   * 返回等效的 {@link android.media.MediaCodec.CryptoInfo} 实例。
    *
-   * <p>Successive calls to this method on a single {@link CryptoInfo} will return the same
-   * instance. Changes to the {@link CryptoInfo} will be reflected in the returned object. The
-   * return object should not be modified directly.
+   * <p>对单个 {@link CryptoInfo} 连续调用此方法将返回相同的实例。对 {@link CryptoInfo} 的更改将反映在返回的对象中。返回的对象不应直接修改。
    *
-   * @return The equivalent {@link android.media.MediaCodec.CryptoInfo} instance.
+   * @return 等效的 {@link android.media.MediaCodec.CryptoInfo} 实例。
    */
   public android.media.MediaCodec.CryptoInfo getFrameworkCryptoInfo() {
     return frameworkCryptoInfo;
   }
 
   /**
-   * Increases the number of clear data for the first sub sample by {@code count}.
+   * 将第一个子样本的未加密数据数量增加 {@code count}。
    *
-   * <p>If {@code count} is 0, this method is a no-op. Otherwise, it adds {@code count} to {@link
-   * #numBytesOfClearData}[0].
+   * <p>如果 {@code count} 为 0，则此方法不执行任何操作。否则，它将 {@code count} 添加到 {@link #numBytesOfClearData}[0]。
    *
-   * <p>If {@link #numBytesOfClearData} is null (which is permitted), this method will instantiate
-   * it to a new {@code int[1]}.
+   * <p>如果 {@link #numBytesOfClearData} 为 null（这是允许的），则此方法会将其实例化为一个新的 {@code int[1]}。
    *
-   * @param count The number of bytes to be added to the first subSample of {@link
-   *     #numBytesOfClearData}.
+   * @param count 要添加到 {@link #numBytesOfClearData} 第一个子样本的字节数。
    */
   public void increaseClearDataFirstSubSampleBy(int count) {
     if (count == 0) {

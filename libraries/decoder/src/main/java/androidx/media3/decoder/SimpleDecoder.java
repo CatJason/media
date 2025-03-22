@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * 版权所有 (C) 2016 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非遵守许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则根据许可证分发的软件
+ * 均按“原样”分发，不附带任何明示或暗示的担保或条件。
+ * 请参阅许可证以了解特定语言的权限和限制。
  */
 package androidx.media3.decoder;
 
@@ -23,13 +21,12 @@ import androidx.media3.common.util.UnstableApi;
 import java.util.ArrayDeque;
 
 /**
- * Base class for {@link Decoder}s that use their own decode thread and decode each input buffer
- * immediately into a corresponding output buffer.
+ * 使用自己的解码线程并立即将每个输入缓冲区解码为相应输出缓冲区的 {@link Decoder} 的基类。
  */
 @SuppressWarnings("UngroupedOverloads")
 @UnstableApi
 public abstract class SimpleDecoder<
-        I extends DecoderInputBuffer, O extends DecoderOutputBuffer, E extends DecoderException>
+    I extends DecoderInputBuffer, O extends DecoderOutputBuffer, E extends DecoderException>
     implements Decoder<I, O, E> {
 
   private final Thread decodeThread;
@@ -51,8 +48,8 @@ public abstract class SimpleDecoder<
   private long outputStartTimeUs;
 
   /**
-   * @param inputBuffers An array of nulls that will be used to store references to input buffers.
-   * @param outputBuffers An array of nulls that will be used to store references to output buffers.
+   * @param inputBuffers 用于存储输入缓冲区引用的空数组。
+   * @param outputBuffers 用于存储输出缓冲区引用的空数组。
    */
   @SuppressWarnings("nullness:method.invocation")
   protected SimpleDecoder(I[] inputBuffers, O[] outputBuffers) {
@@ -81,12 +78,11 @@ public abstract class SimpleDecoder<
   }
 
   /**
-   * Sets the initial size of each input buffer.
+   * 设置每个输入缓冲区的初始大小。
    *
-   * <p>This method should only be called before the decoder is used (i.e. before the first call to
-   * {@link #dequeueInputBuffer()}.
+   * <p>此方法应在解码器使用之前调用（即在第一次调用 {@link #dequeueInputBuffer()} 之前）。
    *
-   * @param size The required input buffer size.
+   * @param size 所需的输入缓冲区大小。
    */
   protected final void setInitialInputBufferSize(int size) {
     Assertions.checkState(availableInputBufferCount == availableInputBuffers.length);
@@ -96,14 +92,12 @@ public abstract class SimpleDecoder<
   }
 
   /**
-   * Returns whether a sample time is greater or equal to the {@link #setOutputStartTimeUs output
-   * start time}, if set.
+   * 返回采样时间是否大于或等于 {@link #setOutputStartTimeUs} 设置的输出开始时间。
    *
-   * <p>If this method returns false, the buffer will not be made available as an output buffer.
+   * <p>如果此方法返回 false，则缓冲区将不会作为输出缓冲区提供。
    *
-   * @param timeUs The buffer time, in microseconds.
-   * @return Whether the buffer time is greater or equal to the output start time, or {@code true}
-   *     if the output start time is not set.
+   * @param timeUs 缓冲区时间，以微秒为单位。
+   * @return 缓冲区时间是否大于或等于输出开始时间，或者如果未设置输出开始时间则返回 {@code true}。
    */
   protected final boolean isAtLeastOutputStartTimeUs(long timeUs) {
     synchronized (lock) {
@@ -157,9 +151,9 @@ public abstract class SimpleDecoder<
   }
 
   /**
-   * Releases an output buffer back to the decoder.
+   * 将输出缓冲区释放回解码器。
    *
-   * @param outputBuffer The output buffer being released.
+   * @param outputBuffer 要释放的输出缓冲区。
    */
   @CallSuper
   protected void releaseOutputBuffer(O outputBuffer) {
@@ -202,9 +196,9 @@ public abstract class SimpleDecoder<
   }
 
   /**
-   * Throws a decode exception, if there is one.
+   * 如果存在解码异常，则抛出该异常。
    *
-   * @throws E The decode exception.
+   * @throws E 解码异常。
    */
   private void maybeThrowException() throws E {
     @Nullable E exception = this.exception;
@@ -214,10 +208,9 @@ public abstract class SimpleDecoder<
   }
 
   /**
-   * Notifies the decode loop if there exists a queued input buffer and an available output buffer
-   * to decode into.
+   * 如果存在排队的输入缓冲区和可用的输出缓冲区以供解码，则通知解码循环。
    *
-   * <p>Should only be called whilst synchronized on the lock object.
+   * <p>应在锁定对象上同步调用。
    */
   private void maybeNotifyDecodeLoop() {
     if (canDecodeBuffer()) {
@@ -228,10 +221,10 @@ public abstract class SimpleDecoder<
   private void run() {
     try {
       while (decode()) {
-        // Do nothing.
+        // 无需操作。
       }
     } catch (InterruptedException e) {
-      // Not expected.
+      // 不应发生。
       throw new IllegalStateException(e);
     }
   }
@@ -241,7 +234,7 @@ public abstract class SimpleDecoder<
     O outputBuffer;
     boolean resetDecoder;
 
-    // Wait until we have an input buffer to decode, and an output buffer to decode into.
+    // 等待直到有输入缓冲区可供解码，并且有输出缓冲区可供解码。
     synchronized (lock) {
       while (!released && !canDecodeBuffer()) {
         lock.wait();
@@ -269,13 +262,12 @@ public abstract class SimpleDecoder<
       try {
         exception = decode(inputBuffer, outputBuffer, resetDecoder);
       } catch (RuntimeException e) {
-        // This can occur if a sample is malformed in a way that the decoder is not robust against.
-        // We don't want the process to die in this case, but we do want to propagate the error.
+        // 如果样本格式错误，解码器无法处理，可能会发生这种情况。
+        // 我们不希望进程因此崩溃，但希望传播错误。
         exception = createUnexpectedDecodeException(e);
       } catch (OutOfMemoryError e) {
-        // This can occur if a sample is malformed in a way that causes the decoder to think it
-        // needs to allocate a large amount of memory. We don't want the process to die in this
-        // case, but we do want to propagate the error.
+        // 如果样本格式错误，导致解码器认为需要分配大量内存，可能会发生这种情况。
+        // 我们不希望进程因此崩溃，但希望传播错误。
         exception = createUnexpectedDecodeException(e);
       }
       if (exception != null) {
@@ -297,7 +289,7 @@ public abstract class SimpleDecoder<
         skippedOutputBufferCount = 0;
         queuedOutputBuffers.addLast(outputBuffer);
       }
-      // Make the input buffer available again.
+      // 使输入缓冲区再次可用。
       releaseInputBufferInternal(inputBuffer);
     }
 
@@ -318,31 +310,28 @@ public abstract class SimpleDecoder<
     availableOutputBuffers[availableOutputBufferCount++] = outputBuffer;
   }
 
-  /** Creates a new input buffer. */
+  /** 创建一个新的输入缓冲区。 */
   protected abstract I createInputBuffer();
 
-  /** Creates a new output buffer. */
+  /** 创建一个新的输出缓冲区。 */
   protected abstract O createOutputBuffer();
 
   /**
-   * Creates an exception to propagate for an unexpected decode error.
+   * 为意外的解码错误创建要传播的异常。
    *
-   * @param error The unexpected decode error.
-   * @return The exception to propagate.
+   * @param error 意外的解码错误。
+   * @return 要传播的异常。
    */
   protected abstract E createUnexpectedDecodeException(Throwable error);
 
   /**
-   * Decodes the {@code inputBuffer} and stores any decoded output in {@code outputBuffer}.
+   * 解码 {@code inputBuffer} 并将解码后的输出存储在 {@code outputBuffer} 中。
    *
-   * @param inputBuffer The buffer to decode.
-   * @param outputBuffer The output buffer to store decoded data. The output buffer will not be made
-   *     available to dequeue if its {@link DecoderOutputBuffer#timeUs} is not {@linkplain
-   *     #isAtLeastOutputStartTimeUs at least the output start time} or when it's marked with {@link
-   *     DecoderOutputBuffer#shouldBeSkipped}. The output buffer may not have been populated in
-   *     these cases.
-   * @param reset Whether the decoder must be reset before decoding.
-   * @return A decoder exception if an error occurred, or null if decoding was successful.
+   * @param inputBuffer 要解码的缓冲区。
+   * @param outputBuffer 用于存储解码数据的输出缓冲区。如果输出缓冲区的 {@link DecoderOutputBuffer#timeUs} 不满足 {@linkplain
+   *     #isAtLeastOutputStartTimeUs 输出开始时间} 或者被标记为 {@link DecoderOutputBuffer#shouldBeSkipped}，则不会将其提供给解队列。在这些情况下，输出缓冲区可能未被填充。
+   * @param reset 解码前是否必须重置解码器。
+   * @return 如果发生错误，则返回解码异常；如果解码成功，则返回 null。
    */
   @Nullable
   protected abstract E decode(I inputBuffer, O outputBuffer, boolean reset);

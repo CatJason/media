@@ -1,85 +1,67 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.decoder;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * A media decoder.
+ * 媒体解码器。
  *
- * @param <I> The type of buffer input to the decoder.
- * @param <O> The type of buffer output from the decoder.
- * @param <E> The type of exception thrown from the decoder.
+ * @param <I> 解码器输入缓冲区的类型。
+ * @param <O> 解码器输出缓冲区的类型。
+ * @param <E> 解码器抛出的异常类型。
  */
 @UnstableApi
 public interface Decoder<I, O, E extends DecoderException> {
 
   /**
-   * Returns the name of the decoder.
+   * 返回解码器的名称。
    *
-   * @return The name of the decoder.
+   * @return 解码器的名称。
    */
   String getName();
 
   /**
-   * Sets the timestamp from which output buffers should be produced, in microseconds.
+   * 设置应从哪个时间戳开始生成输出缓冲区，以微秒为单位。
    *
-   * <p>Any decoded buffer with a timestamp less than {@code outputStartTimeUs} should be skipped by
-   * the implementation and not made available via {@link #dequeueOutputBuffer}.
+   * <p>任何时间戳小于 {@code outputStartTimeUs} 的解码缓冲区应由实现跳过，并且不应通过 {@link #dequeueOutputBuffer} 提供。
    *
-   * <p>This method must only be called before {@linkplain #queueInputBuffer queuing the first input
-   * buffer} initially or after {@link #flush()}.
+   * <p>此方法必须在初始 {@linkplain #queueInputBuffer 排队第一个输入缓冲区} 之前或 {@link #flush()} 之后调用。
    *
-   * @param outputStartTimeUs The time from which output buffer should be produced, in microseconds.
+   * @param outputStartTimeUs 应从哪个时间开始生成输出缓冲区，以微秒为单位。
    */
   void setOutputStartTimeUs(long outputStartTimeUs);
 
   /**
-   * Dequeues the next input buffer to be filled and queued to the decoder.
+   * 取出下一个要填充并排队到解码器的输入缓冲区。
    *
-   * @return The input buffer, which will have been cleared, or null if a buffer isn't available.
-   * @throws E If a decoder error has occurred.
+   * @return 输入缓冲区（已被清除），如果没有可用的缓冲区则返回 null。
+   * @throws E 如果发生解码器错误。
    */
   @Nullable
   I dequeueInputBuffer() throws E;
 
   /**
-   * Queues an input buffer to the decoder.
+   * 将输入缓冲区排队到解码器。
    *
-   * @param inputBuffer The input buffer.
-   * @throws E If a decoder error has occurred.
+   * @param inputBuffer 输入缓冲区。
+   * @throws E 如果发生解码器错误。
    */
   void queueInputBuffer(I inputBuffer) throws E;
 
   /**
-   * Dequeues the next output buffer from the decoder.
+   * 从解码器中取出下一个输出缓冲区。
    *
-   * @return The output buffer, or null if an output buffer isn't available.
-   * @throws E If a decoder error has occurred.
+   * @return 输出缓冲区，如果没有可用的输出缓冲区则返回 null。
+   * @throws E 如果发生解码器错误。
    */
   @Nullable
   O dequeueOutputBuffer() throws E;
 
   /**
-   * Flushes the decoder. Ownership of dequeued input buffers is returned to the decoder. The caller
-   * is still responsible for releasing any dequeued output buffers.
+   * 刷新解码器。已取出的输入缓冲区的所有权将返回给解码器。调用者仍负责释放任何已取出的输出缓冲区。
    */
   void flush();
 
-  /** Releases the decoder. Must be called when the decoder is no longer needed. */
+  /** 释放解码器。当不再需要解码器时必须调用此方法。 */
   void release();
 }

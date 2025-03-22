@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * 版权所有 (C) 2019 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非遵守许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则根据许可证分发的软件
+ * 均按“原样”分发，不附带任何明示或暗示的担保或条件。
+ * 请参阅许可证以了解特定语言的权限和限制。
  */
 package androidx.media3.decoder;
 
@@ -21,7 +19,7 @@ import androidx.media3.common.Format;
 import androidx.media3.common.util.UnstableApi;
 import java.nio.ByteBuffer;
 
-/** Video decoder output buffer containing video frame data. */
+/** 包含视频帧数据的视频解码器输出缓冲区。 */
 @UnstableApi
 public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
 
@@ -30,39 +28,39 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
   public static final int COLORSPACE_BT709 = 2;
   public static final int COLORSPACE_BT2020 = 3;
 
-  /** Decoder private data. Used from native code. */
+  /** 解码器私有数据。在本地代码中使用。 */
   public int decoderPrivate;
 
-  /** Output mode. */
+  /** 输出模式。 */
   public @C.VideoOutputMode int mode;
 
-  /** RGB buffer for RGB mode. */
+  /** RGB 模式的 RGB 缓冲区。 */
   @Nullable public ByteBuffer data;
 
   public int width;
   public int height;
 
-  /** The format of the input from which this output buffer was decoded. */
+  /** 解码此输出缓冲区的输入格式。 */
   @Nullable public Format format;
 
-  /** YUV planes for YUV mode. */
+  /** YUV 模式的 YUV 平面。 */
   @Nullable public ByteBuffer[] yuvPlanes;
 
   @Nullable public int[] yuvStrides;
   public int colorspace;
 
   /**
-   * Supplemental data related to the output frame, if {@link #hasSupplementalData()} returns true.
-   * If present, the buffer is populated with supplemental data from position 0 to its limit.
+   * 与输出帧相关的补充数据，如果 {@link #hasSupplementalData()} 返回 true。
+   * 如果存在，缓冲区将填充从位置 0 到其限制的补充数据。
    */
   @Nullable public ByteBuffer supplementalData;
 
   private final Owner<VideoDecoderOutputBuffer> owner;
 
   /**
-   * Creates VideoDecoderOutputBuffer.
+   * 创建 VideoDecoderOutputBuffer。
    *
-   * @param owner Buffer owner.
+   * @param owner 缓冲区所有者。
    */
   public VideoDecoderOutputBuffer(Owner<VideoDecoderOutputBuffer> owner) {
     this.owner = owner;
@@ -74,13 +72,12 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
   }
 
   /**
-   * Initializes the buffer.
+   * 初始化缓冲区。
    *
-   * @param timeUs The presentation timestamp for the buffer, in microseconds.
-   * @param mode The output mode. One of {@link C#VIDEO_OUTPUT_MODE_NONE}, {@link
-   *     C#VIDEO_OUTPUT_MODE_YUV} and {@link C#VIDEO_OUTPUT_MODE_SURFACE_YUV}.
-   * @param supplementalData Supplemental data associated with the frame, or {@code null} if not
-   *     present. It is safe to reuse the provided buffer after this method returns.
+   * @param timeUs 缓冲区的呈现时间戳，以微秒为单位。
+   * @param mode 输出模式。可以是 {@link C#VIDEO_OUTPUT_MODE_NONE}、{@link
+   *     C#VIDEO_OUTPUT_MODE_YUV} 和 {@link C#VIDEO_OUTPUT_MODE_SURFACE_YUV} 之一。
+   * @param supplementalData 与帧相关的补充数据，如果不存在则为 {@code null}。在方法返回后可以安全地重用提供的缓冲区。
    */
   public void init(
       long timeUs, @C.VideoOutputMode int mode, @Nullable ByteBuffer supplementalData) {
@@ -103,9 +100,9 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
   }
 
   /**
-   * Resizes the buffer based on the given stride. Called via JNI after decoding completes.
+   * 根据给定的步幅调整缓冲区大小。在解码完成后通过 JNI 调用。
    *
-   * @return Whether the buffer was resized successfully.
+   * @return 缓冲区是否成功调整大小。
    */
   public boolean initForYuvFrame(int width, int height, int yStride, int uvStride, int colorspace) {
     this.width = width;
@@ -122,7 +119,7 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
       return false;
     }
 
-    // Initialize data.
+    // 初始化数据。
     if (data == null || data.capacity() < minimumYuvSize) {
       data = ByteBuffer.allocateDirect(minimumYuvSize);
     } else {
@@ -137,7 +134,7 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
     ByteBuffer data = this.data;
     ByteBuffer[] yuvPlanes = this.yuvPlanes;
 
-    // Rewrapping has to be done on every frame since the stride might have changed.
+    // 必须在每一帧上重新包装，因为步幅可能已经改变。
     yuvPlanes[0] = data.slice();
     yuvPlanes[0].limit(yLength);
     data.position(yLength);
@@ -156,8 +153,7 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
   }
 
   /**
-   * Configures the buffer for the given frame dimensions when passing actual frame data via {@link
-   * #decoderPrivate}. Called via JNI after decoding completes.
+   * 在通过 {@link #decoderPrivate} 传递实际帧数据时，为给定的帧尺寸配置缓冲区。在解码完成后通过 JNI 调用。
    */
   public void initForPrivateFrame(int width, int height) {
     this.width = width;
@@ -165,8 +161,7 @@ public class VideoDecoderOutputBuffer extends DecoderOutputBuffer {
   }
 
   /**
-   * Ensures that the result of multiplying individual numbers can fit into the size limit of an
-   * integer.
+   * 确保单个数字相乘的结果可以适应整数的大小限制。
    */
   private static boolean isSafeToMultiply(int a, int b) {
     return a >= 0 && b >= 0 && !(b > 0 && a >= Integer.MAX_VALUE / b);

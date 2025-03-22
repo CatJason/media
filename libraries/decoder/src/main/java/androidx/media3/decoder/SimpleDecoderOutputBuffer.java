@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * 版权所有 (C) 2016 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非遵守许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则根据许可证分发的软件
+ * 均按“原样”分发，不附带任何明示或暗示的担保或条件。
+ * 请参阅许可证以了解特定语言的权限和限制。
  */
 package androidx.media3.decoder;
 
@@ -21,7 +19,7 @@ import androidx.media3.common.util.UnstableApi;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-/** Buffer for {@link SimpleDecoder} output. */
+/** 用于 {@link SimpleDecoder} 输出的缓冲区。 */
 @UnstableApi
 public class SimpleDecoderOutputBuffer extends DecoderOutputBuffer {
 
@@ -34,11 +32,11 @@ public class SimpleDecoderOutputBuffer extends DecoderOutputBuffer {
   }
 
   /**
-   * Initializes the buffer.
+   * 初始化缓冲区。
    *
-   * @param timeUs The presentation timestamp for the buffer, in microseconds.
-   * @param size An upper bound on the size of the data that will be written to the buffer.
-   * @return The {@link #data} buffer, for convenience.
+   * @param timeUs 缓冲区的呈现时间戳，以微秒为单位。
+   * @param size 写入缓冲区的数据大小的上限。
+   * @return 返回 {@link #data} 缓冲区，以便于使用。
    */
   public ByteBuffer init(long timeUs, int size) {
     this.timeUs = timeUs;
@@ -51,12 +49,12 @@ public class SimpleDecoderOutputBuffer extends DecoderOutputBuffer {
   }
 
   /**
-   * Grows the buffer to a new size.
+   * 将缓冲区扩展到新的大小。
    *
-   * <p>Existing data is copied to the new buffer, and {@link ByteBuffer#position} is preserved.
+   * <p>现有数据会被复制到新缓冲区中，并且 {@link ByteBuffer#position} 会被保留。
    *
-   * @param newSize New size of the buffer.
-   * @return The {@link #data} buffer, for convenience.
+   * @param newSize 缓冲区的新大小。
+   * @return 返回 {@link #data} 缓冲区，以便于使用。
    */
   public ByteBuffer grow(int newSize) {
     ByteBuffer oldData = Assertions.checkNotNull(this.data);

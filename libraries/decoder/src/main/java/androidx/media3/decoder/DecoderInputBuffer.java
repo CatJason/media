@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.decoder;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -30,7 +15,7 @@ import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
-/** Holds input for a decoder. */
+/** 保存解码器的输入数据。 */
 @UnstableApi
 public class DecoderInputBuffer extends Buffer {
 
@@ -39,108 +24,96 @@ public class DecoderInputBuffer extends Buffer {
   }
 
   /**
-   * Thrown when an attempt is made to write into a {@link DecoderInputBuffer} whose {@link
-   * #bufferReplacementMode} is {@link #BUFFER_REPLACEMENT_MODE_DISABLED} and who {@link #data}
-   * capacity is smaller than required.
+   * 当尝试向 {@link DecoderInputBuffer} 写入数据时，如果其 {@link #bufferReplacementMode} 为 {@link #BUFFER_REPLACEMENT_MODE_DISABLED} 且 {@link #data} 的容量不足，则抛出此异常。
    */
   public static final class InsufficientCapacityException extends IllegalStateException {
 
-    /** The current capacity of the buffer. */
+    /** 缓冲区的当前容量。 */
     public final int currentCapacity;
 
-    /** The required capacity of the buffer. */
+    /** 缓冲区所需的容量。 */
     public final int requiredCapacity;
 
     /**
-     * Creates an instance.
+     * 创建实例。
      *
-     * @param currentCapacity The current capacity of the buffer.
-     * @param requiredCapacity The required capacity of the buffer.
+     * @param currentCapacity 缓冲区的当前容量。
+     * @param requiredCapacity 缓冲区所需的容量。
      */
     public InsufficientCapacityException(int currentCapacity, int requiredCapacity) {
-      super("Buffer too small (" + currentCapacity + " < " + requiredCapacity + ")");
+      super("缓冲区太小 (" + currentCapacity + " < " + requiredCapacity + ")");
       this.currentCapacity = currentCapacity;
       this.requiredCapacity = requiredCapacity;
     }
   }
 
   /**
-   * The buffer replacement mode. This controls how {@link #ensureSpaceForWrite} generates
-   * replacement buffers when the capacity of the existing buffer is insufficient. One of {@link
-   * #BUFFER_REPLACEMENT_MODE_DISABLED}, {@link #BUFFER_REPLACEMENT_MODE_NORMAL} or {@link
-   * #BUFFER_REPLACEMENT_MODE_DIRECT}.
+   * 缓冲区替换模式。此模式控制当现有缓冲区容量不足时，{@link #ensureSpaceForWrite} 如何生成替换缓冲区。可以是 {@link #BUFFER_REPLACEMENT_MODE_DISABLED}、{@link #BUFFER_REPLACEMENT_MODE_NORMAL} 或 {@link #BUFFER_REPLACEMENT_MODE_DIRECT} 之一。
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    BUFFER_REPLACEMENT_MODE_DISABLED,
-    BUFFER_REPLACEMENT_MODE_NORMAL,
-    BUFFER_REPLACEMENT_MODE_DIRECT
+      BUFFER_REPLACEMENT_MODE_DISABLED,
+      BUFFER_REPLACEMENT_MODE_NORMAL,
+      BUFFER_REPLACEMENT_MODE_DIRECT
   })
   public @interface BufferReplacementMode {}
 
-  /** Disallows buffer replacement. */
+  /** 禁止缓冲区替换。 */
   public static final int BUFFER_REPLACEMENT_MODE_DISABLED = 0;
 
-  /** Allows buffer replacement using {@link ByteBuffer#allocate(int)}. */
+  /** 允许使用 {@link ByteBuffer#allocate(int)} 替换缓冲区。 */
   public static final int BUFFER_REPLACEMENT_MODE_NORMAL = 1;
 
-  /** Allows buffer replacement using {@link ByteBuffer#allocateDirect(int)}. */
+  /** 允许使用 {@link ByteBuffer#allocateDirect(int)} 替换缓冲区。 */
   public static final int BUFFER_REPLACEMENT_MODE_DIRECT = 2;
 
-  /** The {@link Format}. */
+  /** {@link Format} 格式信息。 */
   @Nullable public Format format;
 
-  /** {@link CryptoInfo} for encrypted data. */
+  /** 加密数据的 {@link CryptoInfo}。 */
   public final CryptoInfo cryptoInfo;
 
-  /** The buffer's data, or {@code null} if no data has been set. */
+  /** 缓冲区的数据，如果未设置数据则为 {@code null}。 */
   @Nullable public ByteBuffer data;
 
-  // TODO: Remove this temporary signaling once end-of-stream propagation for clips using content
-  // protection is fixed. See [Internal: b/153326944] for details.
+  // TODO: 修复使用内容保护的剪辑的流结束传播问题后，删除此临时信号。详见 [Internal: b/153326944]。
   /**
-   * Whether the last attempt to read a sample into this buffer failed due to not yet having the DRM
-   * keys associated with the next sample.
+   * 上次尝试将样本读取到此缓冲区是否因尚未获取与下一个样本关联的 DRM 密钥而失败。
    */
   public boolean waitingForKeys;
 
-  /** The time at which the sample should be presented. */
+  /** 样本应呈现的时间。 */
   public long timeUs;
 
   /**
-   * Supplemental data related to the buffer, if {@link #hasSupplementalData()} returns true. If
-   * present, the buffer is populated with supplemental data from position 0 to its limit.
+   * 与缓冲区相关的补充数据，如果 {@link #hasSupplementalData()} 返回 true。如果存在，则缓冲区从位置 0 到其限制填充补充数据。
    */
   @Nullable public ByteBuffer supplementalData;
 
   private final @BufferReplacementMode int bufferReplacementMode;
   private final int paddingSize;
 
-  /** Returns a new instance that's not able to hold any data. */
+  /** 返回一个不能保存任何数据的新实例。 */
   public static DecoderInputBuffer newNoDataInstance() {
     return new DecoderInputBuffer(BUFFER_REPLACEMENT_MODE_DISABLED);
   }
 
   /**
-   * Creates a new instance.
+   * 创建新实例。
    *
-   * @param bufferReplacementMode The {@link BufferReplacementMode} replacement mode.
+   * @param bufferReplacementMode 缓冲区替换模式 {@link BufferReplacementMode}。
    */
   public DecoderInputBuffer(@BufferReplacementMode int bufferReplacementMode) {
     this(bufferReplacementMode, /* paddingSize= */ 0);
   }
 
   /**
-   * Creates a new instance.
+   * 创建新实例。
    *
-   * @param bufferReplacementMode The {@link BufferReplacementMode} replacement mode.
-   * @param paddingSize If non-zero, {@link #ensureSpaceForWrite(int)} will ensure that the buffer
-   *     is this number of bytes larger than the requested length. This can be useful for decoders
-   *     that consume data in fixed size blocks, for efficiency. Setting the padding size to the
-   *     decoder's fixed read size is necessary to prevent such a decoder from trying to read beyond
-   *     the end of the buffer.
+   * @param bufferReplacementMode 缓冲区替换模式 {@link BufferReplacementMode}。
+   * @param paddingSize 如果非零，{@link #ensureSpaceForWrite(int)} 将确保缓冲区比请求的长度大此字节数。这对于以固定大小块消费数据的解码器非常有用，可以提高效率。将填充大小设置为解码器的固定读取大小可以防止解码器尝试读取超出缓冲区的末尾。
    */
   public DecoderInputBuffer(@BufferReplacementMode int bufferReplacementMode, int paddingSize) {
     this.cryptoInfo = new CryptoInfo();
@@ -149,10 +122,9 @@ public class DecoderInputBuffer extends Buffer {
   }
 
   /**
-   * Clears {@link #supplementalData} and ensures that it's large enough to accommodate {@code
-   * length} bytes.
+   * 清除 {@link #supplementalData} 并确保其足够大以容纳 {@code length} 字节。
    *
-   * @param length The length of the supplemental data that must be accommodated, in bytes.
+   * @param length 必须容纳的补充数据的长度，以字节为单位。
    */
   @EnsuresNonNull("supplementalData")
   public void resetSupplementalData(int length) {
@@ -164,16 +136,12 @@ public class DecoderInputBuffer extends Buffer {
   }
 
   /**
-   * Ensures that {@link #data} is large enough to accommodate a write of a given length at its
-   * current position.
+   * 确保 {@link #data} 足够大以容纳在其当前位置写入指定长度的数据。
    *
-   * <p>If the capacity of {@link #data} is sufficient this method does nothing. If the capacity is
-   * insufficient then an attempt is made to replace {@link #data} with a new {@link ByteBuffer}
-   * whose capacity is sufficient. Data up to the current position is copied to the new buffer.
+   * <p>如果 {@link #data} 的容量足够，则此方法不执行任何操作。如果容量不足，则尝试将 {@link #data} 替换为容量足够的新 {@link ByteBuffer}。当前位置之前的数据将复制到新缓冲区中。
    *
-   * @param length The length of the write that must be accommodated, in bytes.
-   * @throws InsufficientCapacityException If there is insufficient capacity to accommodate the
-   *     write and {@link #bufferReplacementMode} is {@link #BUFFER_REPLACEMENT_MODE_DISABLED}.
+   * @param length 必须容纳的写入长度，以字节为单位。
+   * @throws InsufficientCapacityException 如果没有足够容量容纳写入且 {@link #bufferReplacementMode} 为 {@link #BUFFER_REPLACEMENT_MODE_DISABLED}。
    */
   @EnsuresNonNull("data")
   public void ensureSpaceForWrite(int length) {
@@ -183,7 +151,7 @@ public class DecoderInputBuffer extends Buffer {
       data = createReplacementByteBuffer(length);
       return;
     }
-    // Check whether the current buffer is sufficient.
+    // 检查当前缓冲区是否足够。
     int capacity = currentData.capacity();
     int position = currentData.position();
     int requiredCapacity = position + length;
@@ -191,25 +159,25 @@ public class DecoderInputBuffer extends Buffer {
       data = currentData;
       return;
     }
-    // Instantiate a new buffer if possible.
+    // 如果可能，实例化一个新缓冲区。
     ByteBuffer newData = createReplacementByteBuffer(requiredCapacity);
     newData.order(currentData.order());
-    // Copy data up to the current position from the old buffer to the new one.
+    // 将旧缓冲区中当前位置之前的数据复制到新缓冲区中。
     if (position > 0) {
       currentData.flip();
       newData.put(currentData);
     }
-    // Set the new buffer.
+    // 设置新缓冲区。
     data = newData;
   }
 
-  /** Returns whether the {@link C#BUFFER_FLAG_ENCRYPTED} flag is set. */
+  /** 返回是否设置了 {@link C#BUFFER_FLAG_ENCRYPTED} 标志。 */
   public final boolean isEncrypted() {
     return getFlag(C.BUFFER_FLAG_ENCRYPTED);
   }
 
   /**
-   * Flips {@link #data} and {@link #supplementalData} in preparation for being queued to a decoder.
+   * 翻转 {@link #data} 和 {@link #supplementalData}，以便将其排队到解码器。
    *
    * @see java.nio.Buffer#flip()
    */
