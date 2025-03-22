@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * 版权所有 (C) 2020 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则根据许可证分发的软件是基于“按原样”分发的，
+ * 没有任何明示或暗示的担保或条件。
+ * 请参阅许可证以了解具体的语言权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -22,17 +20,17 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import androidx.media3.decoder.DecoderException;
 
-/** Thrown when a failure occurs in a {@link MediaCodec} decoder. */
+/** 当 {@link MediaCodec} 解码器发生故障时抛出。 */
 @UnstableApi
 public class MediaCodecDecoderException extends DecoderException {
 
-  /** The {@link MediaCodecInfo} of the decoder that failed. Null if unknown. */
+  /** 失败的解码器的 {@link MediaCodecInfo}。如果未知则为 null。 */
   @Nullable public final MediaCodecInfo codecInfo;
 
-  /** An optional developer-readable diagnostic information string. May be null. */
+  /** 可选的开发者可读的诊断信息字符串。可能为 null。 */
   @Nullable public final String diagnosticInfo;
 
-  /** An optional error code reported by the codec. May be 0 if no error code could be obtained. */
+  /** 编解码器报告的可选错误代码。如果无法获取错误代码，则可能为 0。 */
   public final int errorCode;
 
   public MediaCodecDecoderException(Throwable cause, @Nullable MediaCodecInfo codecInfo) {

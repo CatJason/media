@@ -1,17 +1,15 @@
 /*
- * Copyright 2023 The Android Open Source Project
+ * 版权所有 2023 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则根据许可证分发的软件是基于“按原样”分发的，
+ * 没有任何明示或暗示的担保或条件。
+ * 请参阅许可证以了解具体的语言权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -20,31 +18,31 @@ import android.os.Bundle;
 import androidx.media3.decoder.CryptoInfo;
 
 /**
- * Interface to queue buffers to a {@link MediaCodec}.
+ * 用于将缓冲区提交到 {@link MediaCodec} 的接口。
  *
- * <p>All methods must be called from the same thread.
+ * <p>所有方法必须在同一线程中调用。
  */
 /* package */ interface MediaCodecBufferEnqueuer {
 
   /**
-   * Starts this instance.
+   * 启动此实例。
    *
-   * <p>Call this method after creating an instance and before queueing input buffers.
+   * <p>在创建实例后、提交输入缓冲区之前调用此方法。
    */
   void start();
 
   /**
-   * Submits an input buffer for decoding.
+   * 提交一个输入缓冲区以进行解码。
    *
    * @see android.media.MediaCodec#queueInputBuffer
    */
   void queueInputBuffer(int index, int offset, int size, long presentationTimeUs, int flags);
 
   /**
-   * Submits an input buffer that potentially contains encrypted data for decoding.
+   * 提交一个可能包含加密数据的输入缓冲区以进行解码。
    *
-   * <p>Note: This method behaves as {@link MediaCodec#queueSecureInputBuffer} with the difference
-   * that {@code info} is of type {@link CryptoInfo} and not {@link MediaCodec.CryptoInfo}.
+   * <p>注意：此方法的行为类似于 {@link MediaCodec#queueSecureInputBuffer}，但不同之处在于
+   * {@code info} 的类型是 {@link CryptoInfo} 而不是 {@link MediaCodec.CryptoInfo}。
    *
    * @see MediaCodec#queueSecureInputBuffer
    */
@@ -52,21 +50,21 @@ import androidx.media3.decoder.CryptoInfo;
       int index, int offset, CryptoInfo info, long presentationTimeUs, int flags);
 
   /**
-   * Submits new codec parameters that should be applied from the next queued input buffer.
+   * 提交新的编解码器参数，这些参数应从下一个提交的输入缓冲区开始应用。
    *
    * @see MediaCodec#setParameters(Bundle)
    */
   void setParameters(Bundle parameters);
 
-  /** Flushes the instance. */
+  /** 刷新实例。 */
   void flush();
 
-  /** Shuts down the instance. Make sure to call this method to release its internal resources. */
+  /** 关闭实例。确保调用此方法以释放其内部资源。 */
   void shutdown();
 
-  /** Blocks the current thread until all input buffers pending queueing are submitted. */
+  /** 阻塞当前线程，直到所有待提交的输入缓冲区都已提交。 */
   void waitUntilQueueingComplete() throws InterruptedException;
 
-  /** Throw any exception that occurred during the enqueueing process. */
+  /** 抛出在提交过程中发生的任何异常。 */
   void maybeThrowException();
 }

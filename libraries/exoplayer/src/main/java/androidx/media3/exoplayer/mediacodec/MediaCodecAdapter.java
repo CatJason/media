@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.mediacodec;
 
 import android.content.Context;
@@ -33,25 +18,24 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * Abstracts {@link MediaCodec} operations.
+ * 抽象了 {@link MediaCodec} 的操作。
  *
- * <p>{@code MediaCodecAdapter} offers a common interface to interact with a {@link MediaCodec}
- * regardless of the mode the {@link MediaCodec} is operating in.
+ * <p>{@code MediaCodecAdapter} 提供了一个通用接口来与 {@link MediaCodec} 交互，无论 {@link MediaCodec} 处于何种模式。
  */
 @UnstableApi
 public interface MediaCodecAdapter {
-  /** Configuration parameters for a {@link MediaCodecAdapter}. */
+  /** {@link MediaCodecAdapter} 的配置参数。 */
   final class Configuration {
 
     /**
-     * Creates a configuration for audio decoding.
+     * 为音频解码创建配置。
      *
-     * @param codecInfo See {@link #codecInfo}.
-     * @param mediaFormat See {@link #mediaFormat}.
-     * @param format See {@link #format}.
-     * @param crypto See {@link #crypto}.
-     * @param loudnessCodecController See {@link #loudnessCodecController}.
-     * @return The created instance.
+     * @param codecInfo 参见 {@link #codecInfo}.
+     * @param mediaFormat 参见 {@link #mediaFormat}.
+     * @param format 参见 {@link #format}.
+     * @param crypto 参见 {@link #crypto}.
+     * @param loudnessCodecController 参见 {@link #loudnessCodecController}.
+     * @return 创建的实例。
      */
     public static Configuration createForAudioDecoding(
         MediaCodecInfo codecInfo,
@@ -64,14 +48,14 @@ public interface MediaCodecAdapter {
     }
 
     /**
-     * Creates a configuration for video decoding.
+     * 为视频解码创建配置。
      *
-     * @param codecInfo See {@link #codecInfo}.
-     * @param mediaFormat See {@link #mediaFormat}.
-     * @param format See {@link #format}.
-     * @param surface See {@link #surface}.
-     * @param crypto See {@link #crypto}.
-     * @return The created instance.
+     * @param codecInfo 参见 {@link #codecInfo}.
+     * @param mediaFormat 参见 {@link #mediaFormat}.
+     * @param format 参见 {@link #format}.
+     * @param surface 参见 {@link #surface}.
+     * @param crypto 参见 {@link #crypto}.
+     * @return 创建的实例。
      */
     public static Configuration createForVideoDecoding(
         MediaCodecInfo codecInfo,
@@ -83,26 +67,24 @@ public interface MediaCodecAdapter {
           codecInfo, mediaFormat, format, surface, crypto, /* loudnessCodecController= */ null);
     }
 
-    /** Information about the {@link MediaCodec} being configured. */
+    /** 有关正在配置的 {@link MediaCodec} 的信息。 */
     public final MediaCodecInfo codecInfo;
 
-    /** The {@link MediaFormat} for which the codec is being configured. */
+    /** {@link MediaCodec} 正在配置的 {@link MediaFormat}。 */
     public final MediaFormat mediaFormat;
 
-    /** The {@link Format} for which the codec is being configured. */
+    /** {@link MediaCodec} 正在配置的 {@link Format}。 */
     public final Format format;
 
     /**
-     * For video decoding, the output where the object will render the decoded frames. This must be
-     * null if the codec is not a video decoder, or if it is configured for {@link ByteBuffer}
-     * output.
+     * 对于视频解码，输出对象将渲染解码帧的 Surface。如果编解码器不是视频解码器，或者它配置为 {@link ByteBuffer} 输出，则必须为 null。
      */
     @Nullable public final Surface surface;
 
-    /** For DRM protected playbacks, a {@link MediaCrypto} to use for decryption. */
+    /** 对于 DRM 保护的播放，用于解密的 {@link MediaCrypto}。 */
     @Nullable public final MediaCrypto crypto;
 
-    /** The {@link LoudnessCodecController} for audio codecs. */
+    /** 音频编解码器的 {@link LoudnessCodecController}。 */
     @Nullable public final LoudnessCodecController loudnessCodecController;
 
     private Configuration(
@@ -121,32 +103,32 @@ public interface MediaCodecAdapter {
     }
   }
 
-  /** A factory for {@link MediaCodecAdapter} instances. */
+  /** {@link MediaCodecAdapter} 实例的工厂。 */
   interface Factory {
 
     /**
-     * @deprecated Use {@link #getDefault} instead.
+     * @deprecated 请使用 {@link #getDefault} 代替。
      */
     @Deprecated
-    @SuppressWarnings("deprecation") // Forwarding to deprecated method.
-    Factory DEFAULT = new DefaultMediaCodecAdapterFactory();
+    @SuppressWarnings("deprecation") // 转发到已弃用的方法。
+        Factory DEFAULT = new DefaultMediaCodecAdapterFactory();
 
     /**
-     * Returns the default factory that should be used in most cases.
+     * 返回在大多数情况下应使用的默认工厂。
      *
-     * @param context A {@link Context}.
-     * @return The default factory.
+     * @param context 一个 {@link Context}。
+     * @return 默认工厂。
      */
     static Factory getDefault(Context context) {
       return new DefaultMediaCodecAdapterFactory(context);
     }
 
-    /** Creates a {@link MediaCodecAdapter} instance. */
+    /** 创建一个 {@link MediaCodecAdapter} 实例。 */
     MediaCodecAdapter createAdapter(Configuration configuration) throws IOException;
   }
 
   /**
-   * Listener to be called when an output frame has rendered on the output surface.
+   * 当输出帧在输出 Surface 上渲染时调用的监听器。
    *
    * @see MediaCodec.OnFrameRenderedListener
    */
@@ -154,17 +136,17 @@ public interface MediaCodecAdapter {
     void onFrameRendered(MediaCodecAdapter codec, long presentationTimeUs, long nanoTime);
   }
 
-  /** Listener to be called when an input or output buffer becomes available. */
+  /** 当输入或输出缓冲区可用时调用的监听器。 */
   interface OnBufferAvailableListener {
     /**
-     * Called when an input buffer becomes available.
+     * 当输入缓冲区可用时调用。
      *
      * @see MediaCodec.Callback#onInputBufferAvailable(MediaCodec, int)
      */
     default void onInputBufferAvailable() {}
 
     /**
-     * Called when an output buffer becomes available.
+     * 当输出缓冲区可用时调用。
      *
      * @see MediaCodec.Callback#onOutputBufferAvailable(MediaCodec, int, MediaCodec.BufferInfo)
      */
@@ -172,34 +154,28 @@ public interface MediaCodecAdapter {
   }
 
   /**
-   * Returns the next available input buffer index from the underlying {@link MediaCodec} or {@link
-   * MediaCodec#INFO_TRY_AGAIN_LATER} if no such buffer exists.
+   * 从底层的 {@link MediaCodec} 返回下一个可用的输入缓冲区索引，如果不存在这样的缓冲区，则返回 {@link MediaCodec#INFO_TRY_AGAIN_LATER}。
    *
-   * @throws IllegalStateException If the underlying {@link MediaCodec} raised an error.
+   * @throws IllegalStateException 如果底层的 {@link MediaCodec} 引发错误。
    */
   int dequeueInputBufferIndex();
 
   /**
-   * Returns the next available output buffer index from the underlying {@link MediaCodec}. If the
-   * next available output is a MediaFormat change, it will return {@link
-   * MediaCodec#INFO_OUTPUT_FORMAT_CHANGED} and you should call {@link #getOutputFormat()} to get
-   * the format. If there is no available output, this method will return {@link
-   * MediaCodec#INFO_TRY_AGAIN_LATER}.
+   * 从底层的 {@link MediaCodec} 返回下一个可用的输出缓冲区索引。如果下一个可用输出是 MediaFormat 更改，则返回 {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED}，您应调用 {@link #getOutputFormat()} 获取格式。如果没有可用输出，则返回 {@link MediaCodec#INFO_TRY_AGAIN_LATER}。
    *
-   * @throws IllegalStateException If the underlying {@link MediaCodec} raised an error.
+   * @throws IllegalStateException 如果底层的 {@link MediaCodec} 引发错误。
    */
   int dequeueOutputBufferIndex(MediaCodec.BufferInfo bufferInfo);
 
   /**
-   * Gets the {@link MediaFormat} that was output from the {@link MediaCodec}.
+   * 获取从 {@link MediaCodec} 输出的 {@link MediaFormat}。
    *
-   * <p>Call this method if a previous call to {@link #dequeueOutputBufferIndex} returned {@link
-   * MediaCodec#INFO_OUTPUT_FORMAT_CHANGED}.
+   * <p>如果之前调用 {@link #dequeueOutputBufferIndex} 返回了 {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED}，请调用此方法。
    */
   MediaFormat getOutputFormat();
 
   /**
-   * Returns a writable ByteBuffer object for a dequeued input buffer index.
+   * 返回用于已出队输入缓冲区索引的可写 ByteBuffer 对象。
    *
    * @see MediaCodec#getInputBuffer(int)
    */
@@ -207,7 +183,7 @@ public interface MediaCodecAdapter {
   ByteBuffer getInputBuffer(int index);
 
   /**
-   * Returns a read-only ByteBuffer for a dequeued output buffer index.
+   * 返回用于已出队输出缓冲区索引的只读 ByteBuffer。
    *
    * @see MediaCodec#getOutputBuffer(int)
    */
@@ -215,23 +191,20 @@ public interface MediaCodecAdapter {
   ByteBuffer getOutputBuffer(int index);
 
   /**
-   * Submit an input buffer for decoding.
+   * 提交输入缓冲区以进行解码。
    *
-   * <p>The {@code index} must be an input buffer index that has been obtained from a previous call
-   * to {@link #dequeueInputBufferIndex()}.
+   * <p>{@code index} 必须是从之前调用 {@link #dequeueInputBufferIndex()} 获得的输入缓冲区索引。
    *
    * @see MediaCodec#queueInputBuffer
    */
   void queueInputBuffer(int index, int offset, int size, long presentationTimeUs, int flags);
 
   /**
-   * Submit an input buffer that is potentially encrypted for decoding.
+   * 提交可能加密的输入缓冲区以进行解码。
    *
-   * <p>The {@code index} must be an input buffer index that has been obtained from a previous call
-   * to {@link #dequeueInputBufferIndex()}.
+   * <p>{@code index} 必须是从之前调用 {@link #dequeueInputBufferIndex()} 获得的输入缓冲区索引。
    *
-   * <p>This method behaves like {@link MediaCodec#queueSecureInputBuffer}, with the difference that
-   * {@code info} is of type {@link CryptoInfo} and not {@link android.media.MediaCodec.CryptoInfo}.
+   * <p>此方法的行为类似于 {@link MediaCodec#queueSecureInputBuffer}，不同之处在于 {@code info} 的类型是 {@link CryptoInfo} 而不是 {@link android.media.MediaCodec.CryptoInfo}。
    *
    * @see MediaCodec#queueSecureInputBuffer
    */
@@ -239,32 +212,27 @@ public interface MediaCodecAdapter {
       int index, int offset, CryptoInfo info, long presentationTimeUs, int flags);
 
   /**
-   * Returns the buffer to the {@link MediaCodec}. If the {@link MediaCodec} was configured with an
-   * output surface, setting {@code render} to {@code true} will first send the buffer to the output
-   * surface. The surface will release the buffer back to the codec once it is no longer
-   * used/displayed.
+   * 将缓冲区返回给 {@link MediaCodec}。如果 {@link MediaCodec} 配置了输出 Surface，将 {@code render} 设置为 {@code true} 会首先将缓冲区发送到输出 Surface。Surface 在不再使用/显示缓冲区后，会将其释放回编解码器。
    *
    * @see MediaCodec#releaseOutputBuffer(int, boolean)
    */
   void releaseOutputBuffer(int index, boolean render);
 
   /**
-   * Updates the output buffer's surface timestamp and sends it to the {@link MediaCodec} to render
-   * it on the output surface. If the {@link MediaCodec} is not configured with an output surface,
-   * this call will simply return the buffer to the {@link MediaCodec}.
+   * 更新输出缓冲区的 Surface 时间戳，并将其发送到 {@link MediaCodec} 以在输出 Surface 上渲染。如果 {@link MediaCodec} 未配置输出 Surface，此调用将简单地将缓冲区返回给 {@link MediaCodec}。
    *
    * @see MediaCodec#releaseOutputBuffer(int, long)
    */
   void releaseOutputBuffer(int index, long renderTimeStampNs);
 
-  /** Flushes the adapter and the underlying {@link MediaCodec}. */
+  /** 刷新适配器和底层的 {@link MediaCodec}。 */
   void flush();
 
-  /** Releases the adapter and the underlying {@link MediaCodec}. */
+  /** 释放适配器和底层的 {@link MediaCodec}。 */
   void release();
 
   /**
-   * Registers a callback to be invoked when an output frame is rendered on the output surface.
+   * 注册一个回调，当输出帧在输出 Surface 上渲染时调用。
    *
    * @see MediaCodec#setOnFrameRenderedListener
    */
@@ -272,13 +240,13 @@ public interface MediaCodecAdapter {
   void setOnFrameRenderedListener(OnFrameRenderedListener listener, Handler handler);
 
   /**
-   * Registers a listener that will be called when an input or output buffer becomes available.
+   * 注册一个监听器，当输入或输出缓冲区可用时调用。
    *
-   * <p>Returns false if listener was not successfully registered for callbacks.
+   * <p>如果监听器未成功注册回调，则返回 false。
    *
    * @see MediaCodec.Callback#onInputBufferAvailable
    * @see MediaCodec.Callback#onOutputBufferAvailable
-   * @return Whether listener was successfully registered.
+   * @return 监听器是否成功注册。
    */
   default boolean registerOnBufferAvailableListener(
       MediaCodecAdapter.OnBufferAvailableListener listener) {
@@ -286,7 +254,7 @@ public interface MediaCodecAdapter {
   }
 
   /**
-   * Dynamically sets the output surface of a {@link MediaCodec}.
+   * 动态设置 {@link MediaCodec} 的输出 Surface。
    *
    * @see MediaCodec#setOutputSurface(Surface)
    */
@@ -294,7 +262,7 @@ public interface MediaCodecAdapter {
   void setOutputSurface(Surface surface);
 
   /**
-   * Detaches the current output surface.
+   * 分离当前的输出 Surface。
    *
    * @see MediaCodec#detachOutputSurface()
    */
@@ -302,24 +270,24 @@ public interface MediaCodecAdapter {
   void detachOutputSurface();
 
   /**
-   * Communicate additional parameter changes to the {@link MediaCodec} instance.
+   * 将其他参数更改传递给 {@link MediaCodec} 实例。
    *
    * @see MediaCodec#setParameters(Bundle)
    */
   void setParameters(Bundle params);
 
   /**
-   * Specifies the scaling mode to use, if a surface was specified when the codec was created.
+   * 指定缩放模式，如果在创建编解码器时指定了 Surface。
    *
    * @see MediaCodec#setVideoScalingMode(int)
    */
   void setVideoScalingMode(@C.VideoScalingMode int scalingMode);
 
-  /** Whether the adapter needs to be reconfigured before it is used. */
+  /** 适配器在使用前是否需要重新配置。 */
   boolean needsReconfiguration();
 
   /**
-   * Returns metrics data about the current codec instance.
+   * 返回有关当前编解码器实例的指标数据。
    *
    * @see MediaCodec#getMetrics()
    */
