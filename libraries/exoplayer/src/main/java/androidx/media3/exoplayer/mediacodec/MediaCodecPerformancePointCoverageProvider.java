@@ -1,17 +1,15 @@
 /*
- * Copyright 2024 The Android Open Source Project
+ * 版权所有 2024 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则根据许可证分发的软件是基于“按原样”分发的，
+ * 没有任何明示或暗示的担保或条件。
+ * 请参阅许可证以了解具体的语言权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -31,57 +29,52 @@ import java.lang.annotation.Target;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** Utility class checking media codec support through PerformancePoints. */
+/** 通过 PerformancePoints 检查媒体编解码器支持的实用类。 */
 /* package */ final class MediaCodecPerformancePointCoverageProvider {
 
   /**
-   * Whether if the device provides a PerformancePoints and coverage results should be ignored as
-   * the PerformancePoints do not cover CDD requirements.
+   * 设备是否提供了 PerformancePoints，并且应忽略覆盖结果，因为 PerformancePoints 未覆盖 CDD 要求。
    */
   @SuppressWarnings("NonFinalStaticField")
   private static @MonotonicNonNull Boolean shouldIgnorePerformancePoints;
 
   private MediaCodecPerformancePointCoverageProvider() {}
 
-  /** Possible outcomes of evaluating {@link PerformancePoint} coverage. */
+  /** 评估 {@link PerformancePoint} 覆盖结果的可能结果。 */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED,
-    COVERAGE_RESULT_NO,
-    COVERAGE_RESULT_YES
+      COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED,
+      COVERAGE_RESULT_NO,
+      COVERAGE_RESULT_YES
   })
   @interface PerformancePointCoverageResult {}
 
   /**
-   * The {@link VideoCapabilities} do not contain any valid {@linkplain PerformancePoint
-   * PerformancePoints}.
+   * {@link VideoCapabilities} 不包含任何有效的 {@linkplain PerformancePoint PerformancePoints}。
    */
   /* package */ static final int COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED = 0;
 
   /**
-   * The decoder has at least one PerformancePoint, but none cover the resolution and frame rate.
+   * 解码器至少有一个 PerformancePoint，但没有一个覆盖分辨率和帧率。
    */
   /* package */ static final int COVERAGE_RESULT_NO = 1;
 
-  /** The decoder has a PerformancePoint that covers the resolution and frame rate. */
+  /** 解码器有一个 PerformancePoint 覆盖了分辨率和帧率。 */
   /* package */ static final int COVERAGE_RESULT_YES = 2;
 
   /**
-   * This method returns if a decoder's {@link VideoCapabilities} cover a resolution and frame rate
-   * with its {@link PerformancePoint} list.
+   * 此方法返回解码器的 {@link VideoCapabilities} 是否通过其 {@link PerformancePoint} 列表覆盖了分辨率和帧率。
    *
-   * @param videoCapabilities A decoder's {@link VideoCapabilities}
-   * @param width Width in pixels.
-   * @param height Height in pixels.
-   * @param frameRate Optional frame rate in frames per second. Ignored if set to {@link
-   *     Format#NO_VALUE} or any value less than or equal to 0.
-   * @return {@link #COVERAGE_RESULT_YES} if the {@link VideoCapabilities} has a {@link
-   *     PerformancePoint} list that covers the resolution and frame rate or {@link
-   *     #COVERAGE_RESULT_NO} if the list does not provide coverage. {@link
-   *     #COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED} is returned if the {@link
-   *     VideoCapabilities} does not contain a list of valid {@code PerformancePoints}
+   * @param videoCapabilities 解码器的 {@link VideoCapabilities}
+   * @param width 宽度（以像素为单位）。
+   * @param height 高度（以像素为单位）。
+   * @param frameRate 可选的帧率（以帧/秒为单位）。如果设置为 {@link Format#NO_VALUE} 或任何小于或等于 0 的值，则忽略。
+   * @return 如果 {@link VideoCapabilities} 有一个 {@link PerformancePoint} 列表覆盖了分辨率和帧率，则返回 {@link
+   *     #COVERAGE_RESULT_YES}；如果列表未提供覆盖，则返回 {@link #COVERAGE_RESULT_NO}。如果 {@link
+   *     VideoCapabilities} 不包含有效的 {@code PerformancePoints} 列表，则返回 {@link
+   *     #COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED}
    */
   public static @PerformancePointCoverageResult int areResolutionAndFrameRateCovered(
       VideoCapabilities videoCapabilities, int width, int height, double frameRate) {
@@ -103,9 +96,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         return COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED;
       }
 
-      // Round frame rate down to to avoid situations where a range check in
-      // covers fails due to slightly exceeding the limits for a standard format
-      // (e.g., 1080p at 30 fps). [Internal ref: b/134706676]
+      // 将帧率向下取整，以避免由于略微超出标准格式的限制而导致覆盖检查失败的情况（例如，1080p 30 fps）。[Internal ref: b/134706676]
       PerformancePoint targetPerformancePoint =
           new PerformancePoint(width, height, (int) frameRate);
 
@@ -115,9 +106,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
       if (performancePointCoverageResult == COVERAGE_RESULT_NO
           && shouldIgnorePerformancePoints == null) {
-        // See https://github.com/google/ExoPlayer/issues/10898,
+        // 参见 https://github.com/google/ExoPlayer/issues/10898,
         // https://github.com/androidx/media/issues/693,
-        // https://github.com/androidx/media/issues/966 and [internal ref: b/267324685].
+        // https://github.com/androidx/media/issues/966 和 [internal ref: b/267324685]。
         shouldIgnorePerformancePoints = shouldIgnorePerformancePoints();
         if (shouldIgnorePerformancePoints) {
           return COVERAGE_RESULT_NO_PERFORMANCE_POINTS_UNSUPPORTED;
@@ -128,11 +119,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
 
     /**
-     * Checks if the CDD-requirement to support H264 720p at 60 fps is covered by PerformancePoints.
+     * 检查 PerformancePoints 是否覆盖了支持 H264 720p 60 fps 的 CDD 要求。
      */
     private static boolean shouldIgnorePerformancePoints() {
       if (Util.SDK_INT >= 35) {
-        // The same check as below is tested in CTS and we should get reliable results from API 35.
+        // 与下面相同的检查在 CTS 中进行了测试，我们应该从 API 35 获得可靠的结果。
         return false;
       }
       @PerformancePointCoverageResult
@@ -156,7 +147,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         boolean requiresSecureDecoder) {
       try {
         Format formatH264 = new Format.Builder().setSampleMimeType(MimeTypes.VIDEO_H264).build();
-        // Null check required to pass RequiresNonNull annotation on getDecoderInfosSoftMatch.
+        // 需要空检查以通过 RequiresNonNull 注解的 getDecoderInfosSoftMatch。
         if (formatH264.sampleMimeType != null) {
           List<MediaCodecInfo> decoderInfos =
               MediaCodecUtil.getDecoderInfosSoftMatch(
