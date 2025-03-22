@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import androidx.annotation.Nullable;
@@ -23,43 +8,40 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.extractor.TrackOutput;
 
 /**
- * Encapsulates information parsed from a track encryption (tenc) box or sample group description
- * (sgpd) box in an MP4 stream.
+ * 封装从 MP4 流中的轨道加密（tenc）盒或样本组描述（sgpd）盒解析的信息。
  */
 @UnstableApi
 public final class TrackEncryptionBox {
 
   private static final String TAG = "TrackEncryptionBox";
 
-  /** Indicates the encryption state of the samples in the sample group. */
+  /** 指示样本组中样本的加密状态。 */
   public final boolean isEncrypted;
 
-  /** The protection scheme type, as defined by the 'schm' box, or null if unknown. */
+  /** 保护方案类型，由 'schm' 盒定义，如果未知则为 null。 */
   @Nullable public final String schemeType;
 
   /**
-   * A {@link TrackOutput.CryptoData} instance containing the encryption information from this
-   * {@link TrackEncryptionBox}.
+   * 一个 {@link TrackOutput.CryptoData} 实例，包含来自此 {@link TrackEncryptionBox} 的加密信息。
    */
   public final TrackOutput.CryptoData cryptoData;
 
-  /** The initialization vector size in bytes for the samples in the corresponding sample group. */
+  /** 样本组中样本的初始化向量大小（字节）。 */
   public final int perSampleIvSize;
 
   /**
-   * If {@link #perSampleIvSize} is 0, holds the default initialization vector as defined in the
-   * track encryption box or sample group description box. Null otherwise.
+   * 如果 {@link #perSampleIvSize} 为 0，则保存轨道加密盒或样本组描述盒中定义的默认初始化向量。否则为 null。
    */
   @Nullable public final byte[] defaultInitializationVector;
 
   /**
-   * @param isEncrypted See {@link #isEncrypted}.
-   * @param schemeType See {@link #schemeType}.
-   * @param perSampleIvSize See {@link #perSampleIvSize}.
-   * @param keyId See {@link TrackOutput.CryptoData#encryptionKey}.
-   * @param defaultEncryptedBlocks See {@link TrackOutput.CryptoData#encryptedBlocks}.
-   * @param defaultClearBlocks See {@link TrackOutput.CryptoData#clearBlocks}.
-   * @param defaultInitializationVector See {@link #defaultInitializationVector}.
+   * @param isEncrypted 参见 {@link #isEncrypted}。
+   * @param schemeType 参见 {@link #schemeType}。
+   * @param perSampleIvSize 参见 {@link #perSampleIvSize}。
+   * @param keyId 参见 {@link TrackOutput.CryptoData#encryptionKey}。
+   * @param defaultEncryptedBlocks 参见 {@link TrackOutput.CryptoData#encryptedBlocks}。
+   * @param defaultClearBlocks 参见 {@link TrackOutput.CryptoData#clearBlocks}。
+   * @param defaultInitializationVector 参见 {@link #defaultInitializationVector}。
    */
   public TrackEncryptionBox(
       boolean isEncrypted,
@@ -69,19 +51,27 @@ public final class TrackEncryptionBox {
       int defaultEncryptedBlocks,
       int defaultClearBlocks,
       @Nullable byte[] defaultInitializationVector) {
+    // 检查 perSampleIvSize 和 defaultInitializationVector 的逻辑关系
     Assertions.checkArgument(perSampleIvSize == 0 ^ defaultInitializationVector == null);
     this.isEncrypted = isEncrypted;
     this.schemeType = schemeType;
     this.perSampleIvSize = perSampleIvSize;
     this.defaultInitializationVector = defaultInitializationVector;
+    // 创建 CryptoData 实例
     cryptoData =
         new TrackOutput.CryptoData(
             schemeToCryptoMode(schemeType), keyId, defaultEncryptedBlocks, defaultClearBlocks);
   }
 
+  /**
+   * 将保护方案类型转换为加密模式。
+   *
+   * @param schemeType 保护方案类型
+   * @return 对应的加密模式
+   */
   private static @C.CryptoMode int schemeToCryptoMode(@Nullable String schemeType) {
     if (schemeType == null) {
-      // If unknown, assume cenc.
+      // 如果未知，假设为 cenc 模式
       return C.CRYPTO_MODE_AES_CTR;
     }
     switch (schemeType) {
@@ -92,6 +82,7 @@ public final class TrackEncryptionBox {
       case C.CENC_TYPE_cbcs:
         return C.CRYPTO_MODE_AES_CBC;
       default:
+        // 如果保护方案类型不受支持，记录警告并假设为 AES-CTR 模式
         Log.w(
             TAG,
             "Unsupported protection scheme type '"

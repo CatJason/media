@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import androidx.annotation.Nullable;
@@ -21,73 +6,69 @@ import androidx.media3.extractor.ExtractorInput;
 import java.io.IOException;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** A holder for information corresponding to a single fragment of an mp4 file. */
+/** 用于封装 MP4 文件中单个片段信息的类。 */
 /* package */ final class TrackFragment {
 
-  /** The default values for samples from the track fragment header. */
+  /** 轨道片段头中样本的默认值。 */
   public @MonotonicNonNull DefaultSampleValues header;
 
-  /** The position (byte offset) of the start of fragment. */
+  /** 片段起始位置（字节偏移量）。 */
   public long atomPosition;
 
-  /** The position (byte offset) of the start of data contained in the fragment. */
+  /** 片段中包含的数据起始位置（字节偏移量）。 */
   public long dataPosition;
 
-  /** The position (byte offset) of the start of auxiliary data. */
+  /** 辅助数据起始位置（字节偏移量）。 */
   public long auxiliaryDataPosition;
 
-  /** The number of track runs of the fragment. */
+  /** 片段中轨道运行（track run）的数量。 */
   public int trunCount;
 
-  /** The total number of samples in the fragment. */
+  /** 片段中样本的总数。 */
   public int sampleCount;
 
-  /** The position (byte offset) of the start of sample data of each track run in the fragment. */
+  /** 片段中每个轨道运行（track run）的样本数据起始位置（字节偏移量）。 */
   public long[] trunDataPosition;
 
-  /** The number of samples contained by each track run in the fragment. */
+  /** 片段中每个轨道运行（track run）包含的样本数量。 */
   public int[] trunLength;
 
-  /** The size of each sample in the fragment. */
+  /** 片段中每个样本的大小。 */
   public int[] sampleSizeTable;
 
-  /** The presentation time of each sample in the fragment, in microseconds. */
+  /** 片段中每个样本的呈现时间（微秒）。 */
   public long[] samplePresentationTimesUs;
 
-  /** Indicates which samples are sync frames. */
+  /** 指示哪些样本是关键帧（sync frame）。 */
   public boolean[] sampleIsSyncFrameTable;
 
-  /** Whether the fragment defines encryption data. */
+  /** 片段是否定义了加密数据。 */
   public boolean definesEncryptionData;
 
   /**
-   * If {@link #definesEncryptionData} is true, indicates which samples use sub-sample encryption.
-   * Undefined otherwise.
+   * 如果 {@link #definesEncryptionData} 为 true，指示哪些样本使用子样本加密。否则未定义。
    */
   public boolean[] sampleHasSubsampleEncryptionTable;
 
-  /** Fragment specific track encryption. May be null. */
+  /** 片段特定的轨道加密信息。可能为 null。 */
   @Nullable public TrackEncryptionBox trackEncryptionBox;
 
   /**
-   * If {@link #definesEncryptionData} is true, contains binary sample encryption data. Undefined
-   * otherwise.
+   * 如果 {@link #definesEncryptionData} 为 true，包含二进制样本加密数据。否则未定义。
    */
   public final ParsableByteArray sampleEncryptionData;
 
-  /** Whether {@link #sampleEncryptionData} needs populating with the actual encryption data. */
+  /** 是否需要填充 {@link #sampleEncryptionData} 中的实际加密数据。 */
   public boolean sampleEncryptionDataNeedsFill;
 
   /**
-   * The duration of all the samples defined in the fragments up to and including this one, plus the
-   * duration of the samples defined in the moov atom if {@link #nextFragmentDecodeTimeIncludesMoov}
-   * is {@code true}.
+   * 所有片段中定义的样本的总持续时间（微秒），包括当前片段，如果 {@link #nextFragmentDecodeTimeIncludesMoov} 为 true，
+   * 则还包括 moov 原子中定义的样本的持续时间。
    */
   public long nextFragmentDecodeTime;
 
   /**
-   * Whether {@link #nextFragmentDecodeTime} includes the duration of the samples referred to by the
-   * moov atom.
+   * {@link #nextFragmentDecodeTime} 是否包括 moov 原子中定义的样本的持续时间。
    */
   public boolean nextFragmentDecodeTimeIncludesMoov;
 
@@ -102,11 +83,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Resets the fragment.
+   * 重置片段。
    *
-   * <p>{@link #sampleCount} and {@link #nextFragmentDecodeTime} are set to 0, and both {@link
-   * #definesEncryptionData} and {@link #sampleEncryptionDataNeedsFill} is set to false, and {@link
-   * #trackEncryptionBox} is set to null.
+   * <p>{@link #sampleCount} 和 {@link #nextFragmentDecodeTime} 被设置为 0，{@link #definesEncryptionData} 和
+   * {@link #sampleEncryptionDataNeedsFill} 被设置为 false，{@link #trackEncryptionBox} 被设置为 null。
    */
   public void reset() {
     trunCount = 0;
@@ -118,12 +98,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Configures the fragment for the specified number of samples.
+   * 为指定数量的样本配置片段。
    *
-   * <p>The {@link #sampleCount} of the fragment is set to the specified sample count, and the
-   * contained tables are resized if necessary such that they are at least this length.
+   * <p>片段的 {@link #sampleCount} 被设置为指定的样本数量，并且如果必要，内部表会被调整大小，以确保至少能够容纳该数量的样本。
    *
-   * @param sampleCount The number of samples in the new run.
+   * @param sampleCount 新运行中的样本数量。
    */
   public void initTables(int trunCount, int sampleCount) {
     this.trunCount = trunCount;
@@ -133,8 +112,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       trunLength = new int[trunCount];
     }
     if (sampleSizeTable.length < sampleCount) {
-      // Size the tables 25% larger than needed, so as to make future resize operations less
-      // likely. The choice of 25% is relatively arbitrary.
+      // 将表的大小调整为比所需大小大 25%，以减少未来调整大小的可能性。25% 的选择相对随意。
       int tableSize = (sampleCount * 125) / 100;
       sampleSizeTable = new int[tableSize];
       samplePresentationTimesUs = new long[tableSize];
@@ -144,12 +122,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Configures the fragment to be one that defines encryption data of the specified length.
+   * 配置片段以定义指定长度的加密数据。
    *
-   * <p>{@link #definesEncryptionData} is set to true, and the {@link ParsableByteArray#limit()
-   * limit} of {@link #sampleEncryptionData} is set to the specified length.
+   * <p>{@link #definesEncryptionData} 被设置为 true，并且 {@link ParsableByteArray#limit()} 的
+   * {@link #sampleEncryptionData} 被设置为指定的长度。
    *
-   * @param length The length in bytes of the encryption data.
+   * @param length 加密数据的长度（字节）。
    */
   public void initEncryptionData(int length) {
     sampleEncryptionData.reset(length);
@@ -158,9 +136,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Fills {@link #sampleEncryptionData} from the provided input.
+   * 从提供的输入中填充 {@link #sampleEncryptionData}。
    *
-   * @param input An {@link ExtractorInput} from which to read the encryption data.
+   * @param input 用于读取加密数据的 {@link ExtractorInput}。
    */
   public void fillEncryptionData(ExtractorInput input) throws IOException {
     input.readFully(sampleEncryptionData.getData(), 0, sampleEncryptionData.limit());
@@ -169,9 +147,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Fills {@link #sampleEncryptionData} from the provided source.
+   * 从提供的源中填充 {@link #sampleEncryptionData}。
    *
-   * @param source A source from which to read the encryption data.
+   * @param source 用于读取加密数据的源。
    */
   public void fillEncryptionData(ParsableByteArray source) {
     source.readBytes(sampleEncryptionData.getData(), 0, sampleEncryptionData.limit());
@@ -180,16 +158,16 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns the sample presentation timestamp in microseconds.
+   * 返回样本的呈现时间戳（微秒）。
    *
-   * @param index The sample index.
-   * @return The presentation timestamps of this sample in microseconds.
+   * @param index 样本索引。
+   * @return 该样本的呈现时间戳（微秒）。
    */
   public long getSamplePresentationTimeUs(int index) {
     return samplePresentationTimesUs[index];
   }
 
-  /** Returns whether the sample at the given index has a subsample encryption table. */
+  /** 返回给定索引的样本是否具有子样本加密表。 */
   public boolean sampleHasSubsampleEncryptionTable(int index) {
     return definesEncryptionData && sampleHasSubsampleEncryptionTable[index];
   }

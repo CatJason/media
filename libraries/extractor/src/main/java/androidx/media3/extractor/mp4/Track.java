@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -27,13 +12,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Encapsulates information describing an MP4 track. */
+/** 封装描述 MP4 轨道的信息。 */
 @UnstableApi
 public final class Track {
 
   /**
-   * The transformation to apply to samples in the track, if any. One of {@link
-   * #TRANSFORMATION_NONE} or {@link #TRANSFORMATION_CEA608_CDAT}.
+   * 应用于轨道中样本的变换类型。取值为 {@link #TRANSFORMATION_NONE} 或 {@link #TRANSFORMATION_CEA608_CDAT}。
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
@@ -41,50 +25,48 @@ public final class Track {
   @IntDef({TRANSFORMATION_NONE, TRANSFORMATION_CEA608_CDAT})
   public @interface Transformation {}
 
-  /** A no-op sample transformation. */
+  /** 无操作的样本变换。 */
   public static final int TRANSFORMATION_NONE = 0;
 
-  /** A transformation for caption samples in cdat atoms. */
+  /** 用于 cdat 原子中字幕样本的变换。 */
   public static final int TRANSFORMATION_CEA608_CDAT = 1;
 
-  /** The track identifier. */
+  /** 轨道标识符。 */
   public final int id;
 
   /**
-   * One of {@link C#TRACK_TYPE_AUDIO}, {@link C#TRACK_TYPE_VIDEO} and {@link C#TRACK_TYPE_TEXT}.
+   * 轨道类型，取值为 {@link C#TRACK_TYPE_AUDIO}、{@link C#TRACK_TYPE_VIDEO} 或 {@link C#TRACK_TYPE_TEXT}。
    */
   public final @C.TrackType int type;
 
-  /** The track timescale, defined as the number of time units that pass in one second. */
+  /** 轨道时间尺度，定义为每秒经过的时间单位数。 */
   public final long timescale;
 
-  /** The movie timescale. */
+  /** 电影时间尺度。 */
   public final long movieTimescale;
 
-  /** The duration of the track in microseconds, or {@link C#TIME_UNSET} if unknown. */
+  /** 轨道的持续时间（微秒），如果未知则为 {@link C#TIME_UNSET}。 */
   public final long durationUs;
 
-  /** The duration of the media in microseconds, or {@link C#TIME_UNSET} if unknown. */
+  /** 媒体的持续时间（微秒），如果未知则为 {@link C#TIME_UNSET}。 */
   public final long mediaDurationUs;
 
-  /** The format. */
+  /** 轨道的格式。 */
   public final Format format;
 
   /**
-   * One of {@code TRANSFORMATION_*}. Defines the transformation to apply before outputting each
-   * sample.
+   * 取值为 {@code TRANSFORMATION_*} 之一。定义在输出每个样本之前应用的变换。
    */
   public final @Transformation int sampleTransformation;
 
-  /** Durations of edit list segments in the movie timescale. Null if there is no edit list. */
+  /** 编辑列表段在电影时间尺度中的持续时间。如果没有编辑列表，则为 null。 */
   @Nullable public final long[] editListDurations;
 
-  /** Media times for edit list segments in the track timescale. Null if there is no edit list. */
+  /** 编辑列表段在轨道时间尺度中的媒体时间。如果没有编辑列表，则为 null。 */
   @Nullable public final long[] editListMediaTimes;
 
   /**
-   * The length in bytes of the NALUnitLength field in each sample. 0 for tracks that don't use
-   * length-delimited NAL units.
+   * 每个样本中 NALUnitLength 字段的长度（字节）。对于不使用长度分隔 NAL 单元的轨道，该值为 0。
    */
   public final int nalUnitLengthFieldLength;
 
@@ -118,11 +100,10 @@ public final class Track {
   }
 
   /**
-   * Returns the {@link TrackEncryptionBox} for the given sample description index.
+   * 返回给定样本描述索引对应的 {@link TrackEncryptionBox}。
    *
-   * @param sampleDescriptionIndex The given sample description index
-   * @return The {@link TrackEncryptionBox} for the given sample description index. Maybe null if no
-   *     such entry exists.
+   * @param sampleDescriptionIndex 给定的样本描述索引
+   * @return 给定样本描述索引对应的 {@link TrackEncryptionBox}。如果不存在，则返回 null。
    */
   @Nullable
   public TrackEncryptionBox getSampleDescriptionEncryptionBox(int sampleDescriptionIndex) {
@@ -131,6 +112,12 @@ public final class Track {
         : sampleDescriptionEncryptionBoxes[sampleDescriptionIndex];
   }
 
+  /**
+   * 返回一个使用新格式的轨道副本。
+   *
+   * @param format 新格式
+   * @return 使用新格式的轨道副本
+   */
   public Track copyWithFormat(Format format) {
     return new Track(
         id,
@@ -147,6 +134,11 @@ public final class Track {
         editListMediaTimes);
   }
 
+  /**
+   * 返回一个不带编辑列表的轨道副本。
+   *
+   * @return 不带编辑列表的轨道副本
+   */
   public Track copyWithoutEditLists() {
     return new Track(
         id,

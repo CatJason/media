@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import androidx.annotation.Nullable;
@@ -25,19 +10,18 @@ import androidx.media3.extractor.SniffFailure;
 import java.io.IOException;
 
 /**
- * Provides methods that peek data from an {@link ExtractorInput} and return whether the input
- * appears to be in MP4 format.
+ * 提供从 {@link ExtractorInput} 中读取数据并判断输入是否为 MP4 格式的方法。
  */
 @UnstableApi
 public final class Sniffer {
 
-  /** Brand stored in the ftyp atom for QuickTime media. */
+  /** ftyp 原子中存储的 QuickTime 媒体品牌。 */
   public static final int BRAND_QUICKTIME = 0x71742020;
 
-  /** Brand stored in the ftyp atom for HEIC media. */
+  /** ftyp 原子中存储的 HEIC 媒体品牌。 */
   public static final int BRAND_HEIC = 0x68656963;
 
-  /** The maximum number of bytes to peek when sniffing. */
+  /** 在嗅探（sniffing）时，最大需要读取的字节数。 */
   private static final int SEARCH_LENGTH = 4 * 1024;
 
   private static final int[] COMPATIBLE_BRANDS =
@@ -74,14 +58,13 @@ public final class Sniffer {
       };
 
   /**
-   * Returns {@code null} if data peeked from the current position in {@code input} is consistent
-   * with the input being a fragmented MP4 file, otherwise returns a {@link SniffFailure} describing
-   * the first detected inconsistency..
+   * 如果从 {@code input} 的当前位置读取的数据与分段 MP4 文件一致，则返回 {@code null}，
+   * 否则返回一个 {@link SniffFailure} 描述检测到的第一个不一致之处。
    *
-   * @param input The extractor input from which to peek data. The peek position will be modified.
-   * @return {@code null} if the input appears to be in the fragmented MP4 format, otherwise a
-   *     {@link SniffFailure} describing why the input isn't deemed to be a fragmented MP4.
-   * @throws IOException If an error occurs reading from the input.
+   * @param input 用于读取数据的提取器输入。读取位置将被修改。
+   * @return 如果输入数据看起来是分段 MP4 格式，则返回 {@code null}，否则返回一个 {@link SniffFailure}，
+   *     描述为什么输入数据不被认为是分段 MP4。
+   * @throws IOException 如果从输入读取数据时发生错误。
    */
   @Nullable
   public static SniffFailure sniffFragmented(ExtractorInput input) throws IOException {
@@ -89,15 +72,14 @@ public final class Sniffer {
   }
 
   /**
-   * Returns {@code null} if data peeked from the current position in {@code input} is consistent
-   * with the input being an unfragmented MP4 file, otherwise returns a {@link SniffFailure}
-   * describing the first detected inconsistency.
+   * 如果从 {@code input} 的当前位置读取的数据与未分段 MP4 文件一致，则返回 {@code null}，
+   * 否则返回一个 {@link SniffFailure} 描述检测到的第一个不一致之处。
    *
-   * @param input The extractor input from which to peek data. The peek position will be modified.
-   * @param acceptHeic Whether {@code null} should be returned for HEIC photos.
-   * @return {@code null} if the input appears to be in the fragmented MP4 format, otherwise a
-   *     {@link SniffFailure} describing why the input isn't deemed to be a fragmented MP4.
-   * @throws IOException If an error occurs reading from the input.
+   * @param input 用于读取数据的提取器输入。读取位置将被修改。
+   * @param acceptHeic 是否对 HEIC 照片返回 {@code null}。
+   * @return 如果输入数据看起来是未分段 MP4 格式，则返回 {@code null}，否则返回一个 {@link SniffFailure}，
+   *     描述为什么输入数据不被认为是未分段 MP4。
+   * @throws IOException 如果从输入读取数据时发生错误。
    */
   @Nullable
   public static SniffFailure sniffUnfragmented(ExtractorInput input, boolean acceptHeic)
@@ -108,38 +90,43 @@ public final class Sniffer {
   @Nullable
   private static SniffFailure sniffInternal(
       ExtractorInput input, boolean fragmented, boolean acceptHeic) throws IOException {
+    // 获取输入流的长度
     long inputLength = input.getLength();
+    // 计算需要搜索的字节数，如果输入流长度未知或超过最大搜索长度，则使用最大搜索长度
     int bytesToSearch =
         (int)
             (inputLength == C.LENGTH_UNSET || inputLength > SEARCH_LENGTH
                 ? SEARCH_LENGTH
                 : inputLength);
 
+    // 创建一个可解析的字节数组，用于存储原子头部数据
     ParsableByteArray buffer = new ParsableByteArray(64);
-    int bytesSearched = 0;
-    boolean foundGoodFileType = false;
-    boolean isFragmented = false;
+    int bytesSearched = 0; // 已搜索的字节数
+    boolean foundGoodFileType = false; // 是否找到兼容的文件类型
+    boolean isFragmented = false; // 文件是否为分段格式
     while (bytesSearched < bytesToSearch) {
-      // Read an atom header.
-      int headerSize = Mp4Box.HEADER_SIZE;
+      // 读取原子头部
+      int headerSize = Mp4Box.HEADER_SIZE; // 原子头部大小（默认 8 字节）
       buffer.reset(headerSize);
+      // 尝试读取原子头部数据
       boolean success =
           input.peekFully(buffer.getData(), 0, headerSize, /* allowEndOfInput= */ true);
       if (!success) {
-        // We've reached the end of the file.
+        // 如果读取失败（例如到达文件末尾），则跳出循环
         break;
       }
+      // 读取原子大小和类型
       long atomSize = buffer.readUnsignedInt();
       int atomType = buffer.readInt();
       if (atomSize == Mp4Box.DEFINES_LARGE_SIZE) {
-        // Read the large atom size.
+        // 如果原子大小定义为“大原子”，则读取完整的大原子头部（16 字节）
         headerSize = Mp4Box.LONG_HEADER_SIZE;
         input.peekFully(
             buffer.getData(), Mp4Box.HEADER_SIZE, Mp4Box.LONG_HEADER_SIZE - Mp4Box.HEADER_SIZE);
         buffer.setLimit(Mp4Box.LONG_HEADER_SIZE);
         atomSize = buffer.readLong();
       } else if (atomSize == Mp4Box.EXTENDS_TO_END_SIZE) {
-        // The atom extends to the end of the file.
+        // 如果原子大小定义为“延伸到文件末尾”，则计算实际大小
         long fileEndPosition = input.getLength();
         if (fileEndPosition != C.LENGTH_UNSET) {
           atomSize = fileEndPosition - input.getPeekPosition() + headerSize;
@@ -147,102 +134,107 @@ public final class Sniffer {
       }
 
       if (atomSize < headerSize) {
-        // The file is invalid because the atom size is too small for its header.
+        // 如果原子大小小于头部大小，则文件无效
         return new AtomSizeTooSmallSniffFailure(atomType, atomSize, headerSize);
       }
-      bytesSearched += headerSize;
+      bytesSearched += headerSize; // 更新已搜索的字节数
 
       if (atomType == Mp4Box.TYPE_moov) {
-        // We have seen the moov atom. We increase the search size to make sure we don't miss an
-        // mvex atom because the moov's size exceeds the search length.
+        // 如果找到 moov 原子，则增加搜索范围，确保不会因为 moov 原子过大而错过 mvex 原子
         bytesToSearch += (int) atomSize;
         if (inputLength != C.LENGTH_UNSET && bytesToSearch > inputLength) {
-          // Make sure we don't exceed the file size.
+          // 确保搜索范围不超过文件大小
           bytesToSearch = (int) inputLength;
         }
-        // Check for an mvex atom inside the moov atom to identify whether the file is fragmented.
+        // 继续搜索，检查 moov 原子中是否包含 mvex 原子以确定文件是否为分段格式
         continue;
       }
 
       if (atomType == Mp4Box.TYPE_moof || atomType == Mp4Box.TYPE_mvex) {
-        // The movie is fragmented. Stop searching as we must have read any ftyp atom already.
+        // 如果找到 moof 或 mvex 原子，则文件为分段格式
         isFragmented = true;
         break;
       }
 
       if (atomType == Mp4Box.TYPE_mdat) {
-        // The original QuickTime specification did not require files to begin with the ftyp atom.
-        // See https://developer.apple.com/standards/qtff-2001.pdf.
+        // 如果找到 mdat 原子，则文件类型可能是有效的（因为 QuickTime 规范不要求文件必须以 ftyp 原子开头）
         foundGoodFileType = true;
       }
 
       if (bytesSearched + atomSize - headerSize >= bytesToSearch) {
-        // Stop searching as peeking this atom would exceed the search limit.
+        // 如果继续搜索会超出搜索范围，则停止搜索
         break;
       }
 
+      // 计算原子数据部分的大小
       int atomDataSize = (int) (atomSize - headerSize);
-      bytesSearched += atomDataSize;
+      bytesSearched += atomDataSize; // 更新已搜索的字节数
       if (atomType == Mp4Box.TYPE_ftyp) {
-        // Parse the atom and check the file type/brand is compatible with the extractors.
+        // 如果找到 ftyp 原子，则解析并检查文件类型是否兼容
         if (atomDataSize < 8) {
           return new AtomSizeTooSmallSniffFailure(atomType, atomDataSize, 8);
         }
         buffer.reset(atomDataSize);
         input.peekFully(buffer.getData(), 0, atomDataSize);
-        int majorBrand = buffer.readInt();
+        int majorBrand = buffer.readInt(); // 读取主要品牌
         if (isCompatibleBrand(majorBrand, acceptHeic)) {
-          foundGoodFileType = true;
+          foundGoodFileType = true; // 如果主要品牌兼容，则标记为找到有效文件类型
         }
-        // Skip the minorVersion.
+        // 跳过次要版本字段
         buffer.skipBytes(4);
-        int compatibleBrandsCount = buffer.bytesLeft() / 4;
+        int compatibleBrandsCount = buffer.bytesLeft() / 4; // 计算兼容品牌的数量
         @Nullable int[] compatibleBrands = null;
         if (!foundGoodFileType && compatibleBrandsCount > 0) {
+          // 如果尚未找到兼容品牌，则读取所有兼容品牌
           compatibleBrands = new int[compatibleBrandsCount];
           for (int i = 0; i < compatibleBrandsCount; i++) {
             compatibleBrands[i] = buffer.readInt();
             if (isCompatibleBrand(compatibleBrands[i], acceptHeic)) {
-              foundGoodFileType = true;
+              foundGoodFileType = true; // 如果找到兼容品牌，则标记为找到有效文件类型
               break;
             }
           }
         }
         if (!foundGoodFileType) {
-          // The types were not compatible and there is only one ftyp atom, so reject the file.
+          // 如果未找到兼容品牌，则返回不兼容品牌错误
           return new UnsupportedBrandsSniffFailure(majorBrand, compatibleBrands);
         }
       } else if (atomDataSize != 0) {
-        // Skip the atom.
+        // 如果原子数据部分不为空，则跳过该部分
         input.advancePeekPosition(atomDataSize);
       }
     }
+    // 根据检查结果返回相应的 SniffFailure 或 null
     if (!foundGoodFileType) {
-      return NoDeclaredBrandSniffFailure.INSTANCE;
+      return NoDeclaredBrandSniffFailure.INSTANCE; // 未找到有效文件类型
     } else if (fragmented != isFragmented) {
       return isFragmented
-          ? IncorrectFragmentationSniffFailure.FILE_FRAGMENTED
-          : IncorrectFragmentationSniffFailure.FILE_NOT_FRAGMENTED;
+          ? IncorrectFragmentationSniffFailure.FILE_FRAGMENTED // 文件为分段格式，但预期为非分段
+          : IncorrectFragmentationSniffFailure.FILE_NOT_FRAGMENTED; // 文件为非分段格式，但预期为分段
     } else {
-      return null;
+      return null; // 文件格式符合预期
     }
   }
 
   /**
-   * Returns whether {@code brand} is an ftyp atom brand that is compatible with the MP4 extractors.
+   * 返回 {@code brand} 是否是 MP4 提取器兼容的 ftyp 原子品牌。
    */
   private static boolean isCompatibleBrand(int brand, boolean acceptHeic) {
+    // 如果品牌的前三个字节是 '3gp'（0x00336770），则认为是兼容的
     if (brand >>> 8 == 0x00336770) {
-      // Brand starts with '3gp'.
-      return true;
-    } else if (brand == BRAND_HEIC && acceptHeic) {
       return true;
     }
+    // 如果品牌是 HEIC 并且 acceptHeic 为 true，则认为是兼容的
+    else if (brand == BRAND_HEIC && acceptHeic) {
+      return true;
+    }
+    // 遍历所有兼容品牌列表，检查是否匹配
     for (int compatibleBrand : COMPATIBLE_BRANDS) {
       if (compatibleBrand == brand) {
         return true;
       }
     }
+    // 如果没有找到匹配的品牌，则返回 false
     return false;
   }
 

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import static java.lang.Math.max;
@@ -22,19 +7,19 @@ import androidx.media3.common.C;
 import androidx.media3.common.util.Util;
 
 /**
- * Rechunks fixed sample size media in which every sample is a key frame (e.g. uncompressed audio).
+ * 用于重新分块固定样本大小的媒体数据（例如未压缩的音频），其中每个样本都是关键帧。
  */
 /* package */ final class FixedSampleSizeRechunker {
 
-  /** The result of a rechunking operation. */
+  /** 重新分块操作的结果。 */
   public static final class Results {
 
-    public final long[] offsets;
-    public final int[] sizes;
-    public final int maximumSize;
-    public final long[] timestamps;
-    public final int[] flags;
-    public final long duration;
+    public final long[] offsets; // 每个新样本的偏移量
+    public final int[] sizes; // 每个新样本的大小
+    public final int maximumSize; // 所有新样本中的最大大小
+    public final long[] timestamps; // 每个新样本的时间戳
+    public final int[] flags; // 每个新样本的标志位
+    public final long duration; // 媒体总时长
 
     private Results(
         long[] offsets,
@@ -52,64 +37,74 @@ import androidx.media3.common.util.Util;
     }
   }
 
-  /** Maximum number of bytes for each buffer in rechunked output. */
+  /** 重新分块后每个缓冲区的最大字节数。 */
   private static final int MAX_SAMPLE_SIZE = 8 * 1024;
 
   /**
-   * Rechunk the given fixed sample size input to produce a new sequence of samples.
+   * 对给定的固定样本大小输入进行重新分块，生成新的样本序列。
    *
-   * @param fixedSampleSize Size in bytes of each sample.
-   * @param chunkOffsets Chunk offsets in the MP4 stream to rechunk.
-   * @param chunkSampleCounts Sample counts for each of the MP4 stream's chunks.
-   * @param timestampDeltaInTimeUnits Timestamp delta between each sample in time units.
+   * @param fixedSampleSize 每个样本的大小（字节）。
+   * @param chunkOffsets MP4 流中每个块的偏移量。
+   * @param chunkSampleCounts MP4 流中每个块的样本数量。
+   * @param timestampDeltaInTimeUnits 每个样本之间的时间戳增量（以时间单位表示）。
    */
   public static Results rechunk(
       int fixedSampleSize,
       long[] chunkOffsets,
       int[] chunkSampleCounts,
       long timestampDeltaInTimeUnits) {
+    // 计算每个新缓冲区可以容纳的最大样本数量
     int maxSampleCount = MAX_SAMPLE_SIZE / fixedSampleSize;
 
-    // Count the number of new, rechunked buffers.
+    // 计算重新分块后的新样本总数
     int rechunkedSampleCount = 0;
     for (int chunkSampleCount : chunkSampleCounts) {
       rechunkedSampleCount += Util.ceilDivide(chunkSampleCount, maxSampleCount);
     }
 
+    // 初始化新样本的偏移量、大小、时间戳和标志位数组
     long[] offsets = new long[rechunkedSampleCount];
     int[] sizes = new int[rechunkedSampleCount];
     int maximumSize = 0;
     long[] timestamps = new long[rechunkedSampleCount];
     int[] flags = new int[rechunkedSampleCount];
 
+    // 遍历原始块，生成新的样本数据
     int originalSampleIndex = 0;
     int newSampleIndex = 0;
     for (int chunkIndex = 0; chunkIndex < chunkSampleCounts.length; chunkIndex++) {
-      int chunkSamplesRemaining = chunkSampleCounts[chunkIndex];
-      long sampleOffset = chunkOffsets[chunkIndex];
+      int chunkSamplesRemaining = chunkSampleCounts[chunkIndex]; // 当前块剩余的样本数量
+      long sampleOffset = chunkOffsets[chunkIndex]; // 当前块的起始偏移量
 
       while (chunkSamplesRemaining > 0) {
+        // 计算当前新缓冲区的样本数量
         int bufferSampleCount = min(maxSampleCount, chunkSamplesRemaining);
 
+        // 设置新样本的偏移量、大小、时间戳和标志位
         offsets[newSampleIndex] = sampleOffset;
         sizes[newSampleIndex] = fixedSampleSize * bufferSampleCount;
         maximumSize = max(maximumSize, sizes[newSampleIndex]);
         timestamps[newSampleIndex] = (timestampDeltaInTimeUnits * originalSampleIndex);
         flags[newSampleIndex] = C.BUFFER_FLAG_KEY_FRAME;
 
+        // 更新偏移量和样本索引
         sampleOffset += sizes[newSampleIndex];
         originalSampleIndex += bufferSampleCount;
 
+        // 减少当前块剩余的样本数量
         chunkSamplesRemaining -= bufferSampleCount;
         newSampleIndex++;
       }
     }
+
+    // 计算媒体总时长
     long duration = timestampDeltaInTimeUnits * originalSampleIndex;
 
+    // 返回重新分块的结果
     return new Results(offsets, sizes, maximumSize, timestamps, flags, duration);
   }
 
   private FixedSampleSizeRechunker() {
-    // Prevent instantiation.
+    // 防止实例化
   }
 }

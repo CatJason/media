@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import androidx.annotation.Nullable;
@@ -23,32 +8,35 @@ import androidx.media3.container.Mp4Box;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-/** Utility methods for handling PSSH atoms. */
+/**
+ * Utility methods for handling PSSH atoms.
+ */
 @UnstableApi
 public final class PsshAtomUtil {
 
   private static final String TAG = "PsshAtomUtil";
 
-  private PsshAtomUtil() {}
+  private PsshAtomUtil() {
+  }
 
   /**
-   * Builds a version 0 PSSH atom for a given system id, containing the given data.
+   * 为给定的系统 ID 构建一个版本 0 的 PSSH 原子，包含给定的数据。
    *
-   * @param systemId The system id of the scheme.
-   * @param data The scheme specific data.
-   * @return The PSSH atom.
+   * @param systemId 加密系统的 ID。
+   * @param data     加密方案特定的数据。
+   * @return PSSH 原子。
    */
   public static byte[] buildPsshAtom(UUID systemId, @Nullable byte[] data) {
     return buildPsshAtom(systemId, null, data);
   }
 
   /**
-   * Builds a PSSH atom for the given system id, containing the given key ids and data.
+   * 为给定的系统 ID 构建一个 PSSH 原子，包含给定的密钥 ID 和数据。
    *
-   * @param systemId The system id of the scheme.
-   * @param keyIds The key ids for a version 1 PSSH atom, or null for a version 0 PSSH atom.
-   * @param data The scheme specific data.
-   * @return The PSSH atom.
+   * @param systemId 加密系统的 ID。
+   * @param keyIds   用于版本 1 PSSH 原子的密钥 ID，或 null 用于版本 0 PSSH 原子。
+   * @param data     加密方案特定的数据。
+   * @return PSSH 原子。
    */
   public static byte[] buildPsshAtom(
       UUID systemId, @Nullable UUID[] keyIds, @Nullable byte[] data) {
@@ -80,23 +68,22 @@ public final class PsshAtomUtil {
   }
 
   /**
-   * Returns whether the data is a valid PSSH atom.
+   * 返回数据是否为有效的 PSSH 原子。
    *
-   * @param data The data to parse.
-   * @return Whether the data is a valid PSSH atom.
+   * @param data 要解析的数据。
+   * @return 数据是否为有效的 PSSH 原子。
    */
   public static boolean isPsshAtom(byte[] data) {
     return parsePsshAtom(data) != null;
   }
 
   /**
-   * Parses the UUID from a PSSH atom. Version 0 and 1 PSSH atoms are supported.
+   * 从 PSSH 原子中解析 UUID。支持版本 0 和 1 的 PSSH 原子。
    *
-   * <p>The UUID is only parsed if the data is a valid PSSH atom.
+   * <p>仅当数据是有效的 PSSH 原子时，才会解析 UUID。
    *
-   * @param atom The atom to parse.
-   * @return The parsed UUID. Null if the input is not a valid PSSH atom, or if the PSSH atom has an
-   *     unsupported version.
+   * @param atom 要解析的原子。
+   * @return 解析出的 UUID。如果输入不是有效的 PSSH 原子，或 PSSH 原子版本不受支持，则返回 null。
    */
   @Nullable
   public static UUID parseUuid(byte[] atom) {
@@ -108,13 +95,12 @@ public final class PsshAtomUtil {
   }
 
   /**
-   * Parses the version from a PSSH atom. Version 0 and 1 PSSH atoms are supported.
+   * 从 PSSH 原子中解析版本。支持版本 0 和 1 的 PSSH 原子。
    *
-   * <p>The version is only parsed if the data is a valid PSSH atom.
+   * <p>仅当数据是有效的 PSSH 原子时，才会解析版本。
    *
-   * @param atom The atom to parse.
-   * @return The parsed version. -1 if the input is not a valid PSSH atom, or if the PSSH atom has
-   *     an unsupported version.
+   * @param atom 要解析的原子。
+   * @return 解析出的版本。如果输入不是有效的 PSSH 原子，或 PSSH 原子版本不受支持，则返回 -1。
    */
   public static int parseVersion(byte[] atom) {
     @Nullable PsshAtom parsedAtom = parsePsshAtom(atom);
@@ -125,15 +111,15 @@ public final class PsshAtomUtil {
   }
 
   /**
-   * Parses the scheme specific data from a PSSH atom. Version 0 and 1 PSSH atoms are supported.
+   * 从 PSSH 原子中解析加密方案特定的数据。支持版本 0 和 1 的 PSSH 原子。
    *
-   * <p>The scheme specific data is only parsed if the data is a valid PSSH atom matching the given
-   * UUID, or if the data is a valid PSSH atom of any type in the case that the passed UUID is null.
+   * <p>仅当数据是有效的 PSSH 原子且与给定的 UUID 匹配时，才会解析数据。
+   * 如果传入的 UUID 为 null，则接受任何类型的有效 PSSH 原子。
    *
-   * @param atom The atom to parse.
-   * @param uuid The required UUID of the PSSH atom, or null to accept any UUID.
-   * @return The parsed scheme specific data. Null if the input is not a valid PSSH atom, or if the
-   *     PSSH atom has an unsupported version, or if the PSSH atom does not match the passed UUID.
+   * @param atom 要解析的原子。
+   * @param uuid 所需的 PSSH 原子的 UUID，或 null 以接受任何 UUID。
+   * @return 解析出的加密方案特定的数据。如果输入不是有效的 PSSH 原子，或 PSSH 原子版本不受支持，
+   * 或 PSSH 原子与传入的 UUID 不匹配，则返回 null。
    */
   @Nullable
   public static byte[] parseSchemeSpecificData(byte[] atom, UUID uuid) {
@@ -149,15 +135,15 @@ public final class PsshAtomUtil {
   }
 
   /**
-   * Parses a PSSH atom. Version 0 and 1 PSSH atoms are supported.
+   * 解析 PSSH 原子。支持版本 0 和 1 的 PSSH 原子。
    *
-   * @param atom The atom to parse.
-   * @return The parsed PSSH atom. Null if the input is not a valid PSSH atom, or if the PSSH atom
-   *     has an unsupported version.
+   * @param atom 要解析的原子。
+   * @return 解析出的 PSSH 原子。如果输入不是有效的 PSSH 原子，或 PSSH 原子版本不受支持，则返回 null。
    */
   @Nullable
   public static PsshAtom parsePsshAtom(byte[] atom) {
     ParsableByteArray atomData = new ParsableByteArray(atom);
+    // 数据太短。
     if (atomData.limit() < Mp4Box.FULL_HEADER_SIZE + 16 /* UUID */ + 4 /* DataSize */) {
       // Data too short.
       return null;
@@ -166,6 +152,7 @@ public final class PsshAtomUtil {
     int bufferLength = atomData.bytesLeft();
     int atomSize = atomData.readInt();
     if (atomSize != bufferLength) {
+      // 声明的原子大小 (X) 与缓冲区大小不匹配。
       Log.w(
           TAG,
           "Advertised atom size (" + atomSize + ") does not match buffer size: " + bufferLength);
@@ -173,11 +160,13 @@ public final class PsshAtomUtil {
     }
     int atomType = atomData.readInt();
     if (atomType != Mp4Box.TYPE_pssh) {
+      // 原子类型不是 pssh: X
       Log.w(TAG, "Atom type is not pssh: " + atomType);
       return null;
     }
     int atomVersion = BoxParser.parseFullBoxVersion(atomData.readInt());
     if (atomVersion > 1) {
+      // 不支持的 pssh 版本: X
       Log.w(TAG, "Unsupported pssh version: " + atomVersion);
       return null;
     }
@@ -193,6 +182,7 @@ public final class PsshAtomUtil {
     int dataSize = atomData.readUnsignedIntToInt();
     bufferLength = atomData.bytesLeft();
     if (dataSize != bufferLength) {
+      // 原子数据大小 (X) 与剩余字节数不匹配。
       Log.w(
           TAG, "Atom data size (" + dataSize + ") does not match the bytes left: " + bufferLength);
       return null;
@@ -202,20 +192,31 @@ public final class PsshAtomUtil {
     return new PsshAtom(uuid, atomVersion, data, keyIds);
   }
 
-  /** A class representing the mp4 PSSH Atom as specified in ISO/IEC 23001-7. */
+  /**
+   * 表示 mp4 PSSH 原子的类，如 ISO/IEC 23001-7 中所定义。
+   */
   public static final class PsshAtom {
 
-    /** The UUID of the encryption system as specified in ISO/IEC 23009-1 section 5.8.4.1. */
+    /**
+     * 加密系统的 UUID，如 ISO/IEC 23009-1 第 5.8.4.1 节中所定义。
+     */
     public final UUID uuid;
 
-    /** The version of the PSSH atom, either 0 or 1. */
+    /**
+     * PSSH 原子的版本，为 0 或 1。
+     */
     public final int version;
 
-    /** Binary scheme data. */
+    /**
+     * 二进制加密方案数据。
+     */
     public final byte[] schemeData;
 
-    /** Array of key IDs. Always null for version 0 and non-null for version 1. */
-    @Nullable public final UUID[] keyIds;
+    /**
+     * 密钥 ID 数组。对于版本 0 始终为 null，对于版本 1 始终为非 null。
+     */
+    @Nullable
+    public final UUID[] keyIds;
 
     /* package */ PsshAtom(UUID uuid, int version, byte[] schemeData, @Nullable UUID[] keyIds) {
       this.uuid = uuid;

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp4;
 
 import static androidx.media3.common.MimeTypes.getMimeTypeFromMp4ObjectType;
@@ -61,7 +46,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/** Utility methods for parsing MP4 format box payloads according to ISO/IEC 14496-12. */
+/**
+ * 根据 ISO/IEC 14496-12 标准解析 MP4 格式盒子内容的工具方法。
+ */
 @SuppressWarnings("ConstantField")
 @UnstableApi
 public final class BoxParser {
@@ -99,37 +86,48 @@ public final class BoxParser {
   private static final int TYPE_vide = 0x76696465;
 
   /**
-   * The threshold number of samples to trim from the start/end of an audio track when applying an
-   * edit below which gapless info can be used (rather than removing samples from the sample table).
+   * 在对音频轨道应用编辑时，从音频轨道的开始/结束修剪的样本数量的阈值，
+   * 低于该阈值时可以使用无缝播放信息（而不是从样本表中删除样本）。
    */
   private static final int MAX_GAPLESS_TRIM_SIZE_SAMPLES = 4;
 
-  /** The magic signature for an Opus Identification header, as defined in RFC-7845. */
+  /**
+   * Opus 识别头部的魔数签名，定义在 RFC-7845 中。
+   */
   private static final byte[] opusMagic = Util.getUtf8Bytes("OpusHead");
 
-  /** Parses the version number out of the additional integer component of a full box. */
+  /**
+   * 从完整盒（full box）的附加整数部分解析版本号。
+   *
+   * @param fullBoxInt 完整盒的附加整数部分
+   * @return 解析出的版本号
+   */
   public static int parseFullBoxVersion(int fullBoxInt) {
-    return 0x000000FF & (fullBoxInt >> 24);
-  }
-
-  /** Parses the box flags out of the additional integer component of a full box. */
-  public static int parseFullBoxFlags(int fullBoxInt) {
-    return 0x00FFFFFF & fullBoxInt;
+    return 0x000000FF & (fullBoxInt >> 24); // 取高 8 位作为版本号
   }
 
   /**
-   * Parse the trak boxes in a moov box (defined in ISO/IEC 14496-12).
+   * 从完整盒（full box）的附加整数部分解析盒标志。
    *
-   * @param moov Moov box to decode.
-   * @param gaplessInfoHolder Holder to populate with gapless playback information.
-   * @param duration The duration in units of the timescale declared in the mvhd box, or {@link
-   *     C#TIME_UNSET} if the duration should be parsed from the tkhd box.
-   * @param drmInitData {@link DrmInitData} to be included in the format, or {@code null}.
-   * @param ignoreEditLists Whether to ignore any edit lists in the trak boxes.
-   * @param isQuickTime True for QuickTime media. False otherwise.
-   * @param modifyTrackFunction A function to apply to the {@link Track Tracks} in the result.
-   * @return A list of {@link TrackSampleTable} instances.
-   * @throws ParserException Thrown if the trak boxes can't be parsed.
+   * @param fullBoxInt 完整盒的附加整数部分
+   * @return 解析出的盒标志
+   */
+  public static int parseFullBoxFlags(int fullBoxInt) {
+    return 0x00FFFFFF & fullBoxInt; // 取低 24 位作为盒标志
+  }
+
+  /**
+   * 解析 moov 盒中的 trak 盒（定义在 ISO/IEC 14496-12 中）。
+   *
+   * @param moov                要解码的 moov 盒。
+   * @param gaplessInfoHolder   用于填充无缝播放信息的容器。
+   * @param duration            以 mvhd 盒中声明的时间尺度为单位的持续时间，如果应从 tkhd 盒中解析持续时间，则为 {@link C#TIME_UNSET}。
+   * @param drmInitData         要包含在格式中的 {@link DrmInitData}，如果不需要则为 {@code null}。
+   * @param ignoreEditLists     是否忽略 trak 盒中的任何编辑列表。
+   * @param isQuickTime         如果为 QuickTime 媒体则为 true，否则为 false。
+   * @param modifyTrackFunction 应用于结果中 {@link Track Tracks} 的函数。
+   * @return 一个 {@link TrackSampleTable} 实例的列表。
+   * @throws ParserException 如果 trak 盒无法解析，则抛出此异常。
    */
   public static List<TrackSampleTable> parseTraks(
       Mp4Box.ContainerBox moov,
@@ -162,8 +160,8 @@ public final class BoxParser {
       Mp4Box.ContainerBox stblAtom =
           checkNotNull(
               checkNotNull(
-                      checkNotNull(atom.getContainerBoxOfType(Mp4Box.TYPE_mdia))
-                          .getContainerBoxOfType(Mp4Box.TYPE_minf))
+                  checkNotNull(atom.getContainerBoxOfType(Mp4Box.TYPE_mdia))
+                      .getContainerBoxOfType(Mp4Box.TYPE_minf))
                   .getContainerBoxOfType(Mp4Box.TYPE_stbl));
       TrackSampleTable trackSampleTable = parseStbl(track, stblAtom, gaplessInfoHolder);
       trackSampleTables.add(trackSampleTable);
@@ -172,10 +170,10 @@ public final class BoxParser {
   }
 
   /**
-   * Parses a udta box.
+   * 解析 udta 盒。
    *
-   * @param udtaBox The udta (user data) box to decode.
-   * @return Parsed metadata.
+   * @param udtaBox 要解码的 udta（用户数据）盒。
+   * @return 解析后的元数据。
    */
   public static Metadata parseUdta(LeafBox udtaBox) {
     ParsableByteArray udtaData = udtaBox.data;
@@ -203,10 +201,10 @@ public final class BoxParser {
   }
 
   /**
-   * Parses an mvhd box (defined in ISO/IEC 14496-12).
+   * 解析 mvhd 盒（定义在 ISO/IEC 14496-12 中）。
    *
-   * @param mvhd Contents of the mvhd box to be parsed.
-   * @return An object containing the parsed data.
+   * @param mvhd 要解析的 mvhd 盒内容。
+   * @return 包含解析数据的对象。
    */
   public static Mp4TimestampData parseMvhd(ParsableByteArray mvhd) {
     mvhd.setPosition(Mp4Box.HEADER_SIZE);
@@ -227,10 +225,10 @@ public final class BoxParser {
   }
 
   /**
-   * Parses a metadata meta box if it contains metadata with handler 'mdta'.
+   * 解析一个元数据 meta 盒，如果它包含 handler 为 'mdta' 的元数据。
    *
-   * @param meta The metadata box to decode.
-   * @return Parsed metadata, or null.
+   * @param meta 要解码的元数据盒。
+   * @return 解析后的元数据，如果不符合条件则返回 null。
    */
   @Nullable
   public static Metadata parseMdtaFromMeta(Mp4Box.ContainerBox meta) {
@@ -282,22 +280,20 @@ public final class BoxParser {
   }
 
   /**
-   * Possibly skips the version and flags fields (1+3 byte) of a full meta box.
+   * 可能跳过完整 meta 盒的版本和标志字段（1+3 字节）。
    *
-   * <p>Boxes of type {@link Mp4Box#TYPE_meta} are defined to be full boxes which have four
-   * additional bytes for a version and a flags field (see 4.2 'Object Structure' in ISO/IEC
-   * 14496-12:2005). QuickTime do not have such a full box structure. Since some of these files are
-   * encoded wrongly, we can't rely on the file type though. Instead we must check the 8 bytes after
-   * the common header bytes ourselves.
+   * <p>类型为 {@link Mp4Box#TYPE_meta} 的盒被定义为完整盒，其中包含四个额外的字节用于版本和标志字段
+   * （参见 ISO/IEC 14496-12:2005 中的 4.2 'Object Structure'）。QuickTime 文件没有这种完整盒结构。
+   * 由于某些文件的编码错误，我们不能仅依赖文件类型来判断。相反，我们必须自己检查 meta 盒大小和类型之后的 8 个字节。
    *
-   * @param meta The 8 or more bytes following the meta box size and type.
+   * @param meta meta 盒大小和类型之后的 8 个或更多字节。
    */
   public static void maybeSkipRemainingMetaBoxHeaderBytes(ParsableByteArray meta) {
     int endPosition = meta.getPosition();
-    // The next 8 bytes can be either:
-    // (iso) [1 byte version + 3 bytes flags][4 byte size of next atom]
-    // (qt)  [4 byte size of next atom      ][4 byte hdlr atom type   ]
-    // In case of (iso) we need to skip the next 4 bytes.
+    // 接下来的 8 个字节可能是以下两种情况之一：
+    // (iso) [1 字节版本 + 3 字节标志][4 字节下一个原子的大小]
+    // (qt)  [4 字节下一个原子的大小      ][4 字节 hdlr 原子类型   ]
+    // 如果是 (iso) 的情况，我们需要跳过接下来的 4 个字节。
     meta.skipBytes(4);
     if (meta.readInt() != Mp4Box.TYPE_hdlr) {
       endPosition += 4;
@@ -306,17 +302,16 @@ public final class BoxParser {
   }
 
   /**
-   * Parses a trak box (defined in ISO/IEC 14496-12).
+   * 解析 trak 盒（定义在 ISO/IEC 14496-12 中）。
    *
-   * @param trak Box to decode.
-   * @param mvhd Movie header box, used to get the timescale.
-   * @param duration The duration in units of the timescale declared in the mvhd box, or {@link
-   *     C#TIME_UNSET} if the duration should be parsed from the tkhd box.
-   * @param drmInitData {@link DrmInitData} to be included in the format, or {@code null}.
-   * @param ignoreEditLists Whether to ignore any edit lists in the trak box.
-   * @param isQuickTime True for QuickTime media. False otherwise.
-   * @return A {@link Track} instance, or {@code null} if the track's type isn't supported.
-   * @throws ParserException Thrown if the trak box can't be parsed.
+   * @param trak            要解码的 trak 盒。
+   * @param mvhd            电影头盒，用于获取时间尺度。
+   * @param duration        以 mvhd 盒中声明的时间尺度为单位的持续时间，如果应从 tkhd 盒中解析持续时间，则为 {@link C#TIME_UNSET}。
+   * @param drmInitData     要包含在格式中的 {@link DrmInitData}，如果不需要则为 {@code null}。
+   * @param ignoreEditLists 是否忽略 trak 盒中的任何编辑列表。
+   * @param isQuickTime     如果为 QuickTime 媒体则为 true，否则为 false。
+   * @return 一个 {@link Track} 实例，如果轨道类型不受支持则返回 {@code null}。
+   * @throws ParserException 如果 trak 盒无法解析，则抛出此异常。
    */
   @Nullable
   public static Track parseTrak(
@@ -395,13 +390,13 @@ public final class BoxParser {
   }
 
   /**
-   * Parses an stbl box (defined in ISO/IEC 14496-12).
+   * 解析 stbl 盒（定义在 ISO/IEC 14496-12 中）。
    *
-   * @param track Track to which this sample table corresponds.
-   * @param stblBox stbl (sample table) box to decode.
-   * @param gaplessInfoHolder Holder to populate with gapless playback information.
-   * @return Sample table described by the stbl box.
-   * @throws ParserException Thrown if the stbl box can't be parsed.
+   * @param track             该样本表对应的轨道。
+   * @param stblBox           要解码的 stbl（样本表）盒。
+   * @param gaplessInfoHolder 用于填充无缝播放信息的容器。
+   * @return 由 stbl 盒描述的样本表。
+   * @throws ParserException 如果 stbl 盒无法解析，则抛出此异常。
    */
   public static TrackSampleTable parseStbl(
       Track track, Mp4Box.ContainerBox stblBox, GaplessInfoHolder gaplessInfoHolder)
@@ -493,8 +488,8 @@ public final class BoxParser {
     boolean rechunkFixedSizeSamples =
         fixedSampleSize != C.LENGTH_UNSET
             && (MimeTypes.AUDIO_RAW.equals(sampleMimeType)
-                || MimeTypes.AUDIO_MLAW.equals(sampleMimeType)
-                || MimeTypes.AUDIO_ALAW.equals(sampleMimeType))
+            || MimeTypes.AUDIO_MLAW.equals(sampleMimeType)
+            || MimeTypes.AUDIO_ALAW.equals(sampleMimeType))
             && remainingTimestampDeltaChanges == 0
             && remainingTimestampOffsetChanges == 0
             && remainingSynchronizationSamples == 0;
@@ -552,11 +547,10 @@ public final class BoxParser {
         if (ctts != null) {
           while (remainingSamplesAtTimestampOffset == 0 && remainingTimestampOffsetChanges > 0) {
             remainingSamplesAtTimestampOffset = ctts.readUnsignedIntToInt();
-            // The BMFF spec (ISO/IEC 14496-12) states that sample offsets should be unsigned
-            // integers in version 0 ctts boxes, however some streams violate the spec and use
-            // signed integers instead. It's safe to always decode sample offsets as signed integers
-            // here, because unsigned integers will still be parsed correctly (unless their top bit
-            // is set, which is never true in practice because sample offsets are always small).
+            // BMFF 规范（ISO/IEC 14496-12）规定，在版本 0 的 ctts 盒中，样本偏移量应为无符号整数，
+            // 但某些流违反了规范，使用了有符号整数。在这里始终将样本偏移量解码为有符号整数是安全的，
+            // 因为无符号整数仍然会被正确解析（除非它们的最高位被设置，但在实践中这永远不会发生，
+            // 因为样本偏移量总是很小）。
             timestampOffset = ctts.readInt();
             remainingTimestampOffsetChanges--;
           }
@@ -585,12 +579,10 @@ public final class BoxParser {
         remainingSamplesAtTimestampDelta--;
         if (remainingSamplesAtTimestampDelta == 0 && remainingTimestampDeltaChanges > 0) {
           remainingSamplesAtTimestampDelta = stts.readUnsignedIntToInt();
-          // The BMFF spec (ISO/IEC 14496-12) states that sample deltas should be unsigned integers
-          // in stts boxes, however some streams violate the spec and use signed integers instead.
-          // See https://github.com/google/ExoPlayer/issues/3384. It's safe to always decode sample
-          // deltas as signed integers here, because unsigned integers will still be parsed
-          // correctly (unless their top bit is set, which is never true in practice because sample
-          // deltas are always small).
+          // BMFF 规范（ISO/IEC 14496-12）规定，在 stts 盒中，样本时间差值应为无符号整数，
+          // 但某些流违反了规范，使用了有符号整数。参见 https://github.com/google/ExoPlayer/issues/3384。
+          // 在这里始终将样本时间差值解码为有符号整数是安全的，因为无符号整数仍然会被正确解析
+          // （除非它们的最高位被设置，但在实践中这永远不会发生，因为样本时间差值总是很小）。
           timestampDeltaInTimeUnits = stts.readInt();
           remainingTimestampDeltaChanges--;
         }
@@ -600,8 +592,7 @@ public final class BoxParser {
       }
       duration = timestampTimeUnits + timestampOffset;
 
-      // If the stbl's child boxes are not consistent the container is malformed, but the stream may
-      // still be playable.
+      // 如果 stbl 的子盒不一致，则容器格式错误，但流可能仍然可以播放。
       boolean isCttsValid = true;
       if (ctts != null) {
         while (remainingTimestampOffsetChanges > 0) {
@@ -644,12 +635,10 @@ public final class BoxParser {
           track, offsets, sizes, maximumSize, timestamps, flags, durationUs);
     }
 
-    // See the BMFF spec (ISO/IEC 14496-12) subsection 8.6.6. Edit lists that require prerolling
-    // from a sync sample after reordering are not supported. Partial audio sample truncation is
-    // only supported in edit lists with one edit that removes less than
-    // MAX_GAPLESS_TRIM_SIZE_SAMPLES samples from the start/end of the track. This implementation
-    // handles simple discarding/delaying of samples. The extractor may place further restrictions
-    // on what edited streams are playable.
+    // 参见 BMFF 规范（ISO/IEC 14496-12）第 8.6.6 小节。不支持需要从同步样本预滚的编辑列表。
+    // 仅支持在编辑列表中有一个编辑，并且从轨道的开始/结束移除的样本数少于
+    // MAX_GAPLESS_TRIM_SIZE_SAMPLES 的部分音频样本截断。此实现处理简单的样本丢弃/延迟。
+    // 提取器可能会进一步限制哪些编辑后的流可以播放。
 
     if (track.editListDurations.length == 1
         && track.type == C.TRACK_TYPE_AUDIO
@@ -658,7 +647,7 @@ public final class BoxParser {
       long editEndTime =
           editStartTime
               + Util.scaleLargeTimestamp(
-                  track.editListDurations[0], track.timescale, track.movieTimescale);
+              track.editListDurations[0], track.timescale, track.movieTimescale);
       if (canApplyEditWithGaplessInfo(timestamps, duration, editStartTime, editEndTime)) {
         long paddingTimeUnits = duration - editEndTime;
         long encoderDelay =
@@ -682,9 +671,8 @@ public final class BoxParser {
     }
 
     if (track.editListDurations.length == 1 && track.editListDurations[0] == 0) {
-      // The current version of the spec leaves handling of an edit with zero segment_duration in
-      // unfragmented files open to interpretation. We handle this as a special case and include all
-      // samples in the edit.
+      // 当前版本的规范对于未分段文件中 segment_duration 为零的编辑的处理方式没有明确说明。
+      // 我们将其作为特殊情况处理，并包含编辑中的所有样本。
       long editStartTime = checkNotNull(track.editListMediaTimes)[0];
       for (int i = 0; i < timestamps.length; i++) {
         timestamps[i] =
@@ -697,13 +685,12 @@ public final class BoxParser {
           track, offsets, sizes, maximumSize, timestamps, flags, durationUs);
     }
 
-    // When applying edit lists, we need to include any partial clipped samples at the end to ensure
-    // the final output is rendered correctly (see https://github.com/google/ExoPlayer/issues/2408).
-    // For audio only, we can omit any sample that starts at exactly the end point of an edit as
-    // there is no partial audio in this case.
+    // 在应用编辑列表时，我们需要包含末尾的任何部分裁剪样本，以确保最终输出的渲染正确
+    // （参见 https://github.com/google/ExoPlayer/issues/2408）。对于仅音频的情况，
+    // 我们可以省略任何恰好从编辑结束点开始的样本，因为在这种情况下没有部分音频。
     boolean omitZeroDurationClippedSample = track.type == C.TRACK_TYPE_AUDIO;
 
-    // Count the number of samples after applying edits.
+    // 在应用编辑后计算样本的数量。
     int editedSampleCount = 0;
     int nextSampleIndex = 0;
     boolean copyMetadata = false;
@@ -716,25 +703,22 @@ public final class BoxParser {
         long editDuration =
             Util.scaleLargeTimestamp(
                 track.editListDurations[i], track.timescale, track.movieTimescale);
-        // The timestamps array is in the order read from the media, which might not be strictly
-        // sorted. However, all sync frames are guaranteed to be in order, and any out-of-order
-        // frames appear after their respective sync frames. This ensures that although the result
-        // of the binary search might not be entirely accurate (due to the out-of-order timestamps),
-        // the following logic ensures correctness for both start and end indices.
+        // 时间戳数组是按照从媒体中读取的顺序排列的，可能不是严格排序的。
+        // 然而，所有同步帧都保证是按顺序排列的，任何乱序的帧都会出现在它们各自的同步帧之后。
+        // 这确保了尽管二分查找的结果可能不完全准确（由于乱序的时间戳），
+        // 但下面的逻辑保证了起始和结束索引的正确性。
         //
-        // The startIndices calculation finds the largest timestamp that is less than or equal to
-        // editMediaTime. It then walks backward to ensure the index points to a sync frame, since
-        // decoding must start from a keyframe.
+        // startIndices 的计算会找到小于或等于 editMediaTime 的最大时间戳。
+        // 然后它会向后遍历，以确保索引指向一个同步帧，因为解码必须从关键帧开始。
         startIndices[i] =
             Util.binarySearchFloor(
                 timestamps, editMediaTime, /* inclusive= */ true, /* stayInBounds= */ true);
         while (startIndices[i] >= 0 && (flags[startIndices[i]] & C.BUFFER_FLAG_KEY_FRAME) == 0) {
           startIndices[i]--;
         }
-        // The endIndices calculation finds the smallest timestamp that is greater than
-        // editMediaTime + editDuration, except when omitZeroDurationClippedSample is true, in which
-        // case it finds the smallest timestamp that is greater than or equal to editMediaTime +
-        // editDuration.
+        // endIndices 的计算会找到大于 editMediaTime + editDuration 的最小时间戳，
+        // 除非 omitZeroDurationClippedSample 为 true，在这种情况下，
+        // 它会找到大于或等于 editMediaTime + editDuration 的最小时间戳。
         endIndices[i] =
             Util.binarySearchCeil(
                 timestamps,
@@ -742,10 +726,8 @@ public final class BoxParser {
                 /* inclusive= */ omitZeroDurationClippedSample,
                 /* stayInBounds= */ false);
         if (track.type == C.TRACK_TYPE_VIDEO) {
-          // To account for out-of-order video frames that may have timestamps smaller than or equal
-          // to editMediaTime + editDuration, but still fall within the valid range, the loop walks
-          // forward through the timestamps array to ensure all frames with timestamps within the
-          // edit duration are included.
+          // 为了处理可能具有小于或等于 editMediaTime + editDuration 的时间戳但仍然落在有效范围内的乱序视频帧，
+          // 循环会向前遍历时间戳数组，以确保包含所有时间戳在编辑持续时间内的帧。
           while (endIndices[i] < timestamps.length - 1
               && timestamps[endIndices[i] + 1] <= (editMediaTime + editDuration)) {
             endIndices[i]++;
@@ -839,7 +821,9 @@ public final class BoxParser {
     return entries.isEmpty() ? null : new Metadata(entries);
   }
 
-  /** Parses the location metadata from the xyz atom. */
+  /**
+   * Parses the location metadata from the xyz atom.
+   */
   @Nullable
   private static Metadata parseXyz(ParsableByteArray xyzBox) {
     int length = xyzBox.readShort();
@@ -861,10 +845,10 @@ public final class BoxParser {
   }
 
   /**
-   * Parses a tkhd atom (defined in ISO/IEC 14496-12).
+   * 解析 tkhd 原子（定义在 ISO/IEC 14496-12 中）。
    *
-   * @param tkhd Contents of the tkhd atom to be parsed.
-   * @return An object containing the parsed data.
+   * @param tkhd 要解析的 tkhd 原子内容。
+   * @return 包含解析数据的对象。
    */
   private static TkhdData parseTkhd(ParsableByteArray tkhd) {
     tkhd.setPosition(Mp4Box.HEADER_SIZE);
@@ -891,8 +875,7 @@ public final class BoxParser {
     } else {
       duration = version == 0 ? tkhd.readUnsignedInt() : tkhd.readUnsignedLongToLong();
       if (duration == 0) {
-        // 0 duration normally indicates that the file is fully fragmented (i.e. all of the media
-        // samples are in fragments). Treat as unknown.
+        // 0 持续时间通常表示文件是完全分段的（即所有媒体样本都在片段中）。将其视为未知。
         duration = C.TIME_UNSET;
       }
     }
@@ -913,7 +896,7 @@ public final class BoxParser {
     } else if (a00 == -fixedOne && a01 == 0 && a10 == 0 && a11 == -fixedOne) {
       rotationDegrees = 180;
     } else {
-      // Only 0, 90, 180 and 270 are supported. Treat anything else as 0.
+      // 仅支持 0、90、180 和 270 度。将其他值视为 0 度。
       rotationDegrees = 0;
     }
 
@@ -921,17 +904,19 @@ public final class BoxParser {
   }
 
   /**
-   * Parses an hdlr atom.
+   * 解析 hdlr 原子。
    *
-   * @param hdlr The hdlr atom to decode.
-   * @return The handler value.
+   * @param hdlr 要解码的 hdlr 原子。
+   * @return 处理程序的值。
    */
   private static int parseHdlr(ParsableByteArray hdlr) {
     hdlr.setPosition(Mp4Box.FULL_HEADER_SIZE + 4);
     return hdlr.readInt();
   }
 
-  /** Returns the track type for a given handler value. */
+  /**
+   * 返回给定处理程序值对应的轨道类型。
+   */
   private static @C.TrackType int getTrackTypeForHdlr(int hdlr) {
     if (hdlr == TYPE_soun) {
       return C.TRACK_TYPE_AUDIO;
@@ -947,10 +932,10 @@ public final class BoxParser {
   }
 
   /**
-   * Parses an mdhd atom (defined in ISO/IEC 14496-12).
+   * 解析 mdhd 原子（定义在 ISO/IEC 14496-12 中）。
    *
-   * @param mdhd The mdhd atom to decode.
-   * @return An {@link MdhdData} object containing the parsed data.
+   * @param mdhd 要解码的 mdhd 原子。
+   * @return 包含解析数据的 {@link MdhdData} 对象。
    */
   private static MdhdData parseMdhd(ParsableByteArray mdhd) {
     mdhd.setPosition(Mp4Box.HEADER_SIZE);
@@ -974,8 +959,7 @@ public final class BoxParser {
     } else {
       long mediaDuration = version == 0 ? mdhd.readUnsignedInt() : mdhd.readUnsignedLongToLong();
       if (mediaDuration == 0) {
-        // 0 duration normally indicates that the file is fully fragmented (i.e. all of the media
-        // samples are in fragments). Treat as unknown.
+        // 0 持续时间通常表示文件是完全分段的（即所有媒体样本都在片段中）。将其视为未知。
         mediaDurationUs = C.TIME_UNSET;
       } else {
         mediaDurationUs = Util.scaleLargeTimestamp(mediaDuration, C.MICROS_PER_SECOND, timescale);
@@ -991,15 +975,15 @@ public final class BoxParser {
   }
 
   /**
-   * Parses a stsd atom (defined in ISO/IEC 14496-12).
+   * 解析 stsd 原子（定义在 ISO/IEC 14496-12 中）。
    *
-   * @param stsd The stsd atom to decode.
-   * @param trackId The track's identifier in its container.
-   * @param rotationDegrees The rotation of the track in degrees.
-   * @param language The language of the track.
-   * @param drmInitData {@link DrmInitData} to be included in the format, or {@code null}.
-   * @param isQuickTime True for QuickTime media. False otherwise.
-   * @return An object containing the parsed data.
+   * @param stsd            要解码的 stsd 原子。
+   * @param trackId         轨道在其容器中的标识符。
+   * @param rotationDegrees 轨道的旋转角度（以度为单位）。
+   * @param language        轨道的语言。
+   * @param drmInitData     要包含在格式中的 {@link DrmInitData}，如果不需要则为 {@code null}。
+   * @param isQuickTime     如果为 QuickTime 媒体则为 true，否则为 false。
+   * @return 包含解析数据的对象。
    */
   private static StsdData parseStsd(
       ParsableByteArray stsd,
@@ -1189,7 +1173,7 @@ public final class BoxParser {
       }
       parent.setPosition(childPosition);
     }
-    // TODO: Uncomment when [Internal: b/63092960] is fixed.
+    // TODO: 当 [Internal: b/63092960] 修复后取消注释。
     // else {
     //   drmInitData = null;
     // }
@@ -1213,7 +1197,7 @@ public final class BoxParser {
     @C.ColorSpace int colorSpace = Format.NO_VALUE;
     @C.ColorRange int colorRange = Format.NO_VALUE;
     @C.ColorTransfer int colorTransfer = Format.NO_VALUE;
-    // The format of HDR static info is defined in CTA-861-G:2017, Table 45.
+    // HDR 静态信息的格式定义在 CTA-861-G:2017 表 45 中。
     @Nullable ByteBuffer hdrStaticInfo = null;
 
     while (childPosition - position < size) {
@@ -1221,7 +1205,7 @@ public final class BoxParser {
       int childStartPosition = parent.getPosition();
       int childAtomSize = parent.readInt();
       if (childAtomSize == 0 && parent.getPosition() - position == size) {
-        // Handle optional terminating four zero bytes in MOV files.
+        // 处理 MOV 文件中可选的结尾四个零字节。
         break;
       }
       ExtractorUtil.checkContainerInput(childAtomSize > 0, "childAtomSize must be positive");
@@ -1266,39 +1250,35 @@ public final class BoxParser {
         bitdepthChroma = hevcConfig.bitdepthChroma;
         vpsData = hevcConfig.vpsData;
       } else if (childAtomType == Mp4Box.TYPE_lhvC) {
-        // The lhvC atom must follow the hvcC atom; so the media type must be already set.
+        // lhvC 原子必须跟在 hvcC 原子之后，因此媒体类型必须已经设置。
         ExtractorUtil.checkContainerInput(
-            MimeTypes.VIDEO_H265.equals(mimeType), "lhvC must follow hvcC atom");
+            MimeTypes.VIDEO_H265.equals(mimeType), "lhvC 必须跟在 hvcC 原子之后");
         ExtractorUtil.checkContainerInput(
-            vpsData != null && vpsData.layerInfos.size() >= 2, "must have at least two layers");
+            vpsData != null && vpsData.layerInfos.size() >= 2, "必须至少有两个层");
 
         parent.setPosition(childStartPosition + Mp4Box.HEADER_SIZE);
         HevcConfig lhevcConfig = HevcConfig.parseLayered(parent, checkNotNull(vpsData));
         ExtractorUtil.checkContainerInput(
             out.nalUnitLengthFieldLength == lhevcConfig.nalUnitLengthFieldLength,
-            "nalUnitLengthFieldLength must be same for both hvcC and lhvC atoms");
+            "nalUnitLengthFieldLength 必须与 hvcC 和 lhvC 原子一致");
 
-        // Only stereo MV-HEVC is currently supported, for which both views must have the same below
-        // configuration values.
+        // 目前仅支持立体 MV-HEVC，因此两个视图的以下配置值必须相同。
         if (lhevcConfig.colorSpace != Format.NO_VALUE) {
           ExtractorUtil.checkContainerInput(
-              colorSpace == lhevcConfig.colorSpace, "colorSpace must be the same for both views");
+              colorSpace == lhevcConfig.colorSpace, "两个视图的 colorSpace 必须相同");
         }
         if (lhevcConfig.colorRange != Format.NO_VALUE) {
           ExtractorUtil.checkContainerInput(
-              colorRange == lhevcConfig.colorRange, "colorRange must be the same for both views");
+              colorRange == lhevcConfig.colorRange, "两个视图的 colorRange 必须相同");
         }
         if (lhevcConfig.colorTransfer != Format.NO_VALUE) {
           ExtractorUtil.checkContainerInput(
-              colorTransfer == lhevcConfig.colorTransfer,
-              "colorTransfer must be the same for both views");
+              colorTransfer == lhevcConfig.colorTransfer, "两个视图的 colorTransfer 必须相同");
         }
         ExtractorUtil.checkContainerInput(
-            bitdepthLuma == lhevcConfig.bitdepthLuma,
-            "bitdepthLuma must be the same for both views");
+            bitdepthLuma == lhevcConfig.bitdepthLuma, "两个视图的 bitdepthLuma 必须相同");
         ExtractorUtil.checkContainerInput(
-            bitdepthChroma == lhevcConfig.bitdepthChroma,
-            "bitdepthChroma must be the same for both views");
+            bitdepthChroma == lhevcConfig.bitdepthChroma, "两个视图的 bitdepthChroma 必须相同");
 
         mimeType = MimeTypes.VIDEO_MV_HEVC;
         if (initializationData != null) {
@@ -1309,20 +1289,19 @@ public final class BoxParser {
                   .build();
         } else {
           ExtractorUtil.checkContainerInput(
-              false, "initializationData must be already set from hvcC atom");
+              false, "initializationData 必须已从 hvcC 原子中设置");
         }
         codecs = lhevcConfig.codecs;
       } else if (childAtomType == Mp4Box.TYPE_vexu) {
         VexuData vexuData = parseVideoExtendedUsageBox(parent, childStartPosition, childAtomSize);
         if (vexuData != null && vexuData.eyesData != null) {
           if (vpsData != null && vpsData.layerInfos.size() >= 2) {
-            // This is MV-HEVC case, so both eye views should be marked as available.
+            // 这是 MV-HEVC（多视图高效视频编码）的情况，因此应将两个视图都标记为可用。
             ExtractorUtil.checkContainerInput(
                 vexuData.hasBothEyeViews(), "both eye views must be marked as available");
-            // Based on subsection 1.4.3 of Apple’s proposed ISOBMFF extensions for stereo video
-            // (https://developer.apple.com/av-foundation/Stereo-Video-ISOBMFF-Extensions.pdf):
-            // "For multiview coding, there is no implied ordering and the eye_views_reversed field
-            // should be set to 0".
+            // 基于 Apple 提出的立体视频 ISOBMFF 扩展的第 1.4.3 小节
+            //（https://developer.apple.com/av-foundation/Stereo-Video-ISOBMFF-Extensions.pdf）：
+            // "对于多视图编码，没有隐含的顺序，eye_views_reversed 字段应设置为 0"。
             ExtractorUtil.checkContainerInput(
                 !vexuData.eyesData.striData.eyeViewsReversed,
                 "for MV-HEVC, eye_views_reversed must be set to false");
@@ -1383,17 +1362,17 @@ public final class BoxParser {
         if (hdrStaticInfo == null) {
           hdrStaticInfo = allocateHdrStaticInfo();
         }
-        // The contents of the clli box occupy the last 4 bytes of the HDR static info array. Note
-        // that each field is read in big endian and written in little endian.
+        // clli 盒的内容占据 HDR 静态信息数组的最后 4 个字节。注意，
+        // 每个字段以大端序读取，并以小端序写入。
         hdrStaticInfo.position(21);
-        hdrStaticInfo.putShort(parent.readShort()); // max_content_light_level.
-        hdrStaticInfo.putShort(parent.readShort()); // max_pic_average_light_level.
+        hdrStaticInfo.putShort(parent.readShort()); // max_content_light_level（最大内容亮度级别）。
+        hdrStaticInfo.putShort(parent.readShort()); // max_pic_average_light_level（最大图片平均亮度级别）。
       } else if (childAtomType == Mp4Box.TYPE_mdcv) {
         if (hdrStaticInfo == null) {
           hdrStaticInfo = allocateHdrStaticInfo();
         }
-        // The contents of the mdcv box occupy 20 bytes after the first byte of the HDR static info
-        // array. Note that each field is read in big endian and written in little endian.
+        // mdcv 盒的内容占据 HDR 静态信息数组的第一个字节之后的 20 个字节。注意，
+        // 每个字段以大端序读取，并以小端序写入。
         short displayPrimariesGX = parent.readShort();
         short displayPrimariesGY = parent.readShort();
         short displayPrimariesBX = parent.readShort();
@@ -1455,25 +1434,24 @@ public final class BoxParser {
           }
         }
       } else if (childAtomType == Mp4Box.TYPE_colr) {
-        // Only modify these values if 'colorSpace' and 'colorTransfer' have not been previously
-        // established by the bitstream. The absence of color descriptors ('colorSpace' and
-        // 'colorTransfer') does not necessarily mean that 'colorRange' has default values, hence it
-        // is not being verified here.
-        // If 'Atom.TYPE_avcC', 'Atom.TYPE_hvcC', 'Atom.TYPE_vpcC' or 'Atom.TYPE_av1c' is available,
-        // they will take precedence and overwrite any existing values.
+        // 仅在 'colorSpace' 和 'colorTransfer' 尚未由比特流确定的情况下修改这些值。
+        // 缺少颜色描述符（'colorSpace' 和 'colorTransfer'）并不一定意味着 'colorRange' 具有默认值，
+        // 因此这里不对其进行验证。
+        // 如果存在 'Atom.TYPE_avcC'、'Atom.TYPE_hvcC'、'Atom.TYPE_vpcC' 或 'Atom.TYPE_av1c'，
+        // 它们将优先并覆盖任何现有值。
         if (colorSpace == Format.NO_VALUE && colorTransfer == Format.NO_VALUE) {
           int colorType = parent.readInt();
           if (colorType == TYPE_nclx || colorType == TYPE_nclc) {
-            // For more info on syntax, see Section 8.5.2.2 in ISO/IEC 14496-12:2012(E) and
-            // https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap3/qtff3.html.
-            int colorPrimaries = parent.readUnsignedShort();
-            int transferCharacteristics = parent.readUnsignedShort();
-            parent.skipBytes(2); // matrix_coefficients.
+            // 有关语法的更多信息，请参阅 ISO/IEC 14496-12:2012(E) 的第 8.5.2.2 节和
+            // https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap3/qtff3.html。
+            int colorPrimaries = parent.readUnsignedShort(); // 读取色彩原色。
+            int transferCharacteristics = parent.readUnsignedShort(); // 读取传输特性。
+            parent.skipBytes(2); // 跳过 matrix_coefficients（矩阵系数）。
 
-            // Only try and read full_range_flag if the box is long enough. It should be present in
-            // all colr boxes with type=nclx (Section 8.5.2.2 in ISO/IEC 14496-12:2012(E)) but some
-            // device cameras record videos with type=nclx without this final flag (and therefore
-            // size=18): https://github.com/google/ExoPlayer/issues/9332
+            // 仅在盒子足够长时尝试读取 full_range_flag。在所有 type=nclx 的 colr 盒子中，
+            // 它应该存在（ISO/IEC 14496-12:2012(E) 的第 8.5.2.2 节），但某些设备摄像头录制的
+            // type=nclx 视频没有这个最终标志（因此 size=18）：
+            // https://github.com/google/ExoPlayer/issues/9332
             boolean fullRangeFlag =
                 childAtomSize == 19 && (parent.readUnsignedByte() & 0b10000000) != 0;
             colorSpace = ColorInfo.isoColorPrimariesToColorSpace(colorPrimaries);
@@ -1488,7 +1466,7 @@ public final class BoxParser {
       childPosition += childAtomSize;
     }
 
-    // If the media type was not recognized, ignore the track.
+    // 如果媒体类型未被识别，则忽略该轨道。
     if (mimeType == null) {
       return;
     }
@@ -1507,8 +1485,8 @@ public final class BoxParser {
             .setInitializationData(initializationData)
             .setMaxNumReorderSamples(maxNumReorderSamples)
             .setDrmInitData(drmInitData)
-            // Note that if either mdcv or clli are missing, we leave the corresponding HDR static
-            // metadata bytes with value zero. See [Internal ref: b/194535665].
+            // 请注意，如果缺少 mdcv 或 clli，我们会将相应的 HDR 静态元数据字节保留为零值。
+            // 参见 [内部参考：b/194535665]。
             .setColorInfo(
                 new ColorInfo.Builder()
                     .setColorSpace(colorSpace)
@@ -1529,141 +1507,142 @@ public final class BoxParser {
   }
 
   /**
-   * Parses the av1C configuration record and OBU sequence header and returns a {@link ColorInfo}
-   * from their data.
+   * 解析 av1C 配置记录和 OBU 序列头，并从其数据中返回一个 {@link ColorInfo}。
    *
-   * <p>See av1C configuration record syntax in this <a
-   * href="https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax">spec</a>.
+   * <p>参见 av1C 配置记录语法，参考此 <a
+   * href="https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax">规范</a>。
    *
-   * <p>See av1C OBU syntax in this <a
-   * href="https://aomediacodec.github.io/av1-spec/av1-spec.pdf">spec</a>.
+   * <p>参见 av1C OBU 语法，参考此 <a
+   * href="https://aomediacodec.github.io/av1-spec/av1-spec.pdf">规范</a>。
    *
-   * <p>The sections referenced in the method are from these specs.
+   * <p>方法中引用的部分来自这些规范。
    *
-   * @param data The av1C atom data.
-   * @return {@link ColorInfo} parsed from the av1C data.
+   * @param data av1C 原子数据。
+   * @return 从 av1C 数据中解析出的 {@link ColorInfo}。
    */
   private static ColorInfo parseAv1c(ParsableByteArray data) {
     ColorInfo.Builder colorInfo = new ColorInfo.Builder();
     ParsableBitArray bitArray = new ParsableBitArray(data.getData());
-    bitArray.setPosition(data.getPosition() * 8); // Convert byte to bit position.
+    bitArray.setPosition(data.getPosition() * 8); // 将字节位置转换为比特位置。
 
-    // Parse av1C config record for bitdepth info.
-    // See https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax.
-    bitArray.skipBytes(1); // marker, version
-    int seqProfile = bitArray.readBits(3); // seq_profile
-    bitArray.skipBits(6); // seq_level_idx_0, seq_tier_0
-    boolean highBitdepth = bitArray.readBit(); // high_bitdepth
-    boolean twelveBit = bitArray.readBit(); // twelve_bit
+    // 解析 av1C 配置记录以获取位深信息。
+    // 参见 https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax。
+    bitArray.skipBytes(1); // 跳过 marker 和 version。
+    int seqProfile = bitArray.readBits(3); // 读取 seq_profile。
+    bitArray.skipBits(6); // 跳过 seq_level_idx_0 和 seq_tier_0。
+    boolean highBitdepth = bitArray.readBit(); // 读取 high_bitdepth。
+    boolean twelveBit = bitArray.readBit(); // 读取 twelve_bit。
     if (seqProfile == 2 && highBitdepth) {
-      colorInfo.setLumaBitdepth(twelveBit ? 12 : 10);
-      colorInfo.setChromaBitdepth(twelveBit ? 12 : 10);
+      colorInfo.setLumaBitdepth(twelveBit ? 12 : 10); // 设置亮度位深。
+      colorInfo.setChromaBitdepth(twelveBit ? 12 : 10); // 设置色度位深。
     } else if (seqProfile <= 2) {
-      colorInfo.setLumaBitdepth(highBitdepth ? 10 : 8);
-      colorInfo.setChromaBitdepth(highBitdepth ? 10 : 8);
+      colorInfo.setLumaBitdepth(highBitdepth ? 10 : 8); // 设置亮度位深。
+      colorInfo.setChromaBitdepth(highBitdepth ? 10 : 8); // 设置色度位深。
     }
-    // Skip monochrome, chroma_subsampling_x, chroma_subsampling_y, chroma_sample_position,
-    // reserved and initial_presentation_delay.
+    // 跳过 monochrome、chroma_subsampling_x、chroma_subsampling_y、chroma_sample_position、
+    // reserved 和 initial_presentation_delay。
     bitArray.skipBits(13);
 
-    // 5.3.1. General OBU syntax
-    bitArray.skipBit(); // obu_forbidden_bit
-    int obuType = bitArray.readBits(4); // obu_type
-    if (obuType != 1) { // obu_type != OBU_SEQUENCE_HEADER
-      Log.i(TAG, "Unsupported obu_type: " + obuType);
+    // 5.3.1. 通用 OBU 语法
+    bitArray.skipBit(); // 跳过 obu_forbidden_bit。
+    int obuType = bitArray.readBits(4); // 读取 obu_type。
+    if (obuType != 1) { // 如果 obu_type 不是 OBU_SEQUENCE_HEADER。
+      Log.i(TAG, "不支持的 obu_type: " + obuType);
       return colorInfo.build();
     }
-    if (bitArray.readBit()) { // obu_extension_flag
-      Log.i(TAG, "Unsupported obu_extension_flag");
+    if (bitArray.readBit()) { // 如果 obu_extension_flag 为 true。
+      Log.i(TAG, "不支持的 obu_extension_flag");
       return colorInfo.build();
     }
-    boolean obuHasSizeField = bitArray.readBit(); // obu_has_size_field
-    bitArray.skipBit(); // obu_reserved_1bit
-    // obu_size is unsigned leb128 and if obu_size <= 127 then it can be simplified as readBits(8).
-    if (obuHasSizeField && bitArray.readBits(8) > 127) { // obu_size
-      Log.i(TAG, "Excessive obu_size");
+    boolean obuHasSizeField = bitArray.readBit(); // 读取 obu_has_size_field。
+    bitArray.skipBit(); // 跳过 obu_reserved_1bit。
+    // obu_size 是无符号 leb128，如果 obu_size <= 127，则可以简化为 readBits(8)。
+    if (obuHasSizeField && bitArray.readBits(8) > 127) { // 如果 obu_size 过大。
+      Log.i(TAG, "过大的 obu_size");
       return colorInfo.build();
     }
-    // 5.5.1. General OBU sequence header syntax
-    int obuSeqHeaderSeqProfile = bitArray.readBits(3); // seq_profile
-    bitArray.skipBit(); // still_picture
-    if (bitArray.readBit()) { // reduced_still_picture_header
-      Log.i(TAG, "Unsupported reduced_still_picture_header");
+    // 5.5.1. 通用 OBU 序列头语法
+    int obuSeqHeaderSeqProfile = bitArray.readBits(3); // 读取 seq_profile。
+    bitArray.skipBit(); // 跳过 still_picture。
+    if (bitArray.readBit()) { // 如果 reduced_still_picture_header 为 true。
+      Log.i(TAG, "不支持的 reduced_still_picture_header");
       return colorInfo.build();
     }
-    if (bitArray.readBit()) { // timing_info_present_flag
-      Log.i(TAG, "Unsupported timing_info_present_flag");
+    if (bitArray.readBit()) { // 如果 timing_info_present_flag 为 true。
+      Log.i(TAG, "不支持的 timing_info_present_flag");
       return colorInfo.build();
     }
-    if (bitArray.readBit()) { // initial_display_delay_present_flag
-      Log.i(TAG, "Unsupported initial_display_delay_present_flag");
+    if (bitArray.readBit()) { // 如果 initial_display_delay_present_flag 为 true。
+      Log.i(TAG, "不支持的 initial_display_delay_present_flag");
       return colorInfo.build();
     }
-    int operatingPointsCountMinus1 = bitArray.readBits(5); // operating_points_cnt_minus_1
+    int operatingPointsCountMinus1 = bitArray.readBits(5); // 读取 operating_points_cnt_minus_1。
     for (int i = 0; i <= operatingPointsCountMinus1; i++) {
-      bitArray.skipBits(12); // operating_point_idc[i]
-      int seqLevelIdx = bitArray.readBits(5); // seq_level_idx[i]
+      bitArray.skipBits(12); // 跳过 operating_point_idc[i]。
+      int seqLevelIdx = bitArray.readBits(5); // 读取 seq_level_idx[i]。
       if (seqLevelIdx > 7) {
-        bitArray.skipBit(); // seq_tier[i]
+        bitArray.skipBit(); // 跳过 seq_tier[i]。
       }
     }
-    int frameWidthBitsMinus1 = bitArray.readBits(4); // frame_width_bits_minus_1
-    int frameHeightBitsMinus1 = bitArray.readBits(4); // frame_height_bits_minus_1
-    bitArray.skipBits(frameWidthBitsMinus1 + 1); // max_frame_width_minus_1
-    bitArray.skipBits(frameHeightBitsMinus1 + 1); // max_frame_height_minus_1
-    if (bitArray.readBit()) { // frame_id_numbers_present_flag
-      bitArray.skipBits(7); // delta_frame_id_length_minus_2, additional_frame_id_length_minus_1
+    int frameWidthBitsMinus1 = bitArray.readBits(4); // 读取 frame_width_bits_minus_1。
+    int frameHeightBitsMinus1 = bitArray.readBits(4); // 读取 frame_height_bits_minus_1。
+    bitArray.skipBits(frameWidthBitsMinus1 + 1); // 跳过 max_frame_width_minus_1。
+    bitArray.skipBits(frameHeightBitsMinus1 + 1); // 跳过 max_frame_height_minus_1。
+    if (bitArray.readBit()) { // 如果 frame_id_numbers_present_flag 为 true。
+      bitArray.skipBits(
+          7); // 跳过 delta_frame_id_length_minus_2 和 additional_frame_id_length_minus_1。
     }
-    bitArray.skipBits(7); // use_128x128_superblock...enable_dual_filter: 7 flags
-    boolean enableOrderHint = bitArray.readBit(); // enable_order_hint
+    bitArray.skipBits(7); // 跳过 use_128x128_superblock...enable_dual_filter: 7 个标志。
+    boolean enableOrderHint = bitArray.readBit(); // 读取 enable_order_hint。
     if (enableOrderHint) {
-      bitArray.skipBits(2); // enable_jnt_comp, enable_ref_frame_mvs
+      bitArray.skipBits(2); // 跳过 enable_jnt_comp 和 enable_ref_frame_mvs。
     }
     int seqForceScreenContentTools =
-        bitArray.readBit() // seq_choose_screen_content_tools
+        bitArray.readBit() // 读取 seq_choose_screen_content_tools。
             ? 2 // SELECT_SCREEN_CONTENT_TOOLS
-            : bitArray.readBits(1); // seq_force_screen_content_tools
+            : bitArray.readBits(1); // 读取 seq_force_screen_content_tools。
     if (seqForceScreenContentTools > 0) {
-      if (!bitArray.readBit()) { // seq_choose_integer_mv
-        bitArray.skipBits(1); // seq_force_integer_mv
+      if (!bitArray.readBit()) { // 如果 seq_choose_integer_mv 为 false。
+        bitArray.skipBits(1); // 跳过 seq_force_integer_mv。
       }
     }
     if (enableOrderHint) {
-      bitArray.skipBits(3); // order_hint_bits_minus_1
+      bitArray.skipBits(3); // 跳过 order_hint_bits_minus_1。
     }
-    bitArray.skipBits(3); // enable_superres, enable_cdef, enable_restoration
-    // 5.5.2. OBU Color config syntax
-    boolean colorConfigHighBitdepth = bitArray.readBit(); // high_bitdepth
+    bitArray.skipBits(3); // 跳过 enable_superres、enable_cdef 和 enable_restoration。
+    // 5.5.2. OBU 颜色配置语法
+    boolean colorConfigHighBitdepth = bitArray.readBit(); // 读取 high_bitdepth。
     if (obuSeqHeaderSeqProfile == 2 && colorConfigHighBitdepth) {
-      bitArray.skipBit(); // twelve_bit
+      bitArray.skipBit(); // 跳过 twelve_bit。
     }
 
-    boolean monochrome = (obuSeqHeaderSeqProfile != 1) && bitArray.readBit(); // mono_chrome
+    boolean monochrome = (obuSeqHeaderSeqProfile != 1) && bitArray.readBit(); // 读取 mono_chrome。
 
-    if (bitArray.readBit()) { // color_description_present_flag
-      int colorPrimaries = bitArray.readBits(8); // color_primaries
-      int transferCharacteristics = bitArray.readBits(8); // transfer_characteristics
-      int matrixCoefficients = bitArray.readBits(8); // matrix_coefficients
+    if (bitArray.readBit()) { // 如果 color_description_present_flag 为 true。
+      int colorPrimaries = bitArray.readBits(8); // 读取 color_primaries。
+      int transferCharacteristics = bitArray.readBits(8); // 读取 transfer_characteristics。
+      int matrixCoefficients = bitArray.readBits(8); // 读取 matrix_coefficients。
       int colorRange =
           (!monochrome
-                  && colorPrimaries == 1 // CP_BT_709
-                  && transferCharacteristics == 13 // TC_SRGB
-                  && matrixCoefficients == 0) // MC_IDENTITY
+              && colorPrimaries == 1 // CP_BT_709
+              && transferCharacteristics == 13 // TC_SRGB
+              && matrixCoefficients == 0) // MC_IDENTITY
               ? 1
-              : bitArray.readBits(1); // color_range;
+              : bitArray.readBits(1); // 读取 color_range;
       colorInfo
-          .setColorSpace(ColorInfo.isoColorPrimariesToColorSpace(colorPrimaries))
-          .setColorRange((colorRange == 1) ? C.COLOR_RANGE_FULL : C.COLOR_RANGE_LIMITED)
+          .setColorSpace(ColorInfo.isoColorPrimariesToColorSpace(colorPrimaries)) // 设置色彩空间。
+          .setColorRange((colorRange == 1) ? C.COLOR_RANGE_FULL : C.COLOR_RANGE_LIMITED) // 设置色彩范围。
           .setColorTransfer(
-              ColorInfo.isoTransferCharacteristicsToColorTransfer(transferCharacteristics));
+              ColorInfo.isoTransferCharacteristicsToColorTransfer(
+                  transferCharacteristics)); // 设置色彩传输特性。
     }
     return colorInfo.build();
   }
 
   private static ByteBuffer allocateHdrStaticInfo() {
-    // For HDR static info, Android decoders expect a 25-byte array. The first byte is zero to
-    // represent Static Metadata Type 1, as per CTA-861-G:2017, Table 44. The following 24 bytes
-    // follow CTA-861-G:2017, Table 45.
+    // 对于 HDR 静态信息，Android 解码器期望一个 25 字节的数组。第一个字节为 0，
+    // 表示静态元数据类型 1（根据 CTA-861-G:2017 表 44）。接下来的 24 字节
+    // 遵循 CTA-861-G:2017 表 45。
     return ByteBuffer.allocate(25).order(ByteOrder.LITTLE_ENDIAN);
   }
 
@@ -1680,11 +1659,10 @@ public final class BoxParser {
   }
 
   /**
-   * Parses the edts atom (defined in ISO/IEC 14496-12 subsection 8.6.5).
+   * 解析 edts 原子（定义在 ISO/IEC 14496-12 第 8.6.5 小节）。
    *
-   * @param edtsAtom edts (edit box) atom to decode.
-   * @return Pair of edit list durations and edit list media times, or {@code null} if they are not
-   *     present.
+   * @param edtsAtom 要解码的 edts（编辑盒）原子。
+   * @return 编辑列表持续时间和编辑列表媒体时间的配对，如果不存在则返回 {@code null}。
    */
   @Nullable
   private static Pair<long[], long[]> parseEdts(Mp4Box.ContainerBox edtsAtom) {
@@ -1705,7 +1683,7 @@ public final class BoxParser {
       editListMediaTimes[i] = version == 1 ? elstData.readLong() : elstData.readInt();
       int mediaRateInteger = elstData.readShort();
       if (mediaRateInteger != 1) {
-        // The extractor does not handle dwell edits (mediaRateInteger == 0).
+        // 提取器不支持处理停留编辑（mediaRateInteger == 0）。
         throw new IllegalArgumentException("Unsupported media rate.");
       }
       elstData.skipBytes(2);
@@ -1791,9 +1769,8 @@ public final class BoxParser {
       return;
     }
 
-    // As per the IAMF spec (https://aomediacodec.github.io/iamf/#iasampleentry-section),
-    // channelCount and sampleRate SHALL be set to 0 and ignored. We ignore it by using
-    // Format.NO_VALUE instead of 0.
+    // 根据 IAMF 规范（https://aomediacodec.github.io/iamf/#iasampleentry-section），
+    // channelCount 和 sampleRate 应设置为 0 并被忽略。我们通过使用 Format.NO_VALUE 而不是 0 来忽略它。
     if (atomType == Mp4Box.TYPE_iamf) {
       channelCount = Format.NO_VALUE;
       sampleRate = Format.NO_VALUE;
@@ -1879,13 +1856,13 @@ public final class BoxParser {
       ExtractorUtil.checkContainerInput(childAtomSize > 0, "childAtomSize must be positive");
       int childAtomType = parent.readInt();
       if (childAtomType == Mp4Box.TYPE_mhaC) {
-        // See ISO_IEC_23008-3;2022 MHADecoderConfigurationRecord
-        // The header consists of: size (4), boxtype 'mhaC' (4), configurationVersion (1),
-        // mpegh3daProfileLevelIndication (1), referenceChannelLayout (1), mpegh3daConfigLength (2).
+        // 参见 ISO_IEC_23008-3;2022 MHADecoderConfigurationRecord
+        // 头部包括：size (4), boxtype 'mhaC' (4), configurationVersion (1),
+        // mpegh3daProfileLevelIndication (1), referenceChannelLayout (1), mpegh3daConfigLength (2)。
         parent.setPosition(childPosition + Mp4Box.HEADER_SIZE);
-        parent.skipBytes(1); // configurationVersion
+        parent.skipBytes(1); // 跳过 configurationVersion
         int mpeghProfileLevelIndication = parent.readUnsignedByte();
-        parent.skipBytes(1); // mpeghReferenceChannelLayout
+        parent.skipBytes(1); // 跳过 mpeghReferenceChannelLayout
         codecs =
             Objects.equals(mimeType, MimeTypes.AUDIO_MPEGH_MHM1)
                 ? String.format("mhm1.%02X", mpeghProfileLevelIndication)
@@ -1893,17 +1870,16 @@ public final class BoxParser {
         int mpegh3daConfigLength = parent.readUnsignedShort();
         byte[] initializationDataBytes = new byte[mpegh3daConfigLength];
         parent.readBytes(initializationDataBytes, 0, mpegh3daConfigLength);
-        // The mpegh3daConfig should always be the first entry in initializationData.
+        // mpegh3daConfig 应始终是 initializationData 的第一个条目。
         if (initializationData == null) {
           initializationData = ImmutableList.of(initializationDataBytes);
         } else {
-          // We assume that the mhaP box has been parsed before and so add the compatible profile
-          // level sets as the second entry.
+          // 假设 mhaP 盒子已解析，因此将兼容的 profile level sets 作为第二个条目添加。
           initializationData = ImmutableList.of(initializationDataBytes, initializationData.get(0));
         }
       } else if (childAtomType == Mp4Box.TYPE_mhaP) {
-        // See ISO_IEC_23008-3;2022 MHAProfileAndLevelCompatibilitySetBox
-        // The header consists of: size (4), boxtype 'mhaP' (4), numCompatibleSets (1).
+        // 参见 ISO_IEC_23008-3;2022 MHAProfileAndLevelCompatibilitySetBox
+        // 头部包括：size (4), boxtype 'mhaP' (4), numCompatibleSets (1)。
         parent.setPosition(childPosition + Mp4Box.HEADER_SIZE);
         int numCompatibleSets = parent.readUnsignedByte();
         if (numCompatibleSets > 0) {
@@ -1912,8 +1888,7 @@ public final class BoxParser {
           if (initializationData == null) {
             initializationData = ImmutableList.of(mpeghCompatibleProfileLevelSet);
           } else {
-            // We assume that the mhaC box has been parsed before and so add the compatible profile
-            // level sets as the second entry.
+            // 假设 mhaC 盒子已解析，因此将兼容的 profile level sets 作为第二个条目添加。
             initializationData =
                 ImmutableList.of(initializationData.get(0), mpeghCompatibleProfileLevelSet);
           }
@@ -1934,8 +1909,8 @@ public final class BoxParser {
                   VorbisUtil.parseVorbisCsdFromEsdsInitializationData(initializationDataBytes);
             } else {
               if (MimeTypes.AUDIO_AAC.equals(mimeType)) {
-                // Update sampleRate and channelCount from the AudioSpecificConfig initialization
-                // data, which is more reliable. See [Internal: b/10903778].
+                // 从 AudioSpecificConfig 初始化数据更新 sampleRate 和 channelCount，更可靠。
+                // 参见 [Internal: b/10903778]。
                 AacUtil.Config aacConfig =
                     AacUtil.parseAudioSpecificConfig(initializationDataBytes);
                 sampleRate = aacConfig.sampleRateHz;
@@ -1965,9 +1940,8 @@ public final class BoxParser {
               /* cause= */ null);
         }
         sampleRate = sampleRateMlp;
-        // The channel count from the sample entry must be ignored for Dolby TrueHD (MLP) streams
-        // because these streams can carry simultaneously multiple representations of the same
-        // audio. Use stereo by default.
+        // 对于 Dolby TrueHD (MLP) 流，必须忽略样本条目中的 channelCount，
+        // 因为这些流可以同时携带同一音频的多种表示。默认使用立体声。
         channelCount = 2;
       } else if (childAtomType == Mp4Box.TYPE_ddts || childAtomType == Mp4Box.TYPE_udts) {
         out.format =
@@ -1980,8 +1954,7 @@ public final class BoxParser {
                 .setLanguage(language)
                 .build();
       } else if (childAtomType == Mp4Box.TYPE_dOps) {
-        // Build an Opus Identification Header (defined in RFC-7845) by concatenating the Opus Magic
-        // Signature and the body of the dOps atom.
+        // 通过连接 Opus Magic Signature 和 dOps 盒子的主体构建 Opus Identification Header（定义在 RFC-7845 中）。
         int childAtomBodySize = childAtomSize - Mp4Box.HEADER_SIZE;
         byte[] headerBytes = Arrays.copyOf(opusMagic, opusMagic.length + childAtomBodySize);
         parent.setPosition(childPosition + Mp4Box.HEADER_SIZE);
@@ -2002,8 +1975,8 @@ public final class BoxParser {
         byte[] initializationDataBytes = new byte[childAtomBodySize];
         parent.setPosition(childPosition + Mp4Box.FULL_HEADER_SIZE);
         parent.readBytes(initializationDataBytes, /* offset= */ 0, childAtomBodySize);
-        // Update sampleRate and channelCount from the AudioSpecificConfig initialization data,
-        // which is more reliable. See https://github.com/google/ExoPlayer/pull/6629.
+        // 从 AudioSpecificConfig 初始化数据更新 sampleRate 和 channelCount，更可靠。
+        // 参见 https://github.com/google/ExoPlayer/pull/6629。
         Pair<Integer, Integer> audioSpecificConfig =
             CodecSpecificDataUtil.parseAlacAudioSpecificConfig(initializationDataBytes);
         sampleRate = audioSpecificConfig.first;
@@ -2011,7 +1984,7 @@ public final class BoxParser {
         initializationData = ImmutableList.of(initializationDataBytes);
       } else if (childAtomType == Mp4Box.TYPE_iacb) {
         parent.setPosition(
-            childPosition + Mp4Box.HEADER_SIZE + 1); // header and configuration version
+            childPosition + Mp4Box.HEADER_SIZE + 1); // 头部和配置版本
         int configObusSize = parent.readUnsignedLeb128ToInt();
         byte[] initializationDataBytes = new byte[configObusSize];
         parent.readBytes(initializationDataBytes, /* offset= */ 0, configObusSize);
@@ -2044,16 +2017,14 @@ public final class BoxParser {
   }
 
   /**
-   * Returns the position of the first box with the given {@code boxType} within {@code parent}, or
-   * {@link C#INDEX_UNSET} if no such box is found.
+   * 返回 {@code parent} 中第一个具有指定 {@code boxType} 的盒子的位置，
+   * 如果未找到则返回 {@link C#INDEX_UNSET}。
    *
-   * @param parent The {@link ParsableByteArray} to search. The search will start from the {@link
-   *     ParsableByteArray#getPosition() current position}.
-   * @param boxType The box type to search for.
-   * @param parentBoxPosition The position in {@code parent} of the box we are searching.
-   * @param parentBoxSize The size of the parent box we are searching in bytes.
-   * @return The position of the first box with the given {@code boxType} within {@code parent}, or
-   *     {@link C#INDEX_UNSET} if no such box is found.
+   * @param parent            要搜索的 {@link ParsableByteArray}。搜索将从 {@link ParsableByteArray#getPosition() 当前位置} 开始。
+   * @param boxType           要搜索的盒子类型。
+   * @param parentBoxPosition {@code parent} 中要搜索的盒子的位置。
+   * @param parentBoxSize     要搜索的父盒子的大小（以字节为单位）。
+   * @return {@code parent} 中第一个具有指定 {@code boxType} 的盒子的位置，如果未找到则返回 {@link C#INDEX_UNSET}。
    */
   private static int findBoxPosition(
       ParsableByteArray parent, int boxType, int parentBoxPosition, int parentBoxSize)
@@ -2073,13 +2044,15 @@ public final class BoxParser {
     return C.INDEX_UNSET;
   }
 
-  /** Returns codec-specific initialization data contained in an esds box. */
+  /**
+   * 返回 esds 盒子中包含的编解码器特定初始化数据。
+   */
   private static EsdsData parseEsdsFromParent(ParsableByteArray parent, int position) {
     parent.setPosition(position + Mp4Box.HEADER_SIZE + 4);
-    // Start of the ES_Descriptor (defined in ISO/IEC 14496-1)
-    parent.skipBytes(1); // ES_Descriptor tag
+    // 开始解析 ES_Descriptor（定义在 ISO/IEC 14496-1 中）
+    parent.skipBytes(1); // 跳过 ES_Descriptor tag
     parseExpandableClassSize(parent);
-    parent.skipBytes(2); // ES_ID
+    parent.skipBytes(2); // 跳过 ES_ID
 
     int flags = parent.readUnsignedByte();
     if ((flags & 0x80 /* streamDependenceFlag */) != 0) {
@@ -2092,11 +2065,11 @@ public final class BoxParser {
       parent.skipBytes(2);
     }
 
-    // Start of the DecoderConfigDescriptor (defined in ISO/IEC 14496-1)
-    parent.skipBytes(1); // DecoderConfigDescriptor tag
+    // 开始解析 DecoderConfigDescriptor（定义在 ISO/IEC 14496-1 中）
+    parent.skipBytes(1); // 跳过 DecoderConfigDescriptor tag
     parseExpandableClassSize(parent);
 
-    // Set the MIME type based on the object type indication (ISO/IEC 14496-1 table 5).
+    // 根据对象类型指示（ISO/IEC 14496-1 表 5）设置 MIME 类型。
     int objectTypeIndication = parent.readUnsignedByte();
     @Nullable String mimeType = getMimeTypeFromMp4ObjectType(objectTypeIndication);
     if (MimeTypes.AUDIO_MPEG.equals(mimeType)
@@ -2113,13 +2086,13 @@ public final class BoxParser {
     long peakBitrate = parent.readUnsignedInt();
     long bitrate = parent.readUnsignedInt();
 
-    // Start of the DecoderSpecificInfo.
-    parent.skipBytes(1); // DecoderSpecificInfo tag
+    // 开始解析 DecoderSpecificInfo。
+    parent.skipBytes(1); // 跳过 DecoderSpecificInfo tag
     int initializationDataSize = parseExpandableClassSize(parent);
     byte[] initializationData = new byte[initializationDataSize];
     parent.readBytes(initializationData, 0, initializationDataSize);
 
-    // Skipping zero values as unknown.
+    // 跳过零值，视为未知。
     return new EsdsData(
         mimeType,
         /* initializationData= */ initializationData,
@@ -2128,8 +2101,8 @@ public final class BoxParser {
   }
 
   /**
-   * Returns stereo video playback related meta data from the vexu box. See
-   * https://developer.apple.com/av-foundation/Stereo-Video-ISOBMFF-Extensions.pdf for ref.
+   * 从 vexu 盒子中返回与立体视频播放相关的元数据。参见
+   * https://developer.apple.com/av-foundation/Stereo-Video-ISOBMFF-Extensions.pdf。
    */
   @Nullable
   /* package */ static VexuData parseVideoExtendedUsageBox(
@@ -2176,9 +2149,8 @@ public final class BoxParser {
   }
 
   /**
-   * Parses encryption data from an audio/video sample entry, returning a pair consisting of the
-   * unencrypted atom type and a {@link TrackEncryptionBox}. Null is returned if no common
-   * encryption sinf atom was present.
+   * 从音频/视频样本条目中解析加密数据，返回一个由未加密原子类型和 {@link TrackEncryptionBox} 组成的配对。
+   * 如果未找到通用的加密 sinf 原子，则返回 null。
    */
   @Nullable
   private static Pair<Integer, TrackEncryptionBox> parseSampleEntryEncryptionData(
@@ -2290,44 +2262,54 @@ public final class BoxParser {
     return null;
   }
 
-  /** Parses the proj box from sv3d box, as specified by https://github.com/google/spatial-media. */
+  /**
+   * 从 sv3d 盒子中解析 proj 盒子，按照 https://github.com/google/spatial-media 的规范。
+   */
   @Nullable
   private static byte[] parseProjFromParent(ParsableByteArray parent, int position, int size) {
-    int childPosition = position + Mp4Box.HEADER_SIZE;
-    while (childPosition - position < size) {
-      parent.setPosition(childPosition);
-      int childAtomSize = parent.readInt();
-      int childAtomType = parent.readInt();
-      if (childAtomType == Mp4Box.TYPE_proj) {
-        return Arrays.copyOfRange(parent.getData(), childPosition, childPosition + childAtomSize);
+    int childPosition = position + Mp4Box.HEADER_SIZE; // 子盒子的起始位置
+    while (childPosition - position < size) { // 遍历所有子盒子
+      parent.setPosition(childPosition); // 设置解析位置为当前子盒子的起始位置
+      int childAtomSize = parent.readInt(); // 读取子盒子的大小
+      int childAtomType = parent.readInt(); // 读取子盒子的类型
+      if (childAtomType == Mp4Box.TYPE_proj) { // 如果子盒子类型是 proj
+        return Arrays.copyOfRange(parent.getData(), childPosition, childPosition + childAtomSize); // 返回 proj 盒子的数据
       }
-      childPosition += childAtomSize;
+      childPosition += childAtomSize; // 移动到下一个子盒子
     }
-    return null;
+    return null; // 如果未找到 proj 盒子，返回 null
   }
 
-  /** Parses the size of an expandable class, as specified by ISO/IEC 14496-1 subsection 8.3.3. */
+  /**
+   * 解析可扩展类的大小，按照 ISO/IEC 14496-1 第 8.3.3 小节的规定。
+   */
   private static int parseExpandableClassSize(ParsableByteArray data) {
-    int currentByte = data.readUnsignedByte();
-    int size = currentByte & 0x7F;
-    while ((currentByte & 0x80) == 0x80) {
-      currentByte = data.readUnsignedByte();
-      size = (size << 7) | (currentByte & 0x7F);
+    int currentByte = data.readUnsignedByte(); // 读取当前字节
+    int size = currentByte & 0x7F; // 取低 7 位作为初始大小
+    while ((currentByte & 0x80) == 0x80) { // 如果最高位为 1，表示还有后续字节
+      currentByte = data.readUnsignedByte(); // 读取下一个字节
+      size = (size << 7) | (currentByte & 0x7F); // 将新字节的低 7 位拼接到大小中
     }
-    return size;
+    return size; // 返回解析出的大小
   }
 
-  /** Returns whether it's possible to apply the specified edit using gapless playback info. */
+  /**
+   * 判断是否可以使用无缝播放信息应用指定的编辑。
+   */
   private static boolean canApplyEditWithGaplessInfo(
-      long[] timestamps, long duration, long editStartTime, long editEndTime) {
-    int lastIndex = timestamps.length - 1;
-    int latestDelayIndex = Util.constrainValue(MAX_GAPLESS_TRIM_SIZE_SAMPLES, 0, lastIndex);
+      long[] timestamps, // 时间戳数组
+      long duration, // 总时长
+      long editStartTime, // 编辑开始时间
+      long editEndTime // 编辑结束时间
+  ) {
+    int lastIndex = timestamps.length - 1; // 时间戳数组的最后一个索引
+    int latestDelayIndex = Util.constrainValue(MAX_GAPLESS_TRIM_SIZE_SAMPLES, 0, lastIndex); // 延迟修剪的最大样本索引
     int earliestPaddingIndex =
-        Util.constrainValue(timestamps.length - MAX_GAPLESS_TRIM_SIZE_SAMPLES, 0, lastIndex);
-    return timestamps[0] <= editStartTime
-        && editStartTime < timestamps[latestDelayIndex]
-        && timestamps[earliestPaddingIndex] < editEndTime
-        && editEndTime <= duration;
+        Util.constrainValue(timestamps.length - MAX_GAPLESS_TRIM_SIZE_SAMPLES, 0, lastIndex); // 填充修剪的最小样本索引
+    return timestamps[0] <= editStartTime // 编辑开始时间在第一个时间戳之后
+        && editStartTime < timestamps[latestDelayIndex] // 编辑开始时间在延迟修剪范围内
+        && timestamps[earliestPaddingIndex] < editEndTime // 编辑结束时间在填充修剪范围内
+        && editEndTime <= duration; // 编辑结束时间不超过总时长
   }
 
   private BoxParser() {
@@ -2383,44 +2365,71 @@ public final class BoxParser {
     }
   }
 
-  /** Holds data parsed from a tkhd atom. */
+  /**
+   * 存储从 tkhd 原子中解析出的数据。
+   */
   private static final class TkhdData {
 
-    private final int id;
-    private final long duration;
-    private final int rotationDegrees;
+    private final int id; // 轨道 ID
+    private final long duration; // 轨道持续时间（单位：timescale ticks）
+    private final int rotationDegrees; // 轨道旋转角度（单位：度）
 
+    /**
+     * 构造函数。
+     *
+     * @param id 轨道 ID。
+     * @param duration 轨道持续时间（单位：timescale ticks）。
+     * @param rotationDegrees 轨道旋转角度（单位：度）。
+     */
     public TkhdData(int id, long duration, int rotationDegrees) {
       this.id = id;
       this.duration = duration;
       this.rotationDegrees = rotationDegrees;
     }
   }
-
-  /** Holds data parsed from an stsd atom and its children. */
+  /**
+   * 存储从 stsd 原子及其子原子中解析出的数据。
+   */
   private static final class StsdData {
 
-    public static final int STSD_HEADER_SIZE = 8;
+    public static final int STSD_HEADER_SIZE = 8; // stsd 原子的头部大小
 
-    public final TrackEncryptionBox[] trackEncryptionBoxes;
+    public final TrackEncryptionBox[] trackEncryptionBoxes; // 轨道加密盒子数组
 
-    @Nullable public Format format;
-    public int nalUnitLengthFieldLength;
-    public @Track.Transformation int requiredSampleTransformation;
+    @Nullable
+    public Format format; // 轨道格式（可能为 null）
+    public int nalUnitLengthFieldLength; // NAL 单元长度字段的大小
+    public @Track.Transformation int requiredSampleTransformation; // 所需的样本转换类型
 
+    /**
+     * 构造函数。
+     *
+     * @param numberOfEntries stsd 原子中的条目数量。
+     */
     public StsdData(int numberOfEntries) {
-      trackEncryptionBoxes = new TrackEncryptionBox[numberOfEntries];
-      requiredSampleTransformation = Track.TRANSFORMATION_NONE;
+      trackEncryptionBoxes = new TrackEncryptionBox[numberOfEntries]; // 初始化轨道加密盒子数组
+      requiredSampleTransformation = Track.TRANSFORMATION_NONE; // 默认不需要样本转换
     }
   }
 
-  /** Data parsed from an esds box. */
+  /**
+   * 从 esds 盒子中解析出的数据。
+   */
   private static final class EsdsData {
-    private final @NullableType String mimeType;
-    private final byte @NullableType [] initializationData;
-    private final long bitrate;
-    private final long peakBitrate;
 
+    private final @NullableType String mimeType; // MIME 类型，表示音频或视频的格式
+    private final byte @NullableType [] initializationData; // 初始化数据，用于解码器初始化
+    private final long bitrate; // 比特率（单位：bps）
+    private final long peakBitrate; // 峰值比特率（单位：bps）
+
+    /**
+     * 构造函数。
+     *
+     * @param mimeType MIME 类型，表示音频或视频的格式。
+     * @param initializationData 初始化数据，用于解码器初始化。
+     * @param bitrate 比特率（单位：bps）。
+     * @param peakBitrate 峰值比特率（单位：bps）。
+     */
     public EsdsData(
         @NullableType String mimeType,
         byte @NullableType [] initializationData,
@@ -2433,12 +2442,15 @@ public final class BoxParser {
     }
   }
 
-  /** Data parsed from stri box. */
+  /**
+   * 从 stri 盒子中解析出的数据。
+   */
   private static final class StriData {
-    private final boolean hasLeftEyeView;
-    private final boolean hasRightEyeView;
-    private final boolean eyeViewsReversed;
-    private final boolean hasAdditionalViews;
+
+    private final boolean hasLeftEyeView; // 是否包含左眼视图
+    private final boolean hasRightEyeView; // 是否包含右眼视图
+    private final boolean eyeViewsReversed; // 左右眼视图是否反转
+    private final boolean hasAdditionalViews; // 是否包含额外的视图
 
     public StriData(
         boolean hasLeftEyeView,
@@ -2452,20 +2464,26 @@ public final class BoxParser {
     }
   }
 
-  /** Data parsed from eyes box. */
+  /**
+   * 从 eyes 盒子中解析出的数据。
+   */
   private static final class EyesData {
-    private final StriData striData;
+
+    private final StriData striData; // 从 eyes 盒子中解析出的立体视图数据
 
     public EyesData(StriData striData) {
       this.striData = striData;
     }
   }
 
-  /** Data parsed from mdhd box. */
+  /**
+   * 从 mdhd 盒子中解析出的数据。
+   */
   private static final class MdhdData {
-    private final long timescale;
-    private final long mediaDurationUs;
-    private final String language;
+
+    private final long timescale; // 时间尺度（单位：ticks per second）
+    private final long mediaDurationUs; // 媒体持续时间（单位：微秒）
+    private final String language; // 语言代码
 
     public MdhdData(long timescale, long mediaDurationUs, String language) {
       this.timescale = timescale;
@@ -2474,14 +2492,23 @@ public final class BoxParser {
     }
   }
 
-  /** Data parsed from vexu box. */
+  /**
+   * 从 vexu 盒子中解析出的数据。
+   */
   /* package */ static final class VexuData {
-    @Nullable private final EyesData eyesData;
+
+    @Nullable
+    private final EyesData eyesData; // 从 vexu 盒子中解析出的眼睛数据
 
     public VexuData(EyesData eyesData) {
       this.eyesData = eyesData;
     }
 
+    /**
+     * 检查是否包含左右眼视图。
+     *
+     * @return 如果包含左右眼视图，则返回 true；否则返回 false。
+     */
     public boolean hasBothEyeViews() {
       return eyesData != null
           && eyesData.striData.hasLeftEyeView
@@ -2489,108 +2516,120 @@ public final class BoxParser {
     }
   }
 
-  /** A box containing sample sizes (e.g. stsz, stz2). */
+  /**
+   * 包含样本大小的盒子（例如 stsz、stz2）。
+   */
   private interface SampleSizeBox {
 
-    /** Returns the number of samples. */
+    /**
+     * 返回样本数量。
+     */
     int getSampleCount();
 
-    /** Returns the size of each sample if fixed, or {@link C#LENGTH_UNSET} otherwise. */
+    /**
+     * 返回每个样本的大小（如果固定），否则返回 {@link C#LENGTH_UNSET}。
+     */
     int getFixedSampleSize();
 
-    /** Returns the size for the next sample. */
+    /**
+     * 返回下一个样本的大小。
+     */
     int readNextSampleSize();
   }
 
-  /** An stsz sample size box. */
+  /**
+   * 一个 stsz 样本大小盒子。
+   */
   /* package */ static final class StszSampleSizeBox implements SampleSizeBox {
 
-    private final int fixedSampleSize;
-    private final int sampleCount;
-    private final ParsableByteArray data;
+    private final int fixedSampleSize; // 固定样本大小
+    private final int sampleCount; // 样本数量
+    private final ParsableByteArray data; // 存储 stsz 盒子数据的可解析字节数组
 
     public StszSampleSizeBox(LeafBox stszAtom, Format trackFormat) {
       data = stszAtom.data;
-      data.setPosition(Mp4Box.FULL_HEADER_SIZE);
-      int fixedSampleSize = data.readUnsignedIntToInt();
+      data.setPosition(Mp4Box.FULL_HEADER_SIZE); // 设置数据解析位置为盒子头部之后
+      int fixedSampleSize = data.readUnsignedIntToInt(); // 读取固定样本大小
       if (MimeTypes.AUDIO_RAW.equals(trackFormat.sampleMimeType)) {
         int pcmFrameSize = Util.getPcmFrameSize(trackFormat.pcmEncoding, trackFormat.channelCount);
         if (fixedSampleSize == 0 || fixedSampleSize % pcmFrameSize != 0) {
-          // The sample size from the stsz box is inconsistent with the PCM encoding and channel
-          // count derived from the stsd box. Choose stsd box as source of truth
-          // [Internal ref: b/171627904].
+          // 如果 stsz 盒子中的样本大小与 stsd 盒子中的 PCM 编码和声道数不一致，
+          // 则以 stsd 盒子为准 [Internal ref: b/171627904]。
           Log.w(
               TAG,
-              "Audio sample size mismatch. stsd sample size: "
+              "音频样本大小不匹配。stsd 样本大小: "
                   + pcmFrameSize
-                  + ", stsz sample size: "
+                  + ", stsz 样本大小: "
                   + fixedSampleSize);
           fixedSampleSize = pcmFrameSize;
         }
       }
       this.fixedSampleSize = fixedSampleSize == 0 ? C.LENGTH_UNSET : fixedSampleSize;
-      sampleCount = data.readUnsignedIntToInt();
+      sampleCount = data.readUnsignedIntToInt(); // 读取样本数量
     }
 
     @Override
     public int getSampleCount() {
-      return sampleCount;
+      return sampleCount; // 返回样本数量
     }
 
     @Override
     public int getFixedSampleSize() {
-      return fixedSampleSize;
+      return fixedSampleSize; // 返回固定样本大小
     }
 
     @Override
     public int readNextSampleSize() {
       return fixedSampleSize == C.LENGTH_UNSET ? data.readUnsignedIntToInt() : fixedSampleSize;
+      // 如果固定样本大小未设置，则读取下一个样本大小；否则返回固定样本大小
     }
   }
 
-  /** An stz2 sample size box. */
+  /**
+   * 一个 stz2 样本大小盒子。
+   */
   /* package */ static final class Stz2SampleSizeBox implements SampleSizeBox {
 
-    private final ParsableByteArray data;
-    private final int sampleCount;
-    private final int fieldSize; // Can be 4, 8, or 16.
+    private final ParsableByteArray data; // 存储 stz2 盒子数据的可解析字节数组
+    private final int sampleCount; // 样本数量
+    private final int fieldSize; // 字段大小，可以是 4、8 或 16
 
-    // Used only if fieldSize == 4.
-    private int sampleIndex;
-    private int currentByte;
+    // 仅当 fieldSize == 4 时使用
+    private int sampleIndex; // 当前样本索引
+    private int currentByte; // 当前字节（用于处理 4 位字段大小）
 
     public Stz2SampleSizeBox(LeafBox stz2Atom) {
       data = stz2Atom.data;
-      data.setPosition(Mp4Box.FULL_HEADER_SIZE);
-      fieldSize = data.readUnsignedIntToInt() & 0x000000FF;
-      sampleCount = data.readUnsignedIntToInt();
+      data.setPosition(Mp4Box.FULL_HEADER_SIZE); // 设置数据解析位置为盒子头部之后
+      fieldSize = data.readUnsignedIntToInt() & 0x000000FF; // 读取字段大小
+      sampleCount = data.readUnsignedIntToInt(); // 读取样本数量
     }
 
     @Override
     public int getSampleCount() {
-      return sampleCount;
+      return sampleCount; // 返回样本数量
     }
 
     @Override
     public int getFixedSampleSize() {
-      return C.LENGTH_UNSET;
+      return C.LENGTH_UNSET; // 返回未设置固定样本大小
     }
 
     @Override
     public int readNextSampleSize() {
       if (fieldSize == 8) {
-        return data.readUnsignedByte();
+        return data.readUnsignedByte(); // 读取 8 位样本大小
       } else if (fieldSize == 16) {
-        return data.readUnsignedShort();
+        return data.readUnsignedShort(); // 读取 16 位样本大小
       } else {
-        // fieldSize == 4.
+        // fieldSize == 4
         if ((sampleIndex++ % 2) == 0) {
-          // Read the next byte into our cached byte when we are reading the upper bits.
+          // 当读取高 4 位时，读取下一个字节到缓存字节中
           currentByte = data.readUnsignedByte();
-          // Read the upper bits from the byte and shift them to the lower 4 bits.
+          // 读取字节的高 4 位并右移到低 4 位
           return (currentByte & 0xF0) >> 4;
         } else {
-          // Mask out the upper 4 bits of the last byte we read.
+          // 屏蔽掉上次读取字节的高 4 位，读取低 4 位
           return currentByte & 0x0F;
         }
       }
