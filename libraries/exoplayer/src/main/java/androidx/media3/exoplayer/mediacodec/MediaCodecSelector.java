@@ -20,25 +20,23 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.mediacodec.MediaCodecUtil.DecoderQueryException;
 import java.util.List;
 
-/** Selector of {@link MediaCodec} instances. */
+/** {@link MediaCodec} 实例的选择器。 */
 @UnstableApi
 public interface MediaCodecSelector {
 
   /**
-   * Default implementation of {@link MediaCodecSelector}, which returns the preferred decoder for
-   * the given format.
+   * {@link MediaCodecSelector} 的默认实现，返回给定格式的首选解码器。
    */
   MediaCodecSelector DEFAULT = MediaCodecUtil::getDecoderInfos;
 
   /**
-   * Returns a list of decoders that can decode media in the specified MIME type, in priority order.
+   * 返回能够解码指定 MIME 类型的解码器列表，按优先级顺序排列。
    *
-   * @param mimeType The MIME type for which a decoder is required.
-   * @param requiresSecureDecoder Whether a secure decoder is required.
-   * @param requiresTunnelingDecoder Whether a tunneling decoder is required.
-   * @return An unmodifiable list of {@link MediaCodecInfo}s corresponding to decoders. May be
-   *     empty.
-   * @throws DecoderQueryException Thrown if there was an error querying decoders.
+   * @param mimeType 需要解码器的 MIME 类型。
+   * @param requiresSecureDecoder 是否需要安全解码器。
+   * @param requiresTunnelingDecoder 是否需要隧道解码器。
+   * @return 与解码器对应的 {@link MediaCodecInfo} 的不可修改列表。可能为空。
+   * @throws DecoderQueryException 如果查询解码器时发生错误，则抛出此异常。
    */
   List<MediaCodecInfo> getDecoderInfos(
       String mimeType, boolean requiresSecureDecoder, boolean requiresTunnelingDecoder)

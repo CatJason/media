@@ -88,66 +88,63 @@ import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-/** An abstract renderer that uses {@link MediaCodec} to decode samples for rendering. */
-//
-// The input media in the SampleStreams and the behavior of MediaCodec are outside of the control of
-// this class and we try to make as few assumptions as possible.
-//
-// Assumptions about the input streams:
-// - The first stream may pre-roll samples from a keyframe preceding the start time. Subsequent
-//   streams added via replaceSampleStream are always fully rendered.
-//
-// Assumptions about the codec output:
-// - Output timestamps from one stream are monotonically increasing.
-// - Output samples from the first stream with less than the declared start time are pre-rolled
-//   samples that are meant to be dropped. Output samples from subsequent streams are always fully
-//   rendered.
-// - There is exactly one last output sample with a timestamp greater or equal to the largest input
-//   sample timestamp of this stream.
-//
-// Explicit non-assumptions this class accepts as valid behavior:
-// - Input sample timestamps may not be monotonically increasing (e.g. for B-frames).
-// - Input and output sample timestamps may be less than the declared stream start time.
-// - Input and output sample timestamps may exceed the stream start time of the next stream.
-//   (The points above imply that output sample timestamps may jump backwards at stream transitions)
-// - Input and output sample timestamps may not be the same.
-// - The number of output samples may be different from the number of input samples.
+/**
+ * 一个抽象渲染器，使用 {@link MediaCodec} 解码样本以进行渲染。
+ *
+ * SampleStreams 中的输入媒体和 MediaCodec 的行为不受本类的控制，我们尽量做出尽可能少的假设。
+ *
+ * 关于输入流的假设：
+ * - 第一个流可能会从开始时间之前的关键帧预加载样本。通过 replaceSampleStream 添加的后续流始终会被完全渲染。
+ *
+ * 关于编解码器输出的假设：
+ * - 来自一个流的输出时间戳是单调递增的。
+ * - 来自第一个流的输出样本中，时间戳小于声明的开始时间的样本是预加载的样本，应该被丢弃。来自后续流的输出样本始终会被完全渲染。
+ * - 每个流的最后一个输出样本的时间戳大于或等于该流最大输入样本的时间戳。
+ *
+ * 本类明确不假设以下行为是无效的：
+ * - 输入样本的时间戳可能不是单调递增的（例如，对于 B 帧）。
+ * - 输入和输出样本的时间戳可能小于声明的流开始时间。
+ * - 输入和输出样本的时间戳可能超过下一个流的开始时间。
+ *   （上述两点意味着在流切换时，输出样本的时间戳可能会跳回）
+ * - 输入和输出样本的时间戳可能不同。
+ * - 输出样本的数量可能与输入样本的数量不同。
+ */
 @UnstableApi
 public abstract class MediaCodecRenderer extends BaseRenderer {
 
-  /** Thrown when a failure occurs instantiating a decoder. */
+  /**
+   * 当初始化解码器失败时抛出的异常。
+   */
   public static class DecoderInitializationException extends Exception {
 
-    private static final int CUSTOM_ERROR_CODE_BASE = -50000;
-    private static final int NO_SUITABLE_DECODER_ERROR = CUSTOM_ERROR_CODE_BASE + 1;
-    private static final int DECODER_QUERY_ERROR = CUSTOM_ERROR_CODE_BASE + 2;
+    private static final int CUSTOM_ERROR_CODE_BASE = -50000; // 自定义错误码的基础值
+    private static final int NO_SUITABLE_DECODER_ERROR = CUSTOM_ERROR_CODE_BASE + 1; // 没有合适的解码器错误
+    private static final int DECODER_QUERY_ERROR = CUSTOM_ERROR_CODE_BASE + 2; // 解码器查询错误
 
-    /** The MIME type for which a decoder was being initialized. */
+    /** 正在初始化解码器的 MIME 类型。 */
     @Nullable public final String mimeType;
 
-    /** Whether it was required that the decoder support a secure output path. */
+    /** 是否需要解码器支持安全输出路径。 */
     public final boolean secureDecoderRequired;
 
     /**
-     * The {@link MediaCodecInfo} of the decoder that failed to initialize. Null if no suitable
-     * decoder was found.
+     * 初始化失败的解码器的 {@link MediaCodecInfo}。如果未找到合适的解码器，则为 null。
      */
     @Nullable public final MediaCodecInfo codecInfo;
 
-    /** An optional developer-readable diagnostic information string. May be null. */
+    /** 可选的开发者可读的诊断信息字符串。可能为 null。 */
     @Nullable public final String diagnosticInfo;
 
     /**
-     * If the decoder failed to initialize and another decoder being used as a fallback also failed
-     * to initialize, the {@link DecoderInitializationException} for the fallback decoder. Null if
-     * there was no fallback decoder or no suitable decoders were found.
+     * 如果解码器初始化失败，并且作为后备的解码器也初始化失败，则为后备解码器的 {@link DecoderInitializationException}。
+     * 如果没有后备解码器或未找到合适的解码器，则为 null。
      */
     @Nullable public final DecoderInitializationException fallbackDecoderInitializationException;
 
     public DecoderInitializationException(
         Format format, @Nullable Throwable cause, boolean secureDecoderRequired, int errorCode) {
       this(
-          "Decoder init failed: [" + errorCode + "], " + format,
+          "解码器初始化失败: [" + errorCode + "], " + format,
           cause,
           format.sampleMimeType,
           secureDecoderRequired,
@@ -162,7 +159,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
         boolean secureDecoderRequired,
         MediaCodecInfo mediaCodecInfo) {
       this(
-          "Decoder init failed: " + mediaCodecInfo.name + ", " + format,
+          "解码器初始化失败: " + mediaCodecInfo.name + ", " + format,
           cause,
           format.sampleMimeType,
           secureDecoderRequired,
@@ -207,19 +204,16 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
     }
   }
 
-  /** Indicates no codec operating rate should be set. */
+  /** 表示不应设置编解码器的操作速率。 */
   protected static final float CODEC_OPERATING_RATE_UNSET = -1;
 
   private static final String TAG = "MediaCodecRenderer";
 
   /**
-   * If the {@link MediaCodec} is hotswapped (i.e. replaced during playback), this is the period of
-   * time during which {@link #isReady()} will report true regardless of whether the new codec has
-   * output frames that are ready to be rendered.
+   * 如果 {@link MediaCodec} 被热交换（即在播放过程中被替换），则在这段时间内，
+   * {@link #isReady()} 将返回 true，无论新的编解码器是否已经输出了可以渲染的帧。
    *
-   * <p>This allows codec hotswapping to be performed seamlessly, without interrupting the playback
-   * of other renderers, provided the new codec is able to decode some frames within this time
-   * period.
+   * <p>这允许编解码器的热交换无缝进行，而不会中断其他渲染器的播放，前提是新的编解码器能够在此时间段内解码一些帧。
    */
   private static final long MAX_CODEC_HOTSWAP_TIME_MS = 1000;
 
@@ -233,15 +227,14 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   })
   private @interface ReconfigurationState {}
 
-  /** There is no pending adaptive reconfiguration work. */
+  /** 没有待处理的自适应重新配置工作。 */
   private static final int RECONFIGURATION_STATE_NONE = 0;
 
-  /** Codec configuration data needs to be written into the next buffer. */
+  /** 需要将编解码器配置数据写入下一个缓冲区。 */
   private static final int RECONFIGURATION_STATE_WRITE_PENDING = 1;
 
   /**
-   * Codec configuration data has been written into the next buffer, but that buffer still needs to
-   * be returned to the codec.
+   * 编解码器配置数据已写入下一个缓冲区，但该缓冲区仍需返回给编解码器。
    */
   private static final int RECONFIGURATION_STATE_QUEUE_PENDING = 2;
 
@@ -251,13 +244,13 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   @IntDef({DRAIN_STATE_NONE, DRAIN_STATE_SIGNAL_END_OF_STREAM, DRAIN_STATE_WAIT_END_OF_STREAM})
   private @interface DrainState {}
 
-  /** The codec is not being drained. */
+  /** 编解码器未被排空。 */
   private static final int DRAIN_STATE_NONE = 0;
 
-  /** The codec needs to be drained, but we haven't signaled an end of stream to it yet. */
+  /** 编解码器需要被排空，但我们尚未向其发送结束流的信号。 */
   private static final int DRAIN_STATE_SIGNAL_END_OF_STREAM = 1;
 
-  /** The codec needs to be drained, and we're waiting for it to output an end of stream. */
+  /** 编解码器需要被排空，我们正在等待其输出结束流的信号。 */
   private static final int DRAIN_STATE_WAIT_END_OF_STREAM = 2;
 
   @Documented
@@ -271,16 +264,16 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   })
   private @interface DrainAction {}
 
-  /** No special action should be taken. */
+  /** 无需采取特殊操作。 */
   private static final int DRAIN_ACTION_NONE = 0;
 
-  /** The codec should be flushed. */
+  /** 应刷新编解码器。 */
   private static final int DRAIN_ACTION_FLUSH = 1;
 
-  /** The codec should be flushed and updated to use the pending DRM session. */
+  /** 应刷新编解码器并更新为使用待处理的 DRM 会话。 */
   private static final int DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION = 2;
 
-  /** The codec should be reinitialized. */
+  /** 应重新初始化编解码器。 */
   private static final int DRAIN_ACTION_REINITIALIZE = 3;
 
   @Documented
@@ -293,22 +286,21 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   })
   private @interface AdaptationWorkaroundMode {}
 
-  /** The adaptation workaround is never used. */
+  /** 从不使用自适应解决方案。 */
   private static final int ADAPTATION_WORKAROUND_MODE_NEVER = 0;
 
   /**
-   * The adaptation workaround is used when adapting between formats of the same resolution only.
+   * 仅在相同分辨率格式之间进行自适应时使用解决方案。
    */
   private static final int ADAPTATION_WORKAROUND_MODE_SAME_RESOLUTION = 1;
 
-  /** The adaptation workaround is always used when adapting between formats. */
+  /** 在格式之间进行自适应时始终使用解决方案。 */
   private static final int ADAPTATION_WORKAROUND_MODE_ALWAYS = 2;
 
   /**
-   * H.264/AVC buffer to queue when using the adaptation workaround (see {@link
-   * #codecAdaptationWorkaroundMode(String)}. Consists of three NAL units with start codes: Baseline
-   * sequence/picture parameter sets and a 32 * 32 pixel IDR slice. This stream can be queued to
-   * force a resolution change when adapting to a new format.
+   * 使用自适应解决方案时需要排队的 H.264/AVC 缓冲区（参见 {@link #codecAdaptationWorkaroundMode(String)}）。
+   * 它由三个带有起始码的 NAL 单元组成：Baseline 序列/图像参数集和一个 32 * 32 像素的 IDR 切片。
+   * 此流可以排队以在适应新格式时强制进行分辨率更改。
    */
   private static final byte[] ADAPTATION_WORKAROUND_BUFFER =
       new byte[] {
@@ -337,15 +329,15 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   @Nullable private WakeupListener wakeupListener;
 
   /**
-   * A framework {@link MediaCrypto} for use with {@link MediaCodec#queueSecureInputBuffer(int, int,
-   * MediaCodec.CryptoInfo, long, int)} to play encrypted content.
+   * 用于 {@link MediaCodec#queueSecureInputBuffer(int, int, MediaCodec.CryptoInfo, long, int)} 的框架 {@link MediaCrypto}，
+   * 用于播放加密内容。
    *
-   * <p>Non-null if framework decryption is being used (i.e. {@link DrmSession#getCryptoConfig()
-   * codecDrmSession.getCryptoConfig()} returns an instance of {@link FrameworkCryptoConfig}).
+   * <p>如果正在使用框架解密（即 {@link DrmSession#getCryptoConfig() codecDrmSession.getCryptoConfig()} 返回 {@link FrameworkCryptoConfig} 的实例），
+   * 则此值非空。
    *
-   * <p>Can be null if the content is not encrypted (in which case {@link #codecDrmSession} and
-   * {@link #sourceDrmSession} will also be null), or if decryption is happening without framework
-   * support ({@link #codecDrmSession} and {@link #sourceDrmSession} will be non-null).
+   * <p>如果内容未加密（此时 {@link #codecDrmSession} 和 {@link #sourceDrmSession} 也将为空），
+   * 或者解密过程不依赖框架支持（此时 {@link #codecDrmSession} 和 {@link #sourceDrmSession} 将非空），
+   * 则此值可为空。
    */
   @Nullable private MediaCrypto mediaCrypto;
 
@@ -399,15 +391,11 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   private boolean experimentalEnableProcessedStreamChangedAtStart;
 
   /**
-   * @param trackType The {@link C.TrackType track type} that the renderer handles.
-   * @param codecAdapterFactory A factory for {@link MediaCodecAdapter} instances.
-   * @param mediaCodecSelector A decoder selector.
-   * @param enableDecoderFallback Whether to enable fallback to lower-priority decoders if decoder
-   *     initialization fails. This may result in using a decoder that is less efficient or slower
-   *     than the primary decoder.
-   * @param assumedMinimumCodecOperatingRate A codec operating rate that all codecs instantiated by
-   *     this renderer are assumed to meet implicitly (i.e. without the operating rate being set
-   *     explicitly using {@link MediaFormat#KEY_OPERATING_RATE}).
+   * @param trackType 渲染器处理的 {@link C.TrackType 轨道类型}。
+   * @param codecAdapterFactory 用于创建 {@link MediaCodecAdapter} 实例的工厂。
+   * @param mediaCodecSelector 解码器选择器。
+   * @param enableDecoderFallback 是否在解码器初始化失败时启用降级到低优先级解码器。这可能导致使用效率较低或速度较慢的解码器。
+   * @param assumedMinimumCodecOperatingRate 假设所有由此渲染器实例化的解码器都能隐式满足的最低编解码器操作速率（即无需显式使用 {@link MediaFormat#KEY_OPERATING_RATE} 设置操作速率）。
    */
   public MediaCodecRenderer(
       @C.TrackType int trackType,
@@ -430,11 +418,10 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
     renderTimeLimitMs = C.TIME_UNSET;
     pendingOutputStreamChanges = new ArrayDeque<>();
     outputStreamInfo = OutputStreamInfo.UNSET;
-    // MediaCodec outputs audio buffers in native endian:
-    // https://developer.android.com/reference/android/media/MediaCodec#raw-audio-buffers
-    // and code called from MediaCodecAudioRenderer.processOutputBuffer expects this endianness.
-    // Call ensureSpaceForWrite to make sure the buffer has non-null data, and set the expected
-    // endianness.
+    // MediaCodec 以本地字节序输出音频缓冲区：
+    // 参见 https://developer.android.com/reference/android/media/MediaCodec#raw-audio-buffers
+    // 并且从 MediaCodecAudioRenderer.processOutputBuffer 调用的代码也期望使用这种字节序。
+    // 调用 ensureSpaceForWrite 以确保缓冲区具有非空数据，并设置预期的字节序。
     bypassBatchBuffer.ensureSpaceForWrite(/* length= */ 0);
     bypassBatchBuffer.data.order(ByteOrder.nativeOrder());
     oggOpusAudioPacketizer = new OggOpusAudioPacketizer();
@@ -455,13 +442,11 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Sets a limit on the time a single {@link #render(long, long)} call can spend draining and
-   * filling the decoder.
+   * 设置单次 {@link #render(long, long)} 调用在排空和填充解码器时所能花费的时间限制。
    *
-   * <p>This method should be called right after creating an instance of this class.
+   * <p>此方法应在创建该类的实例后立即调用。
    *
-   * @param renderTimeLimitMs The render time limit in milliseconds, or {@link C#TIME_UNSET} for no
-   *     limit.
+   * @param renderTimeLimitMs 渲染时间限制，单位为毫秒，或 {@link C#TIME_UNSET} 表示无限制。
    */
   public void setRenderTimeLimitMs(long renderTimeLimitMs) {
     this.renderTimeLimitMs = renderTimeLimitMs;
@@ -482,12 +467,12 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Returns the {@link Capabilities} for the given {@link Format}.
+   * 返回给定 {@link Format} 的 {@link Capabilities}。
    *
-   * @param mediaCodecSelector The decoder selector.
-   * @param format The {@link Format}.
-   * @return The {@link Capabilities} for this {@link Format}.
-   * @throws DecoderQueryException If there was an error querying decoders.
+   * @param mediaCodecSelector 解码器选择器。
+   * @param format 要查询的 {@link Format}。
+   * @return 该 {@link Format} 的 {@link Capabilities}。
+   * @throws DecoderQueryException 如果查询解码器时发生错误。
    */
   protected abstract @Capabilities int supportsFormat(
       MediaCodecSelector mediaCodecSelector, Format format) throws DecoderQueryException;
@@ -501,32 +486,25 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Enables the renderer to invoke {@link #onProcessedStreamChange()} on the first stream.
+   * 启用渲染器在第一个流上调用 {@link #onProcessedStreamChange()}。
    *
-   * <p>When not enabled, {@link #onProcessedStreamChange()} is invoked from the second stream
-   * onwards.
+   * <p>如果未启用，则从第二个流开始才会调用 {@link #onProcessedStreamChange()}。
    */
   public void experimentalEnableProcessedStreamChangedAtStart() {
     this.experimentalEnableProcessedStreamChangedAtStart = true;
   }
 
   /**
-   * Returns minimum time playback must advance in order for the {@link #render} call to make
-   * progress.
+   * 返回播放必须推进的最小时间，以便 {@link #render} 调用能够取得进展。
    *
-   * <p>If the {@code Renderer} has a registered {@link
-   * MediaCodecAdapter.OnBufferAvailableListener}, then the {@code Renderer} will be notified when
-   * decoder input and output buffers become available. These callbacks may affect the calculated
-   * minimum time playback must advance before a {@link #render} call can make progress.
+   * <p>如果 {@code Renderer} 注册了 {@link MediaCodecAdapter.OnBufferAvailableListener}，
+   * 则当解码器输入和输出缓冲区可用时，{@code Renderer} 将收到通知。这些回调可能会影响计算的播放必须推进的最小时间，
+   * 以确保 {@link #render} 调用能够取得进展。
    *
-   * @param isOnBufferAvailableListenerRegistered Whether the {@code Renderer} is using a {@link
-   *     MediaCodecAdapter} with successfully registered {@link
-   *     MediaCodecAdapter.OnBufferAvailableListener OnBufferAvailableListener}.
-   * @param positionUs The current media time in microseconds, measured at the start of the current
-   *     iteration of the rendering loop.
-   * @param elapsedRealtimeUs {@link android.os.SystemClock#elapsedRealtime()} in microseconds,
-   *     measured at the start of the current iteration of the rendering loop.
-   * @return minimum time playback must advance before renderer is able to make progress.
+   * @param isOnBufferAvailableListenerRegistered {@code Renderer} 是否使用了成功注册了 {@link MediaCodecAdapter.OnBufferAvailableListener OnBufferAvailableListener} 的 {@link MediaCodecAdapter}。
+   * @param positionUs 当前媒体时间，以微秒为单位，在渲染循环当前迭代开始时测量。
+   * @param elapsedRealtimeUs {@link android.os.SystemClock#elapsedRealtime()} 的值，以微秒为单位，在渲染循环当前迭代开始时测量。
+   * @return 播放必须推进的最小时间，以便渲染器能够取得进展。
    */
   protected long getDurationToProgressUs(
       boolean isOnBufferAvailableListenerRegistered, long positionUs, long elapsedRealtimeUs) {
@@ -534,28 +512,26 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Returns a list of decoders that can decode media in the specified format, in priority order.
+   * 返回能够解码指定格式媒体的解码器列表，按优先级排序。
    *
-   * @param mediaCodecSelector The decoder selector.
-   * @param format The {@link Format} for which a decoder is required.
-   * @param requiresSecureDecoder Whether a secure decoder is required.
-   * @return A list of {@link MediaCodecInfo}s corresponding to decoders. May be empty.
-   * @throws DecoderQueryException Thrown if there was an error querying decoders.
+   * @param mediaCodecSelector 解码器选择器。
+   * @param format 需要解码器的 {@link Format}。
+   * @param requiresSecureDecoder 是否需要安全解码器。
+   * @return 与解码器对应的 {@link MediaCodecInfo} 列表。可能为空。
+   * @throws DecoderQueryException 如果查询解码器时发生错误，则抛出此异常。
    */
   protected abstract List<MediaCodecInfo> getDecoderInfos(
       MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder)
       throws DecoderQueryException;
 
   /**
-   * Returns the {@link MediaCodecAdapter.Configuration} that will be used to create and configure a
-   * {@link MediaCodec} to decode the given {@link Format} for a playback.
+   * 返回用于创建和配置 {@link MediaCodec} 以解码给定 {@link Format} 进行播放的 {@link MediaCodecAdapter.Configuration}。
    *
-   * @param codecInfo Information about the {@link MediaCodec} being configured.
-   * @param format The {@link Format} for which the codec is being configured.
-   * @param crypto For drm protected playbacks, a {@link MediaCrypto} to use for decryption.
-   * @param codecOperatingRate The codec operating rate, or {@link #CODEC_OPERATING_RATE_UNSET} if
-   *     no codec operating rate should be set.
-   * @return The parameters needed to call {@link MediaCodec#configure}.
+   * @param codecInfo 正在配置的 {@link MediaCodec} 的相关信息。
+   * @param format 正在为编解码器配置的 {@link Format}。
+   * @param crypto 对于受 DRM 保护的播放，用于解密的 {@link MediaCrypto}。
+   * @param codecOperatingRate 编解码器操作速率，或 {@link #CODEC_OPERATING_RATE_UNSET} 表示不应设置操作速率。
+   * @return 调用 {@link MediaCodec#configure} 所需的参数。
    */
   protected abstract MediaCodecAdapter.Configuration getMediaCodecConfiguration(
       MediaCodecInfo codecInfo,
@@ -598,26 +574,24 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Returns whether buffers in the input format can be processed without a codec.
+   * 返回输入格式的缓冲区是否可以在不使用编解码器的情况下被处理。
    *
-   * <p>This method returns the possibility of bypass mode with checking both the renderer
-   * capabilities and DRM protection.
+   * <p>此方法通过检查渲染器能力和 DRM 保护来返回是否可能启用绕过模式。
    *
-   * @param format The input {@link Format}.
-   * @return Whether playback bypassing {@link MediaCodec} is possible.
+   * @param format 输入的 {@link Format}。
+   * @return 是否可能绕过 {@link MediaCodec} 进行播放。
    */
   protected final boolean isBypassPossible(Format format) {
     return sourceDrmSession == null && shouldUseBypass(format);
   }
 
   /**
-   * Returns whether buffers in the input format can be processed without a codec.
+   * 返回输入格式的缓冲区是否可以在不使用编解码器的情况下被处理。
    *
-   * <p>This method is only called if the content is not DRM protected, because if the content is
-   * DRM protected use of bypass is never possible.
+   * <p>此方法仅在内容未受 DRM 保护时调用，因为如果内容受 DRM 保护，则永远无法使用绕过模式。
    *
-   * @param format The input {@link Format}.
-   * @return Whether playback bypassing {@link MediaCodec} is supported.
+   * @param format 输入的 {@link Format}。
+   * @return 是否支持绕过 {@link MediaCodec} 进行播放。
    */
   protected boolean shouldUseBypass(Format format) {
     return false;
@@ -628,43 +602,39 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Returns whether the renderer needs to re-initialize the codec, possibly as a result of a change
-   * in device capabilities.
+   * 返回渲染器是否需要重新初始化编解码器，可能是由于设备能力的变化所致。
    */
   protected boolean shouldReinitCodec() {
     return false;
   }
 
   /**
-   * Returns whether the codec needs the renderer to propagate the end-of-stream signal directly,
-   * rather than by using an end-of-stream buffer queued to the codec.
+   * 返回编解码器是否需要渲染器直接传播结束流信号，而不是通过向编解码器排队一个结束流缓冲区来实现。
    */
   protected boolean getCodecNeedsEosPropagation() {
     return false;
   }
 
-  /** Returns whether bypass is enabled by the renderer. */
+  /** 返回渲染器是否启用了绕过模式。 */
   protected final boolean isBypassEnabled() {
     return bypassEnabled;
   }
 
   /**
-   * Sets an exception to be re-thrown by render.
+   * 设置一个异常，以便在渲染时重新抛出。
    *
-   * @param exception The exception.
+   * @param exception 要重新抛出的异常。
    */
   protected final void setPendingPlaybackException(ExoPlaybackException exception) {
     pendingPlaybackException = exception;
   }
 
   /**
-   * Updates the output formats for the specified output buffer timestamp, calling {@link
-   * #onOutputFormatChanged} if a change has occurred.
+   * 更新指定输出缓冲区时间戳的输出格式，如果发生更改，则调用 {@link #onOutputFormatChanged}。
    *
-   * <p>Subclasses should only call this method if operating in a mode where buffers are not
-   * dequeued from the decoder, for example when using video tunneling).
+   * <p>子类应仅在未从解码器出队缓冲区的模式下调用此方法，例如使用视频隧道时。
    *
-   * @throws ExoPlaybackException Thrown if an error occurs as a result of the output format change.
+   * @throws ExoPlaybackException 如果由于输出格式更改而发生错误，则抛出此异常。
    */
   protected final void updateOutputFormatForTime(long presentationTimeUs)
       throws ExoPlaybackException {
@@ -719,7 +689,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       MediaSource.MediaPeriodId mediaPeriodId)
       throws ExoPlaybackException {
     if (outputStreamInfo.streamOffsetUs == C.TIME_UNSET) {
-      // This is the first stream.
+      // 这是第一个流。
       setOutputStreamInfo(
           new OutputStreamInfo(
               /* previousStreamLastBufferTimeUs= */ C.TIME_UNSET, startPositionUs, offsetUs));
@@ -728,9 +698,9 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       }
     } else if (pendingOutputStreamChanges.isEmpty()
         && (largestQueuedPresentationTimeUs == C.TIME_UNSET
-            || (lastProcessedOutputBufferTimeUs != C.TIME_UNSET
-                && lastProcessedOutputBufferTimeUs >= largestQueuedPresentationTimeUs))) {
-      // All previous streams have never queued any samples or have been fully output already.
+        || (lastProcessedOutputBufferTimeUs != C.TIME_UNSET
+        && lastProcessedOutputBufferTimeUs >= largestQueuedPresentationTimeUs))) {
+      // 所有先前的流从未排队任何样本，或者已经完全输出。
       setOutputStreamInfo(
           new OutputStreamInfo(
               /* previousStreamLastBufferTimeUs= */ C.TIME_UNSET, startPositionUs, offsetUs));
@@ -745,25 +715,24 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
 
   @Override
   protected void onPositionReset(long positionUs, boolean joining) throws ExoPlaybackException {
-    inputStreamEnded = false;
-    outputStreamEnded = false;
-    pendingOutputEndOfStream = false;
+    inputStreamEnded = false; // 重置输入流结束标志
+    outputStreamEnded = false; // 重置输出流结束标志
+    pendingOutputEndOfStream = false; // 重置待处理的输出流结束标志
     if (bypassEnabled) {
-      bypassBatchBuffer.clear();
-      bypassSampleBuffer.clear();
-      bypassSampleBufferPending = false;
-      oggOpusAudioPacketizer.reset();
+      bypassBatchBuffer.clear(); // 清空绕过模式的批量缓冲区
+      bypassSampleBuffer.clear(); // 清空绕过模式的样本缓冲区
+      bypassSampleBufferPending = false; // 重置绕过模式样本缓冲区待处理标志
+      oggOpusAudioPacketizer.reset(); // 重置 Ogg Opus 音频打包器
     } else {
-      flushOrReinitializeCodec();
+      flushOrReinitializeCodec(); // 刷新或重新初始化编解码器
     }
-    // If there is a format change on the input side still pending propagation to the output, we
-    // need to queue a format next time a buffer is read. This is because we may not read a new
-    // input format after the position reset.
+    // 如果输入端的格式更改仍未传播到输出端，则需要在下次读取缓冲区时排队一个格式。
+    // 这是因为在位置重置后，我们可能不会读取新的输入格式。
     if (outputStreamInfo.formatQueue.size() > 0) {
-      waitingForFirstSampleInFormat = true;
+      waitingForFirstSampleInFormat = true; // 设置等待格式中的第一个样本标志
     }
-    outputStreamInfo.formatQueue.clear();
-    pendingOutputStreamChanges.clear();
+    outputStreamInfo.formatQueue.clear(); // 清空输出流信息中的格式队列
+    pendingOutputStreamChanges.clear(); // 清空待处理的输出流更改列表
   }
 
   @Override
@@ -845,159 +814,155 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   @Override
   public void render(long positionUs, long elapsedRealtimeUs) throws ExoPlaybackException {
     if (pendingOutputEndOfStream) {
-      pendingOutputEndOfStream = false;
-      processEndOfStream();
+      pendingOutputEndOfStream = false; // 重置待处理的输出流结束标志
+      processEndOfStream(); // 处理流结束逻辑
     }
     if (pendingPlaybackException != null) {
-      ExoPlaybackException playbackException = pendingPlaybackException;
-      pendingPlaybackException = null;
-      throw playbackException;
+      ExoPlaybackException playbackException = pendingPlaybackException; // 获取待处理的播放异常
+      pendingPlaybackException = null; // 重置待处理的播放异常
+      throw playbackException; // 抛出播放异常
     }
 
     try {
       if (outputStreamEnded) {
-        renderToEndOfStream();
+        renderToEndOfStream(); // 如果输出流已结束，则渲染到流结束
         return;
       }
       if (inputFormat == null && !readSourceOmittingSampleData(FLAG_REQUIRE_FORMAT)) {
-        // We still don't have a format and can't make progress without one.
+        // 如果仍然没有格式且无法在没有格式的情况下取得进展，则返回
         return;
       }
-      // We have a format.
-      maybeInitCodecOrBypass();
+      // 我们已经有一个格式
+      maybeInitCodecOrBypass(); // 可能初始化编解码器或启用绕过模式
       if (bypassEnabled) {
-        TraceUtil.beginSection("bypassRender");
-        while (bypassRender(positionUs, elapsedRealtimeUs)) {}
-        TraceUtil.endSection();
+        TraceUtil.beginSection("bypassRender"); // 开始跟踪绕过模式渲染
+        while (bypassRender(positionUs, elapsedRealtimeUs)) {} // 执行绕过模式渲染
+        TraceUtil.endSection(); // 结束跟踪
       } else if (codec != null) {
-        long renderStartTimeMs = getClock().elapsedRealtime();
-        TraceUtil.beginSection("drainAndFeed");
+        long renderStartTimeMs = getClock().elapsedRealtime(); // 获取渲染开始时间
+        TraceUtil.beginSection("drainAndFeed"); // 开始跟踪排空和填充缓冲区
         while (drainOutputBuffer(positionUs, elapsedRealtimeUs)
-            && shouldContinueRendering(renderStartTimeMs)) {}
-        while (feedInputBuffer() && shouldContinueRendering(renderStartTimeMs)) {}
-        TraceUtil.endSection();
+            && shouldContinueRendering(renderStartTimeMs)) {} // 排空输出缓冲区
+        while (feedInputBuffer() && shouldContinueRendering(renderStartTimeMs)) {} // 填充输入缓冲区
+        TraceUtil.endSection(); // 结束跟踪
       } else {
-        decoderCounters.skippedInputBufferCount += skipSource(positionUs);
-        // We need to read any format changes despite not having a codec so that drmSession can be
-        // updated, and so that we have the most recent format should the codec be initialized. We
-        // may also reach the end of the stream. FLAG_PEEK is used because we don't want to advance
-        // the source further than skipSource has already done.
+        decoderCounters.skippedInputBufferCount += skipSource(positionUs); // 跳过源数据并更新计数器
+        // 尽管没有编解码器，我们仍需要读取格式更改，以便更新 drmSession，
+        // 并且在编解码器初始化时拥有最新的格式。我们可能也会到达流的末尾。
+        // 使用 FLAG_PEEK 是因为我们不想让源数据前进超过 skipSource 已经完成的范围。
         readSourceOmittingSampleData(FLAG_PEEK);
       }
-      decoderCounters.ensureUpdated();
+      decoderCounters.ensureUpdated(); // 确保计数器已更新
     } catch (MediaCodec.CryptoException e) {
       throw createRendererException(
-          e, inputFormat, Util.getErrorCodeForMediaDrmErrorCode(e.getErrorCode()));
+          e, inputFormat, Util.getErrorCodeForMediaDrmErrorCode(e.getErrorCode())); // 抛出加密异常
     } catch (IllegalStateException e) {
       if (isMediaCodecException(e)) {
-        onCodecError(e);
+        onCodecError(e); // 处理编解码器错误
         boolean isRecoverable =
-            (e instanceof CodecException) && ((CodecException) e).isRecoverable();
+            (e instanceof CodecException) && ((CodecException) e).isRecoverable(); // 判断是否可恢复
         if (isRecoverable) {
-          releaseCodec();
+          releaseCodec(); // 如果可恢复，则释放编解码器
         }
-        MediaCodecDecoderException exception = createDecoderException(e, getCodecInfo());
+        MediaCodecDecoderException exception = createDecoderException(e, getCodecInfo()); // 创建解码器异常
         @PlaybackException.ErrorCode
         int errorCode =
             exception.errorCode == CodecException.ERROR_RECLAIMED
                 ? PlaybackException.ERROR_CODE_DECODING_RESOURCES_RECLAIMED
-                : PlaybackException.ERROR_CODE_DECODING_FAILED;
-        throw createRendererException(exception, inputFormat, isRecoverable, errorCode);
+                : PlaybackException.ERROR_CODE_DECODING_FAILED; // 根据异常类型设置错误码
+        throw createRendererException(exception, inputFormat, isRecoverable, errorCode); // 抛出渲染器异常
       }
       throw e;
     }
   }
 
   /**
-   * Flushes the codec. If flushing is not possible, the codec will be released and re-instantiated.
-   * This method is a no-op if the codec is {@code null}.
+   * 刷新编解码器。如果无法刷新，则编解码器将被释放并重新实例化。
+   * 如果编解码器为 {@code null}，则此方法不执行任何操作。
    *
-   * <p>The implementation of this method calls {@link #flushOrReleaseCodec()}, and {@link
-   * #maybeInitCodecOrBypass()} if the codec needs to be re-instantiated.
+   * <p>此方法的实现会调用 {@link #flushOrReleaseCodec()}，如果需要重新实例化编解码器，则调用 {@link
+   * #maybeInitCodecOrBypass()}。
    *
-   * @return Whether the codec was released and reinitialized, rather than being flushed.
-   * @throws ExoPlaybackException If an error occurs re-instantiating the codec.
+   * @return 编解码器是否被释放并重新初始化，而不是被刷新。
+   * @throws ExoPlaybackException 如果重新实例化编解码器时发生错误。
    */
   protected final boolean flushOrReinitializeCodec() throws ExoPlaybackException {
-    boolean released = flushOrReleaseCodec();
+    boolean released = flushOrReleaseCodec(); // 刷新或释放编解码器
     if (released) {
-      maybeInitCodecOrBypass();
+      maybeInitCodecOrBypass(); // 如果需要，则重新初始化编解码器或启用绕过模式
     }
-    return released;
+    return released; // 返回编解码器是否被释放并重新初始化
   }
 
   /**
-   * Flushes the codec. If flushing is not possible, the codec will be released. This method is a
-   * no-op if the codec is {@code null}.
+   * 刷新编解码器。如果无法刷新，则编解码器将被释放。如果编解码器为 {@code null}，则此方法不执行任何操作。
    *
-   * @return Whether the codec was released.
+   * @return 编解码器是否被释放。
    */
   protected boolean flushOrReleaseCodec() {
     if (codec == null) {
-      return false;
+      return false; // 如果编解码器为 null，则返回 false
     }
     if (codecDrainAction == DRAIN_ACTION_REINITIALIZE
         || (codecNeedsSosFlushWorkaround && !codecHasOutputMediaFormat)
         || (codecNeedsEosFlushWorkaround && codecReceivedEos)) {
-      releaseCodec();
-      return true;
+      releaseCodec(); // 如果需要重新初始化或满足特定条件，则释放编解码器
+      return true; // 返回 true，表示编解码器被释放
     }
     if (codecDrainAction == DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION) {
-      checkState(Util.SDK_INT >= 23); // Implied by DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION
-      // Needed to keep lint happy (it doesn't understand the checkState call alone)
+      checkState(Util.SDK_INT >= 23); // 检查 SDK 版本是否 >= 23
+      // 为了使 lint 检查通过（它无法仅通过 checkState 调用来理解）
       if (Util.SDK_INT >= 23) {
         try {
-          updateDrmSessionV23();
+          updateDrmSessionV23(); // 更新 DRM 会话
         } catch (ExoPlaybackException e) {
           Log.w(TAG, "Failed to update the DRM session, releasing the codec instead.", e);
-          releaseCodec();
-          return true;
+          releaseCodec(); // 如果更新 DRM 会话失败，则释放编解码器
+          return true; // 返回 true，表示编解码器被释放
         }
       }
     }
-    flushCodec();
-    return false;
+    flushCodec(); // 刷新编解码器
+    return false; // 返回 false，表示编解码器未被释放
   }
 
-  /** Flushes the codec. */
+  /** 刷新编解码器。 */
   private void flushCodec() {
     try {
-      checkStateNotNull(codec).flush();
+      checkStateNotNull(codec).flush(); // 检查编解码器不为 null 并刷新编解码器
     } finally {
-      resetCodecStateForFlush();
+      resetCodecStateForFlush(); // 无论是否发生异常，都重置编解码器状态
     }
   }
 
-  /** Resets the renderer internal state after a codec flush. */
+  /** 在编解码器刷新后重置渲染器的内部状态。 */
   @CallSuper
   protected void resetCodecStateForFlush() {
-    resetInputBuffer();
-    resetOutputBuffer();
-    codecHotswapDeadlineMs = C.TIME_UNSET;
-    codecReceivedEos = false;
-    lastOutputBufferProcessedRealtimeMs = C.TIME_UNSET;
-    codecReceivedBuffers = false;
-    codecNeedsAdaptationWorkaroundBuffer = false;
-    shouldSkipAdaptationWorkaroundOutputBuffer = false;
-    isDecodeOnlyOutputBuffer = false;
-    isLastOutputBuffer = false;
-    largestQueuedPresentationTimeUs = C.TIME_UNSET;
-    lastBufferInStreamPresentationTimeUs = C.TIME_UNSET;
-    lastProcessedOutputBufferTimeUs = C.TIME_UNSET;
-    codecDrainState = DRAIN_STATE_NONE;
-    codecDrainAction = DRAIN_ACTION_NONE;
-    // Reconfiguration data sent shortly before the flush may not have been processed by the
-    // decoder. If the codec has been reconfigured we always send reconfiguration data again to
-    // guarantee that it's processed.
+    resetInputBuffer(); // 重置输入缓冲区
+    resetOutputBuffer(); // 重置输出缓冲区
+    codecHotswapDeadlineMs = C.TIME_UNSET; // 重置编解码器热交换截止时间
+    codecReceivedEos = false; // 重置编解码器是否收到流结束信号
+    lastOutputBufferProcessedRealtimeMs = C.TIME_UNSET; // 重置最后处理的输出缓冲区的实时时间
+    codecReceivedBuffers = false; // 重置编解码器是否已接收缓冲区
+    codecNeedsAdaptationWorkaroundBuffer = false; // 重置编解码器是否需要自适应解决方案缓冲区
+    shouldSkipAdaptationWorkaroundOutputBuffer = false; // 重置是否应跳过自适应解决方案的输出缓冲区
+    isDecodeOnlyOutputBuffer = false; // 重置输出缓冲区是否仅用于解码
+    isLastOutputBuffer = false; // 重置是否为最后一个输出缓冲区
+    largestQueuedPresentationTimeUs = C.TIME_UNSET; // 重置最大排队的展示时间
+    lastBufferInStreamPresentationTimeUs = C.TIME_UNSET; // 重置流中最后一个缓冲区的展示时间
+    lastProcessedOutputBufferTimeUs = C.TIME_UNSET; // 重置最后处理的输出缓冲区的时间
+    codecDrainState = DRAIN_STATE_NONE; // 重置编解码器排空状态
+    codecDrainAction = DRAIN_ACTION_NONE; // 重置编解码器排空操作
+    // 在刷新前不久发送的重新配置数据可能尚未被解码器处理。
+    // 如果编解码器已被重新配置，我们总是再次发送重新配置数据，以确保其被处理。
     codecReconfigurationState =
-        codecReconfigured ? RECONFIGURATION_STATE_WRITE_PENDING : RECONFIGURATION_STATE_NONE;
+        codecReconfigured ? RECONFIGURATION_STATE_WRITE_PENDING : RECONFIGURATION_STATE_NONE; // 重置编解码器重新配置状态
   }
 
   /**
-   * Resets the renderer internal state after a codec release.
+   * 在编解码器释放后重置渲染器的内部状态。
    *
-   * <p>Note that this only needs to reset state variables that are changed in addition to those
-   * already changed in {@link #resetCodecStateForFlush()}.
+   * <p>请注意，此方法仅需重置在 {@link #resetCodecStateForFlush()} 之外被修改的状态变量。
    */
   @CallSuper
   protected void resetCodecStateForRelease() {
@@ -1027,12 +992,10 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Reads from the source when sample data is not required. If a format or an end of stream buffer
-   * is read, it will be handled before the call returns.
+   * 在不需要样本数据时从源中读取数据。如果读取到格式或流结束缓冲区，将在调用返回前处理。
    *
-   * @param readFlags Additional {@link ReadFlags}. {@link SampleStream#FLAG_OMIT_SAMPLE_DATA} is
-   *     added internally, and so does not need to be passed.
-   * @return Whether a format was read and processed.
+   * @param readFlags 额外的 {@link ReadFlags}。{@link SampleStream#FLAG_OMIT_SAMPLE_DATA} 已在内部添加，因此无需传递。
+   * @return 是否读取并处理了格式。
    */
   private boolean readSourceOmittingSampleData(@SampleStream.ReadFlags int readFlags)
       throws ExoPlaybackException {
@@ -1051,50 +1014,47 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Checks whether {@link #codecDrmSession} is ready for playback, and if so initializes {@link
-   * #mediaCrypto} if needed.
+   * 检查 {@link #codecDrmSession} 是否已准备好进行播放，如果需要则初始化 {@link #mediaCrypto}。
    *
-   * @return {@code true} if codec initialization should continue, or {@code false} if it should be
-   *     aborted.
+   * @return 如果应继续编解码器初始化，则返回 {@code true}；如果应中止，则返回 {@code false}。
    */
   @RequiresNonNull("this.codecDrmSession")
   private boolean initMediaCryptoIfDrmSessionReady() throws ExoPlaybackException {
-    checkState(mediaCrypto == null);
-    DrmSession codecDrmSession = this.codecDrmSession;
-    @Nullable CryptoConfig cryptoConfig = codecDrmSession.getCryptoConfig();
+    checkState(mediaCrypto == null); // 检查 mediaCrypto 是否为 null
+    DrmSession codecDrmSession = this.codecDrmSession; // 获取当前的 DRM 会话
+    @Nullable CryptoConfig cryptoConfig = codecDrmSession.getCryptoConfig(); // 获取加密配置
     if (FrameworkCryptoConfig.WORKAROUND_DEVICE_NEEDS_KEYS_TO_CONFIGURE_CODEC
         && cryptoConfig instanceof FrameworkCryptoConfig) {
-      @DrmSession.State int drmSessionState = codecDrmSession.getState();
+      @DrmSession.State int drmSessionState = codecDrmSession.getState(); // 获取 DRM 会话状态
       if (drmSessionState == DrmSession.STATE_ERROR) {
         DrmSessionException drmSessionException =
-            Assertions.checkNotNull(codecDrmSession.getError());
+            Assertions.checkNotNull(codecDrmSession.getError()); // 获取 DRM 会话错误
         throw createRendererException(
-            drmSessionException, inputFormat, drmSessionException.errorCode);
+            drmSessionException, inputFormat, drmSessionException.errorCode); // 抛出渲染器异常
       } else if (drmSessionState != DrmSession.STATE_OPENED_WITH_KEYS) {
-        // Wait for keys.
+        // 等待密钥
         return false;
       }
     }
     if (cryptoConfig == null) {
-      @Nullable DrmSessionException drmError = codecDrmSession.getError();
+      @Nullable DrmSessionException drmError = codecDrmSession.getError(); // 获取 DRM 会话错误
       if (drmError != null) {
-        // Continue for now. We may be able to avoid failure if a new input format causes the
-        // session to be replaced without it having been used.
+        // 暂时继续。如果新的输入格式导致会话被替换而未使用，我们可能可以避免失败。
         return true;
       } else {
-        // The drm session isn't open yet.
+        // DRM 会话尚未打开
         return false;
       }
     } else if (cryptoConfig instanceof FrameworkCryptoConfig) {
       FrameworkCryptoConfig frameworkCryptoConfig = (FrameworkCryptoConfig) cryptoConfig;
       try {
-        mediaCrypto = new MediaCrypto(frameworkCryptoConfig.uuid, frameworkCryptoConfig.sessionId);
+        mediaCrypto = new MediaCrypto(frameworkCryptoConfig.uuid, frameworkCryptoConfig.sessionId); // 初始化 MediaCrypto
       } catch (MediaCryptoException e) {
         throw createRendererException(
-            e, inputFormat, PlaybackException.ERROR_CODE_DRM_SYSTEM_ERROR);
+            e, inputFormat, PlaybackException.ERROR_CODE_DRM_SYSTEM_ERROR); // 抛出渲染器异常
       }
     }
-    return true;
+    return true; // 返回 true，表示初始化成功
   }
 
   private void maybeInitCodecWithFallback(
@@ -1131,30 +1091,28 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
 
     ArrayDeque<MediaCodecInfo> availableCodecInfos = checkNotNull(this.availableCodecInfos);
     while (codec == null) {
-      MediaCodecInfo codecInfo = checkNotNull(availableCodecInfos.peekFirst());
+      MediaCodecInfo codecInfo = checkNotNull(availableCodecInfos.peekFirst()); // 获取列表中的第一个可用编解码器信息
       if (!shouldInitCodec(codecInfo)) {
-        return;
+        return; // 如果不应初始化该编解码器，则直接返回
       }
       try {
-        initCodec(codecInfo, crypto);
+        initCodec(codecInfo, crypto); // 尝试初始化编解码器
       } catch (Exception e) {
-        Log.w(TAG, "Failed to initialize decoder: " + codecInfo, e);
-        // This codec failed to initialize, so fall back to the next codec in the list (if any). We
-        // won't try to use this codec again unless there's a format change or the renderer is
-        // disabled and re-enabled.
-        availableCodecInfos.removeFirst();
+        Log.w(TAG, "Failed to initialize decoder: " + codecInfo, e); // 记录初始化失败的日志
+        // 该编解码器初始化失败，因此回退到列表中的下一个编解码器（如果有的话）。除非发生格式更改或渲染器被禁用并重新启用，否则不会再次尝试使用此编解码器。
+        availableCodecInfos.removeFirst(); // 从列表中移除失败的编解码器信息
         DecoderInitializationException exception =
             new DecoderInitializationException(
-                inputFormat, e, mediaCryptoRequiresSecureDecoder, codecInfo);
-        onCodecError(exception);
+                inputFormat, e, mediaCryptoRequiresSecureDecoder, codecInfo); // 创建解码器初始化异常
+        onCodecError(exception); // 处理编解码器错误
         if (preferredDecoderInitializationException == null) {
-          preferredDecoderInitializationException = exception;
+          preferredDecoderInitializationException = exception; // 如果首选解码器初始化异常为空，则设置为当前异常
         } else {
           preferredDecoderInitializationException =
-              preferredDecoderInitializationException.copyWithFallbackException(exception);
+              preferredDecoderInitializationException.copyWithFallbackException(exception); // 否则，将当前异常作为回退异常附加
         }
         if (availableCodecInfos.isEmpty()) {
-          throw preferredDecoderInitializationException;
+          throw preferredDecoderInitializationException; // 如果没有更多可用的编解码器，则抛出异常
         }
       }
     }
@@ -1164,16 +1122,14 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
 
   private List<MediaCodecInfo> getAvailableCodecInfos(boolean mediaCryptoRequiresSecureDecoder)
       throws DecoderQueryException {
-    Format inputFormat = checkNotNull(this.inputFormat);
+    Format inputFormat = checkNotNull(this.inputFormat); // 检查输入格式不为 null
     List<MediaCodecInfo> codecInfos =
-        getDecoderInfos(mediaCodecSelector, inputFormat, mediaCryptoRequiresSecureDecoder);
+        getDecoderInfos(mediaCodecSelector, inputFormat, mediaCryptoRequiresSecureDecoder); // 获取支持的解码器信息
     if (codecInfos.isEmpty() && mediaCryptoRequiresSecureDecoder) {
-      // The drm session indicates that a secure decoder is required, but the device does not
-      // have one. Assuming that supportsFormat indicated support for the media being played, we
-      // know that it does not require a secure output path. Most CDM implementations allow
-      // playback to proceed with a non-secure decoder in this case, so we try our luck.
+      // DRM 会话表示需要安全解码器，但设备没有。假设 supportsFormat 表明支持播放的媒体，我们知道它不需要安全输出路径。
+      // 大多数 CDM 实现允许在这种情况下使用非安全解码器进行播放，因此我们尝试继续。
       codecInfos =
-          getDecoderInfos(mediaCodecSelector, inputFormat, /* requiresSecureDecoder= */ false);
+          getDecoderInfos(mediaCodecSelector, inputFormat, /* requiresSecureDecoder= */ false); // 获取非安全解码器信息
       if (!codecInfos.isEmpty()) {
         Log.w(
             TAG,
@@ -1181,26 +1137,26 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
                 + inputFormat.sampleMimeType
                 + ", but no secure decoder available. Trying to proceed with "
                 + codecInfos
-                + ".");
+                + "."); // 记录警告日志
       }
     }
-    return codecInfos;
+    return codecInfos; // 返回可用的解码器信息列表
   }
 
-  /** Configures rendering where no codec is used. */
+  /** 配置不使用编解码器的渲染模式。 */
   private void initBypass(Format format) {
-    disableBypass(); // In case of transition between 2 bypass formats.
+    disableBypass(); // 在两种绕过格式之间切换时，先禁用绕过模式。
 
-    String mimeType = format.sampleMimeType;
+    String mimeType = format.sampleMimeType; // 获取格式的 MIME 类型
     if (!MimeTypes.AUDIO_AAC.equals(mimeType)
         && !MimeTypes.AUDIO_MPEG.equals(mimeType)
         && !MimeTypes.AUDIO_OPUS.equals(mimeType)) {
-      // TODO(b/154746451): Batching provokes frame drops in non offload.
-      bypassBatchBuffer.setMaxSampleCount(1);
+      // TODO(b/154746451): 在非卸载模式下，批处理会导致丢帧。
+      bypassBatchBuffer.setMaxSampleCount(1); // 设置最大样本数量为 1
     } else {
-      bypassBatchBuffer.setMaxSampleCount(BatchBuffer.DEFAULT_MAX_SAMPLE_COUNT);
+      bypassBatchBuffer.setMaxSampleCount(BatchBuffer.DEFAULT_MAX_SAMPLE_COUNT); // 使用默认的最大样本数量
     }
-    bypassEnabled = true;
+    bypassEnabled = true; // 启用绕过模式
   }
 
   private void initCodec(MediaCodecInfo codecInfo, @Nullable MediaCrypto crypto) throws Exception {
@@ -1295,8 +1251,8 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * @return Whether it may be possible to feed more input data.
-   * @throws ExoPlaybackException If an error occurs feeding the input buffer.
+   * @return 是否可能继续输入更多数据。
+   * @throws ExoPlaybackException 如果在输入数据时发生错误。
    */
   private boolean feedInputBuffer() throws ExoPlaybackException {
     if (codec == null || codecDrainState == DRAIN_STATE_WAIT_END_OF_STREAM || inputStreamEnded) {
@@ -1317,8 +1273,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
     }
 
     if (codecDrainState == DRAIN_STATE_SIGNAL_END_OF_STREAM) {
-      // We need to re-initialize the codec. Send an end of stream signal to the existing codec so
-      // that it outputs any remaining buffers before we release it.
+      // 我们需要重新初始化编解码器。向现有编解码器发送一个流结束信号，以便在释放它之前输出所有剩余的缓冲区。
       if (codecNeedsEosPropagation) {
         // Do nothing.
       } else {
@@ -1339,8 +1294,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       return true;
     }
 
-    // For adaptive reconfiguration, decoders expect all reconfiguration data to be supplied at
-    // the start of the buffer that also contains the first frame in the new format.
+    // 对于自适应重新配置，解码器期望所有重新配置数据都在包含新格式中第一帧的缓冲区开头提供。
     if (codecReconfigurationState == RECONFIGURATION_STATE_WRITE_PENDING) {
       for (int i = 0; i < checkNotNull(codecInputFormat).initializationData.size(); i++) {
         byte[] data = codecInputFormat.initializationData.get(i);
@@ -1357,8 +1311,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       result = readSource(formatHolder, buffer, /* readFlags= */ 0);
     } catch (InsufficientCapacityException e) {
       onCodecError(e);
-      // Skip the sample that's too large by reading it without its data. Then flush the codec so
-      // that rendering will resume from the next key frame.
+      // 通过读取但不包含其数据的方式跳过过大的样本。然后刷新编解码器，以便从下一个关键帧恢复渲染。
       readSourceOmittingSampleData(/* readFlags= */ 0);
       flushCodec();
       return true;
@@ -1366,15 +1319,14 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
 
     if (result == C.RESULT_NOTHING_READ) {
       if (hasReadStreamToEnd()) {
-        // Notify output queue of the last buffer's timestamp.
+        // 通知输出队列最后一个缓冲区的时间戳。
         lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
       }
       return false;
     }
     if (result == C.RESULT_FORMAT_READ) {
       if (codecReconfigurationState == RECONFIGURATION_STATE_QUEUE_PENDING) {
-        // We received two formats in a row. Clear the current buffer of any reconfiguration data
-        // associated with the first format.
+        // 我们连续接收到两个格式。清除当前缓冲区中与第一个格式相关的所有重新配置数据。
         buffer.clear();
         codecReconfigurationState = RECONFIGURATION_STATE_WRITE_PENDING;
       }
@@ -1386,9 +1338,8 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
     if (buffer.isEndOfStream()) {
       lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
       if (codecReconfigurationState == RECONFIGURATION_STATE_QUEUE_PENDING) {
-        // We received a new format immediately before the end of the stream. We need to clear
-        // the corresponding reconfiguration data from the current buffer, but re-write it into
-        // a subsequent buffer if there are any (for example, if the user seeks backwards).
+        // 我们在流结束之前立即接收到一个新格式。
+        // 我们需要从当前缓冲区中清除相应的重新配置数据，但如果有后续缓冲区（例如，如果用户向后跳转），则需要将其重新写入。
         buffer.clear();
         codecReconfigurationState = RECONFIGURATION_STATE_WRITE_PENDING;
       }
@@ -1412,17 +1363,15 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       return false;
     }
 
-    // This logic is required for cases where the decoder needs to be flushed or re-instantiated
-    // during normal consumption of samples from the source (i.e., without a corresponding
-    // Renderer.enable or Renderer.resetPosition call). This is necessary for certain legacy and
-    // workaround behaviors, for example when switching the output Surface on API levels prior to
-    // the introduction of MediaCodec.setOutputSurface, and when it's necessary to skip past a
-    // sample that's too large to be held in one of the decoder's input buffers.
+    // 此逻辑适用于在从源中正常消费样本期间需要刷新或重新实例化解码器的情况（即，没有相应的 Renderer.enable 或 Renderer.resetPosition 调用）。
+    // 这对于某些旧版行为和解决方案是必要的，
+    // 例如在 API 级别低于引入 MediaCodec.setOutputSurface 时切换输出 Surface，
+    // 以及在需要跳过因过大而无法存储在解码器输入缓冲区中的样本时。
     if (!codecReceivedBuffers && !buffer.isKeyFrame()) {
       buffer.clear();
       if (codecReconfigurationState == RECONFIGURATION_STATE_QUEUE_PENDING) {
-        // The buffer we just cleared contained reconfiguration data. We need to re-write this data
-        // into a subsequent buffer (if there is one).
+        // 我们刚刚清除的缓冲区包含了重新配置数据。
+        // 我们需要将这些数据重新写入后续的缓冲区（如果有的话）。
         codecReconfigurationState = RECONFIGURATION_STATE_WRITE_PENDING;
       }
       return true;
@@ -1454,7 +1403,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
     }
     largestQueuedPresentationTimeUs = max(largestQueuedPresentationTimeUs, presentationTimeUs);
     if (hasReadStreamToEnd() || buffer.isLastSample()) {
-      // Notify output queue of the last buffer's timestamp.
+      // 通知输出队列最后一个缓冲区的时间戳。
       lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
     }
     buffer.flip();
@@ -1486,31 +1435,28 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Called when ready to initialize the {@link MediaCodecAdapter}.
+   * 在准备初始化 {@link MediaCodecAdapter} 时调用。
    *
-   * <p>This method is called just before the renderer obtains the {@linkplain
-   * #getMediaCodecConfiguration configuration} for the {@link MediaCodecAdapter} and creates the
-   * adapter via the passed in {@link MediaCodecAdapter.Factory}.
+   * <p>此方法在渲染器获取 {@linkplain #getMediaCodecConfiguration 配置} 并通过传入的 {@link MediaCodecAdapter.Factory} 创建适配器之前调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param format The {@link Format} for which the codec is being configured.
-   * @throws ExoPlaybackException If an error occurs preparing for initializing the codec.
+   * @param format 编解码器正在配置的 {@link Format}。
+   * @throws ExoPlaybackException 如果准备初始化编解码器时发生错误。
    */
   protected void onReadyToInitializeCodec(Format format) throws ExoPlaybackException {
     // Do nothing.
   }
 
   /**
-   * Called when a {@link MediaCodec} has been created and configured.
+   * 当 {@link MediaCodec} 被创建并配置时调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param name The name of the codec that was initialized.
-   * @param configuration The {@link MediaCodecAdapter.Configuration} used to configure the codec.
-   * @param initializedTimestampMs {@link SystemClock#elapsedRealtime()} when initialization
-   *     finished.
-   * @param initializationDurationMs The time taken to initialize the codec in milliseconds.
+   * @param name 已初始化的编解码器的名称。
+   * @param configuration 用于配置编解码器的 {@link MediaCodecAdapter.Configuration}。
+   * @param initializedTimestampMs 初始化完成时的 {@link SystemClock#elapsedRealtime()}。
+   * @param initializationDurationMs 初始化编解码器所花费的时间（以毫秒为单位）。
    */
   protected void onCodecInitialized(
       String name,
@@ -1521,263 +1467,254 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Called when a {@link MediaCodec} has been released.
+   * 当 {@link MediaCodec} 被释放时调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param name The name of the codec that was released.
+   * @param name 被释放的编解码器的名称。
    */
   protected void onCodecReleased(String name) {
     // Do nothing.
   }
 
   /**
-   * Called when a codec error has occurred.
+   * 当编解码器发生错误时调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param codecError The error.
+   * @param codecError 错误信息。
    */
   protected void onCodecError(Exception codecError) {
     // Do nothing.
   }
 
   /**
-   * Called when a new {@link Format} is read from the upstream {@link MediaPeriod}.
+   * 当从上游 {@link MediaPeriod} 读取到新的 {@link Format} 时调用。
    *
-   * @param formatHolder A {@link FormatHolder} that holds the new {@link Format}.
-   * @throws ExoPlaybackException If an error occurs re-initializing the {@link MediaCodec}.
-   * @return The result of the evaluation to determine whether the existing decoder instance can be
-   *     reused for the new format, or {@code null} if the renderer did not have a decoder.
+   * @param formatHolder 包含新 {@link Format} 的 {@link FormatHolder}。
+   * @throws ExoPlaybackException 如果重新初始化 {@link MediaCodec} 时发生错误。
+   * @return 评估现有解码器实例是否可以重用新格式的结果，如果渲染器没有解码器，则返回 {@code null}。
    */
   @CallSuper
   @Nullable
   protected DecoderReuseEvaluation onInputFormatChanged(FormatHolder formatHolder)
       throws ExoPlaybackException {
-    waitingForFirstSampleInFormat = true;
-    Format newFormat = checkNotNull(formatHolder.format);
+    waitingForFirstSampleInFormat = true; // 设置等待新格式中的第一个样本的标志
+    Format newFormat = checkNotNull(formatHolder.format); // 检查新格式不为 null
     if (newFormat.sampleMimeType == null) {
-      // If the new format is invalid, it is either a media bug or it is not intended to be played.
-      // See also https://github.com/google/ExoPlayer/issues/8283.
+      // 如果新格式无效，可能是媒体文件的问题或该格式本不应被播放。
+      // 参考：https://github.com/google/ExoPlayer/issues/8283
       throw createRendererException(
           new IllegalArgumentException("Sample MIME type is null."),
           newFormat,
-          PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED);
+          PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED); // 抛出渲染器异常
     }
 
-    // Remove the initialization data from the format if present when dealing with AV1, as it is not
-    // required for playing AV1 video.
-    // Reference: https://developer.android.com/reference/android/media/MediaCodec#CSD
+    // 如果处理的是 AV1 视频，则移除格式中的初始化数据，因为播放 AV1 视频时不需要这些数据。
+    // 参考：https://developer.android.com/reference/android/media/MediaCodec#CSD
     if (Objects.equals(newFormat.sampleMimeType, MimeTypes.VIDEO_AV1)
         && !newFormat.initializationData.isEmpty()) {
-      newFormat = newFormat.buildUpon().setInitializationData(null).build();
+      newFormat = newFormat.buildUpon().setInitializationData(null).build(); // 移除初始化数据
     }
 
-    setSourceDrmSession(formatHolder.drmSession);
-    inputFormat = newFormat;
+    setSourceDrmSession(formatHolder.drmSession); // 设置源 DRM 会话
+    inputFormat = newFormat; // 更新输入格式
 
     if (bypassEnabled) {
-      bypassDrainAndReinitialize = true;
-      return null; // Need to drain batch buffer first.
+      bypassDrainAndReinitialize = true; // 如果绕过模式启用，则设置绕过模式下的排空和重新初始化标志
+      return null; // 需要先排空批处理缓冲区
     }
 
     if (codec == null) {
-      availableCodecInfos = null;
-      maybeInitCodecOrBypass();
+      availableCodecInfos = null; // 如果编解码器为 null，则清空可用编解码器信息列表
+      maybeInitCodecOrBypass(); // 尝试初始化编解码器或启用绕过模式
       return null;
     }
 
-    // We have an existing codec that we may need to reconfigure, re-initialize, or release to
-    // switch to bypass. If the existing codec instance is kept then its operating rate and DRM
-    // session may need to be updated.
+    // 我们有一个现有的编解码器，可能需要重新配置、重新初始化或释放以切换到绕过模式。
+    // 如果保留现有编解码器实例，则可能需要更新其操作速率和 DRM 会话。
 
-    // Copy the current codec and codecInfo to local variables so they remain accessible if the
-    // member variables are updated during the logic below.
+    // 将当前编解码器和编解码器信息复制到局部变量中，以便在成员变量更新后仍可访问。
     MediaCodecAdapter codec = this.codec;
     MediaCodecInfo codecInfo = checkNotNull(this.codecInfo);
 
     Format oldFormat = checkNotNull(codecInputFormat);
     if (drmNeedsCodecReinitialization(codecInfo, newFormat, codecDrmSession, sourceDrmSession)) {
-      drainAndReinitializeCodec();
+      drainAndReinitializeCodec(); // 如果需要重新初始化编解码器，则排空并重新初始化
       return new DecoderReuseEvaluation(
           codecInfo.name,
           oldFormat,
           newFormat,
           REUSE_RESULT_NO,
-          DISCARD_REASON_DRM_SESSION_CHANGED);
+          DISCARD_REASON_DRM_SESSION_CHANGED); // 返回编解码器重用评估结果
     }
     boolean drainAndUpdateCodecDrmSession = sourceDrmSession != codecDrmSession;
     Assertions.checkState(!drainAndUpdateCodecDrmSession || Util.SDK_INT >= 23);
 
-    DecoderReuseEvaluation evaluation = canReuseCodec(codecInfo, oldFormat, newFormat);
+    DecoderReuseEvaluation evaluation = canReuseCodec(codecInfo, oldFormat, newFormat); // 评估是否可以重用编解码器
     @DecoderDiscardReasons int overridingDiscardReasons = 0;
     switch (evaluation.result) {
       case REUSE_RESULT_NO:
-        drainAndReinitializeCodec();
+        drainAndReinitializeCodec(); // 如果无法重用编解码器，则排空并重新初始化
         break;
       case REUSE_RESULT_YES_WITH_FLUSH:
         if (!updateCodecOperatingRate(newFormat)) {
-          overridingDiscardReasons |= DISCARD_REASON_OPERATING_RATE_CHANGED;
+          overridingDiscardReasons |= DISCARD_REASON_OPERATING_RATE_CHANGED; // 如果操作速率更新失败，则添加丢弃原因
         } else {
-          codecInputFormat = newFormat;
+          codecInputFormat = newFormat; // 更新编解码器输入格式
           if (drainAndUpdateCodecDrmSession) {
             if (!drainAndUpdateCodecDrmSessionV23()) {
-              overridingDiscardReasons |= DISCARD_REASON_WORKAROUND;
+              overridingDiscardReasons |= DISCARD_REASON_WORKAROUND; // 如果 DRM 会话更新失败，则添加丢弃原因
             }
           } else if (!drainAndFlushCodec()) {
-            overridingDiscardReasons |= DISCARD_REASON_WORKAROUND;
+            overridingDiscardReasons |= DISCARD_REASON_WORKAROUND; // 如果排空和刷新编解码器失败，则添加丢弃原因
           }
         }
         break;
       case REUSE_RESULT_YES_WITH_RECONFIGURATION:
         if (!updateCodecOperatingRate(newFormat)) {
-          overridingDiscardReasons |= DISCARD_REASON_OPERATING_RATE_CHANGED;
+          overridingDiscardReasons |= DISCARD_REASON_OPERATING_RATE_CHANGED; // 如果操作速率更新失败，则添加丢弃原因
         } else {
-          codecReconfigured = true;
-          codecReconfigurationState = RECONFIGURATION_STATE_WRITE_PENDING;
+          codecReconfigured = true; // 设置编解码器已重新配置标志
+          codecReconfigurationState = RECONFIGURATION_STATE_WRITE_PENDING; // 设置重新配置状态为写入待处理
           codecNeedsAdaptationWorkaroundBuffer =
               codecAdaptationWorkaroundMode == ADAPTATION_WORKAROUND_MODE_ALWAYS
                   || (codecAdaptationWorkaroundMode == ADAPTATION_WORKAROUND_MODE_SAME_RESOLUTION
-                      && newFormat.width == oldFormat.width
-                      && newFormat.height == oldFormat.height);
-          codecInputFormat = newFormat;
+                  && newFormat.width == oldFormat.width
+                  && newFormat.height == oldFormat.height); // 判断是否需要自适应解决方案缓冲区
+          codecInputFormat = newFormat; // 更新编解码器输入格式
           if (drainAndUpdateCodecDrmSession && !drainAndUpdateCodecDrmSessionV23()) {
-            overridingDiscardReasons |= DISCARD_REASON_WORKAROUND;
+            overridingDiscardReasons |= DISCARD_REASON_WORKAROUND; // 如果 DRM 会话更新失败，则添加丢弃原因
           }
         }
         break;
       case REUSE_RESULT_YES_WITHOUT_RECONFIGURATION:
         if (!updateCodecOperatingRate(newFormat)) {
-          overridingDiscardReasons |= DISCARD_REASON_OPERATING_RATE_CHANGED;
+          overridingDiscardReasons |= DISCARD_REASON_OPERATING_RATE_CHANGED; // 如果操作速率更新失败，则添加丢弃原因
         } else {
-          codecInputFormat = newFormat;
+          codecInputFormat = newFormat; // 更新编解码器输入格式
           if (drainAndUpdateCodecDrmSession && !drainAndUpdateCodecDrmSessionV23()) {
-            overridingDiscardReasons |= DISCARD_REASON_WORKAROUND;
+            overridingDiscardReasons |= DISCARD_REASON_WORKAROUND; // 如果 DRM 会话更新失败，则添加丢弃原因
           }
         }
         break;
       default:
-        throw new IllegalStateException(); // Never happens.
+        throw new IllegalStateException(); // 永远不会发生
     }
 
     if (evaluation.result != REUSE_RESULT_NO
         && (this.codec != codec || codecDrainAction == DRAIN_ACTION_REINITIALIZE)) {
-      // Initial evaluation indicated reuse was possible, but codec re-initialization was triggered.
-      // The reasons are indicated by overridingDiscardReasons.
+      // 初始评估表明可以重用编解码器，但触发了编解码器重新初始化。
+      // 丢弃原因由 overridingDiscardReasons 指示。
       return new DecoderReuseEvaluation(
-          codecInfo.name, oldFormat, newFormat, REUSE_RESULT_NO, overridingDiscardReasons);
+          codecInfo.name, oldFormat, newFormat, REUSE_RESULT_NO, overridingDiscardReasons); // 返回编解码器重用评估结果
     }
 
-    return evaluation;
+    return evaluation; // 返回评估结果
   }
 
   /**
-   * Called when one of the output formats changes.
+   * 当输出格式之一发生变化时调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param format The input {@link Format} to which future output now corresponds. If the renderer
-   *     is in bypass mode, this is also the output format.
-   * @param mediaFormat The codec output {@link MediaFormat}, or {@code null} if the renderer is in
-   *     bypass mode.
-   * @throws ExoPlaybackException Thrown if an error occurs configuring the output.
+   * @param format 输入 {@link Format}，未来输出现在对应的格式。如果渲染器处于绕过模式，这也是输出格式。
+   * @param mediaFormat 编解码器输出的 {@link MediaFormat}，如果渲染器处于绕过模式，则为 {@code null}。
+   * @throws ExoPlaybackException 如果配置输出时发生错误，则抛出此异常。
    */
   protected void onOutputFormatChanged(Format format, @Nullable MediaFormat mediaFormat)
       throws ExoPlaybackException {
-    // Do nothing.
+    // 默认实现不执行任何操作。
   }
 
   /**
-   * Handles supplemental data associated with an input buffer.
+   * 处理与输入缓冲区关联的补充数据。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param buffer The input buffer that is about to be queued.
-   * @throws ExoPlaybackException Thrown if an error occurs handling supplemental data.
+   * @param buffer 即将排队的输入缓冲区。
+   * @throws ExoPlaybackException 如果处理补充数据时发生错误，则抛出此异常。
    */
   protected void handleInputBufferSupplementalData(DecoderInputBuffer buffer)
       throws ExoPlaybackException {
-    // Do nothing.
+    // 默认实现不执行任何操作。
   }
 
   /**
-   * Called immediately before an input buffer is queued into the codec.
+   * 在输入缓冲区被排队到编解码器之前立即调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param buffer The buffer to be queued.
-   * @throws ExoPlaybackException Thrown if an error occurs handling the input buffer.
+   * @param buffer 即将被排队的缓冲区。
+   * @throws ExoPlaybackException 如果处理输入缓冲区时发生错误，则抛出此异常。
    */
   protected void onQueueInputBuffer(DecoderInputBuffer buffer) throws ExoPlaybackException {
-    // Do nothing.
+    // 默认实现不执行任何操作。
   }
 
   /**
-   * Returns the flags that should be set on {@link MediaCodec#queueInputBuffer} or {@link
-   * MediaCodec#queueSecureInputBuffer} for this buffer.
+   * 返回应为该缓冲区在 {@link MediaCodec#queueInputBuffer} 或 {@link
+   * MediaCodec#queueSecureInputBuffer} 上设置的标志。
    *
-   * @param buffer The input buffer.
-   * @return The flags to set on {@link MediaCodec#queueInputBuffer} or {@link
-   *     MediaCodec#queueSecureInputBuffer}.
+   * @param buffer 输入缓冲区。
+   * @return 在 {@link MediaCodec#queueInputBuffer} 或 {@link
+   *     MediaCodec#queueSecureInputBuffer} 上设置的标志。
    */
   protected int getCodecBufferFlags(DecoderInputBuffer buffer) {
-    return 0;
+    return 0; // 默认返回 0，表示无特殊标志。
   }
 
   /**
-   * Returns whether the input buffer should be skipped before the decoder.
+   * 返回是否应在解码器之前跳过输入缓冲区。
    *
-   * <p>This can be used to skip decoding of buffers that are not depended on during seeking. See
-   * {@link C#BUFFER_FLAG_NOT_DEPENDED_ON}.
+   * <p>这可以用于跳过在跳转期间不依赖的缓冲区的解码。参见 {@link C#BUFFER_FLAG_NOT_DEPENDED_ON}。
    *
-   * @param buffer The input buffer.
+   * @param buffer 输入缓冲区。
    */
   protected boolean shouldSkipDecoderInputBuffer(DecoderInputBuffer buffer) {
-    return false;
+    return false; // 默认返回 false，表示不跳过缓冲区。
   }
 
   /**
-   * Returns the presentation time of the last buffer in the stream.
+   * 返回流中最后一个缓冲区的展示时间。
    *
-   * <p>If the last buffer has not yet been read off the sample queue then the return value will be
-   * {@link C#TIME_UNSET}.
+   * <p>如果最后一个缓冲区尚未从样本队列中读取，则返回值为 {@link C#TIME_UNSET}。
    *
-   * @return The presentation time of the last buffer in the stream.
+   * @return 流中最后一个缓冲区的展示时间。
    */
   protected long getLastBufferInStreamPresentationTimeUs() {
-    return lastBufferInStreamPresentationTimeUs;
+    return lastBufferInStreamPresentationTimeUs; // 返回最后一个缓冲区的展示时间。
   }
 
   /**
-   * Called when an output buffer is successfully processed.
+   * 当成功处理输出缓冲区时调用。
    *
-   * @param presentationTimeUs The timestamp associated with the output buffer.
+   * @param presentationTimeUs 与输出缓冲区关联的时间戳。
    */
   @CallSuper
   protected void onProcessedOutputBuffer(long presentationTimeUs) {
-    lastProcessedOutputBufferTimeUs = presentationTimeUs;
+    lastProcessedOutputBufferTimeUs = presentationTimeUs; // 更新最后处理的输出缓冲区时间
     while (!pendingOutputStreamChanges.isEmpty()
         && presentationTimeUs >= pendingOutputStreamChanges.peek().previousStreamLastBufferTimeUs) {
-      setOutputStreamInfo(checkNotNull(pendingOutputStreamChanges.poll()));
-      onProcessedStreamChange();
+      setOutputStreamInfo(checkNotNull(pendingOutputStreamChanges.poll())); // 设置输出流信息
+      onProcessedStreamChange(); // 调用流更改后的处理逻辑
     }
   }
 
-  /** Called after the last output buffer before a stream change has been processed. */
+  /** 在流更改前的最后一个输出缓冲区被处理后调用。 */
   protected void onProcessedStreamChange() {
-    // Do nothing.
+    // 默认实现不执行任何操作。
   }
 
   /**
-   * Evaluates whether the existing {@link MediaCodec} can be kept for a new {@link Format}, and if
-   * it can whether it requires reconfiguration.
+   * 评估现有的 {@link MediaCodec} 是否可以用于新的 {@link Format}，以及是否需要进行重新配置。
    *
-   * <p>The default implementation does not allow decoder reuse.
+   * <p>默认实现不允许解码器重用。
    *
-   * @param codecInfo A {@link MediaCodecInfo} describing the decoder.
-   * @param oldFormat The {@link Format} for which the existing instance is configured.
-   * @param newFormat The new {@link Format}.
-   * @return The result of the evaluation.
+   * @param codecInfo 描述解码器的 {@link MediaCodecInfo}。
+   * @param oldFormat 现有实例已配置的 {@link Format}。
+   * @param newFormat 新的 {@link Format}。
+   * @return 评估结果。
    */
   protected DecoderReuseEvaluation canReuseCodec(
       MediaCodecInfo codecInfo, Format oldFormat, Format newFormat) {
@@ -1786,18 +1723,18 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
         oldFormat,
         newFormat,
         REUSE_RESULT_NO,
-        DISCARD_REASON_REUSE_NOT_IMPLEMENTED);
+        DISCARD_REASON_REUSE_NOT_IMPLEMENTED); // 默认返回不可重用的评估结果
   }
 
   /**
-   * Called after the output stream offset changes.
+   * 在输出流偏移量更改后调用。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @param outputStreamOffsetUs The output stream offset in microseconds.
+   * @param outputStreamOffsetUs 输出流偏移量（以微秒为单位）。
    */
   protected void onOutputStreamOffsetUsChanged(long outputStreamOffsetUs) {
-    // Do nothing
+    // 默认实现不执行任何操作
   }
 
   @Override
@@ -1814,232 +1751,216 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
                 && getClock().elapsedRealtime() < codecHotswapDeadlineMs));
   }
 
-  /** Returns the current playback speed, as set by {@link #setPlaybackSpeed}. */
+  /** 返回当前的播放速度，由 {@link #setPlaybackSpeed} 设置。 */
   protected float getPlaybackSpeed() {
-    return currentPlaybackSpeed;
+    return currentPlaybackSpeed; // 返回当前播放速度
   }
 
-  /** Returns the operating rate used by the current codec */
+  /** 返回当前编解码器使用的操作速率。 */
   protected float getCodecOperatingRate() {
-    return codecOperatingRate;
+    return codecOperatingRate; // 返回编解码器操作速率
   }
 
   /**
-   * Returns the {@link MediaFormat#KEY_OPERATING_RATE} value for a given playback speed, current
-   * {@link Format} and set of possible stream formats.
+   * 返回给定播放速度、当前 {@link Format} 和可能的流格式集合的 {@link MediaFormat#KEY_OPERATING_RATE} 值。
    *
-   * <p>The default implementation returns {@link #CODEC_OPERATING_RATE_UNSET}.
+   * <p>默认实现返回 {@link #CODEC_OPERATING_RATE_UNSET}。
    *
-   * @param targetPlaybackSpeed The target factor by which playback should be sped up. This may be
-   *     different from the current playback speed, for example, if the speed is temporarily
-   *     adjusted for live playback.
-   * @param format The {@link Format} for which the codec is being configured.
-   * @param streamFormats The possible stream formats.
-   * @return The codec operating rate, or {@link #CODEC_OPERATING_RATE_UNSET} if no codec operating
-   *     rate should be set.
+   * @param targetPlaybackSpeed 播放应加速的目标倍数。这可能与当前播放速度不同，例如，在直播播放时临时调整速度。
+   * @param format 编解码器正在配置的 {@link Format}。
+   * @param streamFormats 可能的流格式集合。
+   * @return 编解码器操作速率，如果不应设置编解码器操作速率，则返回 {@link #CODEC_OPERATING_RATE_UNSET}。
    */
   protected float getCodecOperatingRateV23(
       float targetPlaybackSpeed, Format format, Format[] streamFormats) {
-    return CODEC_OPERATING_RATE_UNSET;
+    return CODEC_OPERATING_RATE_UNSET; // 默认返回未设置的操作速率
   }
 
-  /** Returns listener used to signal that {@link #render(long, long)} should be called. */
+  /** 返回用于通知应调用 {@link #render(long, long)} 的监听器。 */
   @Nullable
   protected final WakeupListener getWakeupListener() {
-    return wakeupListener;
+    return wakeupListener; // 返回唤醒监听器
   }
 
   /**
-   * Updates the codec operating rate, or triggers codec release and re-initialization if a
-   * previously set operating rate needs to be cleared.
+   * 更新编解码器操作速率，或者如果之前设置的操作速率需要清除，则触发编解码器释放和重新初始化。
    *
-   * @throws ExoPlaybackException If an error occurs releasing or initializing a codec.
-   * @return False if codec release and re-initialization was triggered. True in all other cases.
+   * @throws ExoPlaybackException 如果释放或初始化编解码器时发生错误。
+   * @return 如果触发了编解码器释放和重新初始化，则返回 false。其他情况下返回 true。
    */
   protected final boolean updateCodecOperatingRate() throws ExoPlaybackException {
-    return updateCodecOperatingRate(codecInputFormat);
+    return updateCodecOperatingRate(codecInputFormat); // 调用更新编解码器操作速率的方法
   }
 
   /**
-   * Updates the codec operating rate, or triggers codec release and re-initialization if a
-   * previously set operating rate needs to be cleared.
+   * 更新编解码器操作速率，或者如果之前设置的操作速率需要清除，则触发编解码器释放和重新初始化。
    *
-   * @param format The {@link Format} for which the operating rate should be configured.
-   * @throws ExoPlaybackException If an error occurs releasing or initializing a codec.
-   * @return False if codec release and re-initialization was triggered. True in all other cases.
+   * @param format 应配置操作速率的 {@link Format}。
+   * @throws ExoPlaybackException 如果释放或初始化编解码器时发生错误。
+   * @return 如果触发了编解码器释放和重新初始化，则返回 false。其他情况下返回 true。
    */
   private boolean updateCodecOperatingRate(@Nullable Format format) throws ExoPlaybackException {
     if (Util.SDK_INT < 23) {
-      return true;
+      return true; // 如果 API 版本低于 23，则直接返回 true，不支持操作速率设置。
     }
 
     if (codec == null
         || codecDrainAction == DRAIN_ACTION_REINITIALIZE
         || getState() == STATE_DISABLED) {
-      // No need to update the operating rate.
+      // 如果编解码器为 null，或需要重新初始化，或渲染器处于禁用状态，则无需更新操作速率。
       return true;
     }
 
     float newCodecOperatingRate =
-        getCodecOperatingRateV23(targetPlaybackSpeed, checkNotNull(format), getStreamFormats());
+        getCodecOperatingRateV23(targetPlaybackSpeed, checkNotNull(format), getStreamFormats()); // 获取新的操作速率
     if (codecOperatingRate == newCodecOperatingRate) {
-      // No change.
+      // 如果操作速率未发生变化，则直接返回 true。
       return true;
     } else if (newCodecOperatingRate == CODEC_OPERATING_RATE_UNSET) {
-      // The only way to clear the operating rate is to instantiate a new codec instance. See
-      // [Internal ref: b/111543954].
-      drainAndReinitializeCodec();
+      // 如果新操作速率为未设置，则需要通过实例化新的编解码器实例来清除操作速率。参见 [Internal ref: b/111543954]。
+      drainAndReinitializeCodec(); // 排空并重新初始化编解码器
       return false;
     } else if (codecOperatingRate != CODEC_OPERATING_RATE_UNSET
         || newCodecOperatingRate > assumedMinimumCodecOperatingRate) {
-      // We need to set the operating rate, either because we've set it previously or because it's
-      // above the assumed minimum rate.
-      Bundle codecParameters = new Bundle();
-      codecParameters.putFloat(MediaFormat.KEY_OPERATING_RATE, newCodecOperatingRate);
-      checkNotNull(codec).setParameters(codecParameters);
-      codecOperatingRate = newCodecOperatingRate;
+      // 如果之前设置过操作速率，或者新操作速率高于假设的最小速率，则需要设置操作速率。
+      Bundle codecParameters = new Bundle(); // 创建编解码器参数 Bundle
+      codecParameters.putFloat(MediaFormat.KEY_OPERATING_RATE, newCodecOperatingRate); // 设置操作速率
+      checkNotNull(codec).setParameters(codecParameters); // 将参数应用到编解码器
+      codecOperatingRate = newCodecOperatingRate; // 更新当前操作速率
       return true;
     }
 
-    return true;
+    return true; // 默认返回 true
   }
 
   /**
-   * Starts draining the codec for a flush, or to release and re-initialize the codec if flushing
-   * will not be possible. If no buffers have been queued to the codec then this method is a no-op.
+   * 开始排空编解码器以进行刷新，或者如果无法刷新则释放并重新初始化编解码器。如果没有缓冲区已排队到编解码器，则此方法不执行任何操作。
    *
-   * @return False if codec release and re-initialization was triggered due to the need to apply a
-   *     flush workaround. True in all other cases.
+   * @return 如果由于需要应用刷新解决方案而触发了编解码器释放和重新初始化，则返回 false。其他情况下返回 true。
    */
   private boolean drainAndFlushCodec() {
-    if (codecReceivedBuffers) {
-      codecDrainState = DRAIN_STATE_SIGNAL_END_OF_STREAM;
-      if (codecNeedsEosFlushWorkaround) {
-        codecDrainAction = DRAIN_ACTION_REINITIALIZE;
-        return false;
+    if (codecReceivedBuffers) { // 如果编解码器已接收缓冲区
+      codecDrainState = DRAIN_STATE_SIGNAL_END_OF_STREAM; // 设置排空状态为发送流结束信号
+      if (codecNeedsEosFlushWorkaround) { // 如果编解码器需要流结束刷新解决方案
+        codecDrainAction = DRAIN_ACTION_REINITIALIZE; // 设置排空操作为重新初始化
+        return false; // 返回 false，表示需要重新初始化
       } else {
-        codecDrainAction = DRAIN_ACTION_FLUSH;
+        codecDrainAction = DRAIN_ACTION_FLUSH; // 否则设置排空操作为刷新
       }
     }
-    return true;
+    return true; // 默认返回 true
   }
 
   /**
-   * Starts draining the codec to flush it and update its DRM session, or to release and
-   * re-initialize the codec if flushing will not be possible. If no buffers have been queued to the
-   * codec then this method updates the DRM session immediately without flushing the codec.
+   * 开始排空编解码器以刷新并更新其 DRM 会话，或者如果无法刷新则释放并重新初始化编解码器。如果没有缓冲区已排队到编解码器，则此方法会立即更新 DRM 会话而不刷新编解码器。
    *
-   * @throws ExoPlaybackException If an error occurs updating the codec's DRM session.
-   * @return False if codec release and re-initialization was triggered due to the need to apply a
-   *     flush workaround. True in all other cases.
+   * @throws ExoPlaybackException 如果更新编解码器的 DRM 会话时发生错误。
+   * @return 如果由于需要应用刷新解决方案而触发了编解码器释放和重新初始化，则返回 false。其他情况下返回 true。
    */
-  @TargetApi(23) // Only called when SDK_INT >= 23, but lint isn't clever enough to know.
+  @TargetApi(23) // 仅在 SDK_INT >= 23 时调用，但 lint 不够智能无法识别。
   private boolean drainAndUpdateCodecDrmSessionV23() throws ExoPlaybackException {
-    if (codecReceivedBuffers) {
-      codecDrainState = DRAIN_STATE_SIGNAL_END_OF_STREAM;
-      if (codecNeedsEosFlushWorkaround) {
-        codecDrainAction = DRAIN_ACTION_REINITIALIZE;
-        return false;
+    if (codecReceivedBuffers) { // 如果编解码器已接收缓冲区
+      codecDrainState = DRAIN_STATE_SIGNAL_END_OF_STREAM; // 设置排空状态为发送流结束信号
+      if (codecNeedsEosFlushWorkaround) { // 如果编解码器需要流结束刷新解决方案
+        codecDrainAction = DRAIN_ACTION_REINITIALIZE; // 设置排空操作为重新初始化
+        return false; // 返回 false，表示需要重新初始化
       } else {
-        codecDrainAction = DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION;
+        codecDrainAction = DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION; // 否则设置排空操作为刷新并更新 DRM 会话
       }
     } else {
-      // Nothing has been queued to the decoder, so we can do the update immediately.
-      updateDrmSessionV23();
+      // 如果没有缓冲区已排队到解码器，则可以立即更新 DRM 会话。
+      updateDrmSessionV23(); // 更新 DRM 会话
     }
-    return true;
+    return true; // 默认返回 true
   }
 
   /**
-   * Starts draining the codec for re-initialization. Re-initialization may occur immediately if no
-   * buffers have been queued to the codec.
+   * 开始排空编解码器以进行重新初始化。如果没有缓冲区已排队到编解码器，则重新初始化可能会立即进行。
    *
-   * @throws ExoPlaybackException If an error occurs re-initializing a codec.
+   * @throws ExoPlaybackException 如果重新初始化编解码器时发生错误。
    */
   private void drainAndReinitializeCodec() throws ExoPlaybackException {
-    if (codecReceivedBuffers) {
-      codecDrainState = DRAIN_STATE_SIGNAL_END_OF_STREAM;
-      codecDrainAction = DRAIN_ACTION_REINITIALIZE;
+    if (codecReceivedBuffers) { // 如果编解码器已接收缓冲区
+      codecDrainState = DRAIN_STATE_SIGNAL_END_OF_STREAM; // 设置排空状态为发送流结束信号
+      codecDrainAction = DRAIN_ACTION_REINITIALIZE; // 设置排空操作为重新初始化
     } else {
-      // Nothing has been queued to the decoder, so we can re-initialize immediately.
-      reinitializeCodec();
+      // 如果没有缓冲区已排队到解码器，则可以立即重新初始化。
+      reinitializeCodec(); // 重新初始化编解码器
     }
   }
 
   /**
-   * @return Whether it may be possible to drain more output data.
-   * @throws ExoPlaybackException If an error occurs draining the output buffer.
+   * @return 是否可能继续排空更多输出数据。
+   * @throws ExoPlaybackException 如果在排空输出缓冲区时发生错误。
    */
   private boolean drainOutputBuffer(long positionUs, long elapsedRealtimeUs)
       throws ExoPlaybackException {
-    MediaCodecAdapter codec = checkNotNull(this.codec);
-    if (!hasOutputBuffer()) {
+    MediaCodecAdapter codec = checkNotNull(this.codec); // 检查编解码器不为 null
+    if (!hasOutputBuffer()) { // 如果没有输出缓冲区
       int outputIndex;
-      if (codecNeedsEosOutputExceptionWorkaround && codecReceivedEos) {
+      if (codecNeedsEosOutputExceptionWorkaround && codecReceivedEos) { // 如果编解码器需要流结束输出异常解决方案且已接收到流结束信号
         try {
-          outputIndex = codec.dequeueOutputBufferIndex(outputBufferInfo);
+          outputIndex = codec.dequeueOutputBufferIndex(outputBufferInfo); // 尝试获取输出缓冲区索引
         } catch (IllegalStateException e) {
-          processEndOfStream();
+          processEndOfStream(); // 处理流结束
           if (outputStreamEnded) {
-            // Release the codec, as it's in an error state.
+            // 释放编解码器，因为它处于错误状态。
             releaseCodec();
           }
           return false;
         }
       } else {
-        outputIndex = codec.dequeueOutputBufferIndex(outputBufferInfo);
+        outputIndex = codec.dequeueOutputBufferIndex(outputBufferInfo); // 获取输出缓冲区索引
       }
 
-      if (outputIndex < 0) {
-        if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED /* (-2) */) {
-          processOutputMediaFormatChanged();
+      if (outputIndex < 0) { // 如果输出缓冲区索引为负
+        if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED /* (-2) */) { // 如果输出格式已更改
+          processOutputMediaFormatChanged(); // 处理输出格式更改
           return true;
         }
-        // MediaCodec.INFO_TRY_AGAIN_LATER (-1) or unknown negative return value.
+        // MediaCodec.INFO_TRY_AGAIN_LATER (-1) 或未知的负返回值。
         if (codecNeedsEosPropagation
-            && (inputStreamEnded || codecDrainState == DRAIN_STATE_WAIT_END_OF_STREAM)) {
-          processEndOfStream();
+            && (inputStreamEnded || codecDrainState == DRAIN_STATE_WAIT_END_OF_STREAM)) { // 如果编解码器需要流结束传播且输入流已结束或正在等待流结束
+          processEndOfStream(); // 处理流结束
         }
         if (lastOutputBufferProcessedRealtimeMs != C.TIME_UNSET
             && lastOutputBufferProcessedRealtimeMs + 100 < getClock().currentTimeMillis()) {
-          // We processed the last output buffer more than 100ms ago without
-          // receiving an EOS buffer. This is likely a misbehaving codec, so
-          // process the end of stream manually. See b/359634542.
+          // 如果最后一个输出缓冲区在 100 毫秒前已被处理且未接收到流结束缓冲区，则可能是编解码器行为异常，因此手动处理流结束。参见 b/359634542。
           processEndOfStream();
         }
         return false;
       }
 
-      // We've dequeued a buffer.
-      if (shouldSkipAdaptationWorkaroundOutputBuffer) {
+      // 我们已经获取了一个缓冲区。
+      if (shouldSkipAdaptationWorkaroundOutputBuffer) { // 如果需要跳过自适应解决方案输出缓冲区
         shouldSkipAdaptationWorkaroundOutputBuffer = false;
-        codec.releaseOutputBuffer(outputIndex, false);
+        codec.releaseOutputBuffer(outputIndex, false); // 释放输出缓冲区
         return true;
       } else if (outputBufferInfo.size == 0
-          && (outputBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-        // The dequeued buffer indicates the end of the stream. Process it immediately.
+          && (outputBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) { // 如果缓冲区大小为 0 且包含流结束标志
+        // 获取的缓冲区表示流结束。立即处理它。
         processEndOfStream();
         return false;
       }
 
-      this.outputIndex = outputIndex;
-      outputBuffer = codec.getOutputBuffer(outputIndex);
+      this.outputIndex = outputIndex; // 保存输出缓冲区索引
+      outputBuffer = codec.getOutputBuffer(outputIndex); // 获取输出缓冲区
 
-      // The dequeued buffer is a media buffer. Do some initial setup.
-      // It will be processed by calling processOutputBuffer (possibly multiple times).
+      // 获取的缓冲区是媒体缓冲区。进行一些初始设置。
+      // 它将通过调用 processOutputBuffer（可能多次）进行处理。
       if (outputBuffer != null) {
-        outputBuffer.position(outputBufferInfo.offset);
-        outputBuffer.limit(outputBufferInfo.offset + outputBufferInfo.size);
+        outputBuffer.position(outputBufferInfo.offset); // 设置缓冲区位置
+        outputBuffer.limit(outputBufferInfo.offset + outputBufferInfo.size); // 设置缓冲区限制
       }
-      isDecodeOnlyOutputBuffer = outputBufferInfo.presentationTimeUs < getLastResetPositionUs();
+      isDecodeOnlyOutputBuffer = outputBufferInfo.presentationTimeUs < getLastResetPositionUs(); // 判断是否为仅解码输出缓冲区
       isLastOutputBuffer =
           lastBufferInStreamPresentationTimeUs != C.TIME_UNSET
-              && lastBufferInStreamPresentationTimeUs <= outputBufferInfo.presentationTimeUs;
-      updateOutputFormatForTime(outputBufferInfo.presentationTimeUs);
+              && lastBufferInStreamPresentationTimeUs <= outputBufferInfo.presentationTimeUs; // 判断是否为最后一个输出缓冲区
+      updateOutputFormatForTime(outputBufferInfo.presentationTimeUs); // 根据时间更新输出格式
     }
 
     boolean processedOutputBuffer;
-    if (codecNeedsEosOutputExceptionWorkaround && codecReceivedEos) {
+    if (codecNeedsEosOutputExceptionWorkaround && codecReceivedEos) { // 如果编解码器需要流结束输出异常解决方案且已接收到流结束信号
       try {
         processedOutputBuffer =
             processOutputBuffer(
@@ -2053,11 +1974,11 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
                 outputBufferInfo.presentationTimeUs,
                 isDecodeOnlyOutputBuffer,
                 isLastOutputBuffer,
-                checkNotNull(outputFormat));
+                checkNotNull(outputFormat)); // 处理输出缓冲区
       } catch (IllegalStateException e) {
-        processEndOfStream();
+        processEndOfStream(); // 处理流结束
         if (outputStreamEnded) {
-          // Release the codec, as it's in an error state.
+          // 释放编解码器，因为它处于错误状态。
           releaseCodec();
         }
         return false;
@@ -2075,78 +1996,61 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
               outputBufferInfo.presentationTimeUs,
               isDecodeOnlyOutputBuffer,
               isLastOutputBuffer,
-              checkNotNull(outputFormat));
+              checkNotNull(outputFormat)); // 处理输出缓冲区
     }
 
-    if (processedOutputBuffer) {
-      onProcessedOutputBuffer(outputBufferInfo.presentationTimeUs);
-      boolean isEndOfStream = (outputBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
+    if (processedOutputBuffer) { // 如果成功处理输出缓冲区
+      onProcessedOutputBuffer(outputBufferInfo.presentationTimeUs); // 通知输出缓冲区已处理
+      boolean isEndOfStream = (outputBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0; // 判断是否为流结束
       if (!isEndOfStream && codecReceivedEos && isLastOutputBuffer) {
-        lastOutputBufferProcessedRealtimeMs = getClock().currentTimeMillis();
+        lastOutputBufferProcessedRealtimeMs = getClock().currentTimeMillis(); // 更新最后一个输出缓冲区处理时间
       }
-      resetOutputBuffer();
+      resetOutputBuffer(); // 重置输出缓冲区
       if (!isEndOfStream) {
         return true;
       }
-      processEndOfStream();
+      processEndOfStream(); // 处理流结束
     }
 
     return false;
   }
 
-  /** Processes a change in the decoder output {@link MediaFormat}. */
+  /** 处理解码器输出 {@link MediaFormat} 的更改。 */
   private void processOutputMediaFormatChanged() {
-    codecHasOutputMediaFormat = true;
-    MediaFormat mediaFormat = checkNotNull(codec).getOutputFormat();
+    codecHasOutputMediaFormat = true; // 标记编解码器已输出媒体格式
+    MediaFormat mediaFormat = checkNotNull(codec).getOutputFormat(); // 获取编解码器的输出格式
     if (codecAdaptationWorkaroundMode != ADAPTATION_WORKAROUND_MODE_NEVER
         && mediaFormat.getInteger(MediaFormat.KEY_WIDTH) == ADAPTATION_WORKAROUND_SLICE_WIDTH_HEIGHT
         && mediaFormat.getInteger(MediaFormat.KEY_HEIGHT)
-            == ADAPTATION_WORKAROUND_SLICE_WIDTH_HEIGHT) {
-      // We assume this format changed event was caused by the adaptation workaround.
-      shouldSkipAdaptationWorkaroundOutputBuffer = true;
+        == ADAPTATION_WORKAROUND_SLICE_WIDTH_HEIGHT) {
+      // 我们假设此格式更改事件是由自适应解决方案引起的。
+      shouldSkipAdaptationWorkaroundOutputBuffer = true; // 标记需要跳过自适应解决方案输出缓冲区
       return;
     }
-    codecOutputMediaFormat = mediaFormat;
-    codecOutputMediaFormatChanged = true;
+    codecOutputMediaFormat = mediaFormat; // 保存编解码器输出格式
+    codecOutputMediaFormatChanged = true; // 标记编解码器输出格式已更改
   }
 
   /**
-   * Processes an output media buffer.
+   * 处理输出媒体缓冲区。
    *
-   * <p>When a new {@link ByteBuffer} is passed to this method its position and limit delineate the
-   * data to be processed. The return value indicates whether the buffer was processed in full. If
-   * true is returned then the next call to this method will receive a new buffer to be processed.
-   * If false is returned then the same buffer will be passed to the next call. An implementation of
-   * this method is free to modify the buffer and can assume that the buffer will not be externally
-   * modified between successive calls. Hence an implementation can, for example, modify the
-   * buffer's position to keep track of how much of the data it has processed.
+   * <p>当一个新的 {@link ByteBuffer} 传递给此方法时，其 position 和 limit 定义了要处理的数据范围。返回值指示缓冲区是否被完全处理。如果返回 true，则下一次调用此方法时将接收一个新的缓冲区进行处理。如果返回 false，则相同的缓冲区将传递给下一次调用。此方法的实现可以自由修改缓冲区，并可以假设缓冲区在连续调用之间不会被外部修改。因此，实现可以（例如）修改缓冲区的位置以跟踪已处理的数据量。
    *
-   * <p>Note that the first call to this method following a call to {@link #onPositionReset(long,
-   * boolean)} will always receive a new {@link ByteBuffer} to be processed.
+   * <p>注意，在调用 {@link #onPositionReset(long, boolean)} 之后，此方法的第一次调用将始终接收一个新的 {@link ByteBuffer} 进行处理。
    *
-   * @param positionUs The current media time in microseconds, measured at the start of the current
-   *     iteration of the rendering loop.
-   * @param elapsedRealtimeUs {@link SystemClock#elapsedRealtime()} in microseconds, measured at the
-   *     start of the current iteration of the rendering loop.
-   * @param codec The {@link MediaCodecAdapter} instance, or null in bypass mode were no codec is
-   *     used.
-   * @param buffer The output buffer to process, or null if the buffer data is not made available to
-   *     the application layer (see {@link MediaCodec#getOutputBuffer(int)}). This {@code buffer}
-   *     can only be null for video data. Note that the buffer data can still be rendered in this
-   *     case by using the {@code bufferIndex}.
-   * @param bufferIndex The index of the output buffer.
-   * @param bufferFlags The flags attached to the output buffer.
-   * @param sampleCount The number of samples extracted from the sample queue in the buffer. This
-   *     allows handling multiple samples as a batch for efficiency.
-   * @param bufferPresentationTimeUs The presentation time of the output buffer in microseconds.
-   * @param isDecodeOnlyBuffer Whether the buffer timestamp is less than the intended playback start
-   *     position.
-   * @param isLastBuffer Whether the buffer is known to contain the last sample of the current
-   *     stream. This flag is set on a best effort basis, and any logic relying on it should degrade
-   *     gracefully to handle cases where it's not set.
-   * @param format The {@link Format} associated with the buffer.
-   * @return Whether the output buffer was fully processed (for example, rendered or skipped).
-   * @throws ExoPlaybackException If an error occurs processing the output buffer.
+   * @param positionUs 当前媒体时间（以微秒为单位），在渲染循环当前迭代开始时测量。
+   * @param elapsedRealtimeUs {@link SystemClock#elapsedRealtime()} 的时间（以微秒为单位），在渲染循环当前迭代开始时测量。
+   * @param codec {@link MediaCodecAdapter} 实例，或者在绕过模式下为 null（表示未使用编解码器）。
+   * @param buffer 要处理的输出缓冲区，如果缓冲区数据未提供给应用层，则为 null（参见 {@link MediaCodec#getOutputBuffer(int)}）。此 {@code buffer} 仅对视频数据可以为 null。注意，在这种情况下，仍然可以通过使用 {@code bufferIndex} 来渲染缓冲区数据。
+   * @param bufferIndex 输出缓冲区的索引。
+   * @param bufferFlags 附加到输出缓冲区的标志。
+   * @param sampleCount 从缓冲区中的样本队列提取的样本数量。这允许批量处理多个样本以提高效率。
+   * @param bufferPresentationTimeUs 输出缓冲区的展示时间（以微秒为单位）。
+   * @param isDecodeOnlyBuffer 缓冲区时间戳是否小于预期的播放起始位置。
+   * @param isLastBuffer 缓冲区是否已知包含当前流的最后一个样本。此标志基于最佳努力设置，任何依赖它的逻辑都应优雅地处理未设置的情况。
+   * @param format 与缓冲区关联的 {@link Format}。
+   * @return 输出缓冲区是否被完全处理（例如，已渲染或跳过）。
+   * @throws ExoPlaybackException 如果处理输出缓冲区时发生错误。
    */
   protected abstract boolean processOutputBuffer(
       long positionUs,
@@ -2163,82 +2067,79 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       throws ExoPlaybackException;
 
   /**
-   * Incrementally renders any remaining output.
+   * 逐步渲染任何剩余的输出。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现不执行任何操作。
    *
-   * @throws ExoPlaybackException Thrown if an error occurs rendering remaining output.
+   * @throws ExoPlaybackException 如果渲染剩余输出时发生错误，则抛出此异常。
    */
   protected void renderToEndOfStream() throws ExoPlaybackException {
-    // Do nothing.
+    // 默认实现不执行任何操作。
   }
 
   /**
-   * Processes an end of stream signal.
+   * 处理流结束信号。
    *
-   * @throws ExoPlaybackException If an error occurs processing the signal.
+   * @throws ExoPlaybackException 如果处理信号时发生错误，则抛出此异常。
    */
-  // codecDrainAction == DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION implies SDK_INT >= 23.
+// codecDrainAction == DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION 表示 SDK_INT >= 23。
   @TargetApi(23)
   private void processEndOfStream() throws ExoPlaybackException {
-    switch (codecDrainAction) {
+    switch (codecDrainAction) { // 根据编解码器排空操作进行处理
       case DRAIN_ACTION_REINITIALIZE:
-        reinitializeCodec();
+        reinitializeCodec(); // 重新初始化编解码器
         break;
       case DRAIN_ACTION_FLUSH_AND_UPDATE_DRM_SESSION:
-        flushCodec();
-        updateDrmSessionV23();
+        flushCodec(); // 刷新编解码器
+        updateDrmSessionV23(); // 更新 DRM 会话
         break;
       case DRAIN_ACTION_FLUSH:
-        flushCodec();
+        flushCodec(); // 刷新编解码器
         break;
       case DRAIN_ACTION_NONE:
       default:
-        outputStreamEnded = true;
-        renderToEndOfStream();
+        outputStreamEnded = true; // 标记输出流已结束
+        renderToEndOfStream(); // 渲染剩余输出
         break;
     }
   }
 
   /**
-   * Notifies the renderer that output end of stream is pending and should be handled on the next
-   * render.
+   * 通知渲染器输出流结束即将到来，应在下一次渲染时处理。
    */
   protected final void setPendingOutputEndOfStream() {
-    pendingOutputEndOfStream = true;
+    pendingOutputEndOfStream = true; // 设置输出流结束即将到来的标志
   }
 
   /**
-   * Returns the offset that should be subtracted from {@code bufferPresentationTimeUs} in {@link
-   * #processOutputBuffer(long, long, MediaCodecAdapter, ByteBuffer, int, int, int, long, boolean,
-   * boolean, Format)} to get the playback position with respect to the media.
+   * 返回应从 {@link #processOutputBuffer(long, long, MediaCodecAdapter, ByteBuffer, int, int, int, long, boolean, boolean, Format)} 中的 {@code bufferPresentationTimeUs} 中减去的偏移量，以获取相对于媒体的播放位置。
    */
   protected final long getOutputStreamOffsetUs() {
-    return outputStreamInfo.streamOffsetUs;
+    return outputStreamInfo.streamOffsetUs; // 返回输出流偏移量（以微秒为单位）
   }
 
-  /** Returns the start position of the current output stream in microseconds. */
+  /** 返回当前输出流的起始位置（以微秒为单位）。 */
   protected final long getOutputStreamStartPositionUs() {
-    return outputStreamInfo.startPositionUs;
+    return outputStreamInfo.startPositionUs; // 返回输出流的起始位置
   }
 
   private void setOutputStreamInfo(OutputStreamInfo outputStreamInfo) {
-    this.outputStreamInfo = outputStreamInfo;
-    if (outputStreamInfo.streamOffsetUs != C.TIME_UNSET) {
-      needToNotifyOutputFormatChangeAfterStreamChange = true;
-      onOutputStreamOffsetUsChanged(outputStreamInfo.streamOffsetUs);
+    this.outputStreamInfo = outputStreamInfo; // 设置输出流信息
+    if (outputStreamInfo.streamOffsetUs != C.TIME_UNSET) { // 如果输出流偏移量已设置
+      needToNotifyOutputFormatChangeAfterStreamChange = true; // 标记需要在流更改后通知输出格式更改
+      onOutputStreamOffsetUsChanged(outputStreamInfo.streamOffsetUs); // 调用输出流偏移量更改的处理方法
     }
   }
 
-  /** Returns whether this renderer supports the given {@link Format Format's} DRM scheme. */
+  /** 返回此渲染器是否支持给定 {@link Format} 的 DRM 方案。 */
   protected static boolean supportsFormatDrm(Format format) {
-    return format.cryptoType == C.CRYPTO_TYPE_NONE || format.cryptoType == C.CRYPTO_TYPE_FRAMEWORK;
+    return format.cryptoType == C.CRYPTO_TYPE_NONE || format.cryptoType == C.CRYPTO_TYPE_FRAMEWORK; // 判断格式是否支持 DRM 方案
   }
 
   /**
-   * Returns whether it's necessary to re-initialize the codec to handle a DRM change. If {@code
-   * false} is returned then either {@code oldSession == newSession} (i.e., there was no change), or
-   * it's possible to update the existing codec using MediaCrypto.setMediaDrmSession.
+   * 返回是否需要重新初始化编解码器以处理 DRM 更改。
+   * 如果返回 {@code false}，则要么 {@code oldSession == newSession}（即没有更改），
+   * 要么可以使用 MediaCrypto.setMediaDrmSession 更新现有编解码器。
    */
   private boolean drmNeedsCodecReinitialization(
       MediaCodecInfo codecInfo,
@@ -2247,72 +2148,58 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
       @Nullable DrmSession newSession)
       throws ExoPlaybackException {
     if (oldSession == newSession) {
-      // No need to re-initialize if the old and new sessions are the same.
+      // 如果旧会话和新会话相同，则无需重新初始化。
       return false;
     }
 
-    // Note: At least one of oldSession and newSession are non-null.
+    // 注意：oldSession 和 newSession 中至少有一个非 null。
 
     if (newSession == null || oldSession == null) {
-      // Changing from DRM to no DRM and vice-versa always requires re-initialization.
+      // 从 DRM 切换到无 DRM，或者从无 DRM 切换到 DRM，始终需要重新初始化。
       return true;
     }
 
     @Nullable CryptoConfig newCryptoConfig = newSession.getCryptoConfig();
     if (newCryptoConfig == null) {
-      // We'd only expect this to happen if the CDM from which newSession is obtained needs
-      // provisioning. This is unlikely to happen (it probably requires a switch from one DRM scheme
-      // to another, where the new CDM hasn't been used before and needs provisioning). It would be
-      // possible to handle this case without codec re-initialization, but it would require the
-      // re-use code path to be able to wait for provisioning to finish before calling
-      // MediaCrypto.setMediaDrmSession. The extra complexity is not warranted given how unlikely
-      // the case is to occur, so we re-initialize in this case.
+      // 只有在获取 newSession 的 CDM 需要配置时才会发生这种情况。这种情况不太可能发生（可能需要从一个 DRM 方案切换到另一个 DRM 方案，而新的 CDM 之前未被使用过且需要配置）。虽然可以在不重新初始化编解码器的情况下处理这种情况，但这需要重用代码路径能够等待配置完成后再调用 MediaCrypto.setMediaDrmSession。鉴于这种情况不太可能发生，额外的复杂性是不值得的，因此在这种情况下我们选择重新初始化。
       return true;
     }
 
     @Nullable CryptoConfig oldCryptoConfig = oldSession.getCryptoConfig();
     if (oldCryptoConfig == null || !newCryptoConfig.getClass().equals(oldCryptoConfig.getClass())) {
-      // Switching between different CryptoConfig implementations suggests we're switching between
-      // different forms of decryption (e.g. in-app vs framework-provided), which requires codec
-      // re-initialization.
+      // 在不同的 CryptoConfig 实现之间切换表明我们在不同形式的解密之间切换（例如应用内解密与框架提供的解密），这需要重新初始化编解码器。
       return true;
     }
 
     if (!(newCryptoConfig instanceof FrameworkCryptoConfig)) {
-      // Assume that non-framework CryptoConfig implementations indicate the codec can be re-used
-      // (since it suggests that decryption is happening in-app before the data is passed to
-      // MediaCodec, and therefore a change in DRM keys has no affect on the (decrypted) data seen
-      // by MediaCodec).
+      // 假设非框架的 CryptoConfig 实现表明编解码器可以重用（因为这表明解密是在应用内完成的，然后再将数据传递给 MediaCodec，因此 DRM 密钥的更改不会影响 MediaCodec 看到的（已解密的）数据）。
       return false;
     }
 
-    // Note: Both oldSession and newSession are non-null, and they are different sessions.
+    // 注意：oldSession 和 newSession 都是非 null 的，并且它们是不同的会话。
 
     if (!newSession.getSchemeUuid().equals(oldSession.getSchemeUuid())) {
-      // MediaCrypto.setMediaDrmSession is unable to switch between DRM schemes.
+      // MediaCrypto.setMediaDrmSession 无法在不同的 DRM 方案之间切换。
       return true;
     }
 
     if (Util.SDK_INT < 23) {
-      // MediaCrypto.setMediaDrmSession is only available from API level 23, so re-initialization is
-      // required to switch to newSession on older API levels.
+      // MediaCrypto.setMediaDrmSession 仅在 API 级别 23 及以上可用，因此在较旧的 API 级别上需要重新初始化以切换到 newSession。
       return true;
     }
     if (C.PLAYREADY_UUID.equals(oldSession.getSchemeUuid())
         || C.PLAYREADY_UUID.equals(newSession.getSchemeUuid())) {
-      // The PlayReady CDM does not support MediaCrypto.setMediaDrmSession, either as the old or new
-      // session.
-      // TODO: Add an API check once [Internal ref: b/128835874] is fixed.
+      // PlayReady CDM 不支持 MediaCrypto.setMediaDrmSession，无论是作为旧会话还是新会话。
+      // TODO: 在 [Internal ref: b/128835874] 修复后添加 API 检查。
       return true;
     }
 
-    // Re-initialization is required if newSession might require switching to the secure output
-    // path. We assume newSession might require a secure decoder if it's not fully open yet.
+    // 如果 newSession 可能需要切换到安全输出路径，则需要重新初始化。我们假设 newSession 可能需要安全解码器，如果它尚未完全打开。
     return !codecInfo.secure
         && (newSession.getState() == DrmSession.STATE_OPENING
-            || ((newSession.getState() == DrmSession.STATE_OPENED
-                    || newSession.getState() == DrmSession.STATE_OPENED_WITH_KEYS)
-                && newSession.requiresSecureDecoder(checkNotNull(newFormat.sampleMimeType))));
+        || ((newSession.getState() == DrmSession.STATE_OPENED
+        || newSession.getState() == DrmSession.STATE_OPENED_WITH_KEYS)
+        && newSession.requiresSecureDecoder(checkNotNull(newFormat.sampleMimeType))));
   }
 
   private void reinitializeCodec() throws ExoPlaybackException {
@@ -2338,23 +2225,19 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Processes any pending batch of buffers without using a decoder, and drains a new batch of
-   * buffers from the source.
+   * 在不使用解码器的情况下处理任何待处理的缓冲区批次，并从源中排空新的缓冲区批次。
    *
-   * @param positionUs The current media time in microseconds, measured at the start of the current
-   *     iteration of the rendering loop.
-   * @param elapsedRealtimeUs {@link SystemClock#elapsedRealtime()} in microseconds, measured at the
-   *     start of the current iteration of the rendering loop.
-   * @return Whether immediately calling this method again will make more progress.
-   * @throws ExoPlaybackException If an error occurred while processing a buffer or handling a
-   *     format change.
+   * @param positionUs 当前媒体时间（以微秒为单位），在渲染循环当前迭代开始时测量。
+   * @param elapsedRealtimeUs {@link SystemClock#elapsedRealtime()} 的时间（以微秒为单位），在渲染循环当前迭代开始时测量。
+   * @return 立即再次调用此方法是否会取得更多进展。
+   * @throws ExoPlaybackException 如果在处理缓冲区或处理格式更改时发生错误。
    */
   private boolean bypassRender(long positionUs, long elapsedRealtimeUs)
       throws ExoPlaybackException {
 
-    // Process any batched data.
-    checkState(!outputStreamEnded);
-    if (bypassBatchBuffer.hasSamples()) {
+    // 处理任何批处理数据。
+    checkState(!outputStreamEnded); // 检查输出流未结束
+    if (bypassBatchBuffer.hasSamples()) { // 如果批处理缓冲区中有样本
       if (processOutputBuffer(
           positionUs,
           elapsedRealtimeUs,
@@ -2366,163 +2249,156 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
           bypassBatchBuffer.getFirstSampleTimeUs(),
           isDecodeOnly(getLastResetPositionUs(), bypassBatchBuffer.getLastSampleTimeUs()),
           bypassBatchBuffer.isEndOfStream(),
-          checkNotNull(outputFormat))) {
-        // The batch buffer has been fully processed.
-        onProcessedOutputBuffer(bypassBatchBuffer.getLastSampleTimeUs());
-        bypassBatchBuffer.clear();
+          checkNotNull(outputFormat))) { // 处理输出缓冲区
+        // 批处理缓冲区已完全处理。
+        onProcessedOutputBuffer(bypassBatchBuffer.getLastSampleTimeUs()); // 通知输出缓冲区已处理
+        bypassBatchBuffer.clear(); // 清空批处理缓冲区
       } else {
-        // Could not process the whole batch buffer. Try again later.
+        // 无法完全处理批处理缓冲区。稍后重试。
         return false;
       }
     }
 
-    // Process end of stream, if reached.
-    if (inputStreamEnded) {
-      outputStreamEnded = true;
+    // 如果到达流结束，则进行处理。
+    if (inputStreamEnded) { // 如果输入流已结束
+      outputStreamEnded = true; // 标记输出流已结束
       return false;
     }
 
-    if (bypassSampleBufferPending) {
-      Assertions.checkState(bypassBatchBuffer.append(bypassSampleBuffer));
-      bypassSampleBufferPending = false;
+    if (bypassSampleBufferPending) { // 如果有待处理的样本缓冲区
+      Assertions.checkState(bypassBatchBuffer.append(bypassSampleBuffer)); // 将样本缓冲区追加到批处理缓冲区
+      bypassSampleBufferPending = false; // 清除待处理标志
     }
 
-    if (bypassDrainAndReinitialize) {
-      if (bypassBatchBuffer.hasSamples()) {
-        // This can only happen if bypassSampleBufferPending was true above. Return true to try and
-        // immediately process the sample, which has now been appended to the batch buffer.
+    if (bypassDrainAndReinitialize) { // 如果需要排空并重新初始化
+      if (bypassBatchBuffer.hasSamples()) { // 如果批处理缓冲区中有样本
+        // 这只有在 bypassSampleBufferPending 为 true 时才会发生。返回 true 以尝试立即处理样本，该样本现在已追加到批处理缓冲区。
         return true;
       }
-      // The new format might require using a codec rather than bypass.
-      disableBypass();
-      bypassDrainAndReinitialize = false;
-      maybeInitCodecOrBypass();
-      if (!bypassEnabled) {
-        // We're no longer in bypass mode.
+      // 新格式可能需要使用编解码器而不是绕过模式。
+      disableBypass(); // 禁用绕过模式
+      bypassDrainAndReinitialize = false; // 清除排空并重新初始化标志
+      maybeInitCodecOrBypass(); // 尝试初始化编解码器或启用绕过模式
+      if (!bypassEnabled) { // 如果不再处于绕过模式
         return false;
       }
     }
 
-    // Read from the input, appending any sample buffers to the batch buffer.
-    bypassRead();
+    // 从输入中读取数据，并将任何样本缓冲区追加到批处理缓冲区。
+    bypassRead(); // 读取数据
 
-    if (bypassBatchBuffer.hasSamples()) {
-      bypassBatchBuffer.flip();
+    if (bypassBatchBuffer.hasSamples()) { // 如果批处理缓冲区中有样本
+      bypassBatchBuffer.flip(); // 翻转批处理缓冲区
     }
 
-    // We can make more progress if we have batched data, an EOS, or a re-initialization to process
-    // (note that one or more of the code blocks above will be executed during the next call).
+    // 如果我们有批处理数据、流结束或需要重新初始化，则可以取得更多进展（注意在下一次调用时将执行上述一个或多个代码块）。
     return bypassBatchBuffer.hasSamples() || inputStreamEnded || bypassDrainAndReinitialize;
   }
 
   private void bypassRead() throws ExoPlaybackException {
-    checkState(!inputStreamEnded);
-    FormatHolder formatHolder = getFormatHolder();
-    bypassSampleBuffer.clear();
+    checkState(!inputStreamEnded); // 检查输入流未结束
+    FormatHolder formatHolder = getFormatHolder(); // 获取格式持有者
+    bypassSampleBuffer.clear(); // 清空样本缓冲区
     while (true) {
-      bypassSampleBuffer.clear();
-      @ReadDataResult int result = readSource(formatHolder, bypassSampleBuffer, /* readFlags= */ 0);
+      bypassSampleBuffer.clear(); // 清空样本缓冲区
+      @ReadDataResult int result = readSource(formatHolder, bypassSampleBuffer, /* readFlags= */ 0); // 从源中读取数据
       switch (result) {
-        case C.RESULT_FORMAT_READ:
-          onInputFormatChanged(formatHolder);
+        case C.RESULT_FORMAT_READ: // 如果读取到格式
+          onInputFormatChanged(formatHolder); // 处理输入格式更改
           return;
-        case C.RESULT_NOTHING_READ:
-          if (hasReadStreamToEnd()) {
-            // Notify output queue of the last buffer's timestamp.
+        case C.RESULT_NOTHING_READ: // 如果未读取到数据
+          if (hasReadStreamToEnd()) { // 如果已读取到流结束
+            // 通知输出队列最后一个缓冲区的时间戳。
             lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
           }
           return;
-        case C.RESULT_BUFFER_READ:
-          if (bypassSampleBuffer.isEndOfStream()) {
-            inputStreamEnded = true;
-            lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
+        case C.RESULT_BUFFER_READ: // 如果读取到缓冲区
+          if (bypassSampleBuffer.isEndOfStream()) { // 如果缓冲区是流结束标志
+            inputStreamEnded = true; // 标记输入流已结束
+            lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs; // 更新最后一个缓冲区的时间戳
             return;
           }
           largestQueuedPresentationTimeUs =
-              max(largestQueuedPresentationTimeUs, bypassSampleBuffer.timeUs);
-          if (hasReadStreamToEnd() || buffer.isLastSample()) {
-            // Notify output queue of the last buffer's timestamp.
+              max(largestQueuedPresentationTimeUs, bypassSampleBuffer.timeUs); // 更新最大排队时间戳
+          if (hasReadStreamToEnd() || buffer.isLastSample()) { // 如果已读取到流结束或缓冲区是最后一个样本
+            // 通知输出队列最后一个缓冲区的时间戳。
             lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
           }
-          if (waitingForFirstSampleInFormat) {
-            // This is the first buffer in a new format, the output format must be updated.
-            outputFormat = checkNotNull(inputFormat);
+          if (waitingForFirstSampleInFormat) { // 如果正在等待新格式的第一个样本
+            // 这是新格式的第一个缓冲区，必须更新输出格式。
+            outputFormat = checkNotNull(inputFormat); // 设置输出格式
             if (Objects.equals(outputFormat.sampleMimeType, MimeTypes.AUDIO_OPUS)
-                && !outputFormat.initializationData.isEmpty()) {
-              // Format mimetype is Opus so format should be updated with preSkip data.
-              // TODO(b/298634018): Adjust encoderDelay value based on starting position.
+                && !outputFormat.initializationData.isEmpty()) { // 如果格式的 MIME 类型是 Opus 并且初始化数据不为空
+              // 格式的 MIME 类型是 Opus，因此应使用 preSkip 数据更新格式。
+              // TODO(b/298634018): 根据起始位置调整 encoderDelay 值。
               int numberPreSkipSamples =
-                  OpusUtil.getPreSkipSamples(outputFormat.initializationData.get(0));
+                  OpusUtil.getPreSkipSamples(outputFormat.initializationData.get(0)); // 获取 preSkip 样本数
               outputFormat =
                   checkNotNull(outputFormat)
                       .buildUpon()
-                      .setEncoderDelay(numberPreSkipSamples)
+                      .setEncoderDelay(numberPreSkipSamples) // 设置编码器延迟
                       .build();
             }
-            onOutputFormatChanged(outputFormat, /* mediaFormat= */ null);
-            waitingForFirstSampleInFormat = false;
+            onOutputFormatChanged(outputFormat, /* mediaFormat= */ null); // 处理输出格式更改
+            waitingForFirstSampleInFormat = false; // 清除等待标志
           }
-          // Try to append the buffer to the batch buffer.
-          bypassSampleBuffer.flip();
+          // 尝试将缓冲区追加到批处理缓冲区。
+          bypassSampleBuffer.flip(); // 翻转样本缓冲区
 
           if (outputFormat != null
-              && Objects.equals(outputFormat.sampleMimeType, MimeTypes.AUDIO_OPUS)) {
-            if (bypassSampleBuffer.hasSupplementalData()) {
-              // Set format on sample buffer so that it contains the mimetype and encodingDelay.
+              && Objects.equals(outputFormat.sampleMimeType, MimeTypes.AUDIO_OPUS)) { // 如果输出格式的 MIME 类型是 Opus
+            if (bypassSampleBuffer.hasSupplementalData()) { // 如果缓冲区有补充数据
+              // 在样本缓冲区上设置格式，使其包含 MIME 类型和编码器延迟。
               bypassSampleBuffer.format = outputFormat;
-              handleInputBufferSupplementalData(bypassSampleBuffer);
+              handleInputBufferSupplementalData(bypassSampleBuffer); // 处理输入缓冲区补充数据
             }
             if (OpusUtil.needToDecodeOpusFrame(
-                getLastResetPositionUs(), bypassSampleBuffer.timeUs)) {
-              // Packetize as long as frame does not precede the last reset position by more than
-              // seek-preroll.
+                getLastResetPositionUs(), bypassSampleBuffer.timeUs)) { // 如果需要解码 Opus 帧
+              // 只要帧不早于最后一次重置位置超过 seek-preroll，就进行分组。
               oggOpusAudioPacketizer.packetize(
-                  bypassSampleBuffer, checkNotNull(outputFormat).initializationData);
+                  bypassSampleBuffer, checkNotNull(outputFormat).initializationData); // 对 Opus 音频进行分组
             }
           }
           if (!haveBypassBatchBufferAndNewSampleSameDecodeOnlyState()
-              || !bypassBatchBuffer.append(bypassSampleBuffer)) {
-            bypassSampleBufferPending = true;
+              || !bypassBatchBuffer.append(bypassSampleBuffer)) { // 如果批处理缓冲区和新样本的解码状态不同或无法追加
+            bypassSampleBufferPending = true; // 标记样本缓冲区待处理
             return;
           }
           break;
         default:
-          throw new IllegalStateException();
+          throw new IllegalStateException(); // 抛出非法状态异常
       }
     }
   }
 
   private boolean haveBypassBatchBufferAndNewSampleSameDecodeOnlyState() {
-    // TODO: b/295800114 - Splitting the batch buffer by decode-only state isn't safe for formats
-    // where not every sample is a keyframe because the downstream component may receive encoded
-    // data starting from a non-keyframe sample.
-    if (!bypassBatchBuffer.hasSamples()) {
+    // TODO: b/295800114 - 对于并非每个样本都是关键帧的格式，按仅解码状态拆分批处理缓冲区是不安全的，因为下游组件可能会接收到从非关键帧样本开始的编码数据。
+    if (!bypassBatchBuffer.hasSamples()) { // 如果批处理缓冲区中没有样本
       return true;
     }
-    long lastResetPositionUs = getLastResetPositionUs();
+    long lastResetPositionUs = getLastResetPositionUs(); // 获取最后一次重置位置
     boolean batchBufferIsDecodeOnly =
-        isDecodeOnly(lastResetPositionUs, bypassBatchBuffer.getLastSampleTimeUs());
-    boolean sampleBufferIsDecodeOnly = isDecodeOnly(lastResetPositionUs, bypassSampleBuffer.timeUs);
-    return batchBufferIsDecodeOnly == sampleBufferIsDecodeOnly;
+        isDecodeOnly(lastResetPositionUs, bypassBatchBuffer.getLastSampleTimeUs()); // 判断批处理缓冲区是否为仅解码
+    boolean sampleBufferIsDecodeOnly = isDecodeOnly(lastResetPositionUs, bypassSampleBuffer.timeUs); // 判断样本缓冲区是否为仅解码
+    return batchBufferIsDecodeOnly == sampleBufferIsDecodeOnly; // 返回批处理缓冲区和样本缓冲区的仅解码状态是否相同
   }
 
   /**
-   * Returns if based on target play time and frame time that the frame should be decode-only.
+   * 根据目标播放时间和帧时间返回帧是否应为仅解码。
    *
-   * <p>If the format is Opus, then the frame is decode-only if the frame time precedes the start
-   * time by more than seek-preroll.
+   * <p>如果格式是 Opus，则当帧时间早于开始时间超过 seek-preroll 时，帧为仅解码。
    *
-   * @param startTimeUs The time to start playing at.
-   * @param frameTimeUs The time of the sample.
-   * @return Whether the frame is decode-only.
+   * @param startTimeUs 开始播放的时间。
+   * @param frameTimeUs 样本的时间。
+   * @return 帧是否为仅解码。
    */
   private boolean isDecodeOnly(long startTimeUs, long frameTimeUs) {
-    // Opus frames that precede the target position by more than seek-preroll should be skipped.
+    // 如果帧时间早于目标位置超过 seek-preroll，则应跳过 Opus 帧。
     return frameTimeUs < startTimeUs
         && (outputFormat == null
-            || !Objects.equals(outputFormat.sampleMimeType, MimeTypes.AUDIO_OPUS)
-            || !OpusUtil.needToDecodeOpusFrame(
-                /* startTimeUs= */ startTimeUs, /* frameTimeUs= */ frameTimeUs));
+        || !Objects.equals(outputFormat.sampleMimeType, MimeTypes.AUDIO_OPUS)
+        || !OpusUtil.needToDecodeOpusFrame(
+        /* startTimeUs= */ startTimeUs, /* frameTimeUs= */ frameTimeUs));
   }
 
   private static boolean isMediaCodecException(IllegalStateException error) {
@@ -2534,110 +2410,97 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
   }
 
   /**
-   * Returns a mode that specifies when the adaptation workaround should be enabled.
+   * 返回一个模式，指定何时应启用自适应解决方案。
    *
-   * <p>When enabled, the workaround queues and discards a blank frame with a resolution whose width
-   * and height both equal {@link #ADAPTATION_WORKAROUND_SLICE_WIDTH_HEIGHT}, to reset the decoder's
-   * internal state when a format change occurs.
+   * <p>启用时，该解决方案会排队并丢弃一个宽度和高度都等于 {@link #ADAPTATION_WORKAROUND_SLICE_WIDTH_HEIGHT} 的空白帧，以在格式更改时重置解码器的内部状态。
    *
-   * <p>See [Internal: b/27807182]. See <a
-   * href="https://github.com/google/ExoPlayer/issues/3257">GitHub issue #3257</a>.
+   * <p>参见 [Internal: b/27807182]。参见 <a
+   * href="https://github.com/google/ExoPlayer/issues/3257">GitHub issue #3257</a>。
    *
-   * @param name The name of the decoder.
-   * @return The mode specifying when the adaptation workaround should be enabled.
+   * @param name 解码器的名称。
+   * @return 指定何时应启用自适应解决方案的模式。
    */
   private @AdaptationWorkaroundMode int codecAdaptationWorkaroundMode(String name) {
     if (Util.SDK_INT <= 25
         && "OMX.Exynos.avc.dec.secure".equals(name)
         && (Util.MODEL.startsWith("SM-T585")
-            || Util.MODEL.startsWith("SM-A510")
-            || Util.MODEL.startsWith("SM-A520")
-            || Util.MODEL.startsWith("SM-J700"))) {
-      return ADAPTATION_WORKAROUND_MODE_ALWAYS;
+        || Util.MODEL.startsWith("SM-A510")
+        || Util.MODEL.startsWith("SM-A520")
+        || Util.MODEL.startsWith("SM-J700"))) { // 如果 API 版本 <= 25 且解码器名称为 OMX.Exynos.avc.dec.secure，并且设备型号匹配
+      return ADAPTATION_WORKAROUND_MODE_ALWAYS; // 返回始终启用自适应解决方案的模式
     } else if (Util.SDK_INT < 24
         && ("OMX.Nvidia.h264.decode".equals(name) || "OMX.Nvidia.h264.decode.secure".equals(name))
         && ("flounder".equals(Util.DEVICE)
-            || "flounder_lte".equals(Util.DEVICE)
-            || "grouper".equals(Util.DEVICE)
-            || "tilapia".equals(Util.DEVICE))) {
-      return ADAPTATION_WORKAROUND_MODE_SAME_RESOLUTION;
+        || "flounder_lte".equals(Util.DEVICE)
+        || "grouper".equals(Util.DEVICE)
+        || "tilapia".equals(Util.DEVICE))) { // 如果 API 版本 < 24 且解码器名称为 OMX.Nvidia.h264.decode 或 OMX.Nvidia.h264.decode.secure，并且设备名称匹配
+      return ADAPTATION_WORKAROUND_MODE_SAME_RESOLUTION; // 返回在相同分辨率时启用自适应解决方案的模式
     } else {
-      return ADAPTATION_WORKAROUND_MODE_NEVER;
+      return ADAPTATION_WORKAROUND_MODE_NEVER; // 返回从不启用自适应解决方案的模式
     }
   }
 
   /**
-   * Returns whether the decoder is known to behave incorrectly if flushed prior to having output a
-   * {@link MediaFormat}.
+   * 返回解码器是否已知在输出 {@link MediaFormat} 之前刷新会导致行为不正确。
    *
-   * <p>If true is returned, the renderer will work around the issue by instantiating a new decoder
-   * when this case occurs.
+   * <p>如果返回 true，渲染器将通过在此情况发生时实例化一个新的解码器来解决此问题。
    *
-   * <p>See [Internal: b/141097367].
+   * <p>参见 [Internal: b/141097367]。
    *
-   * @param name The name of the decoder.
-   * @return True if the decoder is known to behave incorrectly if flushed prior to having output a
-   *     {@link MediaFormat}. False otherwise.
+   * @param name 解码器的名称。
+   * @return 如果解码器在输出 {@link MediaFormat} 之前刷新会导致行为不正确，则返回 true。否则返回 false。
    */
   private static boolean codecNeedsSosFlushWorkaround(String name) {
-    return Util.SDK_INT == 29 && "c2.android.aac.decoder".equals(name);
+    return Util.SDK_INT == 29 && "c2.android.aac.decoder".equals(name); // 如果 API 版本为 29 且解码器名称为 c2.android.aac.decoder，则返回 true
   }
 
   /**
-   * Returns whether the decoder is known to handle the propagation of the {@link
-   * MediaCodec#BUFFER_FLAG_END_OF_STREAM} flag incorrectly on the host device.
+   * 返回解码器是否已知在当前设备上错误地处理 {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} 标志的传播。
    *
-   * <p>If true is returned, the renderer will work around the issue by approximating end of stream
-   * behavior without relying on the flag being propagated through to an output buffer by the
-   * underlying decoder.
+   * <p>如果返回 true，渲染器将通过在不依赖底层解码器将标志传播到输出缓冲区的情况下近似流结束行为来解决此问题。
    *
-   * @param codecInfo Information about the {@link MediaCodec}.
-   * @return True if the decoder is known to handle {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM}
-   *     propagation incorrectly on the host device. False otherwise.
+   * @param codecInfo 有关 {@link MediaCodec} 的信息。
+   * @return 如果解码器已知在当前设备上错误地处理 {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} 标志的传播，则返回 true。否则返回 false。
    */
   private static boolean codecNeedsEosPropagationWorkaround(MediaCodecInfo codecInfo) {
     String name = codecInfo.name;
-    return (Util.SDK_INT <= 25 && "OMX.rk.video_decoder.avc".equals(name))
+    return (Util.SDK_INT <= 25 && "OMX.rk.video_decoder.avc".equals(name)) // 如果 API 版本 <= 25 且解码器名称为 OMX.rk.video_decoder.avc
         || (Util.SDK_INT <= 29
-            && ("OMX.broadcom.video_decoder.tunnel".equals(name)
-                || "OMX.broadcom.video_decoder.tunnel.secure".equals(name)
-                || "OMX.bcm.vdec.avc.tunnel".equals(name)
-                || "OMX.bcm.vdec.avc.tunnel.secure".equals(name)
-                || "OMX.bcm.vdec.hevc.tunnel".equals(name)
-                || "OMX.bcm.vdec.hevc.tunnel.secure".equals(name)))
-        || ("Amazon".equals(Util.MANUFACTURER) && "AFTS".equals(Util.MODEL) && codecInfo.secure);
+        && ("OMX.broadcom.video_decoder.tunnel".equals(name)
+        || "OMX.broadcom.video_decoder.tunnel.secure".equals(name)
+        || "OMX.bcm.vdec.avc.tunnel".equals(name)
+        || "OMX.bcm.vdec.avc.tunnel.secure".equals(name)
+        || "OMX.bcm.vdec.hevc.tunnel".equals(name)
+        || "OMX.bcm.vdec.hevc.tunnel.secure".equals(name))) // 如果 API 版本 <= 29 且解码器名称匹配 Broadcom 的隧道解码器
+        || ("Amazon".equals(Util.MANUFACTURER) && "AFTS".equals(Util.MODEL) && codecInfo.secure); // 如果设备制造商是 Amazon 且设备型号是 AFTS，并且解码器是安全解码器
   }
 
   /**
-   * Returns whether the decoder is known to behave incorrectly if flushed after receiving an input
-   * buffer with {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} set.
+   * 返回解码器是否已知在接收到带有 {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} 标志的输入缓冲区后刷新会导致行为不正确。
    *
-   * <p>If true is returned, the renderer will work around the issue by instantiating a new decoder
-   * when this case occurs.
+   * <p>如果返回 true，渲染器将通过在此情况发生时实例化一个新的解码器来解决此问题。
    *
-   * <p>See [Internal: b/8578467, b/23361053].
+   * <p>参见 [Internal: b/8578467, b/23361053]。
    *
-   * @param name The name of the decoder.
-   * @return True if the decoder is known to behave incorrectly if flushed after receiving an input
-   *     buffer with {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} set. False otherwise.
+   * @param name 解码器的名称。
+   * @return 如果解码器在接收到带有 {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} 标志的输入缓冲区后刷新会导致行为不正确，则返回 true。否则返回 false。
    */
   private static boolean codecNeedsEosFlushWorkaround(String name) {
-    return Util.SDK_INT <= 23 && "OMX.google.vorbis.decoder".equals(name);
+    return Util.SDK_INT <= 23 && "OMX.google.vorbis.decoder".equals(name); // 如果 API 版本 <= 23 且解码器名称为 OMX.google.vorbis.decoder，则返回 true
   }
 
   /**
-   * Returns whether the decoder may throw an {@link IllegalStateException} from {@link
-   * MediaCodec#dequeueOutputBuffer(MediaCodec.BufferInfo, long)} or {@link
-   * MediaCodec#releaseOutputBuffer(int, boolean)} after receiving an input buffer with {@link
-   * MediaCodec#BUFFER_FLAG_END_OF_STREAM} set.
+   * 返回解码器在接收到带有 {@link MediaCodec#BUFFER_FLAG_END_OF_STREAM} 标志的输入缓冲区后，是否可能从 {@link
+   * MediaCodec#dequeueOutputBuffer(MediaCodec.BufferInfo, long)} 或 {@link
+   * MediaCodec#releaseOutputBuffer(int, boolean)} 抛出 {@link IllegalStateException}。
    *
-   * <p>See [Internal: b/17933838].
+   * <p>参见 [Internal: b/17933838]。
    *
-   * @param name The name of the decoder.
-   * @return True if the decoder may throw an exception after receiving an end-of-stream buffer.
+   * @param name 解码器的名称。
+   * @return 如果解码器在接收到流结束缓冲区后可能抛出异常，则返回 true。
    */
   private static boolean codecNeedsEosOutputExceptionWorkaround(String name) {
-    return Util.SDK_INT == 21 && "OMX.google.aac.decoder".equals(name);
+    return Util.SDK_INT == 21 && "OMX.google.aac.decoder".equals(name); // 如果 API 版本为 21 且解码器名称为 OMX.google.aac.decoder，则返回 true
   }
 
   private static final class OutputStreamInfo {
@@ -2646,19 +2509,19 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
         new OutputStreamInfo(
             /* previousStreamLastBufferTimeUs= */ C.TIME_UNSET,
             /* startPositionUs= */ C.TIME_UNSET,
-            /* streamOffsetUs= */ C.TIME_UNSET);
+            /* streamOffsetUs= */ C.TIME_UNSET); // 未设置的 OutputStreamInfo 实例
 
-    public final long previousStreamLastBufferTimeUs;
-    public final long startPositionUs;
-    public final long streamOffsetUs;
-    public final TimedValueQueue<Format> formatQueue;
+    public final long previousStreamLastBufferTimeUs; // 上一个流的最后一个缓冲区的时间（以微秒为单位）
+    public final long startPositionUs; // 流的起始位置（以微秒为单位）
+    public final long streamOffsetUs; // 流的时间偏移量（以微秒为单位）
+    public final TimedValueQueue<Format> formatQueue; // 格式队列，用于存储时间相关的格式信息
 
     public OutputStreamInfo(
         long previousStreamLastBufferTimeUs, long startPositionUs, long streamOffsetUs) {
       this.previousStreamLastBufferTimeUs = previousStreamLastBufferTimeUs;
       this.startPositionUs = startPositionUs;
       this.streamOffsetUs = streamOffsetUs;
-      this.formatQueue = new TimedValueQueue<>();
+      this.formatQueue = new TimedValueQueue<>(); // 初始化格式队列
     }
   }
 
