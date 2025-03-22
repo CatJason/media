@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp3;
 
 import androidx.annotation.Nullable;
@@ -21,29 +6,27 @@ import androidx.media3.common.util.Assertions;
 import androidx.media3.common.util.Util;
 import androidx.media3.extractor.SeekPoint;
 
-/** MP3 seeker that uses metadata from a Xing header. */
+/** 使用 Xing 头中的元数据进行 MP3 搜索的 Seeker。 */
 /* package */ final class XingSeeker implements Seeker {
 
   private static final String TAG = "XingSeeker";
 
   /**
-   * Returns a {@link XingSeeker} for seeking in the stream, if required information is present.
-   * Returns {@code null} if not. On returning, {@code frame}'s position is not specified so the
-   * caller should reset it.
+   * 返回一个用于在流中搜索的 {@link XingSeeker}，如果所需信息存在的话。如果不存在，则返回 {@code null}。
+   * 返回时，{@code frame} 的位置未指定，因此调用者应重置它。
    *
-   * @param xingFrame The parsed Xing data from this audio frame.
-   * @param position The position of the start of this frame in the stream.
-   * @return A {@link XingSeeker} for seeking in the stream, or {@code null} if the required
-   *     information is not present.
+   * @param xingFrame 从该音频帧中解析的 Xing 数据。
+   * @param position 该帧在流中的起始位置。
+   * @return 用于在流中搜索的 {@link XingSeeker}，如果所需信息不存在，则返回 {@code null}。
    */
   @Nullable
   public static XingSeeker create(XingFrame xingFrame, long position) {
-    long durationUs = xingFrame.computeDurationUs();
+    long durationUs = xingFrame.computeDurationUs(); // 计算持续时间
     if (durationUs == C.TIME_UNSET) {
-      return null;
+      return null; // 如果持续时间无效，返回 null
     }
     if (xingFrame.dataSize == C.LENGTH_UNSET || xingFrame.tableOfContents == null) {
-      // If the size in bytes or table of contents is missing, the stream is not seekable.
+      // 如果数据大小或目录表缺失，则流不可搜索。
       return new XingSeeker(
           position, xingFrame.header.frameSize, durationUs, xingFrame.header.bitrate);
     }
@@ -56,19 +39,18 @@ import androidx.media3.extractor.SeekPoint;
         xingFrame.tableOfContents);
   }
 
-  private final long dataStartPosition;
-  private final int xingFrameSize;
-  private final long durationUs;
-  private final int bitrate;
+  private final long dataStartPosition; // 数据起始位置
+  private final int xingFrameSize; // Xing 帧大小
+  private final long durationUs; // 持续时间
+  private final int bitrate; // 比特率
 
-  /** Data size, including the XING frame. */
+  /** 数据大小，包括 XING 帧。 */
   private final long dataSize;
 
-  private final long dataEndPosition;
+  private final long dataEndPosition; // 数据结束位置
 
   /**
-   * Entries are in the range [0, 255], but are stored as long integers for convenience. Null if the
-   * table of contents was missing from the header, in which case seeking is not be supported.
+   * 目录表条目范围为 [0, 255]，但为了方便存储为长整型。如果头信息中缺少目录表，则为 null，此时不支持搜索。
    */
   @Nullable private final long[] tableOfContents;
 
@@ -95,85 +77,85 @@ import androidx.media3.extractor.SeekPoint;
     this.bitrate = bitrate;
     this.dataSize = dataSize;
     this.tableOfContents = tableOfContents;
-    dataEndPosition = dataSize == C.LENGTH_UNSET ? C.INDEX_UNSET : dataStartPosition + dataSize;
+    dataEndPosition = dataSize == C.LENGTH_UNSET ? C.INDEX_UNSET : dataStartPosition + dataSize; // 计算数据结束位置
   }
 
   @Override
   public boolean isSeekable() {
-    return tableOfContents != null;
+    return tableOfContents != null; // 如果目录表存在，则支持搜索
   }
 
   @Override
   public SeekPoints getSeekPoints(long timeUs) {
     if (!isSeekable()) {
-      return new SeekPoints(new SeekPoint(0, dataStartPosition + xingFrameSize));
+      return new SeekPoints(new SeekPoint(0, dataStartPosition + xingFrameSize)); // 如果不支持搜索，返回默认搜索点
     }
-    timeUs = Util.constrainValue(timeUs, 0, durationUs);
-    double percent = (timeUs * 100d) / durationUs;
+    timeUs = Util.constrainValue(timeUs, 0, durationUs); // 约束时间在有效范围内
+    double percent = (timeUs * 100d) / durationUs; // 计算时间百分比
     double scaledPosition;
     if (percent <= 0) {
-      scaledPosition = 0;
+      scaledPosition = 0; // 如果百分比小于等于 0，位置为 0
     } else if (percent >= 100) {
-      scaledPosition = 256;
+      scaledPosition = 256; // 如果百分比大于等于 100，位置为 256
     } else {
-      int prevTableIndex = (int) percent;
+      int prevTableIndex = (int) percent; // 获取前一个目录表索引
       long[] tableOfContents = Assertions.checkStateNotNull(this.tableOfContents);
-      double prevScaledPosition = tableOfContents[prevTableIndex];
-      double nextScaledPosition = prevTableIndex == 99 ? 256 : tableOfContents[prevTableIndex + 1];
-      // Linearly interpolate between the two scaled positions.
+      double prevScaledPosition = tableOfContents[prevTableIndex]; // 获取前一个缩放位置
+      double nextScaledPosition = prevTableIndex == 99 ? 256 : tableOfContents[prevTableIndex + 1]; // 获取下一个缩放位置
+      // 在两个缩放位置之间进行线性插值
       double interpolateFraction = percent - prevTableIndex;
       scaledPosition =
           prevScaledPosition + (interpolateFraction * (nextScaledPosition - prevScaledPosition));
     }
-    long positionOffset = Math.round((scaledPosition / 256) * dataSize);
-    // Ensure returned positions skip the frame containing the XING header.
+    long positionOffset = Math.round((scaledPosition / 256) * dataSize); // 计算位置偏移量
+    // 确保返回的位置跳过包含 XING 头的帧
     positionOffset = Util.constrainValue(positionOffset, xingFrameSize, dataSize - 1);
-    return new SeekPoints(new SeekPoint(timeUs, dataStartPosition + positionOffset));
+    return new SeekPoints(new SeekPoint(timeUs, dataStartPosition + positionOffset)); // 返回搜索点
   }
 
   @Override
   public long getTimeUs(long position) {
-    long positionOffset = position - dataStartPosition;
+    long positionOffset = position - dataStartPosition; // 计算位置偏移量
     if (!isSeekable() || positionOffset <= xingFrameSize) {
-      return 0L;
+      return 0L; // 如果不支持搜索或位置偏移量小于等于 Xing 帧大小，返回 0
     }
     long[] tableOfContents = Assertions.checkStateNotNull(this.tableOfContents);
-    double scaledPosition = (positionOffset * 256d) / dataSize;
-    int prevTableIndex = Util.binarySearchFloor(tableOfContents, (long) scaledPosition, true, true);
-    long prevTimeUs = getTimeUsForTableIndex(prevTableIndex);
-    long prevScaledPosition = tableOfContents[prevTableIndex];
-    long nextTimeUs = getTimeUsForTableIndex(prevTableIndex + 1);
-    long nextScaledPosition = prevTableIndex == 99 ? 256 : tableOfContents[prevTableIndex + 1];
-    // Linearly interpolate between the two table entries.
+    double scaledPosition = (positionOffset * 256d) / dataSize; // 计算缩放位置
+    int prevTableIndex = Util.binarySearchFloor(tableOfContents, (long) scaledPosition, true, true); // 查找前一个目录表索引
+    long prevTimeUs = getTimeUsForTableIndex(prevTableIndex); // 获取前一个时间
+    long prevScaledPosition = tableOfContents[prevTableIndex]; // 获取前一个缩放位置
+    long nextTimeUs = getTimeUsForTableIndex(prevTableIndex + 1); // 获取下一个时间
+    long nextScaledPosition = prevTableIndex == 99 ? 256 : tableOfContents[prevTableIndex + 1]; // 获取下一个缩放位置
+    // 在两个目录表条目之间进行线性插值
     double interpolateFraction =
         prevScaledPosition == nextScaledPosition
             ? 0
             : ((scaledPosition - prevScaledPosition) / (nextScaledPosition - prevScaledPosition));
-    return prevTimeUs + Math.round(interpolateFraction * (nextTimeUs - prevTimeUs));
+    return prevTimeUs + Math.round(interpolateFraction * (nextTimeUs - prevTimeUs)); // 返回插值时间
   }
 
   @Override
   public long getDurationUs() {
-    return durationUs;
+    return durationUs; // 返回持续时间
   }
 
   @Override
   public long getDataEndPosition() {
-    return dataEndPosition;
+    return dataEndPosition; // 返回数据结束位置
   }
 
   @Override
   public int getAverageBitrate() {
-    return bitrate;
+    return bitrate; // 返回平均比特率
   }
 
   /**
-   * Returns the time in microseconds for a given table index.
+   * 返回给定目录表索引对应的时间（以微秒为单位）。
    *
-   * @param tableIndex A table index in the range [0, 100].
-   * @return The corresponding time in microseconds.
+   * @param tableIndex 目录表索引，范围为 [0, 100]。
+   * @return 对应的时间（以微秒为单位）。
    */
   private long getTimeUsForTableIndex(int tableIndex) {
-    return (durationUs * tableIndex) / 100;
+    return (durationUs * tableIndex) / 100; // 计算时间
   }
 }

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp3;
 
 import androidx.media3.common.C;
@@ -20,33 +5,31 @@ import androidx.media3.extractor.ConstantBitrateSeekMap;
 import androidx.media3.extractor.MpegAudioUtil;
 
 /**
- * MP3 seeker that doesn't rely on metadata and seeks assuming the source has a constant bitrate.
+ * MP3 搜索器，不依赖元数据，假设源文件具有恒定比特率进行搜索。
  */
 /* package */ final class ConstantBitrateSeeker extends ConstantBitrateSeekMap implements Seeker {
 
-  private final long firstFramePosition;
-  private final int bitrate;
-  private final int frameSize;
-  private final boolean allowSeeksIfLengthUnknown;
-  private final long dataEndPosition;
+  private final long firstFramePosition; // 第一帧的位置
+  private final int bitrate; // 比特率（单位：bps）
+  private final int frameSize; // 帧大小（单位：字节）
+  private final boolean allowSeeksIfLengthUnknown; // 当长度未知时是否允许搜索
+  private final long dataEndPosition; // 数据结束位置
 
   /**
-   * Constructs an instance.
+   * 构造一个实例。
    *
-   * @param inputLength The length of the stream in bytes, or {@link C#LENGTH_UNSET} if unknown.
-   * @param firstFramePosition The position of the first frame in the stream.
-   * @param mpegAudioHeader The MPEG audio header associated with the first frame.
-   * @param allowSeeksIfLengthUnknown Whether to allow seeking even if the length of the content is
-   *     unknown.
+   * @param inputLength 流的长度（单位：字节），如果未知则为 {@link C#LENGTH_UNSET}。
+   * @param firstFramePosition 流中第一帧的位置。
+   * @param mpegAudioHeader 与第一帧关联的 MPEG 音频头。
+   * @param allowSeeksIfLengthUnknown 当内容长度未知时是否允许搜索。
    */
   public ConstantBitrateSeeker(
       long inputLength,
       long firstFramePosition,
       MpegAudioUtil.Header mpegAudioHeader,
       boolean allowSeeksIfLengthUnknown) {
-    // Set the seeker frame size to the size of the first frame (even though some constant bitrate
-    // streams have variable frame sizes due to padding) to avoid the need to re-synchronize for
-    // constant frame size streams.
+    // 将搜索器的帧大小设置为第一帧的大小（即使某些恒定比特率流由于填充而具有可变帧大小），
+    // 以避免对恒定帧大小流重新同步的需要。
     this(
         inputLength,
         firstFramePosition,
@@ -55,7 +38,7 @@ import androidx.media3.extractor.MpegAudioUtil;
         allowSeeksIfLengthUnknown);
   }
 
-  /** See {@link ConstantBitrateSeekMap#ConstantBitrateSeekMap(long, long, int, int, boolean)}. */
+  /** 参见 {@link ConstantBitrateSeekMap#ConstantBitrateSeekMap(long, long, int, int, boolean)}。 */
   public ConstantBitrateSeeker(
       long inputLength,
       long firstFramePosition,
@@ -72,19 +55,25 @@ import androidx.media3.extractor.MpegAudioUtil;
 
   @Override
   public long getTimeUs(long position) {
-    return getTimeUsAtPosition(position);
+    return getTimeUsAtPosition(position); // 根据位置返回对应的时间（单位：微秒）
   }
 
   @Override
   public long getDataEndPosition() {
-    return dataEndPosition;
+    return dataEndPosition; // 返回数据结束位置
   }
 
   @Override
   public int getAverageBitrate() {
-    return bitrate;
+    return bitrate; // 返回平均比特率
   }
 
+  /**
+   * 返回一个新的 ConstantBitrateSeeker 实例，具有新的数据结束位置。
+   *
+   * @param dataEndPosition 新的数据结束位置。
+   * @return 新的 ConstantBitrateSeeker 实例。
+   */
   public ConstantBitrateSeeker copyWithNewDataEndPosition(long dataEndPosition) {
     return new ConstantBitrateSeeker(
         /* inputLength= */ dataEndPosition,

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp3;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -58,17 +43,21 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-/** Extracts data from the MP3 container format. */
+/**
+ * 从 MP3 容器格式中提取数据。
+ */
 @UnstableApi
 public final class Mp3Extractor implements Extractor {
 
-  /** Factory for {@link Mp3Extractor} instances. */
-  public static final ExtractorsFactory FACTORY = () -> new Extractor[] {new Mp3Extractor()};
+  /**
+   * {@link Mp3Extractor} 实例的工厂。
+   */
+  public static final ExtractorsFactory FACTORY = () -> new Extractor[]{new Mp3Extractor()};
 
   /**
-   * Flags controlling the behavior of the extractor. Possible flag values are {@link
-   * #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING}, {@link #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS},
-   * {@link #FLAG_ENABLE_INDEX_SEEKING} and {@link #FLAG_DISABLE_ID3_METADATA}.
+   * 控制提取器行为的标志。可能的标志值包括 {@link #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING}、{@link
+   * #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS}、{@link #FLAG_ENABLE_INDEX_SEEKING} 和 {@link
+   * #FLAG_DISABLE_ID3_METADATA}。
    */
   @Documented
   @Retention(SOURCE)
@@ -76,83 +65,87 @@ public final class Mp3Extractor implements Extractor {
   @IntDef(
       flag = true,
       value = {
-        FLAG_ENABLE_CONSTANT_BITRATE_SEEKING,
-        FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS,
-        FLAG_ENABLE_INDEX_SEEKING,
-        FLAG_DISABLE_ID3_METADATA
+          FLAG_ENABLE_CONSTANT_BITRATE_SEEKING,
+          FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS,
+          FLAG_ENABLE_INDEX_SEEKING,
+          FLAG_DISABLE_ID3_METADATA
       })
-  public @interface Flags {}
+  public @interface Flags {
+
+  }
 
   /**
-   * Flag to force enable seeking using a constant bitrate assumption in cases where seeking would
-   * otherwise not be possible.
+   * 强制启用基于恒定比特率假设的搜索，否则无法进行搜索。
    *
-   * <p>This flag is ignored if {@link #FLAG_ENABLE_INDEX_SEEKING} is set.
+   * <p>如果设置了 {@link #FLAG_ENABLE_INDEX_SEEKING}，则忽略此标志。
    */
   public static final int FLAG_ENABLE_CONSTANT_BITRATE_SEEKING = 1;
 
   /**
-   * Like {@link #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING}, except that seeking is also enabled in
-   * cases where the content length (and hence the duration of the media) is unknown. Application
-   * code should ensure that requested seek positions are valid when using this flag, or be ready to
-   * handle playback failures reported through {@link Player.Listener#onPlayerError} with {@link
-   * PlaybackException#errorCode} set to {@link
-   * PlaybackException#ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE}.
+   * 类似于 {@link #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING}，但即使内容长度（以及媒体的持续时间）未知，也启用搜索。
+   * 应用程序代码在使用此标志时应确保请求的搜索位置有效，或准备处理通过 {@link Player.Listener#onPlayerError} 报告的播放失败，
+   * 错误代码为 {@link PlaybackException#ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE}。
    *
-   * <p>If this flag is set, then the behavior enabled by {@link
-   * #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING} is implicitly enabled.
+   * <p>如果设置了此标志，则 {@link #FLAG_ENABLE_CONSTANT_BITRATE_SEEKING} 的行为也会隐式启用。
    *
-   * <p>This flag is ignored if {@link #FLAG_ENABLE_INDEX_SEEKING} is set.
+   * <p>如果设置了 {@link #FLAG_ENABLE_INDEX_SEEKING}，则忽略此标志。
    */
   public static final int FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS = 1 << 1;
 
   /**
-   * Flag to force index seeking, in which a time-to-byte mapping is built as the file is read.
+   * 强制启用索引搜索，即在读取文件时构建时间到字节的映射。
    *
-   * <p>This seeker may require to scan a significant portion of the file to compute a seek point.
-   * Therefore, it should only be used if one of the following is true:
+   * <p>此搜索器可能需要扫描文件的很大一部分来计算搜索点。因此，仅在以下情况下使用：
    *
    * <ul>
-   *   <li>The file is small.
-   *   <li>The bitrate is variable (or it's unknown whether it's variable) and the file does not
-   *       provide precise enough seeking metadata.
+   *   <li>文件较小。
+   *   <li>比特率可变（或未知是否可变），且文件未提供足够精确的搜索元数据。
    * </ul>
    */
   public static final int FLAG_ENABLE_INDEX_SEEKING = 1 << 2;
 
   /**
-   * Flag to disable parsing of ID3 metadata. Can be set to save memory if ID3 metadata is not
-   * required.
+   * 禁用 ID3 元数据的解析。如果不需要 ID3 元数据，可以设置此标志以节省内存。
    */
   public static final int FLAG_DISABLE_ID3_METADATA = 1 << 3;
 
   private static final String TAG = "Mp3Extractor";
 
-  /** Predicate that matches ID3 frames containing only required gapless/seeking metadata. */
+  /**
+   * 匹配仅包含所需无缝播放/搜索元数据的 ID3 帧的谓词。
+   */
   private static final FramePredicate REQUIRED_ID3_FRAME_PREDICATE =
       (majorVersion, id0, id1, id2, id3) ->
           ((id0 == 'C' && id1 == 'O' && id2 == 'M' && (id3 == 'M' || majorVersion == 2))
               || (id0 == 'M' && id1 == 'L' && id2 == 'L' && (id3 == 'T' || majorVersion == 2)));
 
-  /** The maximum number of bytes to search when synchronizing, before giving up. */
+  /**
+   * 同步时搜索的最大字节数，超过则放弃。
+   */
   private static final int MAX_SYNC_BYTES = 128 * 1024;
 
   /**
-   * The maximum number of bytes to peek when sniffing, excluding the ID3 header, before giving up.
+   * 嗅探时读取的最大字节数，不包括 ID3 头，超过则放弃。
    */
   private static final int MAX_SNIFF_BYTES = 32 * 1024;
 
-  /** Maximum length of data read into {@link #scratch}. */
+  /**
+   * 读取到 {@link #scratch} 的最大数据长度。
+   */
   private static final int SCRATCH_LENGTH = 10;
 
-  /** Mask that includes the audio header values that must match between frames. */
+  /**
+   * 包含音频头中必须匹配的值的掩码。
+   */
   private static final int MPEG_AUDIO_HEADER_MASK = 0xFFFE0C00;
 
   @Documented
   @Target(TYPE_USE)
   @Retention(SOURCE)
   @IntDef(value = {SEEK_HEADER_XING, SEEK_HEADER_INFO, SEEK_HEADER_VBRI, SEEK_HEADER_UNSET})
-  private @interface SeekHeader {}
+  private @interface SeekHeader {
+
+  }
 
   private static final int SEEK_HEADER_XING = 0x58696e67;
   private static final int SEEK_HEADER_INFO = 0x496e666f;
@@ -169,11 +162,12 @@ public final class Mp3Extractor implements Extractor {
 
   private @MonotonicNonNull ExtractorOutput extractorOutput;
   private @MonotonicNonNull TrackOutput realTrackOutput;
-  private TrackOutput currentTrackOutput; // skippingTrackOutput or realTrackOutput.
+  private TrackOutput currentTrackOutput; // skippingTrackOutput 或 realTrackOutput。
 
   private int synchronizedHeaderData;
 
-  @Nullable private Metadata metadata;
+  @Nullable
+  private Metadata metadata;
   private long basisTimeUs;
   private long samplesRead;
   private long firstSamplePosition;
@@ -190,16 +184,15 @@ public final class Mp3Extractor implements Extractor {
   }
 
   /**
-   * @param flags Flags that control the extractor's behavior.
+   * @param flags 控制提取器行为的标志。
    */
   public Mp3Extractor(@Flags int flags) {
     this(flags, C.TIME_UNSET);
   }
 
   /**
-   * @param flags Flags that control the extractor's behavior.
-   * @param forcedFirstSampleTimestampUs A timestamp to force for the first sample, or {@link
-   *     C#TIME_UNSET} if forcing is not required.
+   * @param flags                        控制提取器行为的标志。
+   * @param forcedFirstSampleTimestampUs 强制为第一个样本设置的时间戳，如果不需要强制，则为 {@link C#TIME_UNSET}。
    */
   public Mp3Extractor(@Flags int flags, long forcedFirstSampleTimestampUs) {
     if ((flags & FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS) != 0) {
@@ -217,7 +210,7 @@ public final class Mp3Extractor implements Extractor {
     endPositionOfLastSampleRead = C.INDEX_UNSET;
   }
 
-  // Extractor implementation.
+  // Extractor 实现。
 
   @Override
   public boolean sniff(ExtractorInput input) throws IOException {
@@ -247,7 +240,7 @@ public final class Mp3Extractor implements Extractor {
 
   @Override
   public void release() {
-    // Do nothing
+    // 什么都不做
   }
 
   @Override
@@ -255,7 +248,7 @@ public final class Mp3Extractor implements Extractor {
     assertInitialized();
     int readResult = readInternal(input);
     if (readResult == RESULT_END_OF_INPUT && seeker instanceof IndexSeeker) {
-      // Duration is exact when index seeker is used.
+      // 使用索引搜索器时，持续时间是精确的。
       long durationUs = computeTimeUs(samplesRead);
       if (seeker.getDurationUs() != durationUs) {
         ((IndexSeeker) seeker).setDurationUs(durationUs);
@@ -266,15 +259,15 @@ public final class Mp3Extractor implements Extractor {
   }
 
   /**
-   * Disables the extractor from being able to seek through the media.
+   * 禁用提取器对媒体进行搜索的能力。
    *
-   * <p>Please note that this needs to be called before {@link #read}.
+   * <p>请注意，此方法需要在 {@link #read} 之前调用。
    */
   public void disableSeeking() {
     disableSeeking = true;
   }
 
-  // Internal methods.
+  // 内部方法。
 
   @RequiresNonNull({"extractorOutput", "realTrackOutput"})
   private int readInternal(ExtractorInput input) throws IOException {
@@ -305,7 +298,7 @@ public final class Mp3Extractor implements Extractor {
     } else if (firstSamplePosition != 0) {
       long inputPosition = input.getPosition();
       if (inputPosition < firstSamplePosition) {
-        // Skip past the seek frame.
+        // 跳过搜索帧。
         input.skipFully((int) (firstSamplePosition - inputPosition));
       }
     }
@@ -323,7 +316,7 @@ public final class Mp3Extractor implements Extractor {
       int sampleHeaderData = scratch.readInt();
       if (!headersMatch(sampleHeaderData, synchronizedHeaderData)
           || MpegAudioUtil.getFrameSize(sampleHeaderData) == C.LENGTH_UNSET) {
-        // We have lost synchronization, so attempt to resynchronize starting at the next byte.
+        // 我们失去了同步，因此尝试从下一个字节开始重新同步。
         extractorInput.skipFully(1);
         synchronizedHeaderData = 0;
         return RESULT_CONTINUE;
@@ -340,8 +333,7 @@ public final class Mp3Extractor implements Extractor {
       endPositionOfLastSampleRead = extractorInput.getPosition() + synchronizedHeader.frameSize;
       if (seeker instanceof IndexSeeker) {
         IndexSeeker indexSeeker = (IndexSeeker) seeker;
-        // Add seek point corresponding to the next frame instead of the current one to be able to
-        // start writing to the realTrackOutput on time when a seek is in progress.
+        // 添加与下一帧对应的搜索点，而不是当前帧，以便在搜索进行时能够及时开始写入 realTrackOutput。
         indexSeeker.maybeAddSeekPoint(
             computeTimeUs(samplesRead + synchronizedHeader.samplesPerFrame),
             endPositionOfLastSampleRead);
@@ -370,109 +362,130 @@ public final class Mp3Extractor implements Extractor {
     return basisTimeUs + samplesRead * C.MICROS_PER_SECOND / synchronizedHeader.sampleRate;
   }
 
+  /**
+   * 同步MP3音频流的帧头。
+   *
+   * @param input    输入流，用于读取数据。
+   * @param sniffing 是否在嗅探模式下运行。如果是，则只检查前几个字节以确定是否支持该格式。
+   * @return 如果成功同步到有效的MP3帧头，则返回true；否则返回false。
+   * @throws IOException 如果读取数据时发生错误。
+   */
   private boolean synchronize(ExtractorInput input, boolean sniffing) throws IOException {
-    int validFrameCount = 0;
-    int candidateSynchronizedHeaderData = 0;
-    int peekedId3Bytes = 0;
-    int searchedBytes = 0;
-    int searchLimitBytes = sniffing ? MAX_SNIFF_BYTES : MAX_SYNC_BYTES;
-    input.resetPeekPosition();
+    int validFrameCount = 0; // 有效帧的数量
+    int candidateSynchronizedHeaderData = 0; // 候选同步头数据
+    int peekedId3Bytes = 0; // 已读取的ID3元数据的字节数
+    int searchedBytes = 0; // 已搜索的字节数
+    int searchLimitBytes = sniffing ? MAX_SNIFF_BYTES : MAX_SYNC_BYTES; // 搜索的字节数限制
+    input.resetPeekPosition(); // 重置输入流的读取位置
+
     if (input.getPosition() == 0) {
-      // We need to parse enough ID3 metadata to retrieve any gapless/seeking playback information
-      // even if ID3 metadata parsing is disabled.
-      boolean parseAllId3Frames = (flags & FLAG_DISABLE_ID3_METADATA) == 0;
+      // 如果输入流的位置为0，则需要解析ID3元数据以获取无缝播放/搜索信息
+      boolean parseAllId3Frames = (flags & FLAG_DISABLE_ID3_METADATA) == 0; // 是否解析所有ID3帧
       Id3Decoder.FramePredicate id3FramePredicate =
-          parseAllId3Frames ? null : REQUIRED_ID3_FRAME_PREDICATE;
-      metadata = id3Peeker.peekId3Data(input, id3FramePredicate);
+          parseAllId3Frames ? null : REQUIRED_ID3_FRAME_PREDICATE; // ID3帧的过滤条件
+      metadata = id3Peeker.peekId3Data(input, id3FramePredicate); // 读取ID3元数据
       if (metadata != null) {
-        gaplessInfoHolder.setFromMetadata(metadata);
+        gaplessInfoHolder.setFromMetadata(metadata); // 设置无缝播放信息
       }
-      peekedId3Bytes = (int) input.getPeekPosition();
+      peekedId3Bytes = (int) input.getPeekPosition(); // 记录已读取的ID3字节数
       if (!sniffing) {
-        input.skipFully(peekedId3Bytes);
+        input.skipFully(peekedId3Bytes); // 如果不是嗅探模式，则跳过已读取的ID3字节
       }
     }
+
     while (true) {
       if (peekEndOfStreamOrHeader(input)) {
+        // 如果到达流的末尾或读取到帧头
         if (validFrameCount > 0) {
-          // We reached the end of the stream but found at least one valid frame.
+          // 如果至少找到一个有效帧，则跳出循环
           break;
         }
-        maybeUpdateCbrDurationToLastSample();
-        throw new EOFException();
+        maybeUpdateCbrDurationToLastSample(); // 更新CBR（恒定比特率）的持续时间
+        throw new EOFException(); // 抛出EOF异常
       }
-      scratch.setPosition(0);
-      int headerData = scratch.readInt();
+
+      scratch.setPosition(0); // 重置临时缓冲区的位置
+      int headerData = scratch.readInt(); // 读取帧头数据
       int frameSize;
       if ((candidateSynchronizedHeaderData != 0
-              && !headersMatch(headerData, candidateSynchronizedHeaderData))
+          && !headersMatch(headerData, candidateSynchronizedHeaderData))
           || (frameSize = MpegAudioUtil.getFrameSize(headerData)) == C.LENGTH_UNSET) {
-        // The header doesn't match the candidate header or is invalid. Try the next byte offset.
+        // 如果帧头不匹配候选帧头或帧头无效，则尝试下一个字节偏移
         if (searchedBytes++ == searchLimitBytes) {
           if (!sniffing) {
-            maybeUpdateCbrDurationToLastSample();
-            throw new EOFException();
+            maybeUpdateCbrDurationToLastSample(); // 更新CBR的持续时间
+            throw new EOFException(); // 抛出EOF异常
           }
-          return false;
+          return false; // 返回false，表示同步失败
         }
-        validFrameCount = 0;
-        candidateSynchronizedHeaderData = 0;
+        validFrameCount = 0; // 重置有效帧计数
+        candidateSynchronizedHeaderData = 0; // 重置候选帧头数据
         if (sniffing) {
-          input.resetPeekPosition();
-          input.advancePeekPosition(peekedId3Bytes + searchedBytes);
+          input.resetPeekPosition(); // 重置输入流的读取位置
+          input.advancePeekPosition(peekedId3Bytes + searchedBytes); // 前进读取位置
         } else {
-          input.skipFully(1);
+          input.skipFully(1); // 跳过1个字节
         }
       } else {
-        // The header matches the candidate header and/or is valid.
-        validFrameCount++;
+        // 如果帧头匹配候选帧头且有效
+        validFrameCount++; // 增加有效帧计数
         if (validFrameCount == 1) {
-          synchronizedHeader.setForHeaderData(headerData);
-          candidateSynchronizedHeaderData = headerData;
+          synchronizedHeader.setForHeaderData(headerData); // 设置同步帧头
+          candidateSynchronizedHeaderData = headerData; // 设置候选帧头数据
         } else if (validFrameCount == 4) {
-          break;
+          break; // 如果找到4个有效帧，则跳出循环
         }
-        input.advancePeekPosition(frameSize - 4);
+        input.advancePeekPosition(frameSize - 4); // 前进读取位置
       }
     }
-    // Prepare to read the synchronized frame.
+
+    // 准备读取同步帧
     if (sniffing) {
-      input.skipFully(peekedId3Bytes + searchedBytes);
+      input.skipFully(peekedId3Bytes + searchedBytes); // 跳过已读取的ID3字节和搜索字节
     } else {
-      input.resetPeekPosition();
+      input.resetPeekPosition(); // 重置输入流的读取位置
     }
-    synchronizedHeaderData = candidateSynchronizedHeaderData;
-    return true;
+    synchronizedHeaderData = candidateSynchronizedHeaderData; // 设置同步帧头数据
+    return true; // 返回true，表示同步成功
   }
 
   /**
-   * Returns whether the extractor input is peeking the end of the stream. If {@code false},
-   * populates the scratch buffer with the next four bytes.
+   * 检查输入流是否到达末尾或读取到帧头。
+   *
+   * @param extractorInput 输入流，用于读取数据。
+   * @return 如果到达流的末尾或读取到帧头，则返回true；否则返回false。
+   * @throws IOException 如果读取数据时发生错误。
    */
   private boolean peekEndOfStreamOrHeader(ExtractorInput extractorInput) throws IOException {
     if (seeker != null) {
-      long dataEndPosition = seeker.getDataEndPosition();
+      long dataEndPosition = seeker.getDataEndPosition(); // 获取数据结束位置
       if (dataEndPosition != C.INDEX_UNSET
           && extractorInput.getPeekPosition() > dataEndPosition - 4) {
-        return true;
+        return true; // 如果读取位置超过数据结束位置，则返回true
       }
     }
     try {
       return !extractorInput.peekFully(
           scratch.getData(), /* offset= */ 0, /* length= */ 4, /* allowEndOfInput= */ true);
     } catch (EOFException e) {
-      return true;
+      return true; // 如果发生EOF异常，则返回true
     }
   }
 
+  /**
+   * 根据输入流计算Seeker（用于定位和搜索）。
+   *
+   * @param input 输入流，用于读取数据。
+   * @return 返回一个Seeker对象。
+   * @throws IOException 如果读取数据时发生错误。
+   */
   private Seeker computeSeeker(ExtractorInput input) throws IOException {
-    // Read past any seek frame and set the seeker based on metadata or a seek frame. Metadata
-    // takes priority as it can provide greater precision.
-    Seeker seekFrameSeeker = maybeReadSeekFrame(input);
-    Seeker metadataSeeker = maybeHandleSeekMetadata(metadata, input.getPosition());
+    // 读取任何搜索帧，并根据元数据或搜索帧设置Seeker。元数据优先，因为它可以提供更高的精度。
+    Seeker seekFrameSeeker = maybeReadSeekFrame(input); // 读取搜索帧
+    Seeker metadataSeeker = maybeHandleSeekMetadata(metadata, input.getPosition()); // 处理元数据
 
     if (disableSeeking) {
-      return new UnseekableSeeker();
+      return new UnseekableSeeker(); // 如果禁用搜索，则返回不可搜索的Seeker
     }
 
     @Nullable Seeker resultSeeker = null;
@@ -480,21 +493,21 @@ public final class Mp3Extractor implements Extractor {
       long durationUs;
       long dataEndPosition = C.INDEX_UNSET;
       if (metadataSeeker != null) {
-        durationUs = metadataSeeker.getDurationUs();
-        dataEndPosition = metadataSeeker.getDataEndPosition();
+        durationUs = metadataSeeker.getDurationUs(); // 获取持续时间
+        dataEndPosition = metadataSeeker.getDataEndPosition(); // 获取数据结束位置
       } else if (seekFrameSeeker != null) {
-        durationUs = seekFrameSeeker.getDurationUs();
-        dataEndPosition = seekFrameSeeker.getDataEndPosition();
+        durationUs = seekFrameSeeker.getDurationUs(); // 获取持续时间
+        dataEndPosition = seekFrameSeeker.getDataEndPosition(); // 获取数据结束位置
       } else {
-        durationUs = getId3TlenUs(metadata);
+        durationUs = getId3TlenUs(metadata); // 从ID3元数据中获取持续时间
       }
       resultSeeker =
           new IndexSeeker(
               durationUs, /* dataStartPosition= */ input.getPosition(), dataEndPosition);
     } else if (metadataSeeker != null) {
-      resultSeeker = metadataSeeker;
+      resultSeeker = metadataSeeker; // 使用元数据Seeker
     } else if (seekFrameSeeker != null) {
-      resultSeeker = seekFrameSeeker;
+      resultSeeker = seekFrameSeeker; // 使用搜索帧Seeker
     }
 
     if (resultSeeker == null
@@ -504,18 +517,15 @@ public final class Mp3Extractor implements Extractor {
               input, (flags & FLAG_ENABLE_CONSTANT_BITRATE_SEEKING_ALWAYS) != 0);
     }
 
-    return resultSeeker;
+    return resultSeeker; // 返回最终的Seeker
   }
 
   /**
-   * Consumes the next frame from the {@code input} if it contains VBRI or Xing seeking metadata,
-   * returning a {@link Seeker} if the metadata was present and valid, or {@code null} otherwise.
-   * After this method returns, the input position is the start of the first frame of audio.
+   * 如果输入流包含VBRI或Xing搜索元数据，则读取并返回一个Seeker对象；否则返回null。
    *
-   * @param input The {@link ExtractorInput} from which to read.
-   * @return A {@link Seeker} if seeking metadata was present and valid, or {@code null} otherwise.
-   * @throws IOException Thrown if there was an error reading from the stream. Not expected if the
-   *     next two frames were already peeked during synchronization.
+   * @param input 输入流，用于读取数据。
+   * @return 如果存在有效的搜索元数据，则返回Seeker对象；否则返回null。
+   * @throws IOException 如果读取数据时发生错误。
    */
   @Nullable
   private Seeker maybeReadSeekFrame(ExtractorInput input) throws IOException {
@@ -550,10 +560,6 @@ public final class Mp3Extractor implements Extractor {
                   + "), using Xing value.");
         }
         input.skipFully(synchronizedHeader.frameSize);
-        // An Xing frame indicates the file is VBR (so we have to use the seek header for seeking)
-        // while an Info header indicates the file is CBR, in which case ConstantBitrateSeeker will
-        // give more accurate seeking than the low-resolution seek table in the Info header. We can
-        // still use the length from the Info frame if we don't know the stream length directly.
         if (seekHeader == SEEK_HEADER_XING) {
           seeker = XingSeeker.create(xingFrame, startPosition);
         } else { // seekHeader == SEEK_HEADER_INFO
@@ -567,14 +573,20 @@ public final class Mp3Extractor implements Extractor {
         break;
       case SEEK_HEADER_UNSET:
       default:
-        // This frame doesn't contain seeking information, so reset the peek position.
         seeker = null;
         input.resetPeekPosition();
     }
     return seeker;
   }
 
-  /** Peeks the next frame and returns a {@link ConstantBitrateSeeker} based on its bitrate. */
+  /**
+   * 根据输入流的比特率返回一个ConstantBitrateSeeker对象。
+   *
+   * @param input                     输入流，用于读取数据。
+   * @param allowSeeksIfLengthUnknown 如果流的长度未知，是否允许搜索。
+   * @return 返回一个ConstantBitrateSeeker对象。
+   * @throws IOException 如果读取数据时发生错误。
+   */
   private Seeker getConstantBitrateSeeker(ExtractorInput input, boolean allowSeeksIfLengthUnknown)
       throws IOException {
     input.peekFully(scratch.getData(), 0, 4);
@@ -585,14 +597,12 @@ public final class Mp3Extractor implements Extractor {
   }
 
   /**
-   * Returns a {@link ConstantBitrateSeeker} based on the provided {@link XingFrame Info frame}.
+   * 根据提供的XingFrame（Info帧）返回一个ConstantBitrateSeeker对象。
    *
-   * @param infoFramePosition The position of the Info frame (from the beginning of the stream).
-   * @param infoFrame The parsed Info frame.
-   * @param fallbackStreamLength The complete length of the input stream (only used if {@link
-   *     XingFrame#dataSize} is unset). Can be {@link C#LENGTH_UNSET} if the length is not known.
-   * @return A {@link Seeker} if the {@link XingFrame} contains enough info to seek, or {@code null}
-   *     otherwise.
+   * @param infoFramePosition    Info帧的位置（从流的开始处计算）。
+   * @param infoFrame            解析后的Info帧。
+   * @param fallbackStreamLength 输入流的完整长度（仅在XingFrame的dataSize未设置时使用）。
+   * @return 如果XingFrame包含足够的信息用于搜索，则返回Seeker对象；否则返回null。
    */
   @Nullable
   private Seeker getConstantBitrateSeeker(
@@ -603,9 +613,6 @@ public final class Mp3Extractor implements Extractor {
     }
     long streamLength;
     long audioLength;
-    // Prefer the stream length from the Info frame, because it may deliberately
-    // exclude some unplayable/non-MP3 trailer data (e.g. album artwork), see
-    // https://github.com/androidx/media/issues/1376#issuecomment-2117211184.
     if (infoFrame.dataSize != C.LENGTH_UNSET) {
       streamLength = infoFramePosition + infoFrame.dataSize;
       audioLength = infoFrame.dataSize - infoFrame.header.frameSize;
@@ -616,10 +623,6 @@ public final class Mp3Extractor implements Extractor {
       return null;
     }
 
-    // Derive the bitrate and frame size by averaging over the length of playable audio, to allow
-    // for 'mostly' CBR streams that might have a small number of frames with a different bitrate.
-    // We can assume infoFrame.frameCount is set, because otherwise computeDurationUs() would
-    // have returned C.TIME_UNSET above. See also https://github.com/androidx/media/issues/1376.
     int averageBitrate =
         Ints.checkedCast(
             Util.scaleLargeValue(
@@ -629,9 +632,6 @@ public final class Mp3Extractor implements Extractor {
                 RoundingMode.HALF_UP));
     int frameSize =
         Ints.checkedCast(LongMath.divide(audioLength, infoFrame.frameCount, RoundingMode.HALF_UP));
-    // Set the seeker frame size to the average frame size (even though some constant bitrate
-    // streams have variable frame sizes due to padding), to avoid the need to re-synchronize for
-    // constant frame size streams.
     return new ConstantBitrateSeeker(
         streamLength,
         /* firstFramePosition= */ infoFramePosition + infoFrame.header.frameSize,
@@ -641,9 +641,8 @@ public final class Mp3Extractor implements Extractor {
   }
 
   /**
-   * If {@link #seeker} is a seekable {@link ConstantBitrateSeeker}, this updates it to end at the
-   * last sample we read (because we've failed to find a subsequent synchronization word so we
-   * assume the MP3 data has ended).
+   * 如果seeker是一个可搜索的ConstantBitrateSeeker，则更新它以结束于我们读取的最后一个样本
+   * （因为我们未能找到后续的同步字，因此我们假设MP3数据已结束）。
    */
   private void maybeUpdateCbrDurationToLastSample() {
     if (seeker instanceof ConstantBitrateSeeker
@@ -656,21 +655,33 @@ public final class Mp3Extractor implements Extractor {
     }
   }
 
+  /**
+   * 确保extractorOutput和realTrackOutput已初始化。
+   */
   @EnsuresNonNull({"extractorOutput", "realTrackOutput"})
   private void assertInitialized() {
     Assertions.checkStateNotNull(realTrackOutput);
     Util.castNonNull(extractorOutput);
   }
 
-  /** Returns whether the headers match in those bits masked by {@link #MPEG_AUDIO_HEADER_MASK}. */
+  /**
+   * 检查两个帧头是否匹配（基于MPEG_AUDIO_HEADER_MASK掩码）。
+   *
+   * @param headerA 第一个帧头。
+   * @param headerB 第二个帧头。
+   * @return 如果两个帧头匹配，则返回true；否则返回false。
+   */
   private static boolean headersMatch(int headerA, long headerB) {
     return (headerA & MPEG_AUDIO_HEADER_MASK) == (headerB & MPEG_AUDIO_HEADER_MASK);
   }
 
   /**
-   * Returns {@link #SEEK_HEADER_XING}, {@link #SEEK_HEADER_INFO} or {@link #SEEK_HEADER_VBRI} if
-   * the provided {@code frame} may have seeking metadata, or {@link #SEEK_HEADER_UNSET} otherwise.
-   * If seeking metadata is present, {@code frame}'s position is advanced past the header.
+   * 如果提供的frame可能包含搜索元数据，则返回SEEK_HEADER_XING、SEEK_HEADER_INFO或SEEK_HEADER_VBRI；
+   * 否则返回SEEK_HEADER_UNSET。
+   *
+   * @param frame    包含帧数据的ParsableByteArray。
+   * @param xingBase Xing帧的基址。
+   * @return 返回搜索头类型。
    */
   private static @SeekHeader int getSeekFrameHeader(ParsableByteArray frame, int xingBase) {
     if (frame.limit() >= xingBase + 4) {
@@ -681,7 +692,7 @@ public final class Mp3Extractor implements Extractor {
       }
     }
     if (frame.limit() >= 40) {
-      frame.setPosition(36); // MPEG audio header (4 bytes) + 32 bytes.
+      frame.setPosition(36); // MPEG音频头（4字节）+ 32字节。
       if (frame.readInt() == SEEK_HEADER_VBRI) {
         return SEEK_HEADER_VBRI;
       }
@@ -689,6 +700,13 @@ public final class Mp3Extractor implements Extractor {
     return SEEK_HEADER_UNSET;
   }
 
+  /**
+   * 如果元数据包含MLLT帧，则返回一个MlltSeeker对象；否则返回null。
+   *
+   * @param metadata           元数据。
+   * @param firstFramePosition 第一帧的位置。
+   * @return 如果存在MLLT帧，则返回MlltSeeker对象；否则返回null。
+   */
   @Nullable
   private static MlltSeeker maybeHandleSeekMetadata(
       @Nullable Metadata metadata, long firstFramePosition) {
@@ -704,6 +722,12 @@ public final class Mp3Extractor implements Extractor {
     return null;
   }
 
+  /**
+   * 从ID3元数据中获取TLEN（音轨长度）信息，并将其转换为微秒。
+   *
+   * @param metadata 元数据。
+   * @return 返回音轨长度的微秒数，如果未找到则返回C.TIME_UNSET。
+   */
   private static long getId3TlenUs(@Nullable Metadata metadata) {
     if (metadata != null) {
       int length = metadata.length();

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp3;
 
 import android.util.Pair;
@@ -21,44 +6,43 @@ import androidx.media3.common.util.Util;
 import androidx.media3.extractor.SeekPoint;
 import androidx.media3.extractor.metadata.id3.MlltFrame;
 
-/** MP3 seeker that uses metadata from an {@link MlltFrame}. */
+/** 使用 {@link MlltFrame} 元数据的 MP3 搜索器。 */
 /* package */ final class MlltSeeker implements Seeker {
 
   /**
-   * Returns an {@link MlltSeeker} for seeking in the stream.
+   * 返回一个用于在流中搜索的 {@link MlltSeeker}。
    *
-   * @param firstFramePosition The position of the start of the first frame in the stream.
-   * @param mlltFrame The MLLT frame with seeking metadata.
-   * @param durationUs The stream duration in microseconds, or {@link C#TIME_UNSET} if it is
-   *     unknown.
-   * @return An {@link MlltSeeker} for seeking in the stream.
+   * @param firstFramePosition 流中第一帧的起始位置。
+   * @param mlltFrame 包含搜索元数据的 MLLT 帧。
+   * @param durationUs 流的持续时间（单位：微秒），如果未知则为 {@link C#TIME_UNSET}。
+   * @return 一个用于在流中搜索的 {@link MlltSeeker}。
    */
   public static MlltSeeker create(long firstFramePosition, MlltFrame mlltFrame, long durationUs) {
-    int referenceCount = mlltFrame.bytesDeviations.length;
-    long[] referencePositions = new long[1 + referenceCount];
-    long[] referenceTimesMs = new long[1 + referenceCount];
-    referencePositions[0] = firstFramePosition;
-    referenceTimesMs[0] = 0;
-    long position = firstFramePosition;
-    long timeMs = 0;
+    int referenceCount = mlltFrame.bytesDeviations.length; // 参考点的数量
+    long[] referencePositions = new long[1 + referenceCount]; // 参考点的位置数组
+    long[] referenceTimesMs = new long[1 + referenceCount]; // 参考点的时间数组（单位：毫秒）
+    referencePositions[0] = firstFramePosition; // 第一个参考点的位置
+    referenceTimesMs[0] = 0; // 第一个参考点的时间
+    long position = firstFramePosition; // 当前的位置
+    long timeMs = 0; // 当前的时间
     for (int i = 1; i <= referenceCount; i++) {
-      position += mlltFrame.bytesBetweenReference + mlltFrame.bytesDeviations[i - 1];
-      timeMs += mlltFrame.millisecondsBetweenReference + mlltFrame.millisecondsDeviations[i - 1];
-      referencePositions[i] = position;
-      referenceTimesMs[i] = timeMs;
+      position += mlltFrame.bytesBetweenReference + mlltFrame.bytesDeviations[i - 1]; // 计算下一个参考点的位置
+      timeMs += mlltFrame.millisecondsBetweenReference + mlltFrame.millisecondsDeviations[i - 1]; // 计算下一个参考点的时间
+      referencePositions[i] = position; // 记录参考点的位置
+      referenceTimesMs[i] = timeMs; // 记录参考点的时间
     }
-    return new MlltSeeker(referencePositions, referenceTimesMs, durationUs);
+    return new MlltSeeker(referencePositions, referenceTimesMs, durationUs); // 创建 MlltSeeker 实例
   }
 
-  private final long[] referencePositions;
-  private final long[] referenceTimesMs;
-  private final long durationUs;
+  private final long[] referencePositions; // 参考点的位置数组
+  private final long[] referenceTimesMs; // 参考点的时间数组（单位：毫秒）
+  private final long durationUs; // 流的持续时间（单位：微秒）
 
   private MlltSeeker(long[] referencePositions, long[] referenceTimesMs, long durationUs) {
     this.referencePositions = referencePositions;
     this.referenceTimesMs = referenceTimesMs;
-    // Use the last reference point as the duration if it is unknown, as extrapolating variable
-    // bitrate at the end of the stream may give a large error.
+    // 如果流的持续时间未知，则使用最后一个参考点的时间作为持续时间，
+    // 因为在流末尾外推可变比特率可能会产生较大误差。
     this.durationUs =
         durationUs != C.TIME_UNSET
             ? durationUs
@@ -67,69 +51,67 @@ import androidx.media3.extractor.metadata.id3.MlltFrame;
 
   @Override
   public boolean isSeekable() {
-    return true;
+    return true; // 返回是否可搜索
   }
 
   @Override
   public SeekPoints getSeekPoints(long timeUs) {
-    timeUs = Util.constrainValue(timeUs, 0, durationUs);
+    timeUs = Util.constrainValue(timeUs, 0, durationUs); // 约束时间在有效范围内
     Pair<Long, Long> timeMsAndPosition =
-        linearlyInterpolate(Util.usToMs(timeUs), referenceTimesMs, referencePositions);
-    timeUs = Util.msToUs(timeMsAndPosition.first);
-    long position = timeMsAndPosition.second;
-    return new SeekPoints(new SeekPoint(timeUs, position));
+        linearlyInterpolate(Util.usToMs(timeUs), referenceTimesMs, referencePositions); // 线性插值获取位置
+    timeUs = Util.msToUs(timeMsAndPosition.first); // 将时间转换回微秒
+    long position = timeMsAndPosition.second; // 获取位置
+    return new SeekPoints(new SeekPoint(timeUs, position)); // 返回搜索点
   }
 
   @Override
   public long getTimeUs(long position) {
     Pair<Long, Long> positionAndTimeMs =
-        linearlyInterpolate(position, referencePositions, referenceTimesMs);
-    return Util.msToUs(positionAndTimeMs.second);
+        linearlyInterpolate(position, referencePositions, referenceTimesMs); // 线性插值获取时间
+    return Util.msToUs(positionAndTimeMs.second); // 将时间转换回微秒
   }
 
   @Override
   public long getDurationUs() {
-    return durationUs;
+    return durationUs; // 返回流的持续时间
   }
 
   /**
-   * Given a set of reference points as coordinates in {@code xReferences} and {@code yReferences}
-   * and an x-axis value, linearly interpolates between corresponding reference points to give a
-   * y-axis value.
+   * 给定一组参考点的 x 轴和 y 轴坐标，以及一个 x 轴值，通过线性插值计算对应的 y 轴值。
    *
-   * @param x The x-axis value for which a y-axis value is needed.
-   * @param xReferences x coordinates of reference points.
-   * @param yReferences y coordinates of reference points.
-   * @return The linearly interpolated y-axis value.
+   * @param x 需要计算 y 轴值的 x 轴值。
+   * @param xReferences 参考点的 x 轴坐标。
+   * @param yReferences 参考点的 y 轴坐标。
+   * @return 线性插值计算出的 y 轴值。
    */
   private static Pair<Long, Long> linearlyInterpolate(
       long x, long[] xReferences, long[] yReferences) {
     int previousReferenceIndex =
-        Util.binarySearchFloor(xReferences, x, /* inclusive= */ true, /* stayInBounds= */ true);
-    long xPreviousReference = xReferences[previousReferenceIndex];
-    long yPreviousReference = yReferences[previousReferenceIndex];
-    int nextReferenceIndex = previousReferenceIndex + 1;
+        Util.binarySearchFloor(xReferences, x, /* inclusive= */ true, /* stayInBounds= */ true); // 查找最近的参考点索引
+    long xPreviousReference = xReferences[previousReferenceIndex]; // 获取前一个参考点的 x 轴值
+    long yPreviousReference = yReferences[previousReferenceIndex]; // 获取前一个参考点的 y 轴值
+    int nextReferenceIndex = previousReferenceIndex + 1; // 下一个参考点的索引
     if (nextReferenceIndex == xReferences.length) {
-      return Pair.create(xPreviousReference, yPreviousReference);
+      return Pair.create(xPreviousReference, yPreviousReference); // 如果超出范围，返回前一个参考点的值
     } else {
-      long xNextReference = xReferences[nextReferenceIndex];
-      long yNextReference = yReferences[nextReferenceIndex];
+      long xNextReference = xReferences[nextReferenceIndex]; // 获取下一个参考点的 x 轴值
+      long yNextReference = yReferences[nextReferenceIndex]; // 获取下一个参考点的 y 轴值
       double proportion =
           xNextReference == xPreviousReference
               ? 0.0
-              : ((double) x - xPreviousReference) / (xNextReference - xPreviousReference);
-      long y = (long) (proportion * (yNextReference - yPreviousReference)) + yPreviousReference;
-      return Pair.create(x, y);
+              : ((double) x - xPreviousReference) / (xNextReference - xPreviousReference); // 计算插值比例
+      long y = (long) (proportion * (yNextReference - yPreviousReference)) + yPreviousReference; // 计算 y 轴值
+      return Pair.create(x, y); // 返回插值结果
     }
   }
 
   @Override
   public long getDataEndPosition() {
-    return C.INDEX_UNSET;
+    return C.INDEX_UNSET; // 返回数据结束位置（未知）
   }
 
   @Override
   public int getAverageBitrate() {
-    return C.RATE_UNSET_INT;
+    return C.RATE_UNSET_INT; // 返回平均比特率（未知）
   }
 }

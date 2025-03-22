@@ -1,51 +1,33 @@
-/*
- * Copyright (C) 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.mp3;
 
 import androidx.media3.common.C;
 import androidx.media3.extractor.SeekMap;
 
 /**
- * {@link SeekMap} that provides the end position of audio data and also allows mapping from
- * position (byte offset) back to time, which can be used to work out the new sample basis timestamp
- * after seeking and resynchronization.
+ * {@link SeekMap} 实现，提供音频数据的结束位置，并允许从位置（字节偏移量）映射到时间，
+ * 这可以用于在搜索和重新同步后计算新的样本基准时间戳。
  */
 /* package */ interface Seeker extends SeekMap {
 
   /**
-   * Maps a position (byte offset) to a corresponding sample timestamp.
+   * 将位置（字节偏移量）映射到相应的样本时间戳。
    *
-   * @param position A seek position (byte offset) relative to the start of the stream.
-   * @return The corresponding timestamp of the next sample to be read, in microseconds.
+   * @param position 相对于流开始的搜索位置（字节偏移量）。
+   * @return 下一个要读取的样本的对应时间戳，单位为微秒。
    */
   long getTimeUs(long position);
 
   /**
-   * Returns the position (byte offset) in the stream that is immediately after audio data, or
-   * {@link C#INDEX_UNSET} if not known.
+   * 返回流中音频数据结束后的位置（字节偏移量），如果未知则返回 {@link C#INDEX_UNSET}。
    */
   long getDataEndPosition();
 
   /**
-   * Returns the average bitrate (usually derived from the duration and length of the file), or
-   * {@link C#RATE_UNSET_INT} if not known.
+   * 返回平均比特率（通常从文件的持续时间和长度中得出），如果未知则返回 {@link C#RATE_UNSET_INT}。
    */
   int getAverageBitrate();
 
-  /** A {@link Seeker} that does not support seeking through audio data. */
+  /** 不支持通过音频数据进行搜索的 {@link Seeker}。 */
   /* package */ class UnseekableSeeker extends SeekMap.Unseekable implements Seeker {
 
     public UnseekableSeeker() {
@@ -59,7 +41,7 @@ import androidx.media3.extractor.SeekMap;
 
     @Override
     public long getDataEndPosition() {
-      // Position unset as we do not know the data end position. Note that returning 0 doesn't work.
+      // 由于我们不知道数据结束位置，因此返回未设置的值。注意，返回 0 是无效的。
       return C.INDEX_UNSET;
     }
 
