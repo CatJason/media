@@ -1,17 +1,15 @@
 /*
- * Copyright 2021 The Android Open Source Project
+ * 版权所有 2021 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发的软件
+ * 没有任何形式的明示或暗示的保证或条件。
+ * 请参阅许可证以了解特定语言下的权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -33,13 +31,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The default {@link MediaCodecAdapter.Factory}.
+ * 默认的 {@link MediaCodecAdapter.Factory}。
  *
- * <p>By default, this factory {@link #createAdapter creates} {@link AsynchronousMediaCodecAdapter}
- * instances on devices with API level &gt;= 31 (Android 12+). For devices with older API versions,
- * the default behavior is to create {@link SynchronousMediaCodecAdapter} instances. The factory
- * offers APIs to force the creation of {@link AsynchronousMediaCodecAdapter} (applicable for
- * devices with API &gt;= 23) or {@link SynchronousMediaCodecAdapter} instances.
+ * <p>默认情况下，此工厂在 API 级别 &gt;= 31（Android 12+）的设备上 {@link #createAdapter 创建} {@link AsynchronousMediaCodecAdapter} 实例。
+ * 对于 API 版本较旧的设备，默认行为是创建 {@link SynchronousMediaCodecAdapter} 实例。
+ * 该工厂提供了 API 来强制创建 {@link AsynchronousMediaCodecAdapter}（适用于 API &gt;= 23 的设备）或 {@link SynchronousMediaCodecAdapter} 实例。
  */
 @UnstableApi
 public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.Factory {
@@ -62,7 +58,7 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
   private boolean asyncCryptoFlagEnabled;
 
   /**
-   * @deprecated Use {@link #DefaultMediaCodecAdapterFactory(Context)} instead.
+   * @deprecated 请使用 {@link #DefaultMediaCodecAdapterFactory(Context)} 代替。
    */
   @Deprecated
   public DefaultMediaCodecAdapterFactory() {
@@ -72,9 +68,9 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
   }
 
   /**
-   * Creates the default media codec adapter factory.
+   * 创建默认的媒体编解码器适配器工厂。
    *
-   * @param context A {@link Context}.
+   * @param context 一个 {@link Context}。
    */
   public DefaultMediaCodecAdapterFactory(Context context) {
     this.context = context;
@@ -83,11 +79,10 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
   }
 
   /**
-   * Forces this factory to always create {@link AsynchronousMediaCodecAdapter} instances, provided
-   * the device API level is &gt;= 23. For devices with API level &lt; 23, the factory will create
-   * {@link SynchronousMediaCodecAdapter SynchronousMediaCodecAdapters}.
+   * 强制此工厂始终创建 {@link AsynchronousMediaCodecAdapter} 实例，前提是设备 API 级别 &gt;= 23。
+   * 对于 API 级别 &lt; 23 的设备，工厂将创建 {@link SynchronousMediaCodecAdapter} 实例。
    *
-   * @return This factory, for convenience.
+   * @return 此工厂，以便链式调用。
    */
   @CanIgnoreReturnValue
   public DefaultMediaCodecAdapterFactory forceEnableAsynchronous() {
@@ -96,9 +91,9 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
   }
 
   /**
-   * Forces the factory to always create {@link SynchronousMediaCodecAdapter} instances.
+   * 强制工厂始终创建 {@link SynchronousMediaCodecAdapter} 实例。
    *
-   * @return This factory, for convenience.
+   * @return 此工厂，以便链式调用。
    */
   @CanIgnoreReturnValue
   public DefaultMediaCodecAdapterFactory forceDisableAsynchronous() {
@@ -107,11 +102,9 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
   }
 
   /**
-   * Sets whether to enable {@link MediaCodec#CONFIGURE_FLAG_USE_CRYPTO_ASYNC} on API 34 and above
-   * for {@link AsynchronousMediaCodecAdapter} instances.
+   * 设置是否在 API 34 及更高版本上为 {@link AsynchronousMediaCodecAdapter} 实例启用 {@link MediaCodec#CONFIGURE_FLAG_USE_CRYPTO_ASYNC}。
    *
-   * <p>This method is experimental. Its default value may change, or it may be renamed or removed
-   * in a future release.
+   * <p>此方法是实验性的。其默认值可能会更改，或者它可能会在未来的版本中重命名或移除。
    */
   @CanIgnoreReturnValue
   public DefaultMediaCodecAdapterFactory experimentalSetAsyncCryptoFlagEnabled(
@@ -125,11 +118,11 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
       throws IOException {
     if (Util.SDK_INT >= 23
         && (asynchronousMode == MODE_ENABLED
-            || (asynchronousMode == MODE_DEFAULT && shouldUseAsynchronousAdapterInDefaultMode()))) {
+        || (asynchronousMode == MODE_DEFAULT && shouldUseAsynchronousAdapterInDefaultMode()))) {
       int trackType = MimeTypes.getTrackType(configuration.format.sampleMimeType);
       Log.i(
           TAG,
-          "Creating an asynchronous MediaCodec adapter for track type "
+          "为轨道类型创建异步 MediaCodec 适配器："
               + Util.getTrackTypeString(trackType));
       AsynchronousMediaCodecAdapter.Factory factory =
           new AsynchronousMediaCodecAdapter.Factory(trackType);
@@ -141,11 +134,10 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
 
   private boolean shouldUseAsynchronousAdapterInDefaultMode() {
     if (Util.SDK_INT >= 31) {
-      // Asynchronous codec interactions started to be reliable for all devices on API 31+.
+      // 在 API 31+ 上，异步编解码器交互开始对所有设备可靠。
       return true;
     }
-    // Allow additional devices that work reliably with the asynchronous adapter and show
-    // performance problems when not using it.
+    // 允许某些设备使用异步适配器，因为这些设备在使用异步适配器时表现可靠，而在不使用时会遇到性能问题。
     if (context != null
         && Util.SDK_INT >= 28
         && context.getPackageManager().hasSystemFeature("com.amazon.hardware.tv_screen")) {

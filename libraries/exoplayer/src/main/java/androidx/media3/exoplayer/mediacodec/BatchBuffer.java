@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * 版权所有 (C) 2020 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发的软件
+ * 没有任何形式的明示或暗示的保证或条件。
+ * 请参阅许可证以了解特定语言下的权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -24,16 +22,16 @@ import androidx.media3.common.C;
 import androidx.media3.decoder.DecoderInputBuffer;
 import java.nio.ByteBuffer;
 
-/** Buffer to which multiple sample buffers can be appended for batch processing */
+/** 用于批量处理的多样本缓冲区，可以将多个样本缓冲区追加到其中。 */
 /* package */ final class BatchBuffer extends DecoderInputBuffer {
 
-  /** The default maximum number of samples that can be appended before the buffer is full. */
+  /** 默认情况下，缓冲区在满之前可以追加的最大样本数。 */
   public static final int DEFAULT_MAX_SAMPLE_COUNT = 32;
 
   /**
-   * The maximum size of the buffer in bytes. This prevents excessive memory usage for high bitrate
-   * streams. The limit is equivalent of 75s of mp3 at highest bitrate (320kb/s) and 30s of AAC LC
-   * at highest bitrate (800kb/s). That limit is ignored for the first sample.
+   * 缓冲区的最大大小（以字节为单位）。这可以防止高比特率流占用过多内存。
+   * 该限制相当于最高比特率（320kb/s）下 75 秒的 mp3 音频，或最高比特率（800kb/s）下 30 秒的 AAC LC 音频。
+   * 对于第一个样本，此限制被忽略。
    */
   @VisibleForTesting /* package */ static final int MAX_SIZE_BYTES = 3 * 1000 * 1024;
 
@@ -52,45 +50,42 @@ import java.nio.ByteBuffer;
     sampleCount = 0;
   }
 
-  /** Sets the maximum number of samples that can be appended before the buffer is full. */
+  /** 设置缓冲区在满之前可以追加的最大样本数。 */
   public void setMaxSampleCount(@IntRange(from = 1) int maxSampleCount) {
     checkArgument(maxSampleCount > 0);
     this.maxSampleCount = maxSampleCount;
   }
 
   /**
-   * Returns the timestamp of the first sample in the buffer. The return value is undefined if
-   * {@link #hasSamples()} is {@code false}.
+   * 返回缓冲区中第一个样本的时间戳。如果 {@link #hasSamples()} 为 {@code false}，则返回值未定义。
    */
   public long getFirstSampleTimeUs() {
     return timeUs;
   }
 
   /**
-   * Returns the timestamp of the last sample in the buffer. The return value is undefined if {@link
-   * #hasSamples()} is {@code false}.
+   * 返回缓冲区中最后一个样本的时间戳。如果 {@link #hasSamples()} 为 {@code false}，则返回值未定义。
    */
   public long getLastSampleTimeUs() {
     return lastSampleTimeUs;
   }
 
-  /** Returns the number of samples in the buffer. */
+  /** 返回缓冲区中的样本数量。 */
   public int getSampleCount() {
     return sampleCount;
   }
 
-  /** Returns whether the buffer contains one or more samples. */
+  /** 返回缓冲区是否包含一个或多个样本。 */
   public boolean hasSamples() {
     return sampleCount > 0;
   }
 
   /**
-   * Attempts to append the provided buffer.
+   * 尝试追加提供的缓冲区。
    *
-   * @param buffer The buffer to try and append.
-   * @return Whether the buffer was successfully appended.
-   * @throws IllegalArgumentException If the {@code buffer} is encrypted, has supplemental data, or
-   *     is an end of stream buffer, none of which are supported.
+   * @param buffer 要追加的缓冲区。
+   * @return 缓冲区是否成功追加。
+   * @throws IllegalArgumentException 如果 {@code buffer} 已加密、包含补充数据或是流结束缓冲区，这些情况均不支持。
    */
   public boolean append(DecoderInputBuffer buffer) {
     checkArgument(!buffer.isEncrypted());
@@ -116,7 +111,7 @@ import java.nio.ByteBuffer;
 
   private boolean canAppendSampleBuffer(DecoderInputBuffer buffer) {
     if (!hasSamples()) {
-      // Always allow appending when the buffer is empty, else no progress can be made.
+      // 如果缓冲区为空，则始终允许追加，否则无法继续处理。
       return true;
     }
     if (sampleCount >= maxSampleCount) {

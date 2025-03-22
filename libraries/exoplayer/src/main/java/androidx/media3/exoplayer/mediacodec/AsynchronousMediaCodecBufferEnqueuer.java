@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * 版权所有 (C) 2020 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发的软件
+ * 没有任何形式的明示或暗示的保证或条件。
+ * 请参阅许可证以了解特定语言下的权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -38,11 +36,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
- * Performs {@link MediaCodec} input buffer queueing on a background thread. This is required on API
- * 33 and below because queuing secure buffers blocks until decryption is complete.
+ * 在后台线程中执行 {@link MediaCodec} 输入缓冲区的排队操作。这在 API 33 及以下版本中是必需的，
+ * 因为排队安全缓冲区会阻塞，直到解密完成。
  */
 @RequiresApi(23)
-/* package */ class AsynchronousMediaCodecBufferEnqueuer implements MediaCodecBufferEnqueuer {
+    /* package */ class AsynchronousMediaCodecBufferEnqueuer implements MediaCodecBufferEnqueuer {
 
   private static final int MSG_QUEUE_INPUT_BUFFER = 1;
   private static final int MSG_QUEUE_SECURE_INPUT_BUFFER = 2;
@@ -62,17 +60,17 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   private boolean started;
 
   /**
-   * Creates a new instance that submits input buffers on the specified {@link MediaCodec}.
+   * 创建一个新实例，将输入缓冲区提交到指定的 {@link MediaCodec}。
    *
-   * @param codec The {@link MediaCodec} to submit input buffers to.
-   * @param queueingThread The {@link HandlerThread} to use for queueing buffers.
+   * @param codec 要提交输入缓冲区的 {@link MediaCodec}。
+   * @param queueingThread 用于排队缓冲区的 {@link HandlerThread}。
    */
   public AsynchronousMediaCodecBufferEnqueuer(MediaCodec codec, HandlerThread queueingThread) {
     this(codec, queueingThread, /* conditionVariable= */ new ConditionVariable());
   }
 
   @VisibleForTesting
-  /* package */ AsynchronousMediaCodecBufferEnqueuer(
+    /* package */ AsynchronousMediaCodecBufferEnqueuer(
       MediaCodec codec, HandlerThread handlerThread, ConditionVariable conditionVariable) {
     this.codec = codec;
     this.handlerThread = handlerThread;
@@ -130,8 +128,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         flushHandlerThread();
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        // The playback thread should not be interrupted. Raising this as an
-        // IllegalStateException.
+        // 播放线程不应被中断。将此作为 IllegalStateException 抛出。
         throw new IllegalStateException(e);
       }
     }
@@ -160,8 +157,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Empties all tasks enqueued on the {@link #handlerThread} via the {@link #handler}. This method
-   * blocks until the {@link #handlerThread} is idle.
+   * 清空通过 {@link #handler} 在 {@link #handlerThread} 上排队的任务。此方法会阻塞，直到 {@link #handlerThread} 空闲。
    */
   private void flushHandlerThread() throws InterruptedException {
     checkNotNull(this.handler).removeCallbacksAndMessages(null);
@@ -175,11 +171,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   @VisibleForTesting(otherwise = NONE)
-  /* package */ void setPendingRuntimeException(RuntimeException exception) {
+    /* package */ void setPendingRuntimeException(RuntimeException exception) {
     pendingRuntimeException.set(exception);
   }
 
-  // Called from the handler thread
+  // 从处理程序线程调用
 
   private void doHandleMessage(Message msg) {
     @Nullable MessageParams params = null;
@@ -226,9 +222,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   private void doQueueSecureInputBuffer(
       int index, int offset, MediaCodec.CryptoInfo info, long presentationTimeUs, int flags) {
     try {
-      // Synchronize calls to MediaCodec.queueSecureInputBuffer() to avoid race conditions inside
-      // the crypto module when audio and video are sharing the same DRM session
-      // (see [Internal: b/149908061]).
+      // 同步调用 MediaCodec.queueSecureInputBuffer()，以避免音频和视频共享同一 DRM 会话时加密模块内的竞争条件
+      // （参见 [Internal: b/149908061]）。
       synchronized (QUEUE_SECURE_LOCK) {
         codec.queueSecureInputBuffer(index, offset, info, presentationTimeUs, flags);
       }
@@ -261,7 +256,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
   }
 
-  /** Parameters for queue input buffer and queue secure input buffer tasks. */
+  /** 用于排队输入缓冲区和安全输入缓冲区任务的参数。 */
   private static class MessageParams {
     public int index;
     public int offset;
@@ -274,7 +269,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       cryptoInfo = new MediaCodec.CryptoInfo();
     }
 
-    /** Convenience method for setting the queueing parameters. */
+    /** 用于设置排队参数的便捷方法。 */
     public void setQueueParams(
         int index, int offset, int size, long presentationTimeUs, int flags) {
       this.index = index;
@@ -285,11 +280,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
   }
 
-  /** Performs a deep copy of {@code cryptoInfo} to {@code frameworkCryptoInfo}. */
+  /** 将 {@code cryptoInfo} 深度复制到 {@code frameworkCryptoInfo}。 */
   private static void copy(
       CryptoInfo cryptoInfo, android.media.MediaCodec.CryptoInfo frameworkCryptoInfo) {
-    // Update frameworkCryptoInfo fields directly because CryptoInfo.set performs an unnecessary
-    // object allocation on Android N.
+    // 直接更新 frameworkCryptoInfo 字段，因为 CryptoInfo.set 在 Android N 上执行了不必要的对象分配。
     frameworkCryptoInfo.numSubSamples = cryptoInfo.numSubSamples;
     frameworkCryptoInfo.numBytesOfClearData =
         copy(cryptoInfo.numBytesOfClearData, frameworkCryptoInfo.numBytesOfClearData);
@@ -307,11 +301,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Copies {@code src}, reusing {@code dst} if it's at least as long as {@code src}.
+   * 复制 {@code src}，如果 {@code dst} 的长度至少与 {@code src} 相同，则重用 {@code dst}。
    *
-   * @param src The source array.
-   * @param dst The destination array, which will be reused if it's at least as long as {@code src}.
-   * @return The copy, which may be {@code dst} if it was reused.
+   * @param src 源数组。
+   * @param dst 目标数组，如果其长度至少与 {@code src} 相同，则会被重用。
+   * @return 复制的数组，如果 {@code dst} 被重用，则可能是 {@code dst}。
    */
   @Nullable
   private static int[] copy(@Nullable int[] src, @Nullable int[] dst) {
@@ -328,11 +322,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Copies {@code src}, reusing {@code dst} if it's at least as long as {@code src}.
+   * 复制 {@code src}，如果 {@code dst} 的长度至少与 {@code src} 相同，则重用 {@code dst}。
    *
-   * @param src The source array.
-   * @param dst The destination array, which will be reused if it's at least as long as {@code src}.
-   * @return The copy, which may be {@code dst} if it was reused.
+   * @param src 源数组。
+   * @param dst 目标数组，如果其长度至少与 {@code src} 相同，则会被重用。
+   * @return 复制的数组，如果 {@code dst} 被重用，则可能是 {@code dst}。
    */
   @Nullable
   private static byte[] copy(@Nullable byte[] src, @Nullable byte[] dst) {

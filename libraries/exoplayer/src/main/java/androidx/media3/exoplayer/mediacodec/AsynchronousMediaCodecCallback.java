@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * 版权所有 (C) 2020 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发的软件
+ * 没有任何形式的明示或暗示的保证或条件。
+ * 请参阅许可证以了解特定语言下的权限和限制。
  */
 
 package androidx.media3.exoplayer.mediacodec;
@@ -31,7 +29,7 @@ import androidx.media3.common.util.Util;
 import java.util.ArrayDeque;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** A {@link MediaCodec.Callback} that routes callbacks on a separate thread. */
+/** 一个在单独线程中路由回调的 {@link MediaCodec.Callback}。 */
 @RequiresApi(23)
 /* package */ final class AsynchronousMediaCodecCallback extends MediaCodec.Callback {
   private final Object lock;
@@ -82,10 +80,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   private MediaCodecAdapter.OnBufferAvailableListener onBufferAvailableListener;
 
   /**
-   * Creates a new instance.
+   * 创建一个新实例。
    *
-   * @param callbackThread The thread that will be used for routing the {@link MediaCodec}
-   *     callbacks. The thread must not be started.
+   * @param callbackThread 用于路由 {@link MediaCodec} 回调的线程。该线程必须未启动。
    */
   /* package */ AsynchronousMediaCodecCallback(HandlerThread callbackThread) {
     this.lock = new Object();
@@ -97,10 +94,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Sets the callback on {@code codec} and starts the background callback thread.
+   * 在 {@code codec} 上设置回调并启动后台回调线程。
    *
-   * <p>Make sure to call {@link #shutdown()} to stop the background thread and release its
-   * resources.
+   * <p>确保调用 {@link #shutdown()} 以停止后台线程并释放其资源。
    *
    * @see MediaCodec#setCallback(MediaCodec.Callback, Handler)
    */
@@ -110,16 +106,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     callbackThread.start();
     Handler handler = new Handler(callbackThread.getLooper());
     codec.setCallback(this, handler);
-    // Initialize this.handler at the very end ensuring the callback in not considered configured
-    // if MediaCodec raises an exception.
+    // 在最后初始化 this.handler，确保如果 MediaCodec 抛出异常，回调不会被配置。
     this.handler = handler;
   }
 
   /**
-   * Shuts down this instance.
+   * 关闭此实例。
    *
-   * <p>This method will stop the callback thread. After calling it, callbacks will no longer be
-   * handled and dequeue methods will return {@link MediaCodec#INFO_TRY_AGAIN_LATER}.
+   * <p>此方法将停止回调线程。调用后，回调将不再被处理，出队方法将返回 {@link MediaCodec#INFO_TRY_AGAIN_LATER}。
    */
   public void shutdown() {
     synchronized (lock) {
@@ -130,8 +124,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns the next available input buffer index or {@link MediaCodec#INFO_TRY_AGAIN_LATER} if no
-   * such buffer exists.
+   * 返回下一个可用的输入缓冲区索引，如果没有这样的缓冲区，则返回 {@link MediaCodec#INFO_TRY_AGAIN_LATER}。
    */
   public int dequeueInputBufferIndex() {
     synchronized (lock) {
@@ -147,10 +140,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns the next available output buffer index. If the next available output is a MediaFormat
-   * change, it will return {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED} and you should call {@link
-   * #getOutputFormat()} to get the format. If there is no available output, this method will return
-   * {@link MediaCodec#INFO_TRY_AGAIN_LATER}.
+   * 返回下一个可用的输出缓冲区索引。如果下一个可用输出是 MediaFormat 更改，则返回 {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED}，
+   * 您应调用 {@link #getOutputFormat()} 获取格式。如果没有可用输出，则返回 {@link MediaCodec#INFO_TRY_AGAIN_LATER}。
    */
   public int dequeueOutputBufferIndex(MediaCodec.BufferInfo bufferInfo) {
     synchronized (lock) {
@@ -180,13 +171,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns the {@link MediaFormat} signalled by the underlying {@link MediaCodec}.
+   * 返回由底层 {@link MediaCodec} 发出的 {@link MediaFormat}。
    *
-   * <p>Call this <b>after</b> {@link #dequeueOutputBufferIndex} returned {@link
-   * MediaCodec#INFO_OUTPUT_FORMAT_CHANGED}.
+   * <p>在 {@link #dequeueOutputBufferIndex} 返回 {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED} 后调用此方法。
    *
-   * @throws IllegalStateException If called before {@link #dequeueOutputBufferIndex} has returned
-   *     {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED}.
+   * @throws IllegalStateException 如果在 {@link #dequeueOutputBufferIndex} 返回 {@link MediaCodec#INFO_OUTPUT_FORMAT_CHANGED} 之前调用。
    */
   public MediaFormat getOutputFormat() {
     synchronized (lock) {
@@ -198,8 +187,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Initiates a flush asynchronously, which will be completed on the callback thread. When the
-   * flush is complete, it will trigger {@code onFlushCompleted} from the callback thread.
+   * 异步启动刷新操作，刷新操作将在回调线程上完成。刷新完成后，将从回调线程触发 {@code onFlushCompleted}。
    */
   public void flush() {
     synchronized (lock) {
@@ -208,7 +196,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
   }
 
-  // Called from the callback thread.
+  // 从回调线程调用。
 
   @Override
   public void onInputBufferAvailable(MediaCodec codec, int index) {
@@ -258,11 +246,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Sets the {@link MediaCodecAdapter.OnBufferAvailableListener} that will be notified when {@link
-   * #onInputBufferAvailable} and {@link #onOutputBufferAvailable} are called.
+   * 设置 {@link MediaCodecAdapter.OnBufferAvailableListener}，当 {@link #onInputBufferAvailable} 和 {@link #onOutputBufferAvailable} 被调用时通知它。
    *
-   * @param onBufferAvailableListener The listener that will be notified when {@link
-   *     #onInputBufferAvailable} and {@link #onOutputBufferAvailable} are called.
+   * @param onBufferAvailableListener 当 {@link #onInputBufferAvailable} 和 {@link #onOutputBufferAvailable} 被调用时通知的监听器。
    */
   public void setOnBufferAvailableListener(
       MediaCodecAdapter.OnBufferAvailableListener onBufferAvailableListener) {
@@ -279,10 +265,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
       --pendingFlushCount;
       if (pendingFlushCount > 0) {
-        // Another flush() has been called.
+        // 另一个 flush() 已被调用。
         return;
       } else if (pendingFlushCount < 0) {
-        // This should never happen.
+        // 这不应该发生。
         setInternalException(new IllegalStateException());
         return;
       }
@@ -290,17 +276,15 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
   }
 
-  /** Flushes all available input and output buffers and any error that was previously set. */
+  /** 刷新所有可用的输入和输出缓冲区以及之前设置的任何错误。 */
   @GuardedBy("lock")
   private void flushInternal() {
     if (!formats.isEmpty()) {
       pendingOutputFormat = formats.getLast();
     }
-    // else, pendingOutputFormat may already be non-null following a previous flush, and remains
-    // set in this case.
+    // 否则，pendingOutputFormat 可能在之前的刷新后已经非空，在这种情况下保持不变。
 
-    // mediaCodecException is not reset to null. If the codec has raised an error, then it remains
-    // in FAILED_STATE even after flushing.
+    // mediaCodecException 不会重置为 null。如果编解码器引发了错误，则即使刷新后它仍处于 FAILED_STATE。
     availableInputBuffers.clear();
     availableOutputBuffers.clear();
     bufferInfos.clear();

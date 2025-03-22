@@ -1,17 +1,15 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * 版权所有 (C) 2019 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发的软件
+ * 没有任何形式的明示或暗示的保证或条件。
+ * 请参阅许可证以了解特定语言下的权限和限制。
  */
 
 package androidx.media3.exoplayer.mediacodec;
@@ -46,14 +44,13 @@ import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 
 /**
- * A {@link MediaCodecAdapter} that operates the underlying {@link MediaCodec} in asynchronous mode,
- * routes {@link MediaCodec.Callback} callbacks on a dedicated thread that is managed internally,
- * and queues input buffers asynchronously.
+ * 一个 {@link MediaCodecAdapter}，它以异步模式操作底层的 {@link MediaCodec}，在内部管理的专用线程上路由 {@link MediaCodec.Callback} 回调，
+ * 并以异步方式排队输入缓冲区。
  */
 @RequiresApi(23)
 /* package */ final class AsynchronousMediaCodecAdapter implements MediaCodecAdapter {
 
-  /** A factory for {@link AsynchronousMediaCodecAdapter} instances. */
+  /** 用于创建 {@link AsynchronousMediaCodecAdapter} 实例的工厂。 */
   public static final class Factory implements MediaCodecAdapter.Factory {
     private final Supplier<HandlerThread> callbackThreadSupplier;
     private final Supplier<HandlerThread> queueingThreadSupplier;
@@ -61,10 +58,9 @@ import java.nio.ByteBuffer;
     private boolean enableSynchronousBufferQueueingWithAsyncCryptoFlag;
 
     /**
-     * Creates an factory for {@link AsynchronousMediaCodecAdapter} instances.
+     * 创建一个用于 {@link AsynchronousMediaCodecAdapter} 实例的工厂。
      *
-     * @param trackType One of {@link C#TRACK_TYPE_AUDIO} or {@link C#TRACK_TYPE_VIDEO}. Used for
-     *     labelling the internal thread accordingly.
+     * @param trackType {@link C#TRACK_TYPE_AUDIO} 或 {@link C#TRACK_TYPE_VIDEO} 之一。用于为内部线程命名。
      */
     public Factory(@C.TrackType int trackType) {
       this(
@@ -75,7 +71,7 @@ import java.nio.ByteBuffer;
     }
 
     @VisibleForTesting
-    /* package */ Factory(
+      /* package */ Factory(
         Supplier<HandlerThread> callbackThreadSupplier,
         Supplier<HandlerThread> queueingThreadSupplier) {
       this.callbackThreadSupplier = callbackThreadSupplier;
@@ -84,11 +80,9 @@ import java.nio.ByteBuffer;
     }
 
     /**
-     * Sets whether to enable {@link MediaCodec#CONFIGURE_FLAG_USE_CRYPTO_ASYNC} on API 34 and
-     * above.
+     * 设置是否在 API 34 及以上版本上启用 {@link MediaCodec#CONFIGURE_FLAG_USE_CRYPTO_ASYNC}。
      *
-     * <p>This method is experimental. Its default value may change, or it may be renamed or removed
-     * in a future release.
+     * <p>此方法是实验性的。其默认值可能会更改，或者它可能会在未来的版本中重命名或移除。
      */
     public void experimentalSetAsyncCryptoFlagEnabled(boolean enableAsyncCryptoFlag) {
       enableSynchronousBufferQueueingWithAsyncCryptoFlag = enableAsyncCryptoFlag;
@@ -143,7 +137,7 @@ import java.nio.ByteBuffer;
       if (Util.SDK_INT < 34) {
         return false;
       }
-      // CONFIGURE_FLAG_USE_CRYPTO_ASYNC only works for audio on API 35+ (see b/316565675).
+      // CONFIGURE_FLAG_USE_CRYPTO_ASYNC 仅在 API 35+ 上对音频有效（参见 b/316565675）。
       return Util.SDK_INT >= 35 || MimeTypes.isVideo(format.sampleMimeType);
     }
   }
@@ -255,12 +249,11 @@ import java.nio.ByteBuffer;
 
   @Override
   public void flush() {
-    // The order of calls is important:
-    // 1. Flush the bufferEnqueuer to stop queueing input buffers.
-    // 2. Flush the codec to stop producing available input/output buffers.
-    // 3. Flush the callback so that in-flight callbacks are discarded.
-    // 4. Start the codec. The asynchronous callback will drop pending callbacks and we can start
-    //    the codec now.
+    // 调用顺序很重要：
+    // 1. 刷新 bufferEnqueuer 以停止排队输入缓冲区。
+    // 2. 刷新 codec 以停止生成可用的输入/输出缓冲区。
+    // 3. 刷新回调以丢弃正在进行的回调。
+    // 4. 启动 codec。异步回调将丢弃挂起的回调，我们现在可以启动 codec。
     bufferEnqueuer.flush();
     codec.flush();
     asynchronousMediaCodecCallback.flush();
@@ -278,10 +271,10 @@ import java.nio.ByteBuffer;
     } finally {
       if (!codecReleased) {
         try {
-          // Stopping the codec before releasing it works around a bug on APIs 30, 31 and 32 where
-          // MediaCodec.release() returns too early before fully detaching a Surface, and a
-          // subsequent MediaCodec.configure() call using the same Surface then fails. See
-          // https://github.com/google/ExoPlayer/issues/8696 and b/191966399.
+          // 在释放 codec 之前停止它可以解决 API 30、31 和 32 上的一个 bug，
+          // 在这些版本中，MediaCodec.release() 在完全分离 Surface 之前过早返回，
+          // 导致后续使用相同 Surface 的 MediaCodec.configure() 调用失败。
+          // 参见 https://github.com/google/ExoPlayer/issues/8696 和 b/191966399。
           if (Util.SDK_INT >= 30 && Util.SDK_INT < 33) {
             codec.stop();
           }
@@ -339,12 +332,12 @@ import java.nio.ByteBuffer;
   }
 
   @VisibleForTesting
-  /* package */ void onError(MediaCodec.CodecException error) {
+    /* package */ void onError(MediaCodec.CodecException error) {
     asynchronousMediaCodecCallback.onError(codec, error);
   }
 
   @VisibleForTesting
-  /* package */ void onOutputFormatChanged(MediaFormat format) {
+    /* package */ void onOutputFormatChanged(MediaFormat format) {
     asynchronousMediaCodecCallback.onOutputFormatChanged(codec, format);
   }
 

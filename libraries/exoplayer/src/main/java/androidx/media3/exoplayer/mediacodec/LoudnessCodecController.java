@@ -1,17 +1,15 @@
 /*
- * Copyright 2024 The Android Open Source Project
+ * 版权所有 2024 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发的软件
+ * 没有任何形式的明示或暗示的保证或条件。
+ * 请参阅许可证以了解特定语言下的权限和限制。
  */
 package androidx.media3.exoplayer.mediacodec;
 
@@ -27,22 +25,22 @@ import androidx.media3.common.util.UnstableApi;
 import java.util.HashSet;
 import java.util.Iterator;
 
-/** Wrapper class for the platform {@link android.media.LoudnessCodecController}. */
+/** 平台 {@link android.media.LoudnessCodecController} 的封装类。 */
 @RequiresApi(35)
 @UnstableApi
 public final class LoudnessCodecController {
 
-  /** Interface to intercept and modify loudness parameters before applying them to the codec. */
+  /** 用于拦截和修改响度参数后再将其应用到编解码器的接口。 */
   public interface LoudnessParameterUpdateListener {
 
-    /** The default update listener returning an unmodified set of parameters. */
+    /** 默认的更新监听器，返回未修改的参数集。 */
     LoudnessParameterUpdateListener DEFAULT = bundle -> bundle;
 
     /**
-     * Returns the updated loudness parameters to be applied to the codec.
+     * 返回要应用到编解码器的更新后的响度参数。
      *
-     * @param parameters The suggested loudness parameters.
-     * @return The updated loudness parameters.
+     * @param parameters 建议的响度参数。
+     * @return 更新后的响度参数。
      */
     Bundle onLoudnessParameterUpdate(Bundle parameters);
   }
@@ -52,16 +50,15 @@ public final class LoudnessCodecController {
 
   @Nullable private android.media.LoudnessCodecController loudnessCodecController;
 
-  /** Creates the loudness controller. */
+  /** 创建响度控制器。 */
   public LoudnessCodecController() {
     this(LoudnessParameterUpdateListener.DEFAULT);
   }
 
   /**
-   * Creates the loudness controller.
+   * 创建响度控制器。
    *
-   * @param updateListener The {@link LoudnessParameterUpdateListener} to intercept and modify
-   *     parameters.
+   * @param updateListener 用于拦截和修改参数的 {@link LoudnessParameterUpdateListener}。
    */
   public LoudnessCodecController(LoudnessParameterUpdateListener updateListener) {
     this.mediaCodecs = new HashSet<>();
@@ -69,9 +66,9 @@ public final class LoudnessCodecController {
   }
 
   /**
-   * Configures the loudness controller with an audio session id.
+   * 使用音频会话 ID 配置响度控制器。
    *
-   * @param audioSessionId The audio session ID.
+   * @param audioSessionId 音频会话 ID。
    */
   public void setAudioSessionId(int audioSessionId) {
     if (loudnessCodecController != null) {
@@ -98,22 +95,22 @@ public final class LoudnessCodecController {
   }
 
   /**
-   * Adds a codec to be configured by the loudness controller.
+   * 添加一个由响度控制器配置的编解码器。
    *
-   * @param mediaCodec A {@link MediaCodec}.
+   * @param mediaCodec 一个 {@link MediaCodec}。
    */
   public void addMediaCodec(MediaCodec mediaCodec) {
     if (loudnessCodecController != null && !loudnessCodecController.addMediaCodec(mediaCodec)) {
-      // Don't add codec if the existing loudness controller can't handle it.
+      // 如果现有的响度控制器无法处理该编解码器，则不添加。
       return;
     }
     checkState(mediaCodecs.add(mediaCodec));
   }
 
   /**
-   * Removes a codec from being configured by the loudness controller.
+   * 从响度控制器的配置中移除一个编解码器。
    *
-   * @param mediaCodec A {@link MediaCodec}.
+   * @param mediaCodec 一个 {@link MediaCodec}。
    */
   public void removeMediaCodec(MediaCodec mediaCodec) {
     boolean removedCodec = mediaCodecs.remove(mediaCodec);
@@ -122,7 +119,7 @@ public final class LoudnessCodecController {
     }
   }
 
-  /** Releases the loudness controller. */
+  /** 释放响度控制器。 */
   public void release() {
     mediaCodecs.clear();
     if (loudnessCodecController != null) {
