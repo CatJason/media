@@ -1,38 +1,23 @@
-/*
- * Copyright (C) 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.metadata.vorbis;
 
 import android.os.Parcel;
 import androidx.media3.common.util.UnstableApi;
 
-/** A vorbis comment, extracted from a FLAC or Ogg file. */
-@SuppressWarnings("deprecation") // Extending deprecated type for backwards compatibility.
+/** 从 FLAC 或 Ogg 文件中提取的 Vorbis 注释。 */
+@SuppressWarnings("deprecation") // 为了向后兼容，扩展了已弃用的类型。
 @UnstableApi
 public final class VorbisComment extends androidx.media3.extractor.metadata.flac.VorbisComment {
 
   /**
-   * @param key The key.
-   * @param value The value.
+   * @param key 键。
+   * @param value 值。
    */
   public VorbisComment(String key, String value) {
-    super(key, value);
+    super(key, value); // 调用父类构造函数
   }
 
   /* package */ VorbisComment(Parcel in) {
-    super(in);
+    super(in); // 从 Parcel 中读取数据
   }
 
   public static final Creator<VorbisComment> CREATOR =
@@ -40,12 +25,12 @@ public final class VorbisComment extends androidx.media3.extractor.metadata.flac
 
         @Override
         public VorbisComment createFromParcel(Parcel in) {
-          return new VorbisComment(in);
+          return new VorbisComment(in); // 从 Parcel 创建实例
         }
 
         @Override
         public VorbisComment[] newArray(int size) {
-          return new VorbisComment[size];
+          return new VorbisComment[size]; // 创建新数组
         }
       };
 }

@@ -1,18 +1,3 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.extractor.metadata.mp4;
 
 import android.os.Parcel;
@@ -24,53 +9,53 @@ import androidx.media3.common.util.UnstableApi;
 import com.google.common.primitives.Floats;
 
 /**
- * Stores metadata from the Samsung smta box.
+ * 存储来自三星 smta 盒子的元数据。
  *
- * <p>See [Internal: b/150138465#comment76], [Internal: b/301273734#comment17].
+ * <p>参见 [Internal: b/150138465#comment76], [Internal: b/301273734#comment17]。
  */
 @UnstableApi
 public final class SmtaMetadataEntry implements Metadata.Entry {
 
   /**
-   * The capture frame rate, in fps, or {@link C#RATE_UNSET} if it is unknown.
+   * 捕获帧率，单位为 fps，如果未知则为 {@link C#RATE_UNSET}。
    *
-   * <p>If known, the capture frame rate should always be an integer value.
+   * <p>如果已知，捕获帧率应始终为整数值。
    */
   public final float captureFrameRate;
 
-  /** The number of layers in the SVC extended frames. */
+  /** SVC 扩展帧中的层数。 */
   public final int svcTemporalLayerCount;
 
-  /** Creates an instance. */
+  /** 创建一个实例。 */
   public SmtaMetadataEntry(float captureFrameRate, int svcTemporalLayerCount) {
     this.captureFrameRate = captureFrameRate;
     this.svcTemporalLayerCount = svcTemporalLayerCount;
   }
 
   private SmtaMetadataEntry(Parcel in) {
-    captureFrameRate = in.readFloat();
-    svcTemporalLayerCount = in.readInt();
+    captureFrameRate = in.readFloat(); // 从 Parcel 中读取捕获帧率
+    svcTemporalLayerCount = in.readInt(); // 从 Parcel 中读取 SVC 层数
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
-      return true;
+      return true; // 如果是同一个对象，返回 true
     }
     if (obj == null || getClass() != obj.getClass()) {
-      return false;
+      return false; // 如果对象为 null 或类型不同，返回 false
     }
     SmtaMetadataEntry other = (SmtaMetadataEntry) obj;
     return captureFrameRate == other.captureFrameRate
-        && svcTemporalLayerCount == other.svcTemporalLayerCount;
+        && svcTemporalLayerCount == other.svcTemporalLayerCount; // 比较所有字段
   }
 
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + Floats.hashCode(captureFrameRate);
-    result = 31 * result + svcTemporalLayerCount;
-    return result;
+    result = 31 * result + Floats.hashCode(captureFrameRate); // 计算捕获帧率的哈希值
+    result = 31 * result + svcTemporalLayerCount; // 计算 SVC 层数的哈希值
+    return result; // 返回哈希值
   }
 
   @Override
@@ -78,20 +63,20 @@ public final class SmtaMetadataEntry implements Metadata.Entry {
     return "smta: captureFrameRate="
         + captureFrameRate
         + ", svcTemporalLayerCount="
-        + svcTemporalLayerCount;
+        + svcTemporalLayerCount; // 返回对象的字符串表示
   }
 
-  // Parcelable implementation.
+  // Parcelable 实现。
 
   @Override
   public void writeToParcel(Parcel dest, int flags) {
-    dest.writeFloat(captureFrameRate);
-    dest.writeInt(svcTemporalLayerCount);
+    dest.writeFloat(captureFrameRate); // 将捕获帧率写入 Parcel
+    dest.writeInt(svcTemporalLayerCount); // 将 SVC 层数写入 Parcel
   }
 
   @Override
   public int describeContents() {
-    return 0;
+    return 0; // 描述内容类型
   }
 
   public static final Parcelable.Creator<SmtaMetadataEntry> CREATOR =
@@ -99,12 +84,12 @@ public final class SmtaMetadataEntry implements Metadata.Entry {
 
         @Override
         public SmtaMetadataEntry createFromParcel(Parcel in) {
-          return new SmtaMetadataEntry(in);
+          return new SmtaMetadataEntry(in); // 从 Parcel 创建实例
         }
 
         @Override
         public SmtaMetadataEntry[] newArray(int size) {
-          return new SmtaMetadataEntry[size];
+          return new SmtaMetadataEntry[size]; // 创建新数组
         }
       };
 }
