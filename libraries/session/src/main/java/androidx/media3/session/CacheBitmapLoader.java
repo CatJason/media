@@ -1,18 +1,3 @@
-/*
- * Copyright 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.session;
 
 import static androidx.media3.common.util.Assertions.checkStateNotNull;
@@ -27,11 +12,9 @@ import java.util.Arrays;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
- * A {@link BitmapLoader} that caches the result of the last {@link #decodeBitmap(byte[])} or {@link
- * #loadBitmap(Uri)} request. Requests are fulfilled from the last bitmap load request when the last
- * bitmap is requested from the same {@code data} or the last bitmap is requested from the same
- * {@code uri}. If it's not the above two cases, the request is forwarded to the provided {@link
- * BitmapLoader} and the result is cached.
+ * 一个 {@link BitmapLoader}，用于缓存最后一次 {@link #decodeBitmap(byte[])} 或 {@link #loadBitmap(Uri)} 请求的结果。
+ * 当最后一次请求的位图是从相同的 {@code data} 或相同的 {@code uri} 加载时，请求会从最后一次位图加载请求中获取结果。
+ * 如果不满足上述两种情况，则请求会被转发到提供的 {@link BitmapLoader}，并且结果会被缓存。
  */
 @UnstableApi
 public final class CacheBitmapLoader implements BitmapLoader {
@@ -41,8 +24,7 @@ public final class CacheBitmapLoader implements BitmapLoader {
   private @MonotonicNonNull BitmapLoadRequest lastBitmapLoadRequest;
 
   /**
-   * Creates an instance that is able to cache the last bitmap load request to the given bitmap
-   * loader.
+   * 创建一个实例，能够缓存最后一次位图加载请求到给定的位图加载器。
    */
   public CacheBitmapLoader(BitmapLoader bitmapLoader) {
     this.bitmapLoader = bitmapLoader;
@@ -50,32 +32,31 @@ public final class CacheBitmapLoader implements BitmapLoader {
 
   @Override
   public boolean supportsMimeType(String mimeType) {
-    return bitmapLoader.supportsMimeType(mimeType);
+    return bitmapLoader.supportsMimeType(mimeType); // 检查是否支持指定的 MIME 类型
   }
 
   @Override
   public ListenableFuture<Bitmap> decodeBitmap(byte[] data) {
     if (lastBitmapLoadRequest != null && lastBitmapLoadRequest.matches(data)) {
-      return lastBitmapLoadRequest.getFuture();
+      return lastBitmapLoadRequest.getFuture(); // 如果请求与缓存匹配，则返回缓存的未来结果
     }
-    ListenableFuture<Bitmap> future = bitmapLoader.decodeBitmap(data);
-    lastBitmapLoadRequest = new BitmapLoadRequest(data, future);
+    ListenableFuture<Bitmap> future = bitmapLoader.decodeBitmap(data); // 否则，使用位图加载器解码位图
+    lastBitmapLoadRequest = new BitmapLoadRequest(data, future); // 缓存本次请求
     return future;
   }
 
   @Override
   public ListenableFuture<Bitmap> loadBitmap(Uri uri) {
     if (lastBitmapLoadRequest != null && lastBitmapLoadRequest.matches(uri)) {
-      return lastBitmapLoadRequest.getFuture();
+      return lastBitmapLoadRequest.getFuture(); // 如果请求与缓存匹配，则返回缓存的未来结果
     }
-    ListenableFuture<Bitmap> future = bitmapLoader.loadBitmap(uri);
-    lastBitmapLoadRequest = new BitmapLoadRequest(uri, future);
+    ListenableFuture<Bitmap> future = bitmapLoader.loadBitmap(uri); // 否则，使用位图加载器加载位图
+    lastBitmapLoadRequest = new BitmapLoadRequest(uri, future); // 缓存本次请求
     return future;
   }
 
   /**
-   * Stores the result of a bitmap load request. Requests are identified either by a byte array, if
-   * the bitmap is loaded from compressed data, or a URI, if the bitmap was loaded from a URI.
+   * 存储位图加载请求的结果。请求通过字节数组（如果位图是从压缩数据加载）或 URI（如果位图是从 URI 加载）来标识。
    */
   private static class BitmapLoadRequest {
     @Nullable private final byte[] data;
@@ -94,17 +75,17 @@ public final class CacheBitmapLoader implements BitmapLoader {
       this.future = future;
     }
 
-    /** Whether the bitmap load request was performed for {@code data}. */
+    /** 判断位图加载请求是否是为 {@code data} 执行的。 */
     public boolean matches(@Nullable byte[] data) {
       return this.data != null && Arrays.equals(this.data, data);
     }
 
-    /** Whether the bitmap load request was performed for {@code uri}. */
+    /** 判断位图加载请求是否是为 {@code uri} 执行的。 */
     public boolean matches(@Nullable Uri uri) {
       return this.uri != null && this.uri.equals(uri);
     }
 
-    /** Returns the future that set for the bitmap load request. */
+    /** 返回为位图加载请求设置的未来结果。 */
     public ListenableFuture<Bitmap> getFuture() {
       return checkStateNotNull(future);
     }

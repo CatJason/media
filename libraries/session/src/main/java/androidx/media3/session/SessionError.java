@@ -1,18 +1,3 @@
-/*
- * Copyright 2024 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.session;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -30,116 +15,114 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Objects;
 
-/** Provides information about a session error. */
+/** 提供有关会话错误的信息。 */
 @UnstableApi
 public final class SessionError {
 
   /**
-   * Info and error result codes.
+   * 信息和错误结果代码。
    *
    * <ul>
-   *   <li>Info code: Positive integer
-   *   <li>Error code: Negative integer
+   *   <li>信息代码：正整数
+   *   <li>错误代码：负整数
    * </ul>
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    ERROR_UNKNOWN,
-    ERROR_INVALID_STATE,
-    ERROR_BAD_VALUE,
-    ERROR_PERMISSION_DENIED,
-    ERROR_IO,
-    ERROR_NOT_SUPPORTED,
-    ERROR_SESSION_DISCONNECTED,
-    ERROR_SESSION_AUTHENTICATION_EXPIRED,
-    ERROR_SESSION_PREMIUM_ACCOUNT_REQUIRED,
-    ERROR_SESSION_CONCURRENT_STREAM_LIMIT,
-    ERROR_SESSION_CONTENT_ALREADY_PLAYING,
-    ERROR_SESSION_END_OF_PLAYLIST,
-    ERROR_SESSION_PARENTAL_CONTROL_RESTRICTED,
-    ERROR_SESSION_NOT_AVAILABLE_IN_REGION,
-    ERROR_SESSION_SKIP_LIMIT_REACHED,
-    ERROR_SESSION_SETUP_REQUIRED,
-    INFO_CANCELLED
+      ERROR_UNKNOWN,
+      ERROR_INVALID_STATE,
+      ERROR_BAD_VALUE,
+      ERROR_PERMISSION_DENIED,
+      ERROR_IO,
+      ERROR_NOT_SUPPORTED,
+      ERROR_SESSION_DISCONNECTED,
+      ERROR_SESSION_AUTHENTICATION_EXPIRED,
+      ERROR_SESSION_PREMIUM_ACCOUNT_REQUIRED,
+      ERROR_SESSION_CONCURRENT_STREAM_LIMIT,
+      ERROR_SESSION_CONTENT_ALREADY_PLAYING,
+      ERROR_SESSION_END_OF_PLAYLIST,
+      ERROR_SESSION_PARENTAL_CONTROL_RESTRICTED,
+      ERROR_SESSION_NOT_AVAILABLE_IN_REGION,
+      ERROR_SESSION_SKIP_LIMIT_REACHED,
+      ERROR_SESSION_SETUP_REQUIRED,
+      INFO_CANCELLED
   })
   public @interface Code {}
 
-  // Info codes (> 0).
+  // 信息代码 (> 0).
 
-  /** Info code representing that the command was cancelled. */
+  /** 信息代码，表示命令被取消。 */
   public static final int INFO_CANCELLED = 1;
 
-  // Error codes (< 0).
+  // 错误代码 (< 0).
 
-  /** Error code representing that the command is ended with an unknown error. */
+  /** 错误代码，表示命令以未知错误结束。 */
   public static final int ERROR_UNKNOWN = -1;
 
   /**
-   * Error code representing that the command cannot be completed because the current state is not
-   * valid for the command.
+   * 错误代码，表示由于当前状态对命令无效，命令无法完成。
    */
   public static final int ERROR_INVALID_STATE = PlaybackException.ERROR_CODE_INVALID_STATE;
 
-  /** Error code representing that an argument is illegal. */
+  /** 错误代码，表示参数非法。 */
   public static final int ERROR_BAD_VALUE = PlaybackException.ERROR_CODE_BAD_VALUE;
 
-  /** Error code representing that the command is not allowed. */
+  /** 错误代码，表示命令不被允许。 */
   public static final int ERROR_PERMISSION_DENIED = PlaybackException.ERROR_CODE_PERMISSION_DENIED;
 
-  /** Error code representing that a file or network related error happened. */
+  /** 错误代码，表示发生了文件或网络相关错误。 */
   public static final int ERROR_IO = -5;
 
-  /** Error code representing that the command is not supported. */
+  /** 错误代码，表示命令不被支持。 */
   public static final int ERROR_NOT_SUPPORTED = PlaybackException.ERROR_CODE_NOT_SUPPORTED;
 
-  /** Error code representing that the session and controller were disconnected. */
+  /** 错误代码，表示会话和控制器已断开连接。 */
   public static final int ERROR_SESSION_DISCONNECTED = PlaybackException.ERROR_CODE_DISCONNECTED;
 
-  /** Error code representing that the authentication has expired. */
+  /** 错误代码，表示认证已过期。 */
   public static final int ERROR_SESSION_AUTHENTICATION_EXPIRED =
       PlaybackException.ERROR_CODE_AUTHENTICATION_EXPIRED;
 
-  /** Error code representing that a premium account is required. */
+  /** 错误代码，表示需要高级账户。 */
   public static final int ERROR_SESSION_PREMIUM_ACCOUNT_REQUIRED =
       PlaybackException.ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED;
 
-  /** Error code representing that too many concurrent streams are detected. */
+  /** 错误代码，表示检测到太多并发流。 */
   public static final int ERROR_SESSION_CONCURRENT_STREAM_LIMIT =
       PlaybackException.ERROR_CODE_CONCURRENT_STREAM_LIMIT;
 
-  /** Error code representing that the content is blocked due to parental controls. */
+  /** 错误代码，表示由于家长控制，内容被阻止。 */
   public static final int ERROR_SESSION_PARENTAL_CONTROL_RESTRICTED =
       PlaybackException.ERROR_CODE_PARENTAL_CONTROL_RESTRICTED;
 
-  /** Error code representing that the content is blocked due to being regionally unavailable. */
+  /** 错误代码，表示由于区域不可用，内容被阻止。 */
   public static final int ERROR_SESSION_NOT_AVAILABLE_IN_REGION =
       PlaybackException.ERROR_CODE_NOT_AVAILABLE_IN_REGION;
 
   /**
-   * Error code representing that the application cannot skip any more because the skip limit is
-   * reached.
+   * 错误代码，表示由于跳过限制已达到，应用程序无法再跳过。
    */
   public static final int ERROR_SESSION_SKIP_LIMIT_REACHED =
       PlaybackException.ERROR_CODE_SKIP_LIMIT_REACHED;
 
-  /** Error code representing that the session needs user's manual intervention. */
+  /** 错误代码，表示会话需要用户手动干预。 */
   public static final int ERROR_SESSION_SETUP_REQUIRED =
       PlaybackException.ERROR_CODE_SETUP_REQUIRED;
 
-  /** Error code representing that navigation failed because the the playlist was exhausted. */
+  /** 错误代码，表示由于播放列表已耗尽，导航失败。 */
   public static final int ERROR_SESSION_END_OF_PLAYLIST =
       PlaybackException.ERROR_CODE_END_OF_PLAYLIST;
 
-  /** Error code representing that the requested content is already playing. */
+  /** 错误代码，表示请求的内容已经在播放。 */
   public static final int ERROR_SESSION_CONTENT_ALREADY_PLAYING =
       PlaybackException.ERROR_CODE_CONTENT_ALREADY_PLAYING;
 
-  /** Default error message. Only used by deprecated methods and for backwards compatibility. */
-  /* package */ static final String DEFAULT_ERROR_MESSAGE = "no error message provided";
+  /** 默认错误消息。仅用于已弃用的方法和向后兼容性。 */
+  /* package */ static final String DEFAULT_ERROR_MESSAGE = "未提供错误消息";
 
-  /** Returns the name of a given error code. */
+  /** 返回给定错误代码的名称。 */
   public static String getErrorCodeName(@Code int errorCode) {
     switch (errorCode) {
       case ERROR_UNKNOWN:
@@ -177,7 +160,7 @@ public final class SessionError {
       case INFO_CANCELLED:
         return "INFO_CANCELLED";
       default:
-        return "invalid error code";
+        return "无效的错误代码";
     }
   }
 
@@ -186,23 +169,23 @@ public final class SessionError {
   public Bundle extras;
 
   /**
-   * Creates an instance with {@linkplain Bundle#EMPTY an empty extras bundle}.
+   * 创建一个实例，并使用 {@linkplain Bundle#EMPTY 空的额外数据包}。
    *
-   * @param code The error result code.
-   * @param message The error message.
-   * @throws IllegalArgumentException if the result code is not an error result code.
+   * @param code 错误结果代码。
+   * @param message 错误消息。
+   * @throws IllegalArgumentException 如果结果代码不是错误结果代码。
    */
   public SessionError(@SessionError.Code int code, String message) {
     this(code, message, Bundle.EMPTY);
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param code The error result code.
-   * @param message The error message.
-   * @param extras The error extras.
-   * @throws IllegalArgumentException if the result code is not an error result code.
+   * @param code 错误结果代码。
+   * @param message 错误消息。
+   * @param extras 错误的额外数据。
+   * @throws IllegalArgumentException 如果结果代码不是错误结果代码。
    */
   public SessionError(@SessionError.Code int code, String message, Bundle extras) {
     Assertions.checkArgument(code < 0 || code == INFO_CANCELLED);
@@ -211,7 +194,7 @@ public final class SessionError {
     this.extras = extras;
   }
 
-  /** Checks the given error for equality while ignoring {@link #extras}. */
+  /** 检查给定的错误是否相等，忽略 {@link #extras}。 */
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
@@ -229,13 +212,13 @@ public final class SessionError {
     return Objects.hash(code, message);
   }
 
-  // Bundleable implementation.
+  // Bundleable 实现。
 
   private static final String FIELD_CODE = Util.intToStringMaxRadix(0);
   private static final String FIELD_MESSAGE = Util.intToStringMaxRadix(1);
   private static final String FIELD_EXTRAS = Util.intToStringMaxRadix(2);
 
-  /** Returns a {@link Bundle} representing the information stored in this object. */
+  /** 返回表示此对象中存储的信息的 {@link Bundle}。 */
   public Bundle toBundle() {
     Bundle bundle = new Bundle();
     bundle.putInt(FIELD_CODE, code);
@@ -246,7 +229,7 @@ public final class SessionError {
     return bundle;
   }
 
-  /** Restores a {@code SessionError} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复 {@code SessionError}。 */
   public static SessionError fromBundle(Bundle bundle) {
     int code =
         bundle.getInt(FIELD_CODE, /* defaultValue= */ PlaybackException.ERROR_CODE_UNSPECIFIED);

@@ -1,18 +1,3 @@
-/*
- * Copyright 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.session;
 
 import static androidx.media3.common.util.Assertions.checkArgument;
@@ -35,70 +20,69 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A command that a {@link MediaController} can send to a {@link MediaSession}.
+ * {@link MediaController} 可以发送给 {@link MediaSession} 的命令。
  *
- * <p>If {@link #commandCode} isn't {@link #COMMAND_CODE_CUSTOM}, it's a predefined command. If
- * {@link #commandCode} is {@link #COMMAND_CODE_CUSTOM}, it's a custom command and {@link
- * #customAction} must not be {@code null}.
+ * <p>如果 {@link #commandCode} 不是 {@link #COMMAND_CODE_CUSTOM}，则它是预定义命令。如果
+ * {@link #commandCode} 是 {@link #COMMAND_CODE_CUSTOM}，则它是自定义命令，且 {@link
+ * #customAction} 不能为 {@code null}。
  */
 public final class SessionCommand {
 
-  /** Command codes of session commands. */
+  /** 会话命令的命令代码。 */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    COMMAND_CODE_CUSTOM,
-    COMMAND_CODE_SESSION_SET_RATING,
-    COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT,
-    COMMAND_CODE_LIBRARY_SUBSCRIBE,
-    COMMAND_CODE_LIBRARY_UNSUBSCRIBE,
-    COMMAND_CODE_LIBRARY_GET_CHILDREN,
-    COMMAND_CODE_LIBRARY_GET_ITEM,
-    COMMAND_CODE_LIBRARY_SEARCH,
-    COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT
+      COMMAND_CODE_CUSTOM,
+      COMMAND_CODE_SESSION_SET_RATING,
+      COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT,
+      COMMAND_CODE_LIBRARY_SUBSCRIBE,
+      COMMAND_CODE_LIBRARY_UNSUBSCRIBE,
+      COMMAND_CODE_LIBRARY_GET_CHILDREN,
+      COMMAND_CODE_LIBRARY_GET_ITEM,
+      COMMAND_CODE_LIBRARY_SEARCH,
+      COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT
   })
   public @interface CommandCode {}
 
   /**
-   * Command code for the custom command which can be defined by string action in the {@link
-   * SessionCommand}.
+   * 自定义命令的命令代码，可以通过 {@link SessionCommand} 中的字符串操作定义。
    */
   public static final int COMMAND_CODE_CUSTOM = 0;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // Session commands (i.e. commands to MediaSession.Callback)
+  // 会话命令（即发送给 MediaSession.Callback 的命令）
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  /** Command code for {@link MediaController#setRating(String, Rating)}. */
+  /** 命令代码，用于 {@link MediaController#setRating(String, Rating)}。 */
   public static final int COMMAND_CODE_SESSION_SET_RATING = 40010;
 
   /* package */ static final ImmutableList<Integer> SESSION_COMMANDS =
       ImmutableList.of(COMMAND_CODE_SESSION_SET_RATING);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // Library commands (i.e. commands to MediaLibraryService.MediaLibrarySession.Callback)
+  // 媒体库命令（即发送给 MediaLibraryService.MediaLibrarySession.Callback 的命令）
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  /** Command code for {@link MediaBrowser#getLibraryRoot(LibraryParams)}. */
+  /** 命令代码，用于 {@link MediaBrowser#getLibraryRoot(LibraryParams)}。 */
   public static final int COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT = 50000;
 
-  /** Command code for {@link MediaBrowser#subscribe(String, LibraryParams)}. */
+  /** 命令代码，用于 {@link MediaBrowser#subscribe(String, LibraryParams)}。 */
   public static final int COMMAND_CODE_LIBRARY_SUBSCRIBE = 50001;
 
-  /** Command code for {@link MediaBrowser#unsubscribe(String)}. */
+  /** 命令代码，用于 {@link MediaBrowser#unsubscribe(String)}。 */
   public static final int COMMAND_CODE_LIBRARY_UNSUBSCRIBE = 50002;
 
-  /** Command code for {@link MediaBrowser#getChildren(String, int, int, LibraryParams)}. */
+  /** 命令代码，用于 {@link MediaBrowser#getChildren(String, int, int, LibraryParams)}。 */
   public static final int COMMAND_CODE_LIBRARY_GET_CHILDREN = 50003;
 
-  /** Command code for {@link MediaBrowser#getItem(String)}. */
+  /** 命令代码，用于 {@link MediaBrowser#getItem(String)}。 */
   public static final int COMMAND_CODE_LIBRARY_GET_ITEM = 50004;
 
-  /** Command code for {@link MediaBrowser#search(String, LibraryParams)}. */
+  /** 命令代码，用于 {@link MediaBrowser#search(String, LibraryParams)}。 */
   public static final int COMMAND_CODE_LIBRARY_SEARCH = 50005;
 
-  /** Command code for {@link MediaBrowser#getSearchResult(String, int, int, LibraryParams)}. */
+  /** 命令代码，用于 {@link MediaBrowser#getSearchResult(String, int, int, LibraryParams)}。 */
   public static final int COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT = 50006;
 
   /* package */ static final ImmutableList<Integer> LIBRARY_COMMANDS =
@@ -112,43 +96,40 @@ public final class SessionCommand {
           COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT);
 
   /**
-   * The command code of a predefined command. It will be {@link #COMMAND_CODE_CUSTOM} for a custom
-   * command.
+   * 预定义命令的命令代码。如果是自定义命令，则为 {@link #COMMAND_CODE_CUSTOM}。
    */
   public final @CommandCode int commandCode;
 
-  /** The action of a custom command. It will be an empty string for a predefined command. */
+  /** 自定义命令的操作。如果是预定义命令，则为空字符串。 */
   public final String customAction;
 
   /**
-   * The extra bundle of a custom command. It will be {@link Bundle#EMPTY} for a predefined command.
+   * 自定义命令的额外数据包。如果是预定义命令，则为 {@link Bundle#EMPTY}。
    *
-   * <p>Interoperability: This value is not used when the command is sent to a legacy {@code
-   * android.support.v4.media.session.MediaSessionCompat} or {@code
-   * android.support.v4.media.session.MediaControllerCompat}.
+   * <p>互操作性：当命令发送到旧版 {@code android.support.v4.media.session.MediaSessionCompat} 或
+   * {@code android.support.v4.media.session.MediaControllerCompat} 时，此值不会被使用。
    */
   public final Bundle customExtras;
 
   /**
-   * Creates a predefined command.
+   * 创建预定义命令。
    *
-   * @param commandCode A command code for a predefined command.
+   * @param commandCode 预定义命令的命令代码。
    */
   public SessionCommand(@CommandCode int commandCode) {
     checkArgument(
-        commandCode != COMMAND_CODE_CUSTOM, "commandCode shouldn't be COMMAND_CODE_CUSTOM");
+        commandCode != COMMAND_CODE_CUSTOM, "commandCode 不应为 COMMAND_CODE_CUSTOM");
     this.commandCode = commandCode;
     customAction = "";
     customExtras = Bundle.EMPTY;
   }
 
   /**
-   * Creates a custom command.
+   * 创建自定义命令。
    *
-   * @param action The action of this custom command.
-   * @param extras An extra bundle for this custom command. This value is not used when the command
-   *     is sent to a legacy {@code android.support.v4.media.session.MediaSessionCompat} or {@code
-   *     android.support.v4.media.session.MediaControllerCompat}.
+   * @param action 自定义命令的操作。
+   * @param extras 自定义命令的额外数据包。当命令发送到旧版 {@code android.support.v4.media.session.MediaSessionCompat} 或
+   *     {@code android.support.v4.media.session.MediaControllerCompat} 时，此值不会被使用。
    */
   public SessionCommand(String action, Bundle extras) {
     commandCode = COMMAND_CODE_CUSTOM;
@@ -156,7 +137,7 @@ public final class SessionCommand {
     customExtras = new Bundle(checkNotNull(extras));
   }
 
-  /** Checks the given session command for equality while ignoring extras. */
+  /** 检查给定的会话命令是否相等，忽略额外数据包。 */
   @Override
   public boolean equals(@Nullable Object obj) {
     if (!(obj instanceof SessionCommand)) {
@@ -184,7 +165,7 @@ public final class SessionCommand {
     return bundle;
   }
 
-  /** Restores a {@code SessionCommand} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复 {@code SessionCommand}。 */
   @UnstableApi
   public static SessionCommand fromBundle(Bundle bundle) {
     int commandCode = bundle.getInt(FIELD_COMMAND_CODE, /* defaultValue= */ COMMAND_CODE_CUSTOM);

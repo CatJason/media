@@ -165,11 +165,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   }
 
   /**
-   * Gets the sequenced future manager.
+   * 获取序列化未来管理器。
    *
-   * @param controllerInfo controller info
-   * @return sequenced future manager. Can be {@code null} if the controller was null or
-   *     disconnected.
+   * @param controllerInfo 控制器信息
+   * @return 序列化未来管理器。如果控制器为 null 或已断开连接，则返回 {@code null}。
    */
   @Nullable
   public SequencedFutureManager getSequencedFutureManager(ControllerInfo controllerInfo) {
@@ -181,11 +180,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
   }
 
   /**
-   * Gets the sequenced future manager.
+   * 获取序列化未来管理器。
    *
-   * @param controllerKey key
-   * @return sequenced future manager. Can be {@code null} if the controller was null or
-   *     disconnected.
+   * @param controllerKey 控制器键
+   * @return 序列化未来管理器。如果控制器为 null 或已断开连接，则返回 {@code null}。
    */
   @Nullable
   public SequencedFutureManager getSequencedFutureManager(T controllerKey) {

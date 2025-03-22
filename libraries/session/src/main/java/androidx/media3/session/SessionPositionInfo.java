@@ -1,18 +1,3 @@
-/*
- * Copyright 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.session;
 
 import static androidx.media3.common.util.Assertions.checkArgument;
@@ -27,10 +12,9 @@ import androidx.media3.common.util.Util;
 import com.google.common.base.Objects;
 
 /**
- * Position information to be shared between session and controller.
+ * 用于在会话和控制器之间共享的位置信息。
  *
- * <p>This class wraps {@link PositionInfo} and group relevant information in one place to
- * atomically notify.
+ * <p>此类封装了 {@link PositionInfo}，并将相关信息分组在一起以原子化地通知。
  */
 /* package */ final class SessionPositionInfo {
 
@@ -170,16 +154,15 @@ import com.google.common.base.Objects;
   static final String FIELD_CONTENT_BUFFERED_POSITION_MS = Util.intToStringMaxRadix(9);
 
   /**
-   * Returns a copy of this session position info, filtered by the specified available commands.
+   * 返回此会话位置信息的副本，根据指定的可用命令进行过滤。
    *
-   * <p>The filtered fields are reset to their default values.
+   * <p>被过滤的字段将重置为其默认值。
    *
-   * <p>The return value may be the same object if nothing is filtered.
+   * <p>如果没有内容被过滤，返回值可能是同一个对象。
    *
-   * @param canAccessCurrentMediaItem Whether {@link Player#COMMAND_GET_CURRENT_MEDIA_ITEM} is
-   *     available.
-   * @param canAccessTimeline Whether {@link Player#COMMAND_GET_TIMELINE} is available.
-   * @return The filtered session position info.
+   * @param canAccessCurrentMediaItem 是否可用 {@link Player#COMMAND_GET_CURRENT_MEDIA_ITEM}。
+   * @param canAccessTimeline 是否可用 {@link Player#COMMAND_GET_TIMELINE}。
+   * @return 过滤后的会话位置信息。
    */
   public SessionPositionInfo filterByAvailableCommands(
       boolean canAccessCurrentMediaItem, boolean canAccessTimeline) {
@@ -234,7 +217,7 @@ import com.google.common.base.Objects;
     return bundle;
   }
 
-  /** Restores a {@code SessionPositionInfo} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复 {@code SessionPositionInfo}。 */
   public static SessionPositionInfo fromBundle(Bundle bundle) {
     @Nullable Bundle positionInfoBundle = bundle.getBundle(FIELD_POSITION_INFO);
     PositionInfo positionInfo =

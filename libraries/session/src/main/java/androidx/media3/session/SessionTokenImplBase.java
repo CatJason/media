@@ -27,6 +27,7 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.core.app.BundleCompat;
 import androidx.media3.common.util.Util;
+import androidx.media3.session.legacy.IMediaSession;
 import com.google.common.base.Objects;
 
 /* package */ final class SessionTokenImplBase implements SessionToken.SessionTokenImpl {

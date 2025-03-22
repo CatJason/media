@@ -1,18 +1,3 @@
-/*
- * Copyright 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.session;
 
 import static androidx.media3.common.util.Assertions.checkArgument;
@@ -34,31 +19,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** A set of {@link SessionCommand session commands}. */
+/** 一组 {@link SessionCommand 会话命令}。 */
 public final class SessionCommands {
 
   private static final String TAG = "SessionCommands";
 
-  /** A builder for {@link SessionCommands}. */
+  /** 用于构建 {@link SessionCommands} 的构建器。 */
   public static final class Builder {
 
     private final Set<SessionCommand> commands;
 
-    /** Creates a new builder. */
+    /** 创建一个新的构建器。 */
     public Builder() {
       commands = new HashSet<>();
     }
 
-    /** Creates a new builder from another {@link SessionCommands}. */
+    /** 从另一个 {@link SessionCommands} 创建一个新的构建器。 */
     private Builder(SessionCommands sessionCommands) {
       this.commands = new HashSet<>(checkNotNull(sessionCommands).commands);
     }
 
     /**
-     * Adds a command.
+     * 添加一个命令。
      *
-     * @param command A command to add.
-     * @return This builder for chaining.
+     * @param command 要添加的命令。
+     * @return 当前构建器，用于链式调用。
      */
     @CanIgnoreReturnValue
     public Builder add(SessionCommand command) {
@@ -67,11 +52,10 @@ public final class SessionCommands {
     }
 
     /**
-     * Adds a command with command code. Command code must not be {@link
-     * SessionCommand#COMMAND_CODE_CUSTOM}.
+     * 添加一个命令代码对应的命令。命令代码不能为 {@link SessionCommand#COMMAND_CODE_CUSTOM}。
      *
-     * @param commandCode A command code to build command and add.
-     * @return This builder for chaining.
+     * @param commandCode 用于构建命令并添加的命令代码。
+     * @return 当前构建器，用于链式调用。
      */
     @CanIgnoreReturnValue
     public Builder add(@CommandCode int commandCode) {
@@ -81,10 +65,10 @@ public final class SessionCommands {
     }
 
     /**
-     * Adds all of the commands in the specified collection.
+     * 添加指定集合中的所有命令。
      *
-     * @param commands collection containing elements to be added to this set
-     * @return This builder for chaining.
+     * @param commands 包含要添加到此集合中的元素的集合。
+     * @return 当前构建器，用于链式调用。
      */
     @CanIgnoreReturnValue
     public Builder addSessionCommands(Collection<SessionCommand> commands) {
@@ -93,10 +77,10 @@ public final class SessionCommands {
     }
 
     /**
-     * Removes a command which matches a given {@link SessionCommand command}.
+     * 移除与给定 {@link SessionCommand 命令}匹配的命令。
      *
-     * @param command A command to find.
-     * @return This builder for chaining.
+     * @param command 要查找的命令。
+     * @return 当前构建器，用于链式调用。
      */
     @CanIgnoreReturnValue
     public Builder remove(SessionCommand command) {
@@ -105,11 +89,10 @@ public final class SessionCommands {
     }
 
     /**
-     * Removes a command which matches a given {@code command code}. Command code must not be {@link
-     * SessionCommand#COMMAND_CODE_CUSTOM}.
+     * 移除与给定 {@code commandCode} 匹配的命令。命令代码不能为 {@link SessionCommand#COMMAND_CODE_CUSTOM}。
      *
-     * @param commandCode A command code to find.
-     * @return This builder for chaining.
+     * @param commandCode 要查找的命令代码。
+     * @return 当前构建器，用于链式调用。
      */
     @CanIgnoreReturnValue
     public Builder remove(@CommandCode int commandCode) {
@@ -124,9 +107,9 @@ public final class SessionCommands {
     }
 
     /**
-     * Adds all session commands.
+     * 添加所有会话命令。
      *
-     * @return This builder for chaining.
+     * @return 当前构建器，用于链式调用。
      */
     /* package */ @CanIgnoreReturnValue
     Builder addAllSessionCommands() {
@@ -135,9 +118,9 @@ public final class SessionCommands {
     }
 
     /**
-     * Adds all library commands.
+     * 添加所有媒体库命令。
      *
-     * @return This builder for chaining.
+     * @return 当前构建器，用于链式调用。
      */
     /* package */ @CanIgnoreReturnValue
     Builder addAllLibraryCommands() {
@@ -146,9 +129,9 @@ public final class SessionCommands {
     }
 
     /**
-     * Adds all predefined commands.
+     * 添加所有预定义命令。
      *
-     * @return This builder for chaining.
+     * @return 当前构建器，用于链式调用。
      */
     /* package */ @CanIgnoreReturnValue
     Builder addAllPredefinedCommands() {
@@ -163,50 +146,50 @@ public final class SessionCommands {
       }
     }
 
-    /** Builds a {@link SessionCommands}. */
+    /** 构建 {@link SessionCommands}。 */
     public SessionCommands build() {
       return new SessionCommands(commands);
     }
   }
 
-  /** An empty set of session commands. */
+  /** 空的会话命令集合。 */
   public static final SessionCommands EMPTY = new Builder().build();
 
-  /** All session commands. */
+  /** 所有会话命令。 */
   public final ImmutableSet<SessionCommand> commands;
 
   /**
-   * Creates a new set of session commands.
+   * 创建一个新的会话命令集合。
    *
-   * @param sessionCommands The collection of session commands to copy.
+   * @param sessionCommands 要复制的会话命令集合。
    */
   private SessionCommands(Collection<SessionCommand> sessionCommands) {
     this.commands = ImmutableSet.copyOf(sessionCommands);
   }
 
   /**
-   * Returns whether a command that matches given {@code command} exists.
+   * 返回是否存在与给定 {@code command} 匹配的命令。
    *
-   * @param command A command to find.
-   * @return Whether the command exists.
+   * @param command 要查找的命令。
+   * @return 是否存在该命令。
    */
   public boolean contains(SessionCommand command) {
     return commands.contains(checkNotNull(command));
   }
 
   /**
-   * Returns whether a command that matches given {@code commandCode} exists.
+   * 返回是否存在与给定 {@code commandCode} 匹配的命令。
    *
-   * @param commandCode A {@link SessionCommand.CommandCode} command code to find. Shouldn't be
-   *     {@link SessionCommand#COMMAND_CODE_CUSTOM}.
-   * @return Whether the command exists.
+   * @param commandCode 要查找的 {@link SessionCommand.CommandCode} 命令代码。不能为
+   *     {@link SessionCommand#COMMAND_CODE_CUSTOM}。
+   * @return 是否存在该命令。
    */
   public boolean contains(@CommandCode int commandCode) {
-    checkArgument(commandCode != COMMAND_CODE_CUSTOM, "Use contains(Command) for custom command");
+    checkArgument(commandCode != COMMAND_CODE_CUSTOM, "对于自定义命令，请使用 contains(Command)");
     return containsCommandCode(commands, commandCode);
   }
 
-  /** Returns a {@link Builder} initialized with the values of this instance. */
+  /** 返回一个用当前实例的值初始化的 {@link Builder}。 */
   public Builder buildUpon() {
     return new Builder(this);
   }
@@ -252,14 +235,14 @@ public final class SessionCommands {
     return bundle;
   }
 
-  /** Restores a {@code SessionCommands} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复 {@code SessionCommands}。 */
   @UnstableApi
   public static SessionCommands fromBundle(Bundle bundle) {
     @Nullable
     ArrayList<Bundle> sessionCommandBundleList =
         bundle.getParcelableArrayList(FIELD_SESSION_COMMANDS);
     if (sessionCommandBundleList == null) {
-      Log.w(TAG, "Missing commands. Creating an empty SessionCommands");
+      Log.w(TAG, "缺少命令。创建一个空的 SessionCommands");
       return SessionCommands.EMPTY;
     }
 
