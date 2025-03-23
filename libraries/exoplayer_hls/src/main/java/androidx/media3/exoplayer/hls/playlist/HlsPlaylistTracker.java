@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.playlist;
 
 import android.net.Uri;
@@ -25,29 +10,24 @@ import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy;
 import java.io.IOException;
 
 /**
- * Tracks playlists associated to an HLS stream and provides snapshots.
+ * 跟踪与 HLS 流关联的播放列表并提供快照。
  *
- * <p>The playlist tracker is responsible for exposing the seeking window, which is defined by the
- * segments that one of the playlists exposes. This playlist is called primary and needs to be
- * periodically refreshed in the case of live streams. Note that the primary playlist is one of the
- * media playlists while the multivariant playlist is an optional kind of playlist defined by the
- * HLS specification (RFC 8216).
+ * <p>播放列表跟踪器负责暴露由播放列表暴露的片段定义的搜索窗口。此播放列表称为主播放列表，在直播流的情况下需要定期刷新。注意，主播放列表是媒体播放列表之一，而多变量播放列表是 HLS 规范（RFC 8216）定义的一种可选播放列表类型。
  *
- * <p>Playlist loads might encounter errors. The tracker may choose to exclude them to ensure a
- * primary playlist is always available.
+ * <p>播放列表加载可能会遇到错误。跟踪器可能会选择排除它们，以确保始终有一个主播放列表可用。
  */
 @UnstableApi
 public interface HlsPlaylistTracker {
 
-  /** Factory for {@link HlsPlaylistTracker} instances. */
+  /** {@link HlsPlaylistTracker} 实例的工厂接口。 */
   interface Factory {
 
     /**
-     * Creates a new tracker instance.
+     * 创建一个新的跟踪器实例。
      *
-     * @param dataSourceFactory The {@link HlsDataSourceFactory} to use for playlist loading.
-     * @param loadErrorHandlingPolicy The {@link LoadErrorHandlingPolicy} for playlist load errors.
-     * @param playlistParserFactory The {@link HlsPlaylistParserFactory} for playlist parsing.
+     * @param dataSourceFactory 用于播放列表加载的 {@link HlsDataSourceFactory}。
+     * @param loadErrorHandlingPolicy 用于播放列表加载错误的 {@link LoadErrorHandlingPolicy}。
+     * @param playlistParserFactory 用于播放列表解析的 {@link HlsPlaylistParserFactory}。
      */
     HlsPlaylistTracker createTracker(
         HlsDataSourceFactory dataSourceFactory,
@@ -55,61 +35,61 @@ public interface HlsPlaylistTracker {
         HlsPlaylistParserFactory playlistParserFactory);
   }
 
-  /** Listener for primary playlist changes. */
+  /** 主播放列表变化的监听器。 */
   interface PrimaryPlaylistListener {
 
     /**
-     * Called when the primary playlist changes.
+     * 当主播放列表发生变化时调用。
      *
-     * @param mediaPlaylist The primary playlist new snapshot.
+     * @param mediaPlaylist 主播放列表的新快照。
      */
     void onPrimaryPlaylistRefreshed(HlsMediaPlaylist mediaPlaylist);
   }
 
-  /** Called on playlist loading events. */
+  /** 在播放列表加载事件时调用。 */
   interface PlaylistEventListener {
 
-    /** Called a playlist changes. */
+    /** 当播放列表发生变化时调用。 */
     void onPlaylistChanged();
 
     /**
-     * Called if an error is encountered while loading a playlist.
+     * 当加载播放列表时遇到错误时调用。
      *
-     * @param url The loaded url that caused the error.
-     * @param loadErrorInfo The load error info.
-     * @param forceRetry Whether retry should be forced without considering exclusion.
-     * @return True if excluding did not encounter errors. False otherwise.
+     * @param url 导致错误的加载 URL。
+     * @param loadErrorInfo 加载错误信息。
+     * @param forceRetry 是否在不考虑排除的情况下强制重试。
+     * @return 如果排除未遇到错误则返回 true，否则返回 false。
      */
     boolean onPlaylistError(
         Uri url, LoadErrorHandlingPolicy.LoadErrorInfo loadErrorInfo, boolean forceRetry);
   }
 
-  /** Thrown when a playlist is considered to be stuck due to a server side error. */
+  /** 当播放列表由于服务器端错误被认为卡住时抛出。 */
   final class PlaylistStuckException extends IOException {
 
-    /** The url of the stuck playlist. */
+    /** 卡住的播放列表的 URL。 */
     public final Uri url;
 
     /**
-     * Creates an instance.
+     * 创建实例。
      *
-     * @param url See {@link #url}.
+     * @param url 参见 {@link #url}。
      */
     public PlaylistStuckException(Uri url) {
       this.url = url;
     }
   }
 
-  /** Thrown when the media sequence of a new snapshot indicates the server has reset. */
+  /** 当新快照的媒体序列指示服务器已重置时抛出。 */
   final class PlaylistResetException extends IOException {
 
-    /** The url of the reset playlist. */
+    /** 重置的播放列表的 URL。 */
     public final Uri url;
 
     /**
-     * Creates an instance.
+     * 创建实例。
      *
-     * @param url See {@link #url}.
+     * @param url 参见 {@link #url}。
      */
     public PlaylistResetException(Uri url) {
       this.url = url;
@@ -117,15 +97,13 @@ public interface HlsPlaylistTracker {
   }
 
   /**
-   * Starts the playlist tracker.
+   * 启动播放列表跟踪器。
    *
-   * <p>Must be called from the playback thread. A tracker may be restarted after a {@link #stop()}
-   * call.
+   * <p>必须在播放线程中调用。跟踪器可以在 {@link #stop()} 调用后重新启动。
    *
-   * @param initialPlaylistUri Uri of the HLS stream. Can point to a media playlist or a
-   *     multivariant playlist.
-   * @param eventDispatcher A dispatcher to notify of events.
-   * @param primaryPlaylistListener A callback for the primary playlist change events.
+   * @param initialPlaylistUri HLS 流的 URI。可以指向媒体播放列表或多变量播放列表。
+   * @param eventDispatcher 用于通知事件的分发器。
+   * @param primaryPlaylistListener 用于主播放列表变化事件的回调。
    */
   void start(
       Uri initialPlaylistUri,
@@ -133,115 +111,105 @@ public interface HlsPlaylistTracker {
       PrimaryPlaylistListener primaryPlaylistListener);
 
   /**
-   * Stops the playlist tracker and releases any acquired resources.
+   * 停止播放列表跟踪器并释放所有获取的资源。
    *
-   * <p>Must be called once per {@link #start} call.
+   * <p>每次 {@link #start} 调用后必须调用一次。
    */
   void stop();
 
   /**
-   * Registers a listener to receive events from the playlist tracker.
+   * 注册监听器以接收来自播放列表跟踪器的事件。
    *
-   * @param listener The listener.
+   * @param listener 监听器。
    */
   void addListener(PlaylistEventListener listener);
 
   /**
-   * Unregisters a listener.
+   * 取消注册监听器。
    *
-   * @param listener The listener to unregister.
+   * @param listener 要取消注册的监听器。
    */
   void removeListener(PlaylistEventListener listener);
 
   /**
-   * Returns the multivariant playlist.
+   * 返回多变量播放列表。
    *
-   * <p>If the uri passed to {@link #start} points to a media playlist, an {@link
-   * HlsMultivariantPlaylist} with a single variant for said media playlist is returned.
+   * <p>如果传递给 {@link #start} 的 URI 指向媒体播放列表，则返回包含该媒体播放列表的单个变体的 {@link HlsMultivariantPlaylist}。
    *
-   * @return The multivariant playlist. Null if the initial playlist has yet to be loaded.
+   * @return 多变量播放列表。如果初始播放列表尚未加载，则返回 null。
    */
   @Nullable
   HlsMultivariantPlaylist getMultivariantPlaylist();
 
   /**
-   * Returns the most recent snapshot available of the playlist referenced by the provided {@link
-   * Uri}.
+   * 返回由提供的 {@link Uri} 引用的播放列表的最新快照。
    *
-   * @param url The {@link Uri} corresponding to the requested media playlist.
-   * @param isForPlayback Whether the caller might use the snapshot to request media segments for
-   *     playback. If true, the primary playlist may be updated to the one requested.
-   * @return The most recent snapshot of the playlist referenced by the provided {@link Uri}. May be
-   *     null if no snapshot has been loaded yet.
+   * @param url 请求的媒体播放列表对应的 {@link Uri}。
+   * @param isForPlayback 调用者是否可能使用快照来请求媒体片段进行播放。如果为 true，主播放列表可能会更新为请求的播放列表。
+   * @return 由提供的 {@link Uri} 引用的播放列表的最新快照。如果尚未加载快照，则可能为 null。
    */
   @Nullable
   HlsMediaPlaylist getPlaylistSnapshot(Uri url, boolean isForPlayback);
 
   /**
-   * Returns the start time of the first loaded primary playlist, or {@link C#TIME_UNSET} if no
-   * media playlist has been loaded.
+   * 返回第一个加载的主播放列表的开始时间，如果尚未加载媒体播放列表，则返回 {@link C#TIME_UNSET}。
    */
   long getInitialStartTimeUs();
 
   /**
-   * Returns whether the snapshot of the playlist referenced by the provided {@link Uri} is valid,
-   * meaning all the segments referenced by the playlist are expected to be available. If the
-   * playlist is not valid then some of the segments may no longer be available.
+   * 返回由提供的 {@link Uri} 引用的播放列表的快照是否有效，即播放列表引用的所有片段预计都可用。如果播放列表无效，则某些片段可能不再可用。
    *
-   * @param url The {@link Uri}.
-   * @return Whether the snapshot of the playlist referenced by the provided {@link Uri} is valid.
+   * @param url {@link Uri}。
+   * @return 由提供的 {@link Uri} 引用的播放列表的快照是否有效。
    */
   boolean isSnapshotValid(Uri url);
 
   /**
-   * If the tracker is having trouble refreshing the multivariant playlist or the primary playlist,
-   * this method throws the underlying error. Otherwise, does nothing.
+   * 如果跟踪器在刷新多变量播放列表或主播放列表时遇到问题，此方法会抛出底层错误。否则，不执行任何操作。
    *
-   * @throws IOException The underlying error.
+   * @throws IOException 底层错误。
    */
   void maybeThrowPrimaryPlaylistRefreshError() throws IOException;
 
   /**
-   * If the playlist is having trouble refreshing the playlist referenced by the given {@link Uri},
-   * this method throws the underlying error.
+   * 如果播放列表在刷新由给定 {@link Uri} 引用的播放列表时遇到问题，此方法会抛出底层错误。
    *
-   * @param url The {@link Uri}.
-   * @throws IOException The underyling error.
+   * @param url {@link Uri}。
+   * @throws IOException 底层错误。
    */
   void maybeThrowPlaylistRefreshError(Uri url) throws IOException;
 
   /**
-   * Excludes the given media playlist for the given duration, in milliseconds.
+   * 在给定的持续时间内（以毫秒为单位）排除给定的媒体播放列表。
    *
-   * @param playlistUrl The URL of the media playlist.
-   * @param exclusionDurationMs The duration for which to exclude the playlist.
-   * @return Whether exclusion was successful.
+   * @param playlistUrl 媒体播放列表的 URL。
+   * @param exclusionDurationMs 排除播放列表的持续时间。
+   * @return 排除是否成功。
    */
   boolean excludeMediaPlaylist(Uri playlistUrl, long exclusionDurationMs);
 
   /**
-   * Requests a playlist refresh and removes it from the exclusion list.
+   * 请求刷新播放列表并将其从排除列表中移除。
    *
-   * <p>The playlist tracker may choose to delay the playlist refresh. The request is discarded if a
-   * refresh was already pending.
+   * <p>播放列表跟踪器可能会选择延迟播放列表刷新。如果刷新已经在等待中，则丢弃该请求。
    *
-   * @param url The {@link Uri} of the playlist to be refreshed.
+   * @param url 要刷新的播放列表的 {@link Uri}。
    */
   void refreshPlaylist(Uri url);
 
   /**
-   * Returns whether the tracked playlists describe a live stream.
+   * 返回跟踪的播放列表是否描述了一个直播流。
    *
-   * @return True if the content is live. False otherwise.
+   * @return 如果内容是直播的则返回 true，否则返回 false。
    */
   boolean isLive();
 
   /**
-   * Deactivate the playlist for playback.
+   * 停用播放列表以进行播放。
    *
-   * <p>The default implementation is a no-op.
+   * <p>默认实现为空操作。
    *
-   * @param url The {@link Uri} of the playlist to deactivate for playback.
+   * @param url 要停用以进行播放的播放列表的 {@link Uri}。
    */
   default void deactivatePlaylistForPlayback(Uri url) {}
 }

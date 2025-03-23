@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -50,21 +35,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** Default {@link HlsExtractorFactory} implementation. */
+/** 默认的 {@link HlsExtractorFactory} 实现。 */
 @UnstableApi
 public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
 
-  // Extractors order is optimized according to
+  // 提取器顺序根据以下文档进行了优化：
   // https://docs.google.com/document/d/1w2mKaWMxfz2Ei8-LdxqbPs1VLe_oudB-eryXXw9OvQQ.
   private static final int[] DEFAULT_EXTRACTOR_ORDER =
       new int[] {
-        FileTypes.MP4,
-        FileTypes.WEBVTT,
-        FileTypes.TS,
-        FileTypes.ADTS,
-        FileTypes.AC3,
-        FileTypes.AC4,
-        FileTypes.MP3,
+          FileTypes.MP4,
+          FileTypes.WEBVTT,
+          FileTypes.TS,
+          FileTypes.ADTS,
+          FileTypes.AC3,
+          FileTypes.AC4,
+          FileTypes.MP3,
       };
 
   private final @DefaultTsPayloadReaderFactory.Flags int payloadReaderFactoryFlags;
@@ -75,7 +60,7 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
   private final boolean exposeCea608WhenMissingDeclarations;
 
   /**
-   * Equivalent to {@link #DefaultHlsExtractorFactory(int, boolean) new
+   * 等效于 {@link #DefaultHlsExtractorFactory(int, boolean) new
    * DefaultHlsExtractorFactory(payloadReaderFactoryFlags = 0, exposeCea608WhenMissingDeclarations =
    * true)}
    */
@@ -84,15 +69,10 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
   }
 
   /**
-   * Creates a factory for HLS segment extractors.
+   * 创建用于 HLS 片段提取器的工厂。
    *
-   * @param payloadReaderFactoryFlags Flags to add when constructing any {@link
-   *     DefaultTsPayloadReaderFactory} instances. Other flags may be added on top of {@code
-   *     payloadReaderFactoryFlags} when creating {@link DefaultTsPayloadReaderFactory}.
-   * @param exposeCea608WhenMissingDeclarations Whether created {@link TsExtractor} instances should
-   *     expose a CEA-608 track should the multivariant playlist contain no Closed Captions
-   *     declarations. If the multivariant playlist contains any Closed Captions declarations, this
-   *     flag is ignored.
+   * @param payloadReaderFactoryFlags 在构造任何 {@link DefaultTsPayloadReaderFactory} 实例时添加的标志。在创建 {@link DefaultTsPayloadReaderFactory} 时，可能会在 {@code payloadReaderFactoryFlags} 的基础上添加其他标志。
+   * @param exposeCea608WhenMissingDeclarations 当多变量播放列表不包含任何 Closed Captions 声明时，创建的 {@link TsExtractor} 实例是否应暴露 CEA-608 轨道。如果多变量播放列表包含任何 Closed Captions 声明，则忽略此标志。
    */
   public DefaultHlsExtractorFactory(
       int payloadReaderFactoryFlags, boolean exposeCea608WhenMissingDeclarations) {
@@ -118,7 +98,7 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
         FileTypes.inferFileTypeFromResponseHeaders(responseHeaders);
     @FileTypes.Type int uriInferredFileType = FileTypes.inferFileTypeFromUri(uri);
 
-    // Defines the order in which to try the extractors.
+    // 定义尝试提取器的顺序。
     List<Integer> fileTypeOrder =
         new ArrayList<>(/* initialCapacity= */ DEFAULT_EXTRACTOR_ORDER.length);
     addFileTypeIfValidAndNotPresent(formatInferredFileType, fileTypeOrder);
@@ -127,8 +107,7 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
     for (int fileType : DEFAULT_EXTRACTOR_ORDER) {
       addFileTypeIfValidAndNotPresent(fileType, fileTypeOrder);
     }
-
-    // Extractor to be used if the type is not recognized.
+    // 如果类型无法识别，则使用的提取器。
     @Nullable Extractor fallBackExtractor = null;
     sniffingExtractorInput.resetPeekPosition();
     for (int i = 0; i < fileTypeOrder.size(); i++) {
@@ -146,11 +125,10 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
       }
       if (fallBackExtractor == null
           && (fileType == formatInferredFileType
-              || fileType == responseHeadersInferredFileType
-              || fileType == uriInferredFileType
-              || fileType == FileTypes.TS)) {
-        // If sniffing fails, fallback to the file types inferred from context. If all else fails,
-        // fallback to Transport Stream. See https://github.com/google/ExoPlayer/issues/8219.
+          || fileType == responseHeadersInferredFileType
+          || fileType == uriInferredFileType
+          || fileType == FileTypes.TS)) {
+        // 如果嗅探失败，则回退到从上下文推断的文件类型。如果所有方法都失败，则回退到传输流。参见 https://github.com/google/ExoPlayer/issues/8219。
         fallBackExtractor = extractor;
       }
     }
@@ -182,11 +160,9 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
   /**
    * {@inheritDoc}
    *
-   * <p>This implementation performs transcoding of the original format to {@link
-   * MimeTypes#APPLICATION_MEDIA3_CUES} if it is supported by {@link SubtitleParser.Factory}.
+   * <p>如果 {@link SubtitleParser.Factory} 支持，此实现会将原始格式转码为 {@link MimeTypes#APPLICATION_MEDIA3_CUES}。
    *
-   * <p>To modify the support behavior, you can {@linkplain
-   * #setSubtitleParserFactory(SubtitleParser.Factory) set your own subtitle parser factory}.
+   * <p>要修改支持行为，可以 {@linkplain #setSubtitleParserFactory(SubtitleParser.Factory) 设置您自己的字幕解析器工厂}。
    */
   @Override
   public Format getOutputTextFormat(Format sourceFormat) {
@@ -270,11 +246,10 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
         DefaultTsPayloadReaderFactory.FLAG_IGNORE_SPLICE_INFO_STREAM
             | userProvidedPayloadReaderFactoryFlags;
     if (muxedCaptionFormats != null) {
-      // The playlist declares closed caption renditions, we should ignore descriptors.
+      // 播放列表声明了隐藏字幕渲染，我们应该忽略描述符。
       payloadReaderFactoryFlags |= DefaultTsPayloadReaderFactory.FLAG_OVERRIDE_CAPTION_DESCRIPTORS;
     } else if (exposeCea608WhenMissingDeclarations) {
-      // The playlist does not provide any closed caption information. We preemptively declare a
-      // closed caption track on channel 0.
+      // 播放列表未提供任何隐藏字幕信息。我们预先声明一个在通道 0 上的隐藏字幕轨道。
       muxedCaptionFormats =
           Collections.singletonList(
               new Format.Builder().setSampleMimeType(MimeTypes.APPLICATION_CEA608).build());
@@ -283,9 +258,7 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
     }
     @Nullable String codecs = format.codecs;
     if (!TextUtils.isEmpty(codecs)) {
-      // Sometimes AAC and H264 streams are declared in TS chunks even though they don't really
-      // exist. If we know from the codec attribute that they don't exist, then we can
-      // explicitly ignore them even if they're declared.
+      // 有时即使不存在 AAC 和 H264 流，它们也会在 TS 块中被声明。如果我们从编解码器属性中知道它们不存在，那么即使它们被声明，我们也可以明确忽略它们。
       if (!MimeTypes.containsCodecsCorrespondingToMimeType(codecs, MimeTypes.AUDIO_AAC)) {
         payloadReaderFactoryFlags |= DefaultTsPayloadReaderFactory.FLAG_IGNORE_AAC_STREAM;
       }
@@ -313,8 +286,7 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
       TimestampAdjuster timestampAdjuster,
       Format format,
       @Nullable List<Format> muxedCaptionFormats) {
-    // Only enable the EMSG TrackOutput if this is the 'variant' track (i.e. the main one) to avoid
-    // creating a separate EMSG track for every audio track in a video stream.
+    // 仅当这是“变体”轨道（即主轨道）时，才启用 EMSG TrackOutput，以避免为视频流中的每个音频轨道创建单独的 EMSG 轨道。
     @FragmentedMp4Extractor.Flags
     int flags = isFmp4Variant(format) ? FragmentedMp4Extractor.FLAG_ENABLE_EMSG_TRACK : 0;
     if (!parseSubtitlesDuringExtraction) {
@@ -330,7 +302,7 @@ public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
         /* additionalEmsgTrackOutput= */ null);
   }
 
-  /** Returns true if this {@code format} represents a 'variant' track (i.e. the main one). */
+  /** 如果此 {@code format} 表示“变体”轨道（即主轨道），则返回 true。 */
   private static boolean isFmp4Variant(Format format) {
     Metadata metadata = format.metadata;
     if (metadata == null) {

@@ -30,39 +30,34 @@ import java.util.List;
 @UnstableApi
 public final class HlsTrackMetadataEntry implements Metadata.Entry {
 
-  /** Holds attributes defined in an EXT-X-STREAM-INF tag. */
+  /** 保存 EXT-X-STREAM-INF 标签中定义的属性。 */
   public static final class VariantInfo implements Parcelable {
 
     /**
-     * The average bitrate as declared by the AVERAGE-BANDWIDTH attribute of the EXT-X-STREAM-INF
-     * tag, or {@link Format#NO_VALUE} if the attribute is not declared.
+     * EXT-X-STREAM-INF 标签中 AVERAGE-BANDWIDTH 属性声明的平均比特率，如果未声明该属性，则为 {@link Format#NO_VALUE}。
      */
     public final int averageBitrate;
 
-    /** The peak bitrate as declared by the BANDWIDTH attribute of the EXT-X-STREAM-INF tag. */
+    /** EXT-X-STREAM-INF 标签中 BANDWIDTH 属性声明的峰值比特率。 */
     public final int peakBitrate;
 
     /**
-     * The VIDEO value as defined in the EXT-X-STREAM-INF tag, or null if the VIDEO attribute is not
-     * present.
+     * EXT-X-STREAM-INF 标签中定义的 VIDEO 值，如果 VIDEO 属性不存在，则为 null。
      */
     @Nullable public final String videoGroupId;
 
     /**
-     * The AUDIO value as defined in the EXT-X-STREAM-INF tag, or null if the AUDIO attribute is not
-     * present.
+     * EXT-X-STREAM-INF 标签中定义的 AUDIO 值，如果 AUDIO 属性不存在，则为 null。
      */
     @Nullable public final String audioGroupId;
 
     /**
-     * The SUBTITLES value as defined in the EXT-X-STREAM-INF tag, or null if the SUBTITLES
-     * attribute is not present.
+     * EXT-X-STREAM-INF 标签中定义的 SUBTITLES 值，如果 SUBTITLES 属性不存在，则为 null。
      */
     @Nullable public final String subtitleGroupId;
 
     /**
-     * The CLOSED-CAPTIONS value as defined in the EXT-X-STREAM-INF tag, or null if the
-     * CLOSED-CAPTIONS attribute is not present.
+     * EXT-X-STREAM-INF 标签中定义的 CLOSED-CAPTIONS 值，如果 CLOSED-CAPTIONS 属性不存在，则为 null。
      */
     @Nullable public final String captionGroupId;
 
@@ -158,31 +153,27 @@ public final class HlsTrackMetadataEntry implements Metadata.Entry {
           }
         };
   }
-
   /**
-   * The GROUP-ID value of this track, if the track is derived from an EXT-X-MEDIA tag. Null if the
-   * track is not derived from an EXT-X-MEDIA TAG.
+   * 该轨道的 GROUP-ID 值，如果该轨道是从 EXT-X-MEDIA 标签派生的。如果该轨道不是从 EXT-X-MEDIA 标签派生的，则为 null。
    */
   @Nullable public final String groupId;
 
   /**
-   * The NAME value of this track, if the track is derived from an EXT-X-MEDIA tag. Null if the
-   * track is not derived from an EXT-X-MEDIA TAG.
+   * 该轨道的 NAME 值，如果该轨道是从 EXT-X-MEDIA 标签派生的。如果该轨道不是从 EXT-X-MEDIA 标签派生的，则为 null。
    */
   @Nullable public final String name;
 
   /**
-   * The EXT-X-STREAM-INF tags attributes associated with this track. This field is non-applicable
-   * (and therefore empty) if this track is derived from an EXT-X-MEDIA tag.
+   * 与该轨道关联的 EXT-X-STREAM-INF 标签属性。如果该轨道是从 EXT-X-MEDIA 标签派生的，则此字段不适用（因此为空）。
    */
   public final List<VariantInfo> variantInfos;
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param groupId See {@link #groupId}.
-   * @param name See {@link #name}.
-   * @param variantInfos See {@link #variantInfos}.
+   * @param groupId 参见 {@link #groupId}。
+   * @param name 参见 {@link #name}。
+   * @param variantInfos 参见 {@link #variantInfos}。
    */
   public HlsTrackMetadataEntry(
       @Nullable String groupId, @Nullable String name, List<VariantInfo> variantInfos) {

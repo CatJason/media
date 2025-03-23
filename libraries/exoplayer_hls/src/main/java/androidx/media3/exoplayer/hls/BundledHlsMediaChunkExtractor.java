@@ -35,8 +35,7 @@ import androidx.media3.extractor.ts.TsExtractor;
 import java.io.IOException;
 
 /**
- * {@link HlsMediaChunkExtractor} implementation that uses ExoPlayer app-bundled {@link Extractor
- * Extractors}.
+ * {@link HlsMediaChunkExtractor} 实现，使用 ExoPlayer 应用内捆绑的 {@link Extractor}。
  */
 @UnstableApi
 public final class BundledHlsMediaChunkExtractor implements HlsMediaChunkExtractor {
@@ -50,11 +49,11 @@ public final class BundledHlsMediaChunkExtractor implements HlsMediaChunkExtract
   private final boolean parseSubtitlesDuringExtraction;
 
   /**
-   * Creates a new instance.
+   * 创建一个新实例。
    *
-   * @param extractor The underlying {@link Extractor}.
-   * @param multivariantPlaylistFormat The {@link Format} obtained from the multivariant playlist.
-   * @param timestampAdjuster A {@link TimestampAdjuster} to adjust sample timestamps.
+   * @param extractor 底层的 {@link Extractor}。
+   * @param multivariantPlaylistFormat 从多变量播放列表获取的 {@link Format}。
+   * @param timestampAdjuster 用于调整样本时间戳的 {@link TimestampAdjuster}。
    */
   public BundledHlsMediaChunkExtractor(
       Extractor extractor, Format multivariantPlaylistFormat, TimestampAdjuster timestampAdjuster) {
@@ -67,18 +66,14 @@ public final class BundledHlsMediaChunkExtractor implements HlsMediaChunkExtract
   }
 
   /**
-   * Creates a new instance.
+   * 创建一个新实例。
    *
-   * @param extractor The underlying {@link Extractor}.
-   * @param multivariantPlaylistFormat The {@link Format} obtained from the multivariant playlist.
-   * @param timestampAdjuster A {@link TimestampAdjuster} to adjust sample timestamps.
-   * @param subtitleParserFactory A {@link SubtitleParser.Factory} to be used with WebVTT subtitles.
-   *     If the value is null, subtitles will be parsed during decoding, otherwise - during
-   *     extraction. Decoding will only work if this subtitleParserFactory supports the provided
-   *     multivariantPlaylistFormat.
+   * @param extractor 底层的 {@link Extractor}。
+   * @param multivariantPlaylistFormat 从多变量播放列表获取的 {@link Format}。
+   * @param timestampAdjuster 用于调整样本时间戳的 {@link TimestampAdjuster}。
+   * @param subtitleParserFactory 用于 WebVTT 字幕的 {@link SubtitleParser.Factory}。如果该值为 null，字幕将在解码期间解析，否则将在提取期间解析。仅当此 subtitleParserFactory 支持提供的 multivariantPlaylistFormat 时，解码才能正常工作。
    */
-  // TODO(b/289983417): Once the subtitle-parsing-during-extraction is the only available flow, make
-  // this constructor public and remove parseSubtitlesDuringExtraction parameter
+  // TODO(b/289983417): 一旦字幕在提取期间解析成为唯一可用的流程，将此构造函数设为公开并移除 parseSubtitlesDuringExtraction 参数。
   /* package */ BundledHlsMediaChunkExtractor(
       Extractor extractor,
       Format multivariantPlaylistFormat,

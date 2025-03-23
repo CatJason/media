@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import androidx.media3.common.C;
@@ -22,43 +7,40 @@ import androidx.media3.exoplayer.source.chunk.MediaChunk;
 import java.io.IOException;
 
 /**
- * Thrown when an attempt is made to write a sample to a {@link SampleQueue} whose timestamp is
- * inconsistent with the chunk from which it originates.
+ * 当尝试将样本写入 {@link SampleQueue} 时，样本的时间戳与其来源的块不一致时抛出的异常。
  */
 /* package */ final class UnexpectedSampleTimestampException extends IOException {
 
-  /** The {@link MediaChunk} that contained the rejected sample. */
+  /** 包含被拒绝样本的 {@link MediaChunk}。 */
   public final MediaChunk mediaChunk;
 
   /**
-   * The timestamp of the last sample that was loaded from {@link #mediaChunk} and successfully
-   * written to the {@link SampleQueue}, in microseconds. {@link C#TIME_UNSET} if the first sample
-   * in the chunk was rejected.
+   * 从 {@link #mediaChunk} 加载并成功写入 {@link SampleQueue} 的最后一个样本的时间戳，单位为微秒。
+   * 如果块中的第一个样本被拒绝，则为 {@link C#TIME_UNSET}。
    */
   public final long lastAcceptedSampleTimeUs;
 
-  /** The timestamp of the rejected sample, in microseconds. */
+  /** 被拒绝样本的时间戳，单位为微秒。 */
   public final long rejectedSampleTimeUs;
 
   /**
-   * Constructs an instance.
+   * 构造一个实例。
    *
-   * @param mediaChunk The {@link MediaChunk} with the unexpected sample timestamp.
-   * @param lastAcceptedSampleTimeUs The timestamp of the last sample that was loaded from the chunk
-   *     and successfully written to the {@link SampleQueue}, in microseconds. {@link C#TIME_UNSET}
-   *     if the first sample in the chunk was rejected.
-   * @param rejectedSampleTimeUs The timestamp of the rejected sample, in microseconds.
+   * @param mediaChunk 包含意外样本时间戳的 {@link MediaChunk}。
+   * @param lastAcceptedSampleTimeUs 从块中加载并成功写入 {@link SampleQueue} 的最后一个样本的时间戳，单位为微秒。
+   *     如果块中的第一个样本被拒绝，则为 {@link C#TIME_UNSET}。
+   * @param rejectedSampleTimeUs 被拒绝样本的时间戳，单位为微秒。
    */
   public UnexpectedSampleTimestampException(
       MediaChunk mediaChunk, long lastAcceptedSampleTimeUs, long rejectedSampleTimeUs) {
     super(
-        "Unexpected sample timestamp: "
+        "意外的样本时间戳: "
             + Util.usToMs(rejectedSampleTimeUs)
-            + " in chunk ["
+            + "，位于块 ["
             + mediaChunk.startTimeUs
             + ", "
             + mediaChunk.endTimeUs
-            + "]");
+            + "] 中");
     this.mediaChunk = mediaChunk;
     this.lastAcceptedSampleTimeUs = lastAcceptedSampleTimeUs;
     this.rejectedSampleTimeUs = rejectedSampleTimeUs;

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.offline;
 
 import android.net.Uri;
@@ -35,11 +20,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-// LINT.IfChange(javadoc)
 /**
- * A downloader for HLS streams.
+ * 用于下载 HLS 流的下载器。
  *
- * <p>Example usage:
+ * <p>使用示例：
  *
  * <pre>{@code
  * SimpleCache cache = new SimpleCache(downloadFolder, new NoOpCacheEvictor(), databaseProvider);
@@ -47,7 +31,7 @@ import java.util.concurrent.Executor;
  *     new CacheDataSource.Factory()
  *         .setCache(cache)
  *         .setUpstreamDataSourceFactory(new DefaultHttpDataSource.Factory());
- * // Create a downloader for the first variant in a multivariant playlist.
+ * // 为多变量播放列表中的第一个变体创建下载器。
  * HlsDownloader hlsDownloader =
  *     new HlsDownloader(
  *         new MediaItem.Builder()
@@ -57,9 +41,9 @@ import java.util.concurrent.Executor;
  *                     new StreamKey(HlsMultivariantPlaylist.GROUP_INDEX_VARIANT, 0)))
  *             .build(),
  *         Collections.singletonList();
- * // Perform the download.
+ * // 执行下载。
  * hlsDownloader.download(progressListener);
- * // Use the downloaded data for playback.
+ * // 使用下载的数据进行播放。
  * HlsMediaSource mediaSource =
  *     new HlsMediaSource.Factory(cacheDataSourceFactory).createMediaSource(mediaItem);
  * }</pre>
@@ -68,25 +52,22 @@ import java.util.concurrent.Executor;
 public final class HlsDownloader extends SegmentDownloader<HlsPlaylist> {
 
   /**
-   * Creates a new instance.
+   * 创建一个新的实例。
    *
-   * @param mediaItem The {@link MediaItem} to be downloaded.
-   * @param cacheDataSourceFactory A {@link CacheDataSource.Factory} for the cache into which the
-   *     download will be written.
+   * @param mediaItem 要下载的 {@link MediaItem}。
+   * @param cacheDataSourceFactory 用于写入下载内容的缓存 {@link CacheDataSource.Factory}。
    */
   public HlsDownloader(MediaItem mediaItem, CacheDataSource.Factory cacheDataSourceFactory) {
     this(mediaItem, cacheDataSourceFactory, Runnable::run);
   }
 
   /**
-   * Creates a new instance.
+   * 创建一个新的实例。
    *
-   * @param mediaItem The {@link MediaItem} to be downloaded.
-   * @param cacheDataSourceFactory A {@link CacheDataSource.Factory} for the cache into which the
-   *     download will be written.
-   * @param executor An {@link Executor} used to make requests for the media being downloaded.
-   *     Providing an {@link Executor} that uses multiple threads will speed up the download by
-   *     allowing parts of it to be executed in parallel.
+   * @param mediaItem 要下载的 {@link MediaItem}。
+   * @param cacheDataSourceFactory 用于写入下载内容的缓存 {@link CacheDataSource.Factory}。
+   * @param executor 用于执行下载请求的 {@link Executor}。提供使用多线程的 {@link Executor} 可以加快下载速度，
+   *     因为允许部分下载任务并行执行。
    */
   public HlsDownloader(
       MediaItem mediaItem, CacheDataSource.Factory cacheDataSourceFactory, Executor executor) {
@@ -117,18 +98,15 @@ public final class HlsDownloader extends SegmentDownloader<HlsPlaylist> {
   }
 
   /**
-   * Creates a new instance.
+   * 创建一个新的实例。
    *
-   * @param mediaItem The {@link MediaItem} to be downloaded.
-   * @param manifestParser A parser for HLS playlists.
-   * @param cacheDataSourceFactory A {@link CacheDataSource.Factory} for the cache into which the
-   *     download will be written.
-   * @param executor An {@link Executor} used to make requests for the media being downloaded.
-   *     Providing an {@link Executor} that uses multiple threads will speed up the download by
-   *     allowing parts of it to be executed in parallel.
-   * @param maxMergedSegmentStartTimeDiffMs The maximum difference of the start time of two
-   *     segments, up to which the segments (of the same URI) should be merged into a single
-   *     download segment, in milliseconds.
+   * @param mediaItem 要下载的 {@link MediaItem}。
+   * @param manifestParser 用于解析 HLS 播放列表的解析器。
+   * @param cacheDataSourceFactory 用于写入下载内容的缓存 {@link CacheDataSource.Factory}。
+   * @param executor 用于执行下载请求的 {@link Executor}。提供使用多线程的 {@link Executor} 可以加快下载速度，
+   *     因为允许部分下载任务并行执行。
+   * @param maxMergedSegmentStartTimeDiffMs 两个片段开始时间的最大差异（以毫秒为单位），
+   *     在此差异范围内，相同 URI 的片段应合并为单个下载片段。
    */
   public HlsDownloader(
       MediaItem mediaItem,

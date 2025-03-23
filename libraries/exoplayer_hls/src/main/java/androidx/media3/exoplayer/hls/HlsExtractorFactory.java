@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import android.net.Uri;
@@ -32,33 +17,27 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-/** Factory for HLS media chunk extractors. */
+/** HLS 媒体块提取器的工厂。 */
 @UnstableApi
 public interface HlsExtractorFactory {
 
   /**
-   * @deprecated {@code HlsExtractorFactory} instances are mutable, so sharing one in a static field
-   *     is not safe. Construct a new instance of {@link DefaultHlsExtractorFactory} for each usage
-   *     instead.
+   * @deprecated {@code HlsExtractorFactory} 实例是可变的，因此在静态字段中共享一个实例是不安全的。每次使用时请构造一个新的 {@link DefaultHlsExtractorFactory} 实例。
    */
   @Deprecated HlsExtractorFactory DEFAULT = new DefaultHlsExtractorFactory();
 
   /**
-   * Creates an {@link Extractor} for extracting HLS media chunks.
+   * 创建一个用于提取 HLS 媒体块的 {@link Extractor}。
    *
-   * @param uri The URI of the media chunk.
-   * @param format A {@link Format} associated with the chunk to extract.
-   * @param muxedCaptionFormats List of muxed caption {@link Format}s. Null if no closed caption
-   *     information is available in the multivariant playlist.
-   * @param timestampAdjuster Adjuster corresponding to the provided discontinuity sequence number.
-   * @param responseHeaders The HTTP response headers associated with the media segment or
-   *     initialization section to extract.
-   * @param sniffingExtractorInput The first extractor input that will be passed to the returned
-   *     extractor's {@link Extractor#read(ExtractorInput, PositionHolder)}. Must only be used to
-   *     call {@link Extractor#sniff(ExtractorInput)}.
-   * @param playerId The {@link PlayerId} of the player using this extractors factory.
-   * @return An {@link HlsMediaChunkExtractor}.
-   * @throws IOException If an I/O error is encountered while sniffing.
+   * @param uri 媒体块的 URI。
+   * @param format 与要提取的块关联的 {@link Format}。
+   * @param muxedCaptionFormats 多路复用的字幕 {@link Format} 列表。如果多变量播放列表中没有隐藏字幕信息，则为 null。
+   * @param timestampAdjuster 与提供的间断序列号对应的时间戳调整器。
+   * @param responseHeaders 与要提取的媒体片段或初始化部分关联的 HTTP 响应头。
+   * @param sniffingExtractorInput 将传递给返回的提取器的 {@link Extractor#read(ExtractorInput, PositionHolder)} 的第一个提取器输入。只能用于调用 {@link Extractor#sniff(ExtractorInput)}。
+   * @param playerId 使用此提取器工厂的播放器的 {@link PlayerId}。
+   * @return 一个 {@link HlsMediaChunkExtractor}。
+   * @throws IOException 如果在嗅探时遇到 I/O 错误。
    */
   HlsMediaChunkExtractor createExtractor(
       Uri uri,
@@ -71,12 +50,10 @@ public interface HlsExtractorFactory {
       throws IOException;
 
   /**
-   * Sets the {@link SubtitleParser.Factory} to use for parsing subtitles during extraction. The
-   * default factory value is implementation dependent.
+   * 设置用于在提取过程中解析字幕的 {@link SubtitleParser.Factory}。默认的工厂值取决于具体实现。
    *
-   * @param subtitleParserFactory The {@link SubtitleParser.Factory} for parsing subtitles during
-   *     extraction.
-   * @return This factory, for convenience.
+   * @param subtitleParserFactory 用于在提取过程中解析字幕的 {@link SubtitleParser.Factory}。
+   * @return 为了方便，返回此工厂。
    */
   @CanIgnoreReturnValue
   default HlsExtractorFactory setSubtitleParserFactory(
@@ -85,15 +62,12 @@ public interface HlsExtractorFactory {
   }
 
   /**
-   * Sets whether subtitles should be parsed as part of extraction (before being added to the sample
-   * queue) or as part of rendering (when being taken from the sample queue). Defaults to {@code
-   * false} (i.e. subtitles will be parsed as part of rendering).
+   * 设置是否应在提取过程中（在添加到样本队列之前）或在渲染过程中（从样本队列中取出时）解析字幕。默认为 {@code false}（即字幕将在渲染过程中解析）。
    *
-   * <p>This method is experimental and will be renamed or removed in a future release.
+   * <p>此方法是实验性的，将在未来的版本中重命名或移除。
    *
-   * @param parseSubtitlesDuringExtraction Whether to parse subtitles during extraction or
-   *     rendering.
-   * @return This factory, for convenience.
+   * @param parseSubtitlesDuringExtraction 是否在提取过程中解析字幕。
+   * @return 为了方便，返回此工厂。
    */
   @CanIgnoreReturnValue
   default HlsExtractorFactory experimentalParseSubtitlesDuringExtraction(
@@ -102,20 +76,14 @@ public interface HlsExtractorFactory {
   }
 
   /**
-   * Returns the output {@link Format} of emitted {@linkplain C#TRACK_TYPE_TEXT text samples} which
-   * were originally in {@code sourceFormat}.
+   * 返回最初为 {@code sourceFormat} 的 {@linkplain C#TRACK_TYPE_TEXT 文本样本} 的输出 {@link Format}。
    *
-   * <p>In many cases, where an {@link Extractor} emits samples from the source without mutation,
-   * this method simply returns {@code sourceFormat}. In other cases, such as an {@link Extractor}
-   * that transcodes subtitles from the {@code sourceFormat} to {@link
-   * MimeTypes#APPLICATION_MEDIA3_CUES}, the format is updated to indicate the transcoding that is
-   * taking place.
+   * <p>在许多情况下，如果 {@link Extractor} 从源中提取样本而不进行修改，则此方法直接返回 {@code sourceFormat}。在其他情况下，例如 {@link Extractor} 将字幕从 {@code sourceFormat} 转码为 {@link MimeTypes#APPLICATION_MEDIA3_CUES}，则会更新格式以指示正在进行的转码。
    *
-   * <p>Non-text source formats are always returned without mutation.
+   * <p>非文本的源格式始终会原样返回。
    *
-   * @param sourceFormat The original text-based format.
-   * @return The {@link Format} that will be associated with a {@linkplain C#TRACK_TYPE_TEXT text
-   *     track}.
+   * @param sourceFormat 原始的基于文本的格式。
+   * @return 将与 {@linkplain C#TRACK_TYPE_TEXT 文本轨道} 关联的 {@link Format}。
    */
   default Format getOutputTextFormat(Format sourceFormat) {
     return sourceFormat;

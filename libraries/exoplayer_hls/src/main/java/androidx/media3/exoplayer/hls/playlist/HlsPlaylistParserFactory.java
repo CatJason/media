@@ -1,44 +1,25 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.playlist;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.upstream.ParsingLoadable;
 
-/** Factory for {@link HlsPlaylist} parsers. */
+/** {@link HlsPlaylist} 解析器的工厂接口。 */
 @UnstableApi
 public interface HlsPlaylistParserFactory {
 
   /**
-   * Returns a stand-alone playlist parser. Playlists parsed by the returned parser do not inherit
-   * any attributes from other playlists.
+   * 返回一个独立的播放列表解析器。由该解析器解析的播放列表不会从其他播放列表继承任何属性。
    */
   ParsingLoadable.Parser<HlsPlaylist> createPlaylistParser();
 
   /**
-   * Returns a playlist parser for playlists that were referenced by the given {@link
-   * HlsMultivariantPlaylist}. Returned {@link HlsMediaPlaylist} instances may inherit attributes
-   * from {@code multivariantPlaylist}.
+   * 返回一个用于解析由给定 {@link HlsMultivariantPlaylist} 引用的播放列表的解析器。
+   * 返回的 {@link HlsMediaPlaylist} 实例可能会从 {@code multivariantPlaylist} 继承属性。
    *
-   * @param multivariantPlaylist The multivariant playlist that referenced any parsed media
-   *     playlists.
-   * @param previousMediaPlaylist The previous media playlist or null if there is no previous media
-   *     playlist.
-   * @return A parser for HLS playlists.
+   * @param multivariantPlaylist 引用任何解析的媒体播放列表的多变量播放列表。
+   * @param previousMediaPlaylist 先前的媒体播放列表，如果没有先前的媒体播放列表则为 null。
+   * @return 用于解析 HLS 播放列表的解析器。
    */
   ParsingLoadable.Parser<HlsPlaylist> createPlaylistParser(
       HlsMultivariantPlaylist multivariantPlaylist,

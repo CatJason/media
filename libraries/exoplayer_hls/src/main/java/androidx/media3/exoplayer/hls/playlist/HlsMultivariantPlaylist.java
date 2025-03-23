@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.playlist;
 
 import android.net.Uri;
@@ -27,11 +12,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** Represents an HLS multivariant playlist. */
+/** 表示一个 HLS 多变量播放列表。 */
 @UnstableApi
 public final class HlsMultivariantPlaylist extends HlsPlaylist {
 
-  /** Represents an empty multivariant playlist, from which no attributes can be inherited. */
+  /** 表示一个空的多变量播放列表，无法继承任何属性。 */
   public static final HlsMultivariantPlaylist EMPTY =
       new HlsMultivariantPlaylist(
           /* baseUri= */ "",
@@ -47,39 +32,39 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
           /* variableDefinitions= */ Collections.emptyMap(),
           /* sessionKeyDrmInitData= */ Collections.emptyList());
 
-  // These constants must not be changed because they are persisted in offline stream keys.
+  // 这些常量不能被更改，因为它们会被持久化在离线流密钥中。
   public static final int GROUP_INDEX_VARIANT = 0;
   public static final int GROUP_INDEX_AUDIO = 1;
   public static final int GROUP_INDEX_SUBTITLE = 2;
 
-  /** A variant (i.e. an #EXT-X-STREAM-INF tag) in a multivariant playlist. */
+  /** 多变量播放列表中的一个变体（即一个 #EXT-X-STREAM-INF 标签）。 */
   public static final class Variant {
 
-    /** The variant's url. */
+    /** 变体的 URL。 */
     public final Uri url;
 
-    /** Format information associated with this variant. */
+    /** 与此变体关联的格式信息。 */
     public final Format format;
 
-    /** The video rendition group referenced by this variant, or {@code null}. */
+    /** 此变体引用的视频渲染组 ID，或 {@code null}。 */
     @Nullable public final String videoGroupId;
 
-    /** The audio rendition group referenced by this variant, or {@code null}. */
+    /** 此变体引用的音频渲染组 ID，或 {@code null}。 */
     @Nullable public final String audioGroupId;
 
-    /** The subtitle rendition group referenced by this variant, or {@code null}. */
+    /** 此变体引用的字幕渲染组 ID，或 {@code null}。 */
     @Nullable public final String subtitleGroupId;
 
-    /** The caption rendition group referenced by this variant, or {@code null}. */
+    /** 此变体引用的字幕渲染组 ID，或 {@code null}。 */
     @Nullable public final String captionGroupId;
 
     /**
-     * @param url See {@link #url}.
-     * @param format See {@link #format}.
-     * @param videoGroupId See {@link #videoGroupId}.
-     * @param audioGroupId See {@link #audioGroupId}.
-     * @param subtitleGroupId See {@link #subtitleGroupId}.
-     * @param captionGroupId See {@link #captionGroupId}.
+     * @param url 参见 {@link #url}。
+     * @param format 参见 {@link #format}。
+     * @param videoGroupId 参见 {@link #videoGroupId}。
+     * @param audioGroupId 参见 {@link #audioGroupId}。
+     * @param subtitleGroupId 参见 {@link #subtitleGroupId}。
+     * @param captionGroupId 参见 {@link #captionGroupId}。
      */
     public Variant(
         Uri url,
@@ -97,10 +82,10 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
     }
 
     /**
-     * Creates a variant for a given media playlist url.
+     * 为给定的媒体播放列表 URL 创建一个变体。
      *
-     * @param url The media playlist url.
-     * @return The variant instance.
+     * @param url 媒体播放列表的 URL。
+     * @return 变体实例。
      */
     public static Variant createMediaPlaylistVariantUrl(Uri url) {
       Format format =
@@ -114,32 +99,32 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
           /* captionGroupId= */ null);
     }
 
-    /** Returns a copy of this instance with the given {@link Format}. */
+    /** 返回一个具有给定 {@link Format} 的此实例的副本。 */
     public Variant copyWithFormat(Format format) {
       return new Variant(url, format, videoGroupId, audioGroupId, subtitleGroupId, captionGroupId);
     }
   }
 
-  /** A rendition (i.e. an #EXT-X-MEDIA tag) in a multivariant playlist. */
+  /** 多变量播放列表中的一个渲染（即一个 #EXT-X-MEDIA 标签）。 */
   public static final class Rendition {
 
-    /** The rendition's url, or null if the tag does not have a URI attribute. */
+    /** 渲染的 URL，如果标签没有 URI 属性则为 null。 */
     @Nullable public final Uri url;
 
-    /** Format information associated with this rendition. */
+    /** 与此渲染关联的格式信息。 */
     public final Format format;
 
-    /** The group to which this rendition belongs. */
+    /** 此渲染所属的组 ID。 */
     public final String groupId;
 
-    /** The name of the rendition. */
+    /** 渲染的名称。 */
     public final String name;
 
     /**
-     * @param url See {@link #url}.
-     * @param format See {@link #format}.
-     * @param groupId See {@link #groupId}.
-     * @param name See {@link #name}.
+     * @param url 参见 {@link #url}。
+     * @param format 参见 {@link #format}。
+     * @param groupId 参见 {@link #groupId}。
+     * @param name 参见 {@link #name}。
      */
     public Rendition(@Nullable Uri url, Format format, String groupId, String name) {
       this.url = url;
@@ -149,56 +134,54 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
     }
   }
 
-  /** All of the media playlist URLs referenced by the playlist. */
+  /** 播放列表中引用的所有媒体播放列表 URL。 */
   public final List<Uri> mediaPlaylistUrls;
 
-  /** The variants declared by the playlist. */
+  /** 播放列表声明的变体。 */
   public final List<Variant> variants;
 
-  /** The video renditions declared by the playlist. */
+  /** 播放列表声明的视频渲染。 */
   public final List<Rendition> videos;
 
-  /** The audio renditions declared by the playlist. */
+  /** 播放列表声明的音频渲染。 */
   public final List<Rendition> audios;
 
-  /** The subtitle renditions declared by the playlist. */
+  /** 播放列表声明的字幕渲染。 */
   public final List<Rendition> subtitles;
 
-  /** The closed caption renditions declared by the playlist. */
+  /** 播放列表声明的隐藏字幕渲染。 */
   public final List<Rendition> closedCaptions;
 
   /**
-   * The format of the audio muxed in the variants. May be null if the playlist does not declare any
-   * muxed audio.
+   * 变体中混音的音频格式。如果播放列表未声明任何混音音频，则可能为 null。
    */
   @Nullable public final Format muxedAudioFormat;
 
   /**
-   * The format of the closed captions declared by the playlist. May be empty if the playlist
-   * explicitly declares no captions are available, or null if the playlist does not declare any
-   * captions information.
+   * 播放列表声明的隐藏字幕格式。如果播放列表明确声明没有可用的字幕，则可能为空；
+   * 如果播放列表未声明任何字幕信息，则可能为 null。
    */
   @Nullable public final List<Format> muxedCaptionFormats;
 
-  /** Contains variable definitions, as defined by the #EXT-X-DEFINE tag. */
+  /** 包含变量定义，由 #EXT-X-DEFINE 标签定义。 */
   public final Map<String, String> variableDefinitions;
 
-  /** DRM initialization data derived from #EXT-X-SESSION-KEY tags. */
+  /** 从 #EXT-X-SESSION-KEY 标签派生的 DRM 初始化数据。 */
   public final List<DrmInitData> sessionKeyDrmInitData;
 
   /**
-   * @param baseUri See {@link #baseUri}.
-   * @param tags See {@link #tags}.
-   * @param variants See {@link #variants}.
-   * @param videos See {@link #videos}.
-   * @param audios See {@link #audios}.
-   * @param subtitles See {@link #subtitles}.
-   * @param closedCaptions See {@link #closedCaptions}.
-   * @param muxedAudioFormat See {@link #muxedAudioFormat}.
-   * @param muxedCaptionFormats See {@link #muxedCaptionFormats}.
-   * @param hasIndependentSegments See {@link #hasIndependentSegments}.
-   * @param variableDefinitions See {@link #variableDefinitions}.
-   * @param sessionKeyDrmInitData See {@link #sessionKeyDrmInitData}.
+   * @param baseUri 参见 {@link #baseUri}。
+   * @param tags 参见 {@link #tags}。
+   * @param variants 参见 {@link #variants}。
+   * @param videos 参见 {@link #videos}。
+   * @param audios 参见 {@link #audios}。
+   * @param subtitles 参见 {@link #subtitles}。
+   * @param closedCaptions 参见 {@link #closedCaptions}。
+   * @param muxedAudioFormat 参见 {@link #muxedAudioFormat}。
+   * @param muxedCaptionFormats 参见 {@link #muxedCaptionFormats}。
+   * @param hasIndependentSegments 参见 {@link #hasIndependentSegments}。
+   * @param variableDefinitions 参见 {@link #variableDefinitions}。
+   * @param sessionKeyDrmInitData 参见 {@link #sessionKeyDrmInitData}。
    */
   public HlsMultivariantPlaylist(
       String baseUri,
@@ -235,11 +218,11 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
         baseUri,
         tags,
         copyStreams(variants, GROUP_INDEX_VARIANT, streamKeys),
-        // TODO: Allow stream keys to specify video renditions to be retained.
+        // TODO: 允许流密钥指定要保留的视频渲染。
         /* videos= */ Collections.emptyList(),
         copyStreams(audios, GROUP_INDEX_AUDIO, streamKeys),
         copyStreams(subtitles, GROUP_INDEX_SUBTITLE, streamKeys),
-        // TODO: Update to retain all closed captions.
+        // TODO: 更新以保留所有隐藏字幕。
         /* closedCaptions= */ Collections.emptyList(),
         muxedAudioFormat,
         muxedCaptionFormats,
@@ -249,10 +232,10 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
   }
 
   /**
-   * Creates a playlist with a single variant.
+   * 创建一个包含单个变体的播放列表。
    *
-   * @param variantUrl The url of the single variant.
-   * @return A multivariant playlist with a single variant for the provided url.
+   * @param variantUrl 单个变体的 URL。
+   * @return 一个包含提供的 URL 的单个变体的多变量播放列表。
    */
   public static HlsMultivariantPlaylist createSingleVariantMultivariantPlaylist(String variantUrl) {
     List<Variant> variant =
@@ -305,15 +288,11 @@ public final class HlsMultivariantPlaylist extends HlsPlaylist {
       List<T> streams, int groupIndex, List<StreamKey> streamKeys) {
     List<T> copiedStreams = new ArrayList<>(streamKeys.size());
     // TODO:
-    // 1. When variants with the same URL are not de-duplicated, duplicates must not increment
-    //    trackIndex so as to avoid breaking stream keys that have been persisted for offline. All
-    //    duplicates should be copied if the first variant is copied, or discarded otherwise.
-    // 2. When renditions with null URLs are permitted, they must not increment trackIndex so as to
-    //    avoid breaking stream keys that have been persisted for offline. All renitions with null
-    //    URLs should be copied. They may become unreachable if all variants that reference them are
-    //    removed, but this is OK.
-    // 3. Renditions with URLs matching copied variants should always themselves be copied, even if
-    //    the corresponding stream key is omitted. Else we're throwing away information for no gain.
+    // 1. 当具有相同 URL 的变体未被去重时，重复项不应增加 trackIndex，以避免破坏已持久化的离线流密钥。
+    //    如果第一个变体被复制，则应复制所有重复项，否则应丢弃所有重复项。
+    // 2. 当允许具有 null URL 的渲染时，它们不应增加 trackIndex，以避免破坏已持久化的离线流密钥。
+    //    所有具有 null URL 的渲染都应被复制。如果所有引用它们的变体都被移除，它们可能会变得不可访问，但这是可以接受的。
+    // 3. 与复制的变体 URL 匹配的渲染应始终被复制，即使对应的流密钥被省略。否则，我们是在无意义地丢弃信息。
     for (int i = 0; i < streams.size(); i++) {
       T stream = streams.get(i);
       for (int j = 0; j < streamKeys.size(); j++) {

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import android.net.Uri;
@@ -100,31 +85,24 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   private SequenceableLoader compositeSequenceableLoader;
 
   /**
-   * Creates an HLS media period.
+   * 创建一个 HLS 媒体周期。
    *
-   * @param extractorFactory An {@link HlsExtractorFactory} for {@link Extractor}s for the segments.
-   * @param playlistTracker A tracker for HLS playlists.
-   * @param dataSourceFactory An {@link HlsDataSourceFactory} for {@link DataSource}s for segments
-   *     and keys.
-   * @param mediaTransferListener The transfer listener to inform of any media data transfers. May
-   *     be null if no listener is available.
-   * @param cmcdConfiguration The {@link CmcdConfiguration} for the period.
-   * @param drmSessionManager The {@link DrmSessionManager} to acquire {@link DrmSession
-   *     DrmSessions} with.
-   * @param drmEventDispatcher A {@link DrmSessionEventListener.EventDispatcher} used to distribute
-   *     DRM-related events.
-   * @param loadErrorHandlingPolicy A {@link LoadErrorHandlingPolicy}.
-   * @param eventDispatcher A dispatcher to notify of events.
-   * @param allocator An {@link Allocator} from which to obtain media buffer allocations.
-   * @param compositeSequenceableLoaderFactory A factory to create composite {@link
-   *     SequenceableLoader}s for when this media source loads data from multiple streams.
-   * @param allowChunklessPreparation Whether chunkless preparation is allowed.
-   * @param metadataType The type of metadata to extract from the period.
-   * @param useSessionKeys Whether to use #EXT-X-SESSION-KEY tags.
-   * @param playerId The ID of the current player.
-   * @param timestampAdjusterInitializationTimeoutMs The timeout for the loading thread to wait for
-   *     the timestamp adjuster to initialize, in milliseconds. A timeout of zero is interpreted as
-   *     an infinite timeout.
+   * @param extractorFactory 用于片段提取器的 {@link HlsExtractorFactory}。
+   * @param playlistTracker 用于 HLS 播放列表的跟踪器。
+   * @param dataSourceFactory 用于片段和密钥数据源的 {@link HlsDataSourceFactory}。
+   * @param mediaTransferListener 用于通知任何媒体数据传输的传输监听器。如果没有可用的监听器，可以为 null。
+   * @param cmcdConfiguration 周期的 {@link CmcdConfiguration}。
+   * @param drmSessionManager 用于获取 {@link DrmSession} 的 {@link DrmSessionManager}。
+   * @param drmEventDispatcher 用于分发 DRM 相关事件的 {@link DrmSessionEventListener.EventDispatcher}。
+   * @param loadErrorHandlingPolicy 加载错误处理策略 {@link LoadErrorHandlingPolicy}。
+   * @param eventDispatcher 用于通知事件的分发器。
+   * @param allocator 用于获取媒体缓冲区分配器的 {@link Allocator}。
+   * @param compositeSequenceableLoaderFactory 当此媒体源从多个流加载数据时，用于创建复合 {@link SequenceableLoader} 的工厂。
+   * @param allowChunklessPreparation 是否允许无块准备。
+   * @param metadataType 要从周期中提取的元数据类型。
+   * @param useSessionKeys 是否使用 #EXT-X-SESSION-KEY 标签。
+   * @param playerId 当前播放器的 ID。
+   * @param timestampAdjusterInitializationTimeoutMs 加载线程等待时间戳调整器初始化的超时时间（以毫秒为单位）。零超时表示无限超时。
    */
   public HlsMediaPeriod(
       HlsExtractorFactory extractorFactory,
@@ -192,21 +170,19 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
   @Override
   public TrackGroupArray getTrackGroups() {
-    // trackGroups will only be null if period hasn't been prepared or has been released.
+    // trackGroups 仅在周期未准备或已释放时为 null。
     return Assertions.checkNotNull(trackGroups);
   }
 
-  // TODO: When the multivariant playlist does not de-duplicate variants by URL and allows
-  // Renditions with null URLs, this method must be updated to calculate stream keys that are
-  // compatible with those that may already be persisted for offline.
+  // TODO: 当多变量播放列表未按 URL 去重并且允许 URL 为 null 的 Renditions 时，必须更新此方法以计算与可能已持久化用于离线的流密钥兼容的流密钥。
   @Override
   public List<StreamKey> getStreamKeys(List<ExoTrackSelection> trackSelections) {
-    // See HlsMultivariantPlaylist.copy for interpretation of StreamKeys.
+    // 有关 StreamKeys 的解释，请参阅 HlsMultivariantPlaylist.copy。
     HlsMultivariantPlaylist multivariantPlaylist =
         Assertions.checkNotNull(playlistTracker.getMultivariantPlaylist());
     boolean hasVariants = !multivariantPlaylist.variants.isEmpty();
     int audioWrapperOffset = hasVariants ? 1 : 0;
-    // Subtitle sample stream wrappers are held last.
+    // 字幕样本流包装器位于最后。
     int subtitleWrapperOffset = sampleStreamWrappers.length - multivariantPlaylist.subtitles.size();
 
     TrackGroupArray mainWrapperTrackGroups;
@@ -231,7 +207,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       int mainWrapperTrackGroupIndex = mainWrapperTrackGroups.indexOf(trackSelectionGroup);
       if (mainWrapperTrackGroupIndex != C.INDEX_UNSET) {
         if (mainWrapperTrackGroupIndex == mainWrapperPrimaryGroupIndex) {
-          // Primary group in main wrapper.
+          // 主包装器中的主轨道组。
           hasPrimaryTrackGroupSelection = true;
           for (int i = 0; i < trackSelection.length(); i++) {
             int variantIndex = mainWrapperVariantIndices[trackSelection.getIndexInTrackGroup(i)];
@@ -239,11 +215,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
                 new StreamKey(HlsMultivariantPlaylist.GROUP_INDEX_VARIANT, variantIndex));
           }
         } else {
-          // Embedded group in main wrapper.
+          // 主包装器中的嵌入轨道组。
           needsPrimaryTrackGroupSelection = true;
         }
       } else {
-        // Audio or subtitle group.
+        // 音频或字幕组。
         for (int i = audioWrapperOffset; i < sampleStreamWrappers.length; i++) {
           TrackGroupArray wrapperTrackGroups = sampleStreamWrappers[i].getTrackGroups();
           int selectedTrackGroupIndex = wrapperTrackGroups.indexOf(trackSelectionGroup);
@@ -264,8 +240,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       }
     }
     if (needsPrimaryTrackGroupSelection && !hasPrimaryTrackGroupSelection) {
-      // A track selection includes a variant-embedded track, but no variant is added yet. We use
-      // the valid variant with the lowest bitrate to reduce overhead.
+      // 如果轨道选择包含一个嵌入到变体中的轨道，但尚未添加任何变体，则使用比特率最低的有效变体以减少开销。
       int lowestBitrateIndex = mainWrapperVariantIndices[0];
       int lowestBitrate =
           multivariantPlaylist.variants.get(mainWrapperVariantIndices[0]).format.bitrate;
@@ -290,7 +265,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       @NullableType SampleStream[] streams,
       boolean[] streamResetFlags,
       long positionUs) {
-    // Map each selection and stream onto a child period index.
+    // 将每个选择和流映射到子周期索引。
     int[] streamChildIndices = new int[selections.length];
     int[] selectionChildIndices = new int[selections.length];
     for (int i = 0; i < selections.length; i++) {
@@ -310,7 +285,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
     boolean forceReset = false;
     streamWrapperIndices.clear();
-    // Select tracks for each child, copying the resulting streams back into a new streams array.
+    // 为每个子对象选择轨道，将生成的流复制回新的流数组。
     SampleStream[] newStreams = new SampleStream[selections.length];
     @NullableType SampleStream[] childStreams = new SampleStream[selections.length];
     @NullableType ExoTrackSelection[] childSelections = new ExoTrackSelection[selections.length];
@@ -335,43 +310,37 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       for (int j = 0; j < selections.length; j++) {
         SampleStream childStream = childStreams[j];
         if (selectionChildIndices[j] == i) {
-          // Assert that the child provided a stream for the selection.
+          // 确保子对象为选择提供了一个流。
           Assertions.checkNotNull(childStream);
           newStreams[j] = childStream;
           wrapperEnabled = true;
           streamWrapperIndices.put(childStream, i);
         } else if (streamChildIndices[j] == i) {
-          // Assert that the child cleared any previous stream.
+          // 确保子对象清除了任何先前的流。
           Assertions.checkState(childStream == null);
         }
       }
       if (wrapperEnabled) {
         newEnabledSampleStreamWrappers[newEnabledSampleStreamWrapperCount] = sampleStreamWrapper;
         if (newEnabledSampleStreamWrapperCount++ == 0) {
-          // The first enabled wrapper is always allowed to initialize timestamp adjusters. Note
-          // that the first wrapper will correspond to a variant, or else an audio rendition, or
-          // else a text rendition, in that order.
+          // 第一个启用的包装器始终允许初始化时间戳调整器。注意，第一个包装器将对应于变体，或者音频渲染，或者文本渲染，按此顺序。
           sampleStreamWrapper.setIsPrimaryTimestampSource(true);
           if (wasReset
               || enabledSampleStreamWrappers.length == 0
               || sampleStreamWrapper != enabledSampleStreamWrappers[0]) {
-            // The wrapper responsible for initializing the timestamp adjusters was reset or
-            // changed. We need to reset the timestamp adjuster provider and all other wrappers.
+            // 负责初始化时间戳调整器的包装器被重置或更改。我们需要重置时间戳调整器提供程序和其他所有包装器。
             timestampAdjusterProvider.reset();
             forceReset = true;
           }
         } else {
-          // Additional wrappers are also allowed to initialize timestamp adjusters if they contain
-          // audio or video, since they are expected to contain dense samples. Text wrappers are not
-          // permitted except in the case above in which no variant or audio rendition wrappers are
-          // enabled.
+          // 其他包装器如果包含音频或视频，则也允许初始化时间戳调整器，因为它们预计包含密集样本。除了上述情况（未启用任何变体或音频渲染包装器）外，文本包装器不允许。
           sampleStreamWrapper.setIsPrimaryTimestampSource(i < audioVideoSampleStreamWrapperCount);
         }
       }
     }
-    // Copy the new streams back into the streams array.
+    // 将新流复制回流数组。
     System.arraycopy(newStreams, 0, streams, 0, newStreams.length);
-    // Update the local state.
+    // 更新本地状态。
     enabledSampleStreamWrappers =
         Util.nullSafeArrayCopy(newEnabledSampleStreamWrappers, newEnabledSampleStreamWrapperCount);
     ImmutableList<HlsSampleStreamWrapper> enabledSampleStreamWrappersList =
@@ -400,7 +369,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   @Override
   public boolean continueLoading(LoadingInfo loadingInfo) {
     if (trackGroups == null) {
-      // Preparation is still going on.
+      // 准备工作仍在进行中。
       for (HlsSampleStreamWrapper wrapper : sampleStreamWrappers) {
         wrapper.continuePreparing();
       }
@@ -433,8 +402,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   @Override
   public long seekToUs(long positionUs) {
     if (enabledSampleStreamWrappers.length > 0) {
-      // We need to reset all wrappers if the one responsible for initializing timestamp adjusters
-      // is reset. Else each wrapper can decide whether to reset independently.
+      // 如果负责初始化时间戳调整器的包装器被重置，我们需要重置所有包装器。否则，每个包装器可以独立决定是否重置。
       boolean forceReset = enabledSampleStreamWrappers[0].seekToUs(positionUs, false);
       for (int i = 1; i < enabledSampleStreamWrappers.length; i++) {
         enabledSampleStreamWrappers[i].seekToUs(positionUs, forceReset);
@@ -458,9 +426,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     return seekTargetUs;
   }
 
-  // HlsSampleStreamWrapper.Callback implementation.
+  // HlsSampleStreamWrapper.Callback 接口的实现。
 
-  // PlaylistListener implementation.
+  // PlaylistListener 接口的实现。
 
   @Override
   public void onPlaylistChanged() {
@@ -481,7 +449,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     return exclusionSucceeded;
   }
 
-  // Internal methods.
+  // 内部方法。
 
   private void buildAndPrepareSampleStreamWrappers(long positionUs) {
     HlsMultivariantPlaylist multivariantPlaylist =
@@ -508,8 +476,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
           overridingDrmInitData);
     }
 
-    // TODO: Build video stream wrappers here.
-
+    // TODO: 在此处构建视频流包装器。
     buildAndPrepareAudioSampleStreamWrappers(
         positionUs,
         audioRenditions,
@@ -519,12 +486,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
     audioVideoSampleStreamWrapperCount = sampleStreamWrappers.size();
 
-    // Subtitle stream wrappers. We can always use multivariant playlist information to prepare
-    // these.
+    // 字幕流包装器。我们始终可以使用多变量播放列表信息来准备这些。
     for (int i = 0; i < subtitleRenditions.size(); i++) {
       Rendition subtitleRendition = subtitleRenditions.get(i);
       String sampleStreamWrapperUid = "subtitle:" + i + ":" + subtitleRendition.name;
-      // Format for HlsChunkSource to createExtractor with
+      // HlsChunkSource 用于创建提取器的格式
       Format originalSubtitleFormat = subtitleRendition.format;
       HlsSampleStreamWrapper sampleStreamWrapper =
           buildSampleStreamWrapper(
@@ -540,9 +506,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       sampleStreamWrappers.add(sampleStreamWrapper);
       sampleStreamWrapper.prepareWithMultivariantPlaylistInfo(
           new TrackGroup[] {
-            new TrackGroup(
-                sampleStreamWrapperUid,
-                extractorFactory.getOutputTextFormat(originalSubtitleFormat))
+              new TrackGroup(
+                  sampleStreamWrapperUid,
+                  extractorFactory.getOutputTextFormat(originalSubtitleFormat))
           },
           /* primaryTrackGroupIndex= */ 0);
     }
@@ -550,44 +516,35 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     this.sampleStreamWrappers = sampleStreamWrappers.toArray(new HlsSampleStreamWrapper[0]);
     this.manifestUrlIndicesPerWrapper = manifestUrlIndicesPerWrapper.toArray(new int[0][]);
     pendingPrepareCount = this.sampleStreamWrappers.length;
-    // Set primary timestamp source and trigger preparation (if not already prepared)
+    // 设置主时间戳源并触发准备（如果尚未准备）
     for (int i = 0; i < audioVideoSampleStreamWrapperCount; i++) {
       this.sampleStreamWrappers[i].setIsPrimaryTimestampSource(true);
     }
     for (HlsSampleStreamWrapper sampleStreamWrapper : this.sampleStreamWrappers) {
       sampleStreamWrapper.continuePreparing();
     }
-    // All wrappers are enabled during preparation.
+    // 在准备期间，所有包装器都处于启用状态。
     enabledSampleStreamWrappers = this.sampleStreamWrappers;
   }
 
   /**
-   * This method creates and starts preparation of the main {@link HlsSampleStreamWrapper}.
+   * 此方法创建并启动主 {@link HlsSampleStreamWrapper} 的准备工作。
    *
-   * <p>The main sample stream wrapper is the first element of {@link #sampleStreamWrappers}. It
-   * provides {@link SampleStream}s for the variant urls in the multivariant playlist. It may be
-   * adaptive and may contain multiple muxed tracks.
+   * <p>主样本流包装器是 {@link #sampleStreamWrappers} 的第一个元素。它为多变量播放列表中的变体 URL 提供 {@link SampleStream}。它可能是自适应的，并且可能包含多个多路复用轨道。
    *
-   * <p>If chunkless preparation is allowed, the media period will try preparation without segment
-   * downloads. This is only possible if variants contain the CODECS attribute. If not, traditional
-   * preparation with segment downloads will take place. The following points apply to chunkless
-   * preparation:
+   * <p>如果允许无块准备，媒体周期将尝试在不下载片段的情况下进行准备。这仅在变体包含 CODECS 属性时可行。如果不包含，则需要进行传统的片段下载准备。以下要点适用于无块准备：
    *
    * <ul>
-   *   <li>A muxed audio track will be exposed if the codecs list contain an audio entry and the
-   *       multivariant playlist either contains an EXT-X-MEDIA tag without the URI attribute or
-   *       does not contain any EXT-X-MEDIA tag.
-   *   <li>Closed captions will only be exposed if they are declared by the multivariant playlist.
-   *   <li>An ID3 track is exposed preemptively, in case the segments contain an ID3 track.
+   *   <li>如果编解码器列表包含音频条目，并且多变量播放列表包含不带 URI 属性的 EXT-X-MEDIA 标签或不包含任何 EXT-X-MEDIA 标签，则将暴露多路复用的音频轨道。
+   *   <li>仅当多变量播放列表声明了隐藏字幕时，才会暴露隐藏字幕。
+   *   <li>预先暴露 ID3 轨道，以防片段包含 ID3 轨道。
    * </ul>
    *
-   * @param multivariantPlaylist The HLS multivariant playlist.
-   * @param positionUs If preparation requires any chunk downloads, the position in microseconds at
-   *     which downloading should start. Ignored otherwise.
-   * @param sampleStreamWrappers List to which the built main sample stream wrapper should be added.
-   * @param manifestUrlIndicesPerWrapper List to which the selected variant indices should be added.
-   * @param overridingDrmInitData Overriding {@link DrmInitData}, keyed by protection scheme type
-   *     (i.e. {@link DrmInitData#schemeType}).
+   * @param multivariantPlaylist HLS 多变量播放列表。
+   * @param positionUs 如果准备需要任何片段下载，则以微秒为单位的下载起始位置。否则忽略。
+   * @param sampleStreamWrappers 要添加构建的主样本流包装器的列表。
+   * @param manifestUrlIndicesPerWrapper 要添加所选变体索引的列表。
+   * @param overridingDrmInitData 按保护方案类型（即 {@link DrmInitData#schemeType}）键控的覆盖 {@link DrmInitData}。
    */
   private void buildAndPrepareMainSampleStreamWrapper(
       HlsMultivariantPlaylist multivariantPlaylist,
@@ -615,14 +572,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     boolean useNonAudioVariantsOnly = false;
     int selectedVariantsCount = variantTypes.length;
     if (videoVariantCount > 0) {
-      // We've identified some variants as definitely containing video. Assume variants within the
-      // multivariant playlist are marked consistently, and hence that we have the full set. Filter
-      // out any other variants, which are likely to be audio only.
+      // 我们已经确定了一些变体肯定包含视频。假设多变量播放列表中的变体标记一致，因此我们拥有完整的集合。过滤掉其他变体，这些变体可能仅包含音频。
       useVideoVariantsOnly = true;
       selectedVariantsCount = videoVariantCount;
     } else if (audioVariantCount < variantTypes.length) {
-      // We've identified some variants, but not all, as being audio only. Filter them out to leave
-      // the remaining variants, which are likely to contain video.
+      // 我们已经确定了一些变体（但不是全部）为仅音频变体。过滤掉它们，留下剩余的变体，这些变体可能包含视频。
       useNonAudioVariantsOnly = true;
       selectedVariantsCount = variantTypes.length - audioVariantCount;
     }
@@ -828,10 +782,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     for (int i = 0; i < mutableSessionKeyDrmInitData.size(); i++) {
       DrmInitData drmInitData = sessionKeyDrmInitData.get(i);
       String scheme = drmInitData.schemeType;
-      // Merge any subsequent drmInitData instances that have the same scheme type. This is valid
-      // due to the assumptions documented on HlsMediaSource.Builder.setUseSessionKeys, and is
-      // necessary to get data for different CDNs (e.g. Widevine and PlayReady) into a single
-      // drmInitData.
+      // 合并任何具有相同方案类型的后续 drmInitData 实例。这是有效的，因为 HlsMediaSource.Builder.setUseSessionKeys 中记录的假设，并且对于将不同 CDN（例如 Widevine 和 PlayReady）的数据合并到单个 drmInitData 中是必要的。
       int j = i + 1;
       while (j < mutableSessionKeyDrmInitData.size()) {
         DrmInitData nextDrmInitData = mutableSessionKeyDrmInitData.get(j);

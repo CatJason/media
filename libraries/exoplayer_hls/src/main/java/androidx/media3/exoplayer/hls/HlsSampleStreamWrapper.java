@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import static androidx.media3.exoplayer.hls.HlsChunkSource.CHUNK_PUBLICATION_STATE_PRELOAD;
@@ -87,36 +72,30 @@ import java.util.Set;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-
 /**
- * Loads {@link HlsMediaChunk}s obtained from a {@link HlsChunkSource}, and provides {@link
- * SampleStream}s from which the loaded media can be consumed.
+ * 加载从 {@link HlsChunkSource} 获取的 {@link HlsMediaChunk}，并提供 {@link SampleStream} 以消费加载的媒体。
  */
 /* package */ final class HlsSampleStreamWrapper
     implements Loader.Callback<Chunk>,
-        Loader.ReleaseCallback,
-        SequenceableLoader,
-        ExtractorOutput,
-        UpstreamFormatChangedListener {
+    Loader.ReleaseCallback,
+    SequenceableLoader,
+    ExtractorOutput,
+    UpstreamFormatChangedListener {
 
-  /** A callback to be notified of events. */
+  /** 用于接收事件通知的回调接口。 */
   public interface Callback extends SequenceableLoader.Callback<HlsSampleStreamWrapper> {
 
     /**
-     * Called when the wrapper has been prepared.
+     * 当包装器准备就绪时调用。
      *
-     * <p>Note: This method will be called on a later handler loop than the one on which either
-     * {@link #prepareWithMultivariantPlaylistInfo} or {@link #continuePreparing} are invoked.
+     * <p>注意：此方法将在比调用 {@link #prepareWithMultivariantPlaylistInfo} 或 {@link #continuePreparing} 的 Handler 循环稍晚的循环中调用。
      */
     void onPrepared();
 
     /**
-     * Called to schedule a {@link #continueLoading(LoadingInfo)} call when the playlist referred by
-     * the given url changes, or it requires a refresh to check whether the hinted resource has been
-     * published or removed.
+     * 当给定 URL 引用的播放列表发生变化，或需要刷新以检查提示的资源是否已发布或删除时，调用此方法以安排 {@link #continueLoading(LoadingInfo)} 调用。
      *
-     * <p>Note: This method will be called on a later handler loop than the one on which {@link
-     * #onPlaylistUpdated()} is invoked.
+     * <p>注意：此方法将在比调用 {@link #onPlaylistUpdated()} 的 Handler 循环稍晚的循环中调用。
      */
     void onPlaylistRefreshRequired(Uri playlistUrl);
   }
@@ -147,7 +126,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   private final HlsChunkSource.HlsChunkHolder nextChunkHolder;
   private final ArrayList<HlsMediaChunk> mediaChunks;
   private final List<HlsMediaChunk> readOnlyMediaChunks;
-  // Using runnables rather than in-line method references to avoid repeated allocations.
+  // 使用 Runnable 而不是内联方法引用，以避免重复分配。
   private final Runnable maybeFinishPrepareRunnable;
   private final Runnable onTracksEndedRunnable;
   private final Handler handler;
@@ -169,8 +148,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   @Nullable private Format downstreamTrackFormat;
   private boolean released;
 
-  // Tracks are complicated in HLS. See documentation of buildTracksFromSampleStreams for details.
-  // Indexed by track (as exposed by this source).
+  // 在 HLS 中，轨道（tracks）的处理较为复杂。详情请参阅 buildTracksFromSampleStreams 的文档。
+  // 按轨道索引（由此源暴露的轨道）。
   private @MonotonicNonNull TrackGroupArray trackGroups;
   private @MonotonicNonNull Set<TrackGroup> optionalTrackGroups;
   // Indexed by track group.
@@ -186,32 +165,25 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   private boolean seenFirstTrackSelection;
   private boolean loadingFinished;
 
-  // Accessed only by the loading thread.
+  // 仅由加载线程访问。
   private boolean tracksEnded;
   private long sampleOffsetUs;
   @Nullable private DrmInitData drmInitData;
   @Nullable private HlsMediaChunk sourceChunk;
 
   /**
-   * @param uid A identifier for this sample stream wrapper. Identifiers must be unique within the
-   *     period.
-   * @param trackType The {@link C.TrackType track type}.
-   * @param callback A callback for the wrapper.
-   * @param chunkSource A {@link HlsChunkSource} from which chunks to load are obtained.
-   * @param overridingDrmInitData Overriding {@link DrmInitData}, keyed by protection scheme type
-   *     (i.e. {@link DrmInitData#schemeType}). If the stream has {@link DrmInitData} and uses a
-   *     protection scheme type for which overriding {@link DrmInitData} is provided, then the
-   *     stream's {@link DrmInitData} will be overridden.
-   * @param allocator An {@link Allocator} from which to obtain media buffer allocations.
-   * @param positionUs The position from which to start loading media.
-   * @param muxedAudioFormat Optional muxed audio {@link Format} as defined by the multivariant
-   *     playlist.
-   * @param drmSessionManager The {@link DrmSessionManager} to acquire {@link DrmSession
-   *     DrmSessions} with.
-   * @param drmEventDispatcher A dispatcher to notify of {@link DrmSessionEventListener} events.
-   * @param loadErrorHandlingPolicy A {@link LoadErrorHandlingPolicy}.
-   * @param mediaSourceEventDispatcher A dispatcher to notify of {@link MediaSourceEventListener}
-   *     events.
+   * @param uid 此样本流包装器的唯一标识符。标识符在周期内必须唯一。
+   * @param trackType {@link C.TrackType 轨道类型}。
+   * @param callback 包装器的回调接口。
+   * @param chunkSource 用于获取要加载的块的 {@link HlsChunkSource}。
+   * @param overridingDrmInitData 按保护方案类型（即 {@link DrmInitData#schemeType}）键控的覆盖 {@link DrmInitData}。如果流具有 {@link DrmInitData} 并且使用了提供覆盖 {@link DrmInitData} 的保护方案类型，则流的 {@link DrmInitData} 将被覆盖。
+   * @param allocator 用于获取媒体缓冲区分配的 {@link Allocator}。
+   * @param positionUs 开始加载媒体的位置（以微秒为单位）。
+   * @param muxedAudioFormat 由多变量播放列表定义的可选多路复用音频 {@link Format}。
+   * @param drmSessionManager 用于获取 {@link DrmSession DrmSessions} 的 {@link DrmSessionManager}。
+   * @param drmEventDispatcher 用于通知 {@link DrmSessionEventListener} 事件的调度器。
+   * @param loadErrorHandlingPolicy {@link LoadErrorHandlingPolicy}。
+   * @param mediaSourceEventDispatcher 用于通知 {@link MediaSourceEventListener} 事件的调度器。
    */
   public HlsSampleStreamWrapper(
       String uid,
@@ -269,13 +241,11 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Prepares the sample stream wrapper with multivariant playlist information.
+   * 使用多变量播放列表信息准备样本流包装器。
    *
-   * @param trackGroups The {@link TrackGroup TrackGroups} to expose through {@link
-   *     #getTrackGroups()}.
-   * @param primaryTrackGroupIndex The index of the adaptive track group.
-   * @param optionalTrackGroupsIndices The indices of any {@code trackGroups} that should not
-   *     trigger a failure if not found in the media playlist's segments.
+   * @param trackGroups 通过 {@link #getTrackGroups()} 暴露的 {@link TrackGroup TrackGroups}。
+   * @param primaryTrackGroupIndex 自适应轨道组的索引。
+   * @param optionalTrackGroupsIndices 任何 {@code trackGroups} 的索引，这些轨道组如果在媒体播放列表的片段中未找到，不应触发失败。
    */
   public void prepareWithMultivariantPlaylistInfo(
       TrackGroup[] trackGroups, int primaryTrackGroupIndex, int... optionalTrackGroupsIndices) {
@@ -333,21 +303,15 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Called by the parent {@link HlsMediaPeriod} when a track selection occurs.
+   * 当发生轨道选择时，由父 {@link HlsMediaPeriod} 调用。
    *
-   * @param selections The renderer track selections.
-   * @param mayRetainStreamFlags Flags indicating whether the existing sample stream can be retained
-   *     for each selection. A {@code true} value indicates that the selection is unchanged, and
-   *     that the caller does not require that the sample stream be recreated.
-   * @param streams The existing sample streams, which will be updated to reflect the provided
-   *     selections.
-   * @param streamResetFlags Will be updated to indicate new sample streams, and sample streams that
-   *     have been retained but with the requirement that the consuming renderer be reset.
-   * @param positionUs The current playback position in microseconds.
-   * @param forceReset If true then a reset is forced (i.e. a seek will be performed with in-buffer
-   *     seeking disabled).
-   * @return Whether this wrapper requires the parent {@link HlsMediaPeriod} to perform a seek as
-   *     part of the track selection.
+   * @param selections 渲染器的轨道选择。
+   * @param mayRetainStreamFlags 指示每个选择的现有样本流是否可以保留的标志。{@code true} 值表示选择未更改，并且调用者不要求重新创建样本流。
+   * @param streams 现有的样本流，将更新以反映提供的选择。
+   * @param streamResetFlags 将更新以指示新的样本流，以及已保留但需要重置消费渲染器的样本流。
+   * @param positionUs 当前的播放位置（以微秒为单位）。
+   * @param forceReset 如果为 true，则强制执行重置（即，将执行跳转，但禁用缓冲区内的跳转）。
+   * @return 此包装器是否要求父 {@link HlsMediaPeriod} 作为轨道选择的一部分执行跳转。
    */
   public boolean selectTracks(
       @NullableType ExoTrackSelection[] selections,
@@ -358,7 +322,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       boolean forceReset) {
     assertIsPrepared();
     int oldEnabledTrackGroupCount = enabledTrackGroupCount;
-    // Deselect old tracks.
+    // 取消选择旧轨道。
     for (int i = 0; i < selections.length; i++) {
       HlsSampleStream stream = (HlsSampleStream) streams[i];
       if (stream != null && (selections[i] == null || !mayRetainStreamFlags[i])) {
@@ -367,19 +331,16 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         streams[i] = null;
       }
     }
-    // We'll always need to seek if we're being forced to reset, or if this is a first selection to
-    // a position other than the one we started preparing with, or if we're making a selection
-    // having previously disabled all tracks.
+    // 如果我们被强制重置，或者这是第一次选择到与开始准备时不同的位置，或者我们在之前禁用了所有轨道后进行选择，则始终需要跳转。
     boolean seekRequired =
         forceReset
             || (seenFirstTrackSelection
-                ? oldEnabledTrackGroupCount == 0
-                : positionUs != lastSeekPositionUs);
-    // Get the old (i.e. current before the loop below executes) primary track selection. The new
-    // primary selection will equal the old one unless it's changed in the loop.
+            ? oldEnabledTrackGroupCount == 0
+            : positionUs != lastSeekPositionUs);
+    // 获取旧的（即在下面的循环执行之前的当前）主轨道选择。新的主选择将等于旧选择，除非在循环中更改。
     ExoTrackSelection oldPrimaryTrackSelection = chunkSource.getTrackSelection();
     ExoTrackSelection primaryTrackSelection = oldPrimaryTrackSelection;
-    // Select new tracks.
+    // 选择新轨道。
     for (int i = 0; i < selections.length; i++) {
       ExoTrackSelection selection = selections[i];
       if (selection == null) {
@@ -396,12 +357,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         streamResetFlags[i] = true;
         if (trackGroupToSampleQueueIndex != null) {
           ((HlsSampleStream) streams[i]).bindSampleQueue();
-          // If there's still a chance of avoiding a seek, try and seek within the sample queue.
+          // 如果仍有可能避免跳转，则尝试在样本队列内跳转。
           if (!seekRequired) {
             SampleQueue sampleQueue = sampleQueues[trackGroupToSampleQueueIndex[trackGroupIndex]];
-            // A seek can be avoided if we haven't read any samples yet (e.g. for the first track
-            // selection) or we are able to seek to the current playback position in the sample
-            // queue. In all other cases a seek is required.
+            // 如果我们尚未读取任何样本（例如，对于第一次轨道选择），或者我们能够在样本队列中跳转到当前播放位置，则可以避免跳转。在所有其他情况下，需要跳转。
             seekRequired =
                 sampleQueue.getReadIndex() != 0
                     && !sampleQueue.seekTo(positionUs, /* allowTimeBeyondBuffer= */ true);
@@ -409,7 +368,6 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         }
       }
     }
-
     if (enabledTrackGroupCount == 0) {
       chunkSource.reset();
       downstreamTrackFormat = null;
@@ -417,7 +375,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       mediaChunks.clear();
       if (loader.isLoading()) {
         if (sampleQueuesBuilt) {
-          // Discard as much as we can synchronously.
+          // 尽可能同步丢弃数据。
           for (SampleQueue sampleQueue : sampleQueues) {
             sampleQueue.discardToEnd();
           }
@@ -429,8 +387,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     } else {
       if (!mediaChunks.isEmpty()
           && !Util.areEqual(primaryTrackSelection, oldPrimaryTrackSelection)) {
-        // The primary track selection has changed and we have buffered media. The buffered media
-        // may need to be discarded.
+        // 主轨道选择已更改，并且我们已缓冲了媒体。缓冲的媒体可能需要被丢弃。
         boolean primarySampleQueueDirty = false;
         if (!seenFirstTrackSelection) {
           long bufferedDurationUs = positionUs < 0 ? -positionUs : 0;
@@ -445,12 +402,11 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
               mediaChunkIterators);
           int chunkIndex = chunkSource.getTrackGroup().indexOf(lastMediaChunk.trackFormat);
           if (primaryTrackSelection.getSelectedIndexInTrackGroup() != chunkIndex) {
-            // This is the first selection and the chunk loaded during preparation does not match
-            // the initially selected format.
+            // 这是第一次选择，并且准备期间加载的块与最初选择的格式不匹配。
             primarySampleQueueDirty = true;
           }
         } else {
-          // The primary sample queue contains media buffered for the old primary track selection.
+          // 主样本队列包含为旧主轨道选择缓冲的媒体。
           primarySampleQueueDirty = true;
         }
         if (primarySampleQueueDirty) {
@@ -461,7 +417,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       }
       if (seekRequired) {
         seekToUs(positionUs, forceReset);
-        // We'll need to reset renderers consuming from all streams due to the seek.
+        // 由于跳转，我们需要重置所有流的渲染器。
         for (int i = 0; i < streams.length; i++) {
           if (streams[i] != null) {
             streamResetFlags[i] = true;
@@ -486,22 +442,21 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Attempts to seek to the specified position in microseconds.
+   * 尝试跳转到指定的微秒位置。
    *
-   * @param positionUs The seek position in microseconds.
-   * @param forceReset If true then a reset is forced (i.e. in-buffer seeking is disabled).
-   * @return Whether the wrapper was reset, meaning the wrapped sample queues were reset. If false,
-   *     an in-buffer seek was performed.
+   * @param positionUs 跳转位置（以微秒为单位）。
+   * @param forceReset 如果为 true，则强制执行重置（即禁用缓冲区内的跳转）。
+   * @return 包装器是否被重置，意味着包装的样本队列被重置。如果为 false，则执行了缓冲区内的跳转。
    */
   public boolean seekToUs(long positionUs, boolean forceReset) {
     lastSeekPositionUs = positionUs;
     if (isPendingReset()) {
-      // A reset is already pending. We only need to update its position.
+      // 已经有一个待处理的重置。我们只需要更新其位置。
       pendingResetPositionUs = positionUs;
       return true;
     }
 
-    // Detect whether the seek is to the start of a chunk that's at least partially buffered.
+    // 检测跳转是否指向至少部分缓冲的块的起始位置。
     @Nullable HlsMediaChunk seekToMediaChunk = null;
     if (chunkSource.hasIndependentSegments()) {
       for (int i = 0; i < mediaChunks.size(); i++) {
@@ -513,19 +468,18 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         }
       }
     }
-
-    // If we're not forced to reset, try and seek within the buffer.
+    // 如果没有被强制重置，尝试在缓冲区内跳转。
     if (sampleQueuesBuilt && !forceReset && seekInsideBufferUs(positionUs, seekToMediaChunk)) {
       return false;
     }
 
-    // We can't seek inside the buffer, and so need to reset.
+    // 无法在缓冲区内跳转，因此需要重置。
     pendingResetPositionUs = positionUs;
     loadingFinished = false;
     mediaChunks.clear();
     if (loader.isLoading()) {
       if (sampleQueuesBuilt) {
-        // Discard as much as we can synchronously.
+        // 尽可能同步丢弃数据。
         for (SampleQueue sampleQueue : sampleQueues) {
           sampleQueue.discardToEnd();
         }
@@ -559,8 +513,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
   public void release() {
     if (prepared) {
-      // Discard as much as we can synchronously. We only do this if we're prepared, since otherwise
-      // sampleQueues may still be being modified by the loading thread.
+      // 尽可能同步丢弃数据。我们仅在已准备的情况下执行此操作，因为否则 sampleQueues 可能仍在被加载线程修改。
       for (SampleQueue sampleQueue : sampleQueues) {
         sampleQueue.preRelease();
       }
@@ -584,16 +537,16 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Called if an error is encountered while loading a playlist.
+   * 当加载播放列表时遇到错误时调用。
    *
-   * @param playlistUrl The {@link Uri} of the playlist whose load encountered an error.
-   * @param loadErrorInfo The load error info.
-   * @param forceRetry Whether retry should be forced without considering exclusion.
-   * @return True if excluding did not encounter errors. False otherwise.
+   * @param playlistUrl 加载时遇到错误的播放列表的 {@link Uri}。
+   * @param loadErrorInfo 加载错误信息。
+   * @param forceRetry 是否在不考虑排除的情况下强制重试。
+   * @return 如果排除未遇到错误，则返回 true。否则返回 false。
    */
   public boolean onPlaylistError(Uri playlistUrl, LoadErrorInfo loadErrorInfo, boolean forceRetry) {
     if (!chunkSource.obtainsChunksForPlaylist(playlistUrl)) {
-      // Return early if the chunk source doesn't deliver chunks for the failing playlist.
+      // 如果块源不提供失败播放列表的块，则提前返回。
       return true;
     }
     long exclusionDurationMs = C.TIME_UNSET;
@@ -607,23 +560,22 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         exclusionDurationMs = fallbackSelection.exclusionDurationMs;
       }
     }
-    // We must call ChunkSource.onPlaylistError in any case to give the chunk source the chance to
-    // mark the playlist as failing.
+    // 无论如何，我们必须调用 ChunkSource.onPlaylistError，以便块源有机会将播放列表标记为失败。
     return chunkSource.onPlaylistError(playlistUrl, exclusionDurationMs)
         && exclusionDurationMs != C.TIME_UNSET;
   }
 
-  /** Returns whether the primary sample stream is {@link C#TRACK_TYPE_VIDEO}. */
+  /** 返回主样本流是否为 {@link C#TRACK_TYPE_VIDEO}。 */
   public boolean isVideoSampleStream() {
     return primarySampleQueueType == C.TRACK_TYPE_VIDEO;
   }
 
   /**
-   * Adjusts a seek position given the specified {@link SeekParameters}.
+   * 根据指定的 {@link SeekParameters} 调整跳转位置。
    *
-   * @param positionUs The seek position in microseconds.
-   * @param seekParameters Parameters that control how the seek is performed.
-   * @return The adjusted seek position, in microseconds.
+   * @param positionUs 跳转位置（以微秒为单位）。
+   * @param seekParameters 控制跳转方式的参数。
+   * @return 调整后的跳转位置（以微秒为单位）。
    */
   public long getAdjustedSeekPositionUs(long positionUs, SeekParameters seekParameters) {
     return chunkSource.getAdjustedSeekPositionUs(positionUs, seekParameters);
@@ -654,7 +606,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       return C.RESULT_NOTHING_READ;
     }
 
-    // TODO: Split into discard (in discardBuffer) and format change (here and in skipData) steps.
+    // TODO: 将其分为丢弃（在 discardBuffer 中）和格式更改（在这里和 skipData 中）步骤。
     if (!mediaChunks.isEmpty()) {
       int discardToMediaChunkIndex = 0;
       while (discardToMediaChunkIndex < mediaChunks.size() - 1
@@ -676,7 +628,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     }
 
     if (!mediaChunks.isEmpty() && !mediaChunks.get(0).isPublished()) {
-      // Don't read into preload chunks until we can be sure they are permanently published.
+      // 在确定预加载块已永久发布之前，不要读取它们。
       return C.RESULT_NOTHING_READ;
     }
 
@@ -685,7 +637,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     if (result == C.RESULT_FORMAT_READ) {
       Format format = Assertions.checkNotNull(formatHolder.format);
       if (sampleQueueIndex == primarySampleQueueIndex) {
-        // Fill in primary sample format with information from the track format.
+        // 使用轨道格式中的信息填充主样本格式。
         int chunkUid = Ints.checkedCast(sampleQueues[sampleQueueIndex].peekSourceId());
         int chunkIndex = 0;
         while (chunkIndex < mediaChunks.size() && mediaChunks.get(chunkIndex).uid != chunkUid) {
@@ -710,7 +662,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     SampleQueue sampleQueue = sampleQueues[sampleQueueIndex];
     int skipCount = sampleQueue.getSkipCount(positionUs, loadingFinished);
 
-    // Ensure we don't skip into preload chunks until we can be sure they are permanently published.
+    // 确保在确定预加载块已永久发布之前，不要跳过它们。
     @Nullable HlsMediaChunk lastChunk = Iterables.getLast(mediaChunks, /* defaultValue= */ null);
     if (lastChunk != null && !lastChunk.isPublished()) {
       int readIndex = sampleQueue.getReadIndex();
@@ -936,9 +888,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         && error instanceof HttpDataSource.InvalidResponseCodeException) {
       int responseCode = ((HttpDataSource.InvalidResponseCodeException) error).responseCode;
       if (responseCode == 410 || responseCode == 404) {
-        // According to RFC 8216, Section 6.2.6 a server should respond with an HTTP 404 (Not found)
-        // for requests of hinted parts that are replaced and not available anymore. We've seen test
-        // streams with HTTP 410 (Gone) also.
+        // 根据 RFC 8216 第 6.2.6 节，服务器应对已替换且不再可用的提示部分请求返回 HTTP 404（未找到）。
+        // 我们在测试流中也看到过 HTTP 410（已消失）的情况。
         return Loader.RETRY;
       }
     }
@@ -1022,12 +973,12 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     return loadErrorAction;
   }
 
-  // Called by the consuming thread, but only when there is no loading thread.
+  // 由消费线程调用，但仅在无加载线程时调用。
 
   /**
-   * Performs initialization for a media chunk that's about to start loading.
+   * 为即将开始加载的媒体块执行初始化。
    *
-   * @param chunk The media chunk that's about to start loading.
+   * @param chunk 即将开始加载的媒体块。
    */
   private void initMediaChunkLoad(HlsMediaChunk chunk) {
     sourceChunk = chunk;
@@ -1074,15 +1025,15 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         primarySampleQueueType, firstRemovedChunk.startTimeUs, endTimeUs);
   }
 
-  // ExtractorOutput implementation. Called by the loading thread.
+  // ExtractorOutput 实现。由加载线程调用。
 
   @Override
   public TrackOutput track(int id, int type) {
     @Nullable TrackOutput trackOutput = null;
     if (MAPPABLE_TYPES.contains(type)) {
-      // Track types in MAPPABLE_TYPES are handled manually to ignore IDs.
+      // MAPPABLE_TYPES 中的轨道类型会被手动处理以忽略 ID。
       trackOutput = getMappedTrackOutput(id, type);
-    } else /* non-mappable type track */ {
+    } else /* 不可映射类型的轨道 */ {
       for (int i = 0; i < sampleQueues.length; i++) {
         if (sampleQueueTrackIds[i] == id) {
           trackOutput = sampleQueues[i];
@@ -1095,7 +1046,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       if (tracksEnded) {
         return createDiscardingTrackOutput(id, type);
       } else {
-        // The relevant SampleQueue hasn't been constructed yet - so construct it.
+        // 相关的 SampleQueue 尚未构建——因此构建它。
         trackOutput = createSampleQueue(id, type);
       }
     }
@@ -1110,19 +1061,15 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Returns the {@link TrackOutput} for the provided {@code type} and {@code id}, or null if none
-   * has been created yet.
+   * 返回与提供的 {@code type} 和 {@code id} 对应的 {@link TrackOutput}，如果尚未创建，则返回 null。
    *
-   * <p>If a {@link SampleQueue} for {@code type} has been created and is mapped, but it has a
-   * different ID, then return a {@link DiscardingTrackOutput} that does nothing.
+   * <p>如果已为 {@code type} 创建了一个 {@link SampleQueue} 并且已映射，但其 ID 不同，则返回一个不执行任何操作的 {@link DiscardingTrackOutput}。
    *
-   * <p>If a {@link SampleQueue} for {@code type} has been created but is not mapped, then map it to
-   * this {@code id} and return it. This situation can happen after a call to {@link
-   * #onNewExtractor}.
+   * <p>如果已为 {@code type} 创建了一个 {@link SampleQueue} 但未映射，则将其映射到此 {@code id} 并返回。这种情况可能在调用 {@link #onNewExtractor} 后发生。
    *
-   * @param id The ID of the track.
-   * @param type The type of the track, must be one of {@link #MAPPABLE_TYPES}.
-   * @return The mapped {@link TrackOutput}, or null if it's not been created yet.
+   * @param id 轨道的 ID。
+   * @param type 轨道的类型，必须是 {@link #MAPPABLE_TYPES} 之一。
+   * @return 映射的 {@link TrackOutput}，如果尚未创建，则返回 null。
    */
   @Nullable
   private TrackOutput getMappedTrackOutput(int id, int type) {
@@ -1181,26 +1128,24 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   public void seekMap(SeekMap seekMap) {
     // Do nothing.
   }
-
-  // UpstreamFormatChangedListener implementation. Called by the loading thread.
+  // UpstreamFormatChangedListener 实现。由加载线程调用。
 
   @Override
   public void onUpstreamFormatChanged(Format format) {
     handler.post(maybeFinishPrepareRunnable);
   }
 
-  // Called by the loading thread.
+  // 由加载线程调用。
 
-  /** Called when an {@link HlsMediaChunk} starts extracting media with a new {@link Extractor}. */
+  /** 当 {@link HlsMediaChunk} 开始使用新的 {@link Extractor} 提取媒体时调用。 */
   public void onNewExtractor() {
     sampleQueueMappingDoneByType.clear();
   }
 
   /**
-   * Sets an offset that will be added to the timestamps (and sub-sample timestamps) of samples that
-   * are subsequently loaded by this wrapper.
+   * 设置一个偏移量，该偏移量将添加到随后由该包装器加载的样本的时间戳（以及子样本时间戳）中。
    *
-   * @param sampleOffsetUs The timestamp offset in microseconds.
+   * @param sampleOffsetUs 时间戳偏移量（以微秒为单位）。
    */
   public void setSampleOffsetUs(long sampleOffsetUs) {
     if (this.sampleOffsetUs != sampleOffsetUs) {
@@ -1212,28 +1157,18 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Sets default {@link DrmInitData} for samples that are subsequently loaded by this wrapper.
+   * 为随后由该包装器加载的样本设置默认的 {@link DrmInitData}。
    *
-   * <p>This method should be called prior to loading each {@link HlsMediaChunk}. The {@link
-   * DrmInitData} passed should be that of an EXT-X-KEY tag that applies to the chunk, or {@code
-   * null} otherwise.
+   * <p>应在加载每个 {@link HlsMediaChunk} 之前调用此方法。传递的 {@link DrmInitData} 应为适用于该块的 EXT-X-KEY 标签的 {@link DrmInitData}，否则为 {@code null}。
    *
-   * <p>The final {@link DrmInitData} for subsequently queued samples is determined as followed:
+   * <p>随后排队的样本的最终 {@link DrmInitData} 按以下方式确定：
    *
    * <ol>
-   *   <li>It is initially set to {@code drmInitData}, unless {@code drmInitData} is null in which
-   *       case it's set to {@link Format#drmInitData} of the upstream {@link Format}.
-   *   <li>If the initial {@link DrmInitData} is non-null and {@link #overridingDrmInitData}
-   *       contains an entry whose key matches the {@link DrmInitData#schemeType}, then the sample's
-   *       {@link DrmInitData} is overridden to be this entry's value.
+   *   <li>它最初设置为 {@code drmInitData}，除非 {@code drmInitData} 为 null，在这种情况下，它设置为上游 {@link Format} 的 {@link Format#drmInitData}。
+   *   <li>如果初始 {@link DrmInitData} 非空且 {@link #overridingDrmInitData} 包含一个键与 {@link DrmInitData#schemeType} 匹配的条目，则样本的 {@link DrmInitData} 将被覆盖为该条目的值。
    * </ol>
    *
-   * <p>
-   *
-   * @param drmInitData The default {@link DrmInitData} for samples that are subsequently queued. If
-   *     non-null then it takes precedence over {@link Format#drmInitData} of the upstream {@link
-   *     Format}, but will still be overridden by a matching override in {@link
-   *     #overridingDrmInitData}.
+   * @param drmInitData 随后排队的样本的默认 {@link DrmInitData}。如果非空，则优先于上游 {@link Format} 的 {@link Format#drmInitData}，但仍会被 {@link #overridingDrmInitData} 中的匹配覆盖。
    */
   public void setDrmInitData(@Nullable DrmInitData drmInitData) {
     if (!Util.areEqual(this.drmInitData, drmInitData)) {
@@ -1271,9 +1206,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   private boolean canDiscardUpstreamMediaChunksFromIndex(int mediaChunkIndex) {
     for (int i = mediaChunkIndex; i < mediaChunks.size(); i++) {
       if (mediaChunks.get(i).shouldSpliceIn) {
-        // Discarding not possible because a spliced-in chunk potentially removed sample metadata
-        // from the previous chunks.
-        // TODO: Keep sample metadata to allow restoring these chunks [internal b/159904763].
+        // 无法丢弃，因为拼接的块可能移除了先前块的样本元数据。
+        // TODO: 保留样本元数据以允许恢复这些块 [内部 b/159904763]。
         return false;
       }
     }
@@ -1281,9 +1215,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     for (int i = 0; i < sampleQueues.length; i++) {
       int discardFromIndex = mediaChunk.getFirstSampleIndex(/* sampleQueueIndex= */ i);
       if (sampleQueues[i].getReadIndex() > discardFromIndex) {
-        // Discarding not possible because we already read from the chunk.
-        // TODO: Sparse tracks (e.g. ID3) may prevent discarding in almost all cases because it
-        // means that most chunks have been read from already. See [internal b/161126666].
+        // 无法丢弃，因为我们已经从该块读取了数据。
+        // TODO: 稀疏轨道（例如 ID3）可能几乎在所有情况下都阻止丢弃，因为这意味着大多数块已经被读取过。参见 [内部 b/161126666]。
         return false;
       }
     }
@@ -1322,11 +1255,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       }
     }
     if (trackGroups != null) {
-      // The track groups were created with multivariant playlist information. They only need to be
-      // mapped to a sample queue.
+      // 轨道组是使用多变量播放列表信息创建的。它们只需要映射到样本队列。
       mapSampleQueuesToMatchTrackGroups();
     } else {
-      // Tracks are created using media segment information.
+      // 使用媒体段信息创建轨道。
       buildTracksFromSampleStreams();
       setIsPrepared();
       callback.onPrepared();
@@ -1355,39 +1287,28 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Builds tracks that are exposed by this {@link HlsSampleStreamWrapper} instance, as well as
-   * internal data-structures required for operation.
+   * 构建由此 {@link HlsSampleStreamWrapper} 实例暴露的轨道，以及操作所需的内部数据结构。
    *
-   * <p>Tracks in HLS are complicated. A HLS multivariant playlist contains a number of "variants".
-   * Each variant stream typically contains muxed video, audio and (possibly) additional audio,
-   * metadata and caption tracks. We wish to allow the user to select between an adaptive track that
-   * spans all variants, as well as each individual variant. If multiple audio tracks are present
-   * within each variant then we wish to allow the user to select between those also.
+   * <p>HLS 中的轨道较为复杂。HLS 多变量播放列表包含多个“变体”。
+   * 每个变体流通常包含多路复用的视频、音频以及（可能）额外的音频、元数据和字幕轨道。
+   * 我们希望允许用户选择跨越所有变体的自适应轨道，以及每个单独的变体。
+   * 如果每个变体中存在多个音频轨道，我们还希望允许用户在这些轨道之间进行选择。
    *
-   * <p>To do this, tracks are constructed as follows. The {@link HlsChunkSource} exposes (N+1)
-   * tracks, where N is the number of variants defined in the HLS multivariant playlist. These
-   * consist of one adaptive track defined to span all variants and a track for each individual
-   * variant. The adaptive track is initially selected. The extractor is then prepared to discover
-   * the tracks inside of each variant stream. The two sets of tracks are then combined by this
-   * method to create a third set, which is the set exposed by this {@link HlsSampleStreamWrapper}:
+   * <p>为此，轨道按如下方式构建。{@link HlsChunkSource} 暴露 (N+1) 个轨道，其中 N 是 HLS 多变量播放列表中定义的变体数量。这些轨道包括一个跨越所有变体的自适应轨道，以及每个单独变体的轨道。自适应轨道最初被选中。然后准备提取器以发现每个变体流中的轨道。然后通过此方法将两组轨道组合起来，创建第三组轨道，即由此 {@link HlsSampleStreamWrapper} 暴露的轨道集：
    *
    * <ul>
-   *   <li>The extractor tracks are inspected to infer a "primary" track type. If a video track is
-   *       present then it is always the primary type. If not, audio is the primary type if present.
-   *       Else text is the primary type if present. Else there is no primary type.
-   *   <li>If there is exactly one extractor track of the primary type, it's expanded into (N+1)
-   *       exposed tracks, all of which correspond to the primary extractor track and each of which
-   *       corresponds to a different chunk source track. Selecting one of these tracks has the
-   *       effect of switching the selected track on the chunk source.
-   *   <li>All other extractor tracks are exposed directly. Selecting one of these tracks has the
-   *       effect of selecting an extractor track, leaving the selected track on the chunk source
-   *       unchanged.
+   *   <li>检查提取器轨道以推断“主”轨道类型。如果存在视频轨道，则它始终是主类型。
+   *   如果没有，则音频是主类型（如果存在）。
+   *   否则，文本是主类型（如果存在）。否则，没有主类型。
+   *   <li>如果主类型恰好有一个提取器轨道，则将其扩展为 (N+1) 个暴露的轨道，所有这些轨道都对应于主提取器轨道，并且每个轨道对应于不同的块源轨道。
+   *   选择其中一个轨道会切换块源上的选中轨道。
+   *   <li>所有其他提取器轨道直接暴露。
+   *   选择其中一个轨道会选中提取器轨道，而块源上的选中轨道保持不变。
    * </ul>
    */
   @EnsuresNonNull({"trackGroups", "optionalTrackGroups", "trackGroupToSampleQueueIndex"})
   private void buildTracksFromSampleStreams() {
-    // Iterate through the extractor tracks to discover the "primary" track type, and the index
-    // of the single track of this type.
+    // 遍历提取器轨道以发现“主”轨道类型，以及该类型的单一轨道的索引。
     int primaryExtractorTrackType = C.TRACK_TYPE_NONE;
     int primaryExtractorTrackIndex = C.INDEX_UNSET;
     int extractorTrackCount = sampleQueues.length;
@@ -1410,8 +1331,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         primaryExtractorTrackIndex = i;
       } else if (trackType == primaryExtractorTrackType
           && primaryExtractorTrackIndex != C.INDEX_UNSET) {
-        // We have multiple tracks of the primary type. We only want an index if there only exists a
-        // single track of the primary type, so unset the index again.
+        // 我们有多个主类型的轨道。只有在主类型只有一个轨道时我们才需要索引，因此再次取消索引。
         primaryExtractorTrackIndex = C.INDEX_UNSET;
       }
     }
@@ -1419,14 +1339,14 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     TrackGroup chunkSourceTrackGroup = chunkSource.getTrackGroup();
     int chunkSourceTrackCount = chunkSourceTrackGroup.length;
 
-    // Instantiate the necessary internal data-structures.
+    // 实例化必要的内部数据结构。
     primaryTrackGroupIndex = C.INDEX_UNSET;
     trackGroupToSampleQueueIndex = new int[extractorTrackCount];
     for (int i = 0; i < extractorTrackCount; i++) {
       trackGroupToSampleQueueIndex[i] = i;
     }
 
-    // Construct the set of exposed track groups.
+    // 构建暴露的轨道组集合。
     TrackGroup[] trackGroups = new TrackGroup[extractorTrackCount];
     for (int i = 0; i < extractorTrackCount; i++) {
       Format sampleFormat = Assertions.checkStateNotNull(sampleQueues[i].getUpstreamFormat());
@@ -1437,9 +1357,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
           if (primaryExtractorTrackType == C.TRACK_TYPE_AUDIO && muxedAudioFormat != null) {
             playlistFormat = playlistFormat.withManifestFormatInfo(muxedAudioFormat);
           }
-          // If there's only a single variant (chunkSourceTrackCount == 1) then we can safely
-          // retain all fields from sampleFormat. Else we need to use deriveFormat to retain only
-          // the fields that will be the same for all variants.
+          // 如果只有一个变体（chunkSourceTrackCount == 1），则可以安全地保留 sampleFormat 的所有字段。否则，我们需要使用 deriveFormat 仅保留所有变体相同的字段。
           formats[j] =
               chunkSourceTrackCount == 1
                   ? sampleFormat.withManifestFormatInfo(playlistFormat)
@@ -1451,7 +1369,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         @Nullable
         Format playlistFormat =
             primaryExtractorTrackType == C.TRACK_TYPE_VIDEO
-                    && MimeTypes.isAudio(sampleFormat.sampleMimeType)
+                && MimeTypes.isAudio(sampleFormat.sampleMimeType)
                 ? muxedAudioFormat
                 : null;
         String muxedTrackGroupId = uid + ":muxed:" + (i < primaryExtractorTrackIndex ? i : i - 1);
@@ -1488,12 +1406,11 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Attempts to seek to the specified position within the sample queues.
+   * 尝试在样本队列中跳转到指定位置。
    *
-   * @param positionUs The seek position in microseconds.
-   * @param chunk The chunk to seek to, or null to seek to the exact position. {@code positionUs} is
-   *     ignored if this is non-null.
-   * @return Whether the in-buffer seek was successful.
+   * @param positionUs 跳转位置（以微秒为单位）。
+   * @param chunk 要跳转到的块，如果为 null，则跳转到精确位置。如果此参数非空，则忽略 {@code positionUs}。
+   * @return 缓冲区内的跳转是否成功。
    */
   private boolean seekInsideBufferUs(long positionUs, @Nullable HlsMediaChunk chunk) {
     int sampleQueueCount = sampleQueues.length;
@@ -1505,10 +1422,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       } else {
         seekInsideQueue = sampleQueue.seekTo(positionUs, /* allowTimeBeyondBuffer= */ false);
       }
-      // If we have AV tracks then an in-queue seek is successful if the seek into every AV queue
-      // is successful. We ignore whether seeks within non-AV queues are successful in this case, as
-      // they may be sparse or poorly interleaved. If we only have non-AV tracks then a seek is
-      // successful only if the seek into every queue succeeds.
+      // 如果有音视频轨道，则当每个音视频队列中的跳转都成功时，队列内的跳转才成功。在这种情况下，我们忽略非音视频队列中的跳转是否成功，因为它们可能是稀疏的或交错不良的。如果只有非音视频轨道，则只有当每个队列中的跳转都成功时，跳转才成功。
       if (!seekInsideQueue && (sampleQueueIsAudioVideoFlags[i] || !haveAudioVideoSampleQueues)) {
         return false;
       }
@@ -1529,11 +1443,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Scores a track type. Where multiple tracks are muxed into a container, the track with the
-   * highest score is the primary track.
+   * 对轨道类型进行评分。当多个轨道复用到同一个容器中时，得分最高的轨道是主轨道。
    *
-   * @param trackType The track type.
-   * @return The score.
+   * @param trackType 轨道类型。
+   * @return 评分。
    */
   private static int getTrackTypeScore(int trackType) {
     switch (trackType) {
@@ -1549,19 +1462,14 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Derives a track sample format from the corresponding format in the multivariant playlist, and a
-   * sample format that may have been obtained from a chunk belonging to a different track in the
-   * same track group.
+   * 从多变量播放列表中的相应格式以及可能从属于同一轨道组中不同轨道的块中获取的样本格式，推导出轨道样本格式。
    *
-   * <p>Note: Since the sample format may have been obtained from a chunk belonging to a different
-   * track, it should not be used as a source for data that may vary between tracks.
+   * <p>注意：由于样本格式可能从属于同一轨道组中不同轨道的块中获取，因此不应将其用作可能在轨道之间变化的数据源。
    *
-   * @param playlistFormat The format information obtained from the multivariant playlist.
-   * @param sampleFormat The format information obtained from samples within a chunk. The chunk may
-   *     belong to a different track in the same track group.
-   * @param propagateBitrates Whether the bitrates from the playlist format should be included in
-   *     the derived format.
-   * @return The derived track format.
+   * @param playlistFormat 从多变量播放列表中获取的格式信息。
+   * @param sampleFormat 从块中的样本获取的格式信息。该块可能属于同一轨道组中的不同轨道。
+   * @param propagateBitrates 是否将播放列表格式中的比特率包含在推导的格式中。
+   * @return 推导的轨道格式。
    */
   private static Format deriveFormat(
       @Nullable Format playlistFormat, Format sampleFormat, boolean propagateBitrates) {
@@ -1573,20 +1481,16 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     @Nullable String sampleMimeType;
     @Nullable String codecs;
     if (Util.getCodecCountOfType(playlistFormat.codecs, sampleTrackType) == 1) {
-      // We can unequivocally map this track to a playlist variant because only one codec string
-      // matches this track's type.
+      // 我们可以明确地将此轨道映射到播放列表变体，因为只有一个编解码器字符串与此轨道的类型匹配。
       codecs = Util.getCodecsOfType(playlistFormat.codecs, sampleTrackType);
       sampleMimeType = MimeTypes.getMediaMimeType(codecs);
     } else {
-      // The variant assigns more than one codec string to this track. We choose whichever codec
-      // string matches the sample MIME type. This can happen when different languages are encoded
-      // using different codecs.
+      // 该变体为此轨道分配了多个编解码器字符串。我们选择与样本 MIME 类型匹配的编解码器字符串。当不同语言使用不同编解码器编码时，可能会发生这种情况。
       codecs =
           MimeTypes.getCodecsCorrespondingToMimeType(
               playlistFormat.codecs, sampleFormat.sampleMimeType);
       sampleMimeType = sampleFormat.sampleMimeType;
     }
-
     Format.Builder formatBuilder =
         sampleFormat
             .buildUpon()
@@ -1652,30 +1556,25 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * A {@link SampleQueue} that adds HLS specific functionality:
+   * 一个 {@link SampleQueue}，增加了 HLS 特定的功能：
    *
    * <ul>
-   *   <li>Detection of spurious discontinuities, by checking sample timestamps against the range
-   *       expected for the currently loading chunk.
-   *   <li>Stripping private timestamp metadata from {@link Format Formats} to avoid an excessive
-   *       number of format switches in the queue.
-   *   <li>Overriding of {@link Format#drmInitData}.
+   *   <li>通过检查样本时间戳与当前加载块的预期范围，检测虚假的不连续性。
+   *   <li>从 {@link Format Formats} 中剥离私有时间戳元数据，以避免队列中过多的格式切换。
+   *   <li>覆盖 {@link Format#drmInitData}。
    * </ul>
    */
   private static final class HlsSampleQueue extends SampleQueue {
 
-    // TODO: Uncomment this to reject samples with unexpected timestamps. See
-    // https://github.com/google/ExoPlayer/issues/7030.
+    // TODO: 取消注释以拒绝具有意外时间戳的样本。参见
+    // https://github.com/google/ExoPlayer/issues/7030。
     // /**
-    //  * The fraction of the chunk duration from which timestamps of samples loaded from within a
-    //  * chunk are allowed to deviate from the expected range.
+    //  * 块持续时间的分数，从该分数开始，从块内加载的样本的时间戳允许偏离预期范围。
     //  */
     // private static final double MAX_TIMESTAMP_DEVIATION_FRACTION = 0.5;
     //
     // /**
-    //  * A minimum tolerance for sample timestamps in microseconds. Timestamps of samples loaded
-    //  * from within a chunk are always allowed to deviate up to this amount from the expected
-    //  * range.
+    //  * 样本时间戳的最小容差（以微秒为单位）。从块内加载的样本的时间戳始终允许偏离预期范围最多此值。
     //  */
     // private static final long MIN_TIMESTAMP_DEVIATION_TOLERANCE_US = 4_000_000;
     //
@@ -1699,8 +1598,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     public void setSourceChunk(HlsMediaChunk chunk) {
       sourceId(chunk.uid);
 
-      // TODO: Uncomment this to reject samples with unexpected timestamps. See
-      // https://github.com/google/ExoPlayer/issues/7030.
+      // TODO: 取消注释以拒绝具有意外时间戳的样本。参见
+      // https://github.com/google/ExoPlayer/issues/7030。
       // sourceChunk = chunk;
       // sourceChunkLastSampleTimeUs = C.TIME_UNSET;
       // long allowedDeviationUs =
@@ -1710,7 +1609,6 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       // minAllowedSampleTimeUs = chunk.startTimeUs - allowedDeviationUs;
       // maxAllowedSampleTimeUs = chunk.endTimeUs + allowedDeviationUs;
     }
-
     public void setDrmInitData(@Nullable DrmInitData drmInitData) {
       this.drmInitData = drmInitData;
       invalidateUpstreamFormatAdjustment();
@@ -1736,7 +1634,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     }
 
     /**
-     * Strips the private timestamp frame from metadata, if present. See:
+     * 如果存在，则从元数据中剥离私有时间戳帧。参见：
      * https://github.com/google/ExoPlayer/issues/5063
      */
     @Nullable
@@ -1779,8 +1677,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         int size,
         int offset,
         @Nullable CryptoData cryptoData) {
-      // TODO: Uncomment this to reject samples with unexpected timestamps. See
-      // https://github.com/google/ExoPlayer/issues/7030.
+      // TODO: 取消注释以拒绝具有意外时间戳的样本。参见
+      // https://github.com/google/ExoPlayer/issues/7030。
       // if (timeUs < minAllowedSampleTimeUs || timeUs > maxAllowedSampleTimeUs) {
       //   Util.sneakyThrow(
       //       new UnexpectedSampleTimestampException(
@@ -1867,23 +1765,23 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       ParsableByteArray sample = getSampleAndTrimBuffer(size, offset);
       ParsableByteArray sampleForDelegate;
       if (Util.areEqual(format.sampleMimeType, delegateFormat.sampleMimeType)) {
-        // Incoming format matches delegate track's format, so pass straight through.
+        // 传入的格式与委托轨道的格式匹配，因此直接传递。
         sampleForDelegate = sample;
       } else if (MimeTypes.APPLICATION_EMSG.equals(format.sampleMimeType)) {
-        // Incoming sample is EMSG, and delegate track is not expecting EMSG, so try unwrapping.
+        // 传入的样本是 EMSG，而委托轨道不期望 EMSG，因此尝试解包。
         EventMessage emsg = emsgDecoder.decode(sample);
         if (!emsgContainsExpectedWrappedFormat(emsg)) {
           Log.w(
               TAG,
               String.format(
-                  "Ignoring EMSG. Expected it to contain wrapped %s but actual wrapped format: %s",
+                  "忽略 EMSG。期望它包含包装的 %s，但实际包装的格式为：%s",
                   delegateFormat.sampleMimeType, emsg.getWrappedMetadataFormat()));
           return;
         }
         sampleForDelegate =
             new ParsableByteArray(Assertions.checkNotNull(emsg.getWrappedMetadataBytes()));
       } else {
-        Log.w(TAG, "Ignoring sample for unsupported format: " + format.sampleMimeType);
+        Log.w(TAG, "忽略不支持格式的样本：" + format.sampleMimeType);
         return;
       }
 
@@ -1906,12 +1804,11 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
     }
 
     /**
-     * Removes a complete sample from the {@link #buffer} field & reshuffles the tail data skipped
-     * by {@code offset} to the head of the array.
+     * 从 {@link #buffer} 字段中移除一个完整的样本，并将 {@code offset} 跳过的尾部数据重新排列到数组的头部。
      *
-     * @param size see {@code size} param of {@link #sampleMetadata}.
-     * @param offset see {@code offset} param of {@link #sampleMetadata}.
-     * @return A {@link ParsableByteArray} containing the sample removed from {@link #buffer}.
+     * @param size 参见 {@link #sampleMetadata} 的 {@code size} 参数。
+     * @param offset 参见 {@link #sampleMetadata} 的 {@code offset} 参数。
+     * @return 一个包含从 {@link #buffer} 中移除的样本的 {@link ParsableByteArray}。
      */
     private ParsableByteArray getSampleAndTrimBuffer(int size, int offset) {
       int sampleEnd = bufferPosition - offset;

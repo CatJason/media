@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.playlist;
 
 import static java.lang.Math.max;
@@ -41,43 +26,40 @@ import java.util.Map;
 @UnstableApi
 public final class HlsMediaPlaylist extends HlsPlaylist {
 
-  /** Server control attributes. */
+  /** 服务器控制属性。 */
   public static final class ServerControl {
 
     /**
-     * The skip boundary for delta updates in microseconds, or {@link C#TIME_UNSET} if delta updates
-     * are not supported.
+     * 增量更新的跳过边界（以微秒为单位），如果不支持增量更新，则为 {@link C#TIME_UNSET}。
      */
     public final long skipUntilUs;
 
     /**
-     * Whether the playlist can produce delta updates that skip older #EXT-X-DATERANGE tags in
-     * addition to media segments.
+     * 播放列表是否可以生成跳过较旧的 #EXT-X-DATERANGE 标签以及媒体片段的增量更新。
      */
     public final boolean canSkipDateRanges;
 
     /**
-     * The server-recommended live offset in microseconds, or {@link C#TIME_UNSET} if none defined.
+     * 服务器推荐的直播偏移量（以微秒为单位），如果未定义则为 {@link C#TIME_UNSET}。
      */
     public final long holdBackUs;
 
     /**
-     * The server-recommended live offset in microseconds in low-latency mode, or {@link
-     * C#TIME_UNSET} if none defined.
+     * 低延迟模式下服务器推荐的直播偏移量（以微秒为单位），如果未定义则为 {@link C#TIME_UNSET}。
      */
     public final long partHoldBackUs;
 
-    /** Whether the server supports blocking playlist reload. */
+    /** 服务器是否支持阻塞播放列表重新加载。 */
     public final boolean canBlockReload;
 
     /**
-     * Creates a new instance.
+     * 创建一个新实例。
      *
-     * @param skipUntilUs See {@link #skipUntilUs}.
-     * @param canSkipDateRanges See {@link #canSkipDateRanges}.
-     * @param holdBackUs See {@link #holdBackUs}.
-     * @param partHoldBackUs See {@link #partHoldBackUs}.
-     * @param canBlockReload See {@link #canBlockReload}.
+     * @param skipUntilUs 参见 {@link #skipUntilUs}。
+     * @param canSkipDateRanges 参见 {@link #canSkipDateRanges}。
+     * @param holdBackUs 参见 {@link #holdBackUs}。
+     * @param partHoldBackUs 参见 {@link #partHoldBackUs}。
+     * @param canBlockReload 参见 {@link #canBlockReload}。
      */
     public ServerControl(
         long skipUntilUs,
@@ -92,25 +74,24 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
       this.canBlockReload = canBlockReload;
     }
   }
-
-  /** Media segment reference. */
+  /** 媒体片段引用。 */
   @SuppressWarnings("ComparableType")
   public static final class Segment extends SegmentBase {
 
-    /** The human readable title of the segment. */
+    /** 片段的人类可读标题。 */
     public final String title;
 
-    /** The parts belonging to this segment. */
+    /** 属于此片段的部分。 */
     public final List<Part> parts;
 
     /**
-     * Creates an instance to be used as init segment.
+     * 创建一个用作初始化片段的实例。
      *
-     * @param uri See {@link #url}.
-     * @param byteRangeOffset See {@link #byteRangeOffset}.
-     * @param byteRangeLength See {@link #byteRangeLength}.
-     * @param fullSegmentEncryptionKeyUri See {@link #fullSegmentEncryptionKeyUri}.
-     * @param encryptionIV See {@link #encryptionIV}.
+     * @param uri 参见 {@link #url}。
+     * @param byteRangeOffset 参见 {@link #byteRangeOffset}。
+     * @param byteRangeLength 参见 {@link #byteRangeLength}。
+     * @param fullSegmentEncryptionKeyUri 参见 {@link #fullSegmentEncryptionKeyUri}。
+     * @param encryptionIV 参见 {@link #encryptionIV}。
      */
     public Segment(
         String uri,
@@ -135,21 +116,21 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
     }
 
     /**
-     * Creates an instance.
+     * 创建一个实例。
      *
-     * @param url See {@link #url}.
-     * @param initializationSegment See {@link #initializationSegment}.
-     * @param title See {@link #title}.
-     * @param durationUs See {@link #durationUs}.
-     * @param relativeDiscontinuitySequence See {@link #relativeDiscontinuitySequence}.
-     * @param relativeStartTimeUs See {@link #relativeStartTimeUs}.
-     * @param drmInitData See {@link #drmInitData}.
-     * @param fullSegmentEncryptionKeyUri See {@link #fullSegmentEncryptionKeyUri}.
-     * @param encryptionIV See {@link #encryptionIV}.
-     * @param byteRangeOffset See {@link #byteRangeOffset}.
-     * @param byteRangeLength See {@link #byteRangeLength}.
-     * @param hasGapTag See {@link #hasGapTag}.
-     * @param parts See {@link #parts}.
+     * @param url 参见 {@link #url}。
+     * @param initializationSegment 参见 {@link #initializationSegment}。
+     * @param title 参见 {@link #title}。
+     * @param durationUs 参见 {@link #durationUs}。
+     * @param relativeDiscontinuitySequence 参见 {@link #relativeDiscontinuitySequence}。
+     * @param relativeStartTimeUs 参见 {@link #relativeStartTimeUs}。
+     * @param drmInitData 参见 {@link #drmInitData}。
+     * @param fullSegmentEncryptionKeyUri 参见 {@link #fullSegmentEncryptionKeyUri}。
+     * @param encryptionIV 参见 {@link #encryptionIV}。
+     * @param byteRangeOffset 参见 {@link #byteRangeOffset}。
+     * @param byteRangeLength 参见 {@link #byteRangeLength}。
+     * @param hasGapTag 参见 {@link #hasGapTag}。
+     * @param parts 参见 {@link #parts}。
      */
     public Segment(
         String url,
@@ -206,31 +187,31 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
     }
   }
 
-  /** A media part. */
+  /** 媒体部分。 */
   public static final class Part extends SegmentBase {
 
-    /** Whether the part is independent. */
+    /** 该部分是否独立。 */
     public final boolean isIndependent;
 
-    /** Whether the part is a preloading part. */
+    /** 该部分是否为预加载部分。 */
     public final boolean isPreload;
 
     /**
-     * Creates an instance.
+     * 创建一个实例。
      *
-     * @param url See {@link #url}.
-     * @param initializationSegment See {@link #initializationSegment}.
-     * @param durationUs See {@link #durationUs}.
-     * @param relativeDiscontinuitySequence See {@link #relativeDiscontinuitySequence}.
-     * @param relativeStartTimeUs See {@link #relativeStartTimeUs}.
-     * @param drmInitData See {@link #drmInitData}.
-     * @param fullSegmentEncryptionKeyUri See {@link #fullSegmentEncryptionKeyUri}.
-     * @param encryptionIV See {@link #encryptionIV}.
-     * @param byteRangeOffset See {@link #byteRangeOffset}.
-     * @param byteRangeLength See {@link #byteRangeLength}.
-     * @param hasGapTag See {@link #hasGapTag}.
-     * @param isIndependent See {@link #isIndependent}.
-     * @param isPreload See {@link #isPreload}.
+     * @param url 参见 {@link #url}。
+     * @param initializationSegment 参见 {@link #initializationSegment}。
+     * @param durationUs 参见 {@link #durationUs}。
+     * @param relativeDiscontinuitySequence 参见 {@link #relativeDiscontinuitySequence}。
+     * @param relativeStartTimeUs 参见 {@link #relativeStartTimeUs}。
+     * @param drmInitData 参见 {@link #drmInitData}。
+     * @param fullSegmentEncryptionKeyUri 参见 {@link #fullSegmentEncryptionKeyUri}。
+     * @param encryptionIV 参见 {@link #encryptionIV}。
+     * @param byteRangeOffset 参见 {@link #byteRangeOffset}。
+     * @param byteRangeLength 参见 {@link #byteRangeLength}。
+     * @param hasGapTag 参见 {@link #hasGapTag}。
+     * @param isIndependent 参见 {@link #isIndependent}。
+     * @param isPreload 参见 {@link #isPreload}。
      */
     public Part(
         String url,
@@ -279,61 +260,52 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
           isPreload);
     }
   }
-
-  /** The base for a {@link Segment} or a {@link Part} required for playback. */
+  /** {@link Segment} 或 {@link Part} 的基类，用于播放所需。 */
   @SuppressWarnings("ComparableType")
   public static class SegmentBase implements Comparable<Long> {
-    /** The url of the segment. */
+    /** 片段的 URL。 */
     public final String url;
 
     /**
-     * The media initialization section for this segment, as defined by #EXT-X-MAP. May be null if
-     * the media playlist does not define a media initialization section for this segment. The same
-     * instance is used for all segments that share an EXT-X-MAP tag.
+     * 该片段的媒体初始化部分，由 #EXT-X-MAP 定义。如果媒体播放列表未为该片段定义媒体初始化部分，则可能为 null。所有共享 EXT-X-MAP 标签的片段使用相同的实例。
      */
     @Nullable public final Segment initializationSegment;
 
-    /** The duration of the segment in microseconds, as defined by #EXTINF or #EXT-X-PART. */
+    /** 片段的持续时间（以微秒为单位），由 #EXTINF 或 #EXT-X-PART 定义。 */
     public final long durationUs;
 
-    /** The number of #EXT-X-DISCONTINUITY tags in the playlist before the segment. */
+    /** 播放列表中片段之前的 #EXT-X-DISCONTINUITY 标签数量。 */
     public final int relativeDiscontinuitySequence;
 
-    /** The start time of the segment in microseconds, relative to the start of the playlist. */
+    /** 片段的开始时间（以微秒为单位），相对于播放列表的开始时间。 */
     public final long relativeStartTimeUs;
 
     /**
-     * DRM initialization data for sample decryption, or null if the segment does not use CDM-DRM
-     * protection.
+     * 用于样本解密的 DRM 初始化数据，如果片段不使用 CDM-DRM 保护，则为 null。
      */
     @Nullable public final DrmInitData drmInitData;
 
     /**
-     * The encryption identity key uri as defined by #EXT-X-KEY, or null if the segment does not use
-     * full segment encryption with identity key.
+     * 由 #EXT-X-KEY 定义的加密身份密钥 URI，如果片段不使用完整片段加密与身份密钥，则为 null。
      */
     @Nullable public final String fullSegmentEncryptionKeyUri;
 
     /**
-     * The encryption initialization vector as defined by #EXT-X-KEY, or null if the segment is not
-     * encrypted.
+     * 由 #EXT-X-KEY 定义的加密初始化向量，如果片段未加密，则为 null。
      */
     @Nullable public final String encryptionIV;
 
     /**
-     * The segment's byte range offset, as defined by #EXT-X-BYTERANGE, #EXT-X-PART or
-     * #EXT-X-PRELOAD-HINT.
+     * 片段的字节范围偏移量，由 #EXT-X-BYTERANGE、#EXT-X-PART 或 #EXT-X-PRELOAD-HINT 定义。
      */
     public final long byteRangeOffset;
 
     /**
-     * The segment's byte range length, as defined by #EXT-X-BYTERANGE, #EXT-X-PART or
-     * #EXT-X-PRELOAD-HINT, or {@link C#LENGTH_UNSET} if no byte range is specified or the byte
-     * range is open-ended.
+     * 片段的字节范围长度，由 #EXT-X-BYTERANGE、#EXT-X-PART 或 #EXT-X-PRELOAD-HINT 定义，如果未指定字节范围或字节范围为开放式，则为 {@link C#LENGTH_UNSET}。
      */
     public final long byteRangeLength;
 
-    /** Whether the segment is marked as a gap. */
+    /** 该片段是否被标记为间隙。 */
     public final boolean hasGapTag;
 
     private SegmentBase(
@@ -368,31 +340,29 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
           : (this.relativeStartTimeUs < relativeStartTimeUs ? -1 : 0);
     }
   }
-
   /**
-   * A rendition report for an alternative rendition defined in another media playlist.
+   * 针对在其他媒体播放列表中定义的替代渲染的渲染报告。
    *
-   * <p>See RFC 8216, section 4.4.5.1.4.
+   * <p>参见 RFC 8216，第 4.4.5.1.4 节。
    */
   public static final class RenditionReport {
-    /** The URI of the media playlist of the reported rendition. */
+    /** 报告的渲染的媒体播放列表的 URI。 */
     public final Uri playlistUri;
 
-    /** The last media sequence that is in the playlist of the reported rendition. */
+    /** 报告的渲染的播放列表中的最后一个媒体序列。 */
     public final long lastMediaSequence;
 
     /**
-     * The last part index that is in the playlist of the reported rendition, or {@link
-     * C#INDEX_UNSET} if the rendition does not contain partial segments.
+     * 报告的渲染的播放列表中的最后一个部分索引，如果渲染不包含部分片段，则为 {@link C#INDEX_UNSET}。
      */
     public final int lastPartIndex;
 
     /**
-     * Creates a new instance.
+     * 创建一个新实例。
      *
-     * @param playlistUri See {@link #playlistUri}.
-     * @param lastMediaSequence See {@link #lastMediaSequence}.
-     * @param lastPartIndex See {@link #lastPartIndex}.
+     * @param playlistUri 参见 {@link #playlistUri}。
+     * @param lastMediaSequence 参见 {@link #lastMediaSequence}。
+     * @param lastPartIndex 参见 {@link #lastPartIndex}。
      */
     public RenditionReport(Uri playlistUri, long lastMediaSequence, int lastPartIndex) {
       this.playlistUri = playlistUri;
@@ -402,124 +372,112 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
   }
 
   /**
-   * Type of the playlist, as defined by #EXT-X-PLAYLIST-TYPE. One of {@link
-   * #PLAYLIST_TYPE_UNKNOWN}, {@link #PLAYLIST_TYPE_VOD} or {@link #PLAYLIST_TYPE_EVENT}.
+   * 播放列表的类型，由 #EXT-X-PLAYLIST-TYPE 定义。可以是 {@link #PLAYLIST_TYPE_UNKNOWN}、{@link #PLAYLIST_TYPE_VOD} 或 {@link #PLAYLIST_TYPE_EVENT} 之一。
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({PLAYLIST_TYPE_UNKNOWN, PLAYLIST_TYPE_VOD, PLAYLIST_TYPE_EVENT})
   public @interface PlaylistType {}
-
   public static final int PLAYLIST_TYPE_UNKNOWN = 0;
   public static final int PLAYLIST_TYPE_VOD = 1;
   public static final int PLAYLIST_TYPE_EVENT = 2;
-
-  /** The type of the playlist. See {@link PlaylistType}. */
+  /** 播放列表的类型。参见 {@link PlaylistType}。 */
   public final @PlaylistType int playlistType;
 
   /**
-   * The start offset in microseconds from the beginning of the playlist, as defined by
-   * #EXT-X-START, or {@link C#TIME_UNSET} if undefined. The value is guaranteed to be between 0 and
-   * {@link #durationUs}, inclusive.
+   * 从播放列表开始处的起始偏移量（以微秒为单位），由 #EXT-X-START 定义，如果未定义则为 {@link C#TIME_UNSET}。该值保证在 0 到 {@link #durationUs} 之间（含）。
    */
   public final long startOffsetUs;
 
   /**
-   * Whether the {@link #startOffsetUs} was explicitly defined by #EXT-X-START as a positive value
-   * or zero.
+   * {@link #startOffsetUs} 是否由 #EXT-X-START 明确定义为正值或零。
    */
   public final boolean hasPositiveStartOffset;
 
-  /** Whether the start position should be precise, as defined by #EXT-X-START. */
+  /** 起始位置是否应精确，由 #EXT-X-START 定义。 */
   public final boolean preciseStart;
 
   /**
-   * If {@link #hasProgramDateTime} is true, contains the datetime as microseconds since epoch.
-   * Otherwise, contains the aggregated duration of removed segments up to this snapshot of the
-   * playlist.
+   * 如果 {@link #hasProgramDateTime} 为 true，则包含自纪元以来的微秒数表示的日期时间。否则，包含到此播放列表快照为止已移除片段的累计持续时间。
    */
   public final long startTimeUs;
 
-  /** Whether the playlist contains the #EXT-X-DISCONTINUITY-SEQUENCE tag. */
+  /** 播放列表是否包含 #EXT-X-DISCONTINUITY-SEQUENCE 标签。 */
   public final boolean hasDiscontinuitySequence;
 
   /**
-   * The discontinuity sequence number of the first media segment in the playlist, as defined by
-   * #EXT-X-DISCONTINUITY-SEQUENCE.
+   * 播放列表中第一个媒体片段的不连续序列号，由 #EXT-X-DISCONTINUITY-SEQUENCE 定义。
    */
   public final int discontinuitySequence;
 
   /**
-   * The media sequence number of the first media segment in the playlist, as defined by
-   * #EXT-X-MEDIA-SEQUENCE.
+   * 播放列表中第一个媒体片段的媒体序列号，由 #EXT-X-MEDIA-SEQUENCE 定义。
    */
   public final long mediaSequence;
 
-  /** The compatibility version, as defined by #EXT-X-VERSION. */
+  /** 兼容版本，由 #EXT-X-VERSION 定义。 */
   public final int version;
 
-  /** The target duration in microseconds, as defined by #EXT-X-TARGETDURATION. */
+  /** 目标持续时间（以微秒为单位），由 #EXT-X-TARGETDURATION 定义。 */
   public final long targetDurationUs;
 
   /**
-   * The target duration for segment parts, as defined by #EXT-X-PART-INF, or {@link C#TIME_UNSET}
-   * if undefined.
+   * 片段部分的目标持续时间，由 #EXT-X-PART-INF 定义，如果未定义则为 {@link C#TIME_UNSET}。
    */
   public final long partTargetDurationUs;
 
-  /** Whether the playlist contains the #EXT-X-ENDLIST tag. */
+  /** 播放列表是否包含 #EXT-X-ENDLIST 标签。 */
   public final boolean hasEndTag;
 
-  /** Whether the playlist contains a #EXT-X-PROGRAM-DATE-TIME tag. */
+  /** 播放列表是否包含 #EXT-X-PROGRAM-DATE-TIME 标签。 */
   public final boolean hasProgramDateTime;
 
   /**
-   * Contains the CDM protection schemes used by segments in this playlist. Does not contain any key
-   * acquisition data. Null if none of the segments in the playlist is CDM-encrypted.
+   * 包含此播放列表中片段使用的 CDM 保护方案。不包含任何密钥获取数据。如果播放列表中没有片段是 CDM 加密的，则为 null。
    */
   @Nullable public final DrmInitData protectionSchemes;
 
-  /** The list of segments in the playlist. */
+  /** 播放列表中的片段列表。 */
   public final List<Segment> segments;
 
   /**
-   * The list of parts at the end of the playlist for which the segment is not in the playlist yet.
+   * 播放列表末尾的部分列表，其片段尚未在播放列表中。
    */
   public final List<Part> trailingParts;
 
-  /** The rendition reports of alternative rendition playlists. */
+  /** 替代渲染播放列表的渲染报告。 */
   public final Map<Uri, RenditionReport> renditionReports;
 
-  /** The total duration of the playlist in microseconds. */
+  /** 播放列表的总持续时间（以微秒为单位）。 */
   public final long durationUs;
 
-  /** The attributes of the #EXT-X-SERVER-CONTROL header. */
+  /** #EXT-X-SERVER-CONTROL 标头的属性。 */
   public final ServerControl serverControl;
 
   /**
-   * Constructs an instance.
+   * 构造一个实例。
    *
-   * @param playlistType See {@link #playlistType}.
-   * @param baseUri See {@link #baseUri}.
-   * @param tags See {@link #tags}.
-   * @param startOffsetUs See {@link #startOffsetUs}.
-   * @param preciseStart See {@link #preciseStart}.
-   * @param startTimeUs See {@link #startTimeUs}.
-   * @param hasDiscontinuitySequence See {@link #hasDiscontinuitySequence}.
-   * @param discontinuitySequence See {@link #discontinuitySequence}.
-   * @param mediaSequence See {@link #mediaSequence}.
-   * @param version See {@link #version}.
-   * @param targetDurationUs See {@link #targetDurationUs}.
-   * @param partTargetDurationUs See {@link #partTargetDurationUs}.
-   * @param hasIndependentSegments See {@link #hasIndependentSegments}.
-   * @param hasEndTag See {@link #hasEndTag}.
-   * @param hasProgramDateTime See {@link #hasProgramDateTime}.
-   * @param protectionSchemes See {@link #protectionSchemes}.
-   * @param segments See {@link #segments}.
-   * @param trailingParts See {@link #trailingParts}.
-   * @param serverControl See {@link #serverControl}
-   * @param renditionReports See {@link #renditionReports}.
+   * @param playlistType 参见 {@link #playlistType}。
+   * @param baseUri 参见 {@link #baseUri}。
+   * @param tags 参见 {@link #tags}。
+   * @param startOffsetUs 参见 {@link #startOffsetUs}。
+   * @param preciseStart 参见 {@link #preciseStart}。
+   * @param startTimeUs 参见 {@link #startTimeUs}。
+   * @param hasDiscontinuitySequence 参见 {@link #hasDiscontinuitySequence}。
+   * @param discontinuitySequence 参见 {@link #discontinuitySequence}。
+   * @param mediaSequence 参见 {@link #mediaSequence}。
+   * @param version 参见 {@link #version}。
+   * @param targetDurationUs 参见 {@link #targetDurationUs}。
+   * @param partTargetDurationUs 参见 {@link #partTargetDurationUs}。
+   * @param hasIndependentSegments 参见 {@link #hasIndependentSegments}。
+   * @param hasEndTag 参见 {@link #hasEndTag}。
+   * @param hasProgramDateTime 参见 {@link #hasProgramDateTime}。
+   * @param protectionSchemes 参见 {@link #protectionSchemes}。
+   * @param segments 参见 {@link #segments}。
+   * @param trailingParts 参见 {@link #trailingParts}。
+   * @param serverControl 参见 {@link #serverControl}。
+   * @param renditionReports 参见 {@link #renditionReports}。
    */
   public HlsMediaPlaylist(
       @PlaylistType int playlistType,
@@ -567,9 +525,8 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
     } else {
       durationUs = 0;
     }
-    // From RFC 8216, section 4.4.2.2: If startOffsetUs is negative, it indicates the offset from
-    // the end of the playlist. If the absolute value exceeds the duration of the playlist, it
-    // indicates the beginning (if negative) or the end (if positive) of the playlist.
+    // 根据 RFC 8216 第 4.4.2.2 节：如果 startOffsetUs 为负值，则表示从播放列表末尾的偏移量。
+    // 如果其绝对值超过播放列表的持续时间，则表示播放列表的开始（如果为负）或结束（如果为正）。
     this.startOffsetUs =
         startOffsetUs == C.TIME_UNSET
             ? C.TIME_UNSET
@@ -586,10 +543,10 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
   }
 
   /**
-   * Returns whether this playlist is newer than {@code other}.
+   * 返回此播放列表是否比 {@code other} 更新。
    *
-   * @param other The playlist to compare.
-   * @return Whether this playlist is newer than {@code other}.
+   * @param other 要比较的播放列表。
+   * @return 此播放列表是否比 {@code other} 更新。
    */
   public boolean isNewerThan(@Nullable HlsMediaPlaylist other) {
     if (other == null || mediaSequence > other.mediaSequence) {
@@ -609,19 +566,17 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
         || (partCount == otherPartCount && hasEndTag && !other.hasEndTag);
   }
 
-  /** Returns the result of adding the duration of the playlist to its start time. */
+  /** 返回播放列表的持续时间与其开始时间相加的结果。 */
   public long getEndTimeUs() {
     return startTimeUs + durationUs;
   }
 
   /**
-   * Returns a playlist identical to this one except for the start time, the discontinuity sequence
-   * and {@code hasDiscontinuitySequence} values. The first two are set to the specified values,
-   * {@code hasDiscontinuitySequence} is set to true.
+   * 返回与此播放列表相同的播放列表，但起始时间、不连续序列和 {@code hasDiscontinuitySequence} 值除外。前两个值设置为指定值，{@code hasDiscontinuitySequence} 设置为 true。
    *
-   * @param startTimeUs The start time for the returned playlist.
-   * @param discontinuitySequence The discontinuity sequence for the returned playlist.
-   * @return An identical playlist including the provided discontinuity and timing information.
+   * @param startTimeUs 返回的播放列表的起始时间。
+   * @param discontinuitySequence 返回的播放列表的不连续序列。
+   * @return 包含提供的不连续和时序信息的相同播放列表。
    */
   public HlsMediaPlaylist copyWith(long startTimeUs, int discontinuitySequence) {
     return new HlsMediaPlaylist(
@@ -648,8 +603,7 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
   }
 
   /**
-   * Returns a playlist identical to this one except that an end tag is added. If an end tag is
-   * already present then the playlist will return itself.
+   * 返回与此播放列表相同的播放列表，但添加了一个结束标签。如果已经存在结束标签，则返回播放列表本身。
    */
   public HlsMediaPlaylist copyWithEndTag() {
     if (this.hasEndTag) {

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import static androidx.media3.datasource.DataSpec.FLAG_MIGHT_NOT_USE_FULL_NETWORK_SPEED;
@@ -55,32 +40,26 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 /* package */ final class HlsMediaChunk extends MediaChunk {
 
   /**
-   * Creates a new instance.
+   * 创建一个新实例。
    *
-   * @param extractorFactory A {@link HlsExtractorFactory} from which the {@link
-   *     HlsMediaChunkExtractor} is obtained.
-   * @param dataSource The source from which the data should be loaded.
-   * @param format The chunk format.
-   * @param startOfPlaylistInPeriodUs The position of the playlist in the period in microseconds.
-   * @param mediaPlaylist The media playlist from which this chunk was obtained.
-   * @param segmentBaseHolder The segment holder.
-   * @param playlistUrl The url of the playlist from which this chunk was obtained.
-   * @param muxedCaptionFormats List of muxed caption {@link Format}s. Null if no closed caption
-   *     information is available in the multivariant playlist.
-   * @param trackSelectionReason See {@link #trackSelectionReason}.
-   * @param trackSelectionData See {@link #trackSelectionData}.
-   * @param isPrimaryTimestampSource True if the chunk can initialize the timestamp adjuster.
-   * @param timestampAdjusterProvider The provider from which to obtain the {@link
-   *     TimestampAdjuster}.
-   * @param timestampAdjusterInitializationTimeoutMs The timeout for the loading thread to wait for
-   *     the timestamp adjuster to initialize, in milliseconds. A timeout of zero is interpreted as
-   *     an infinite timeout.
-   * @param previousChunk The {@link HlsMediaChunk} that preceded this one. May be null.
-   * @param mediaSegmentKey The media segment decryption key, if fully encrypted. Null otherwise.
-   * @param initSegmentKey The initialization segment decryption key, if fully encrypted. Null
-   *     otherwise.
-   * @param shouldSpliceIn Whether samples for this chunk should be spliced into existing samples.
-   * @param cmcdDataFactory The {@link CmcdData.Factory} for generating {@link CmcdData}.
+   * @param extractorFactory 用于获取 {@link HlsMediaChunkExtractor} 的 {@link HlsExtractorFactory}。
+   * @param dataSource 数据应从中加载的源。
+   * @param format 块的格式。
+   * @param startOfPlaylistInPeriodUs 播放列表在周期中的位置，以微秒为单位。
+   * @param mediaPlaylist 从中获取此块的媒体播放列表。
+   * @param segmentBaseHolder 片段持有者。
+   * @param playlistUrl 从中获取此块的播放列表的 URL。
+   * @param muxedCaptionFormats 多路复用的字幕 {@link Format} 列表。如果多变量播放列表中没有隐藏字幕信息，则为 null。
+   * @param trackSelectionReason 参见 {@link #trackSelectionReason}。
+   * @param trackSelectionData 参见 {@link #trackSelectionData}。
+   * @param isPrimaryTimestampSource 如果块可以初始化时间戳调整器，则为 true。
+   * @param timestampAdjusterProvider 用于获取 {@link TimestampAdjuster} 的提供者。
+   * @param timestampAdjusterInitializationTimeoutMs 加载线程等待时间戳调整器初始化的超时时间（以毫秒为单位）。零超时表示无限超时。
+   * @param previousChunk 在此块之前的 {@link HlsMediaChunk}。可能为 null。
+   * @param mediaSegmentKey 媒体片段的解密密钥（如果完全加密）。否则为 null。
+   * @param initSegmentKey 初始化片段的解密密钥（如果完全加密）。否则为 null。
+   * @param shouldSpliceIn 此块的样本是否应拼接到现有样本中。
+   * @param cmcdDataFactory 用于生成 {@link CmcdData} 的 {@link CmcdData.Factory}。
    */
   public static HlsMediaChunk createInstance(
       HlsExtractorFactory extractorFactory,
@@ -218,16 +197,14 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Returns whether samples of a new HLS media chunk should be spliced into existing samples.
+   * 返回是否应将新 HLS 媒体块的样本拼接到现有样本中。
    *
-   * @param previousChunk The previous existing media chunk, or null if the new chunk is the first
-   *     in the queue.
-   * @param playlistUrl The URL of the playlist from which the new chunk will be obtained.
-   * @param mediaPlaylist The {@link HlsMediaPlaylist} containing the new chunk.
-   * @param segmentBaseHolder The {@link HlsChunkSource.SegmentBaseHolder} with information about
-   *     the new chunk.
-   * @param startOfPlaylistInPeriodUs The start time of the playlist in the period, in microseconds.
-   * @return Whether samples of the new chunk should be spliced into existing samples.
+   * @param previousChunk 之前存在的媒体块，如果新块是队列中的第一个块，则为 null。
+   * @param playlistUrl 从中获取新块的播放列表的 URL。
+   * @param mediaPlaylist 包含新块的 {@link HlsMediaPlaylist}。
+   * @param segmentBaseHolder 包含新块信息的 {@link HlsChunkSource.SegmentBaseHolder}。
+   * @param startOfPlaylistInPeriodUs 播放列表在周期中的开始时间，以微秒为单位。
+   * @return 是否应将新块的样本拼接到现有样本中。
    */
   public static boolean shouldSpliceIn(
       @Nullable HlsMediaChunk previousChunk,
@@ -236,16 +213,14 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       HlsChunkSource.SegmentBaseHolder segmentBaseHolder,
       long startOfPlaylistInPeriodUs) {
     if (previousChunk == null) {
-      // First chunk doesn't require splicing.
+      // 第一个块不需要拼接。
       return false;
     }
     if (playlistUrl.equals(previousChunk.playlistUrl) && previousChunk.loadCompleted) {
-      // Continuing with the next chunk in the same playlist after fully loading the previous chunk
-      // (i.e. the load wasn't cancelled or failed) is always possible.
+      // 在完全加载上一个块后（即加载未被取消或失败），继续在同一播放列表中加载下一个块总是可行的。
       return false;
     }
-    // Changing playlists or continuing after a chunk cancellation/failure requires independent,
-    // non-overlapping segments to avoid the splice.
+    // 更换播放列表或在块取消/失败后继续，需要独立且不重叠的片段以避免拼接。
     long segmentStartTimeInPeriodUs =
         startOfPlaylistInPeriodUs + segmentBaseHolder.segmentBase.relativeStartTimeUs;
     return !isIndependent(segmentBaseHolder, mediaPlaylist)
@@ -257,19 +232,19 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
   private static final AtomicInteger uidSource = new AtomicInteger();
 
-  /** A unique identifier for the chunk. */
+  /** 块的唯一标识符。 */
   public final int uid;
 
-  /** The discontinuity sequence number of the chunk. */
+  /** 块的间断序列号。 */
   public final int discontinuitySequenceNumber;
 
-  /** The url of the playlist from which this chunk was obtained. */
+  /** 从中获取此块的播放列表的 URL。 */
   public final Uri playlistUrl;
 
-  /** Whether samples for this chunk should be spliced into existing samples. */
+  /** 是否应将此块的样本拼接到现有样本中。 */
   public final boolean shouldSpliceIn;
 
-  /** The part index or {@link C#INDEX_UNSET} if the chunk is a full segment */
+  /** 部分索引，如果块是完整片段则为 {@link C#INDEX_UNSET} */
   public final int partIndex;
 
   @Nullable private final DataSource initDataSource;
@@ -291,8 +266,8 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
   private @MonotonicNonNull HlsMediaChunkExtractor extractor;
   private @MonotonicNonNull HlsSampleStreamWrapper output;
-  // nextLoadPosition refers to the init segment if initDataLoadRequired is true.
-  // Otherwise, nextLoadPosition refers to the media segment.
+  // 如果 initDataLoadRequired 为 true，则 nextLoadPosition 指向初始化片段。
+  // 否则，nextLoadPosition 指向媒体片段。
   private int nextLoadPosition;
   private boolean initDataLoadRequired;
   private volatile boolean loadCanceled;
@@ -365,11 +340,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Initializes the chunk for loading.
+   * 初始化块以进行加载。
    *
-   * @param output The {@link HlsSampleStreamWrapper} that will receive the loaded samples.
-   * @param sampleQueueWriteIndices The current write indices in the existing sample queues of the
-   *     output.
+   * @param output 将接收加载样本的 {@link HlsSampleStreamWrapper}。
+   * @param sampleQueueWriteIndices 输出中现有样本队列的当前写入索引。
    */
   public void init(HlsSampleStreamWrapper output, ImmutableList<Integer> sampleQueueWriteIndices) {
     this.output = output;
@@ -377,23 +351,23 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Returns the first sample index of this chunk in the specified sample queue in the output.
+   * 返回此块在输出中指定样本队列中的第一个样本索引。
    *
-   * <p>Must not be used if {@link #shouldSpliceIn} is true.
+   * <p>如果 {@link #shouldSpliceIn} 为 true，则不得使用此方法。
    *
-   * @param sampleQueueIndex The index of the sample queue in the output.
-   * @return The first sample index of this chunk in the specified sample queue.
+   * @param sampleQueueIndex 输出中样本队列的索引。
+   * @return 此块在指定样本队列中的第一个样本索引。
    */
   public int getFirstSampleIndex(int sampleQueueIndex) {
     Assertions.checkState(!shouldSpliceIn);
     if (sampleQueueIndex >= sampleQueueFirstSampleIndices.size()) {
-      // The sample queue was created by this chunk or a later chunk.
+      // 该样本队列由此块或后续块创建。
       return 0;
     }
     return sampleQueueFirstSampleIndices.get(sampleQueueIndex);
   }
 
-  /** Prevents the extractor from being reused by a following media chunk. */
+  /** 阻止提取器被后续的媒体块重用。 */
   public void invalidateExtractor() {
     extractorInvalidated = true;
   }
@@ -428,16 +402,14 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Whether the chunk is a published chunk as opposed to a preload hint that may change when the
-   * playlist updates.
+   * 块是否是已发布的块，而不是可能在播放列表更新时更改的预加载提示。
    */
   public boolean isPublished() {
     return isPublished;
   }
 
   /**
-   * Sets the publish flag of the media chunk to indicate that it is not based on a part that is a
-   * preload hint in the playlist.
+   * 设置媒体块的发布标志，以指示它不是基于播放列表中作为预加载提示的部分。
    */
   public void publish() {
     isPublished = true;
@@ -469,9 +441,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Attempts to feed the given {@code dataSpec} to {@code this.extractor}. Whenever the operation
-   * concludes (because of a thrown exception or because the operation finishes), the number of fed
-   * bytes is written to {@code nextLoadPosition}.
+   * 尝试将给定的 {@code dataSpec} 提供给 {@code this.extractor}。每当操作结束时（无论是由于抛出异常还是操作完成），已读取的字节数将被写入 {@code nextLoadPosition}。
    */
   @RequiresNonNull("output")
   private void feedDataToExtractor(
@@ -480,10 +450,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       boolean dataIsEncrypted,
       boolean initializeTimestampAdjuster)
       throws IOException {
-    // If we previously fed part of this chunk to the extractor, we need to skip it this time. For
-    // encrypted content we need to skip the data by reading it through the source, so as to ensure
-    // correct decryption of the remainder of the chunk. For clear content, we can request the
-    // remainder of the chunk directly.
+    // 如果我们之前已经将此块的一部分提供给提取器，这次需要跳过它。对于加密内容，我们需要通过源读取数据来跳过，以确保正确解密块的剩余部分。对于未加密内容，我们可以直接请求块的剩余部分。
     DataSpec loadDataSpec;
     boolean skipLoadedBytes;
     if (dataIsEncrypted) {
@@ -503,8 +470,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
         while (!loadCanceled && extractor.read(input)) {}
       } catch (EOFException e) {
         if ((trackFormat.roleFlags & C.ROLE_FLAG_TRICK_PLAY) != 0) {
-          // See onTruncatedSegmentParsed's javadoc for more info on why we are swallowing the EOF
-          // exception for trick play tracks.
+          // 有关为什么我们吞下 trick play 轨道的 EOF 异常的更多信息，请参阅 onTruncatedSegmentParsed 的文档。
           extractor.onTruncatedSegmentParsed();
         } else {
           throw e;
@@ -557,8 +523,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
                 ? timestampAdjuster.adjustTsTimestamp(id3Timestamp)
                 : startTimeUs);
       } else {
-        // In case the container format changes mid-stream to non-packed-audio, we need to reset
-        // the timestamp offset.
+        // 如果容器格式在流中中途更改为非打包音频，我们需要重置时间戳偏移量。
         output.setSampleOffsetUs(/* sampleOffsetUs= */ 0L);
       }
       output.onNewExtractor();
@@ -569,13 +534,11 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * Peek the presentation timestamp of the first sample in the chunk from an ID3 PRIV as defined in
-   * the HLS spec, version 20, Section 3.4. Returns {@link C#TIME_UNSET} if the frame is not found.
-   * This method only modifies the peek position.
+   * 从 HLS 规范第 20 版第 3.4 节定义的 ID3 PRIV 帧中提取块中第一个样本的呈现时间戳。如果未找到帧，则返回 {@link C#TIME_UNSET}。此方法仅修改提取位置。
    *
-   * @param input The {@link ExtractorInput} to obtain the PRIV frame from.
-   * @return The parsed, adjusted timestamp in microseconds
-   * @throws IOException If an error occurred peeking from the input.
+   * @param input 用于提取 PRIV 帧的 {@link ExtractorInput}。
+   * @return 解析并调整后的时间戳（以微秒为单位）。
+   * @throws IOException 如果从输入中提取时发生错误。
    */
   private long peekId3PrivTimestamp(ExtractorInput input) throws IOException {
     input.resetPeekPosition();
@@ -583,7 +546,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
       scratchId3Data.reset(Id3Decoder.ID3_HEADER_LENGTH);
       input.peekFully(scratchId3Data.getData(), 0, Id3Decoder.ID3_HEADER_LENGTH);
     } catch (EOFException e) {
-      // The input isn't long enough for there to be any ID3 data.
+      // 输入长度不足以包含任何 ID3 数据。
       return C.TIME_UNSET;
     }
     int id = scratchId3Data.readUnsignedInt24();
@@ -613,8 +576,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
               privFrame.privateData, 0, scratchId3Data.getData(), 0, 8 /* timestamp size */);
           scratchId3Data.setPosition(0);
           scratchId3Data.setLimit(8);
-          // The top 31 bits should be zeros, but explicitly zero them to wrap in the case that the
-          // streaming provider forgot. See: https://github.com/google/ExoPlayer/pull/3495.
+          // 最高 31 位应为零，但显式将其置零以处理流媒体提供商忘记处理的情况。参见：https://github.com/google/ExoPlayer/pull/3495。
           return scratchId3Data.readLong() & 0x1FFFFFFFFL;
         }
       }
@@ -645,10 +607,9 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   }
 
   /**
-   * If the segment is fully encrypted, returns an {@link Aes128DataSource} that wraps the original
-   * in order to decrypt the loaded data. Else returns the original.
+   * 如果片段完全加密，则返回一个包装原始数据源的 {@link Aes128DataSource} 以解密加载的数据。否则返回原始数据源。
    *
-   * <p>{@code fullSegmentEncryptionKey} & {@code encryptionIv} can either both be null, or neither.
+   * <p>{@code fullSegmentEncryptionKey} 和 {@code encryptionIv} 可以同时为 null，或者都不为 null。
    */
   private static DataSource buildDataSource(
       DataSource dataSource,

@@ -38,12 +38,9 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * A {@link DataSource} that decrypts data read from an upstream source, encrypted with AES-128 with
- * a 128-bit key and PKCS7 padding.
+ * 一个 {@link DataSource}，用于解密从上游源读取的数据，数据使用 AES-128 加密，密钥为 128 位，并使用 PKCS7 填充。
  *
- * <p>Note that this {@link DataSource} does not support being opened from arbitrary offsets. It is
- * designed specifically for reading whole files as defined in an HLS media playlist. For this
- * reason the implementation is private to the HLS package.
+ * <p>注意，此 {@link DataSource} 不支持从任意偏移量打开。它是专门为读取 HLS 媒体播放列表中定义的整个文件而设计的。因此，该实现是 HLS 包的私有实现。
  */
 /* package */ class Aes128DataSource implements DataSource {
 
@@ -54,9 +51,9 @@ import javax.crypto.spec.SecretKeySpec;
   @Nullable private CipherInputStream cipherInputStream;
 
   /**
-   * @param upstream The upstream {@link DataSource}.
-   * @param encryptionKey The encryption key.
-   * @param encryptionIv The encryption initialization vector.
+   * @param upstream 上游的 {@link DataSource}。
+   * @param encryptionKey 加密密钥。
+   * @param encryptionIv 加密初始化向量。
    */
   public Aes128DataSource(DataSource upstream, byte[] encryptionKey, byte[] encryptionIv) {
     this.upstream = upstream;

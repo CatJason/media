@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -76,16 +61,16 @@ public final class HlsMediaSource extends BaseMediaSource
   }
 
   /**
-   * The types of metadata that can be extracted from HLS streams.
+   * 可以从 HLS 流中提取的元数据类型。
    *
-   * <p>Allowed values:
+   * <p>允许的值：
    *
    * <ul>
    *   <li>{@link #METADATA_TYPE_ID3}
    *   <li>{@link #METADATA_TYPE_EMSG}
    * </ul>
    *
-   * <p>See {@link Factory#setMetadataType(int)}.
+   * <p>参见 {@link Factory#setMetadataType(int)}。
    */
   @Documented
   @Retention(SOURCE)
@@ -93,14 +78,14 @@ public final class HlsMediaSource extends BaseMediaSource
   @IntDef({METADATA_TYPE_ID3, METADATA_TYPE_EMSG})
   public @interface MetadataType {}
 
-  /** Type for ID3 metadata in HLS streams. */
+  /** HLS 流中 ID3 元数据的类型。 */
   public static final int METADATA_TYPE_ID3 = 1;
 
-  /** Type for EMSG metadata in HLS streams. */
+  /** HLS 流中 EMSG 元数据的类型。 */
   public static final int METADATA_TYPE_EMSG = 3;
 
-  /** Factory for {@link HlsMediaSource}s. */
-  @SuppressWarnings("deprecation") // Implement deprecated type for backwards compatibility.
+  /** {@link HlsMediaSource} 的工厂。 */
+  @SuppressWarnings("deprecation") // 实现已弃用的类型以保持向后兼容性。
   public static final class Factory implements MediaSourceFactory {
 
     private final HlsDataSourceFactory hlsDataSourceFactory;
@@ -122,9 +107,9 @@ public final class HlsMediaSource extends BaseMediaSource
     private long timestampAdjusterInitializationTimeoutMs;
 
     /**
-     * Creates a new factory for {@link HlsMediaSource}s.
+     * 创建一个新的 {@link HlsMediaSource} 工厂。
      *
-     * <p>The factory will use the following default components:
+     * <p>工厂将使用以下默认组件：
      *
      * <ul>
      *   <li>{@link DefaultDrmSessionManagerProvider}
@@ -135,18 +120,16 @@ public final class HlsMediaSource extends BaseMediaSource
      *   <li>{@link DefaultCompositeSequenceableLoaderFactory}
      * </ul>
      *
-     * @param dataSourceFactory A data source factory that will be wrapped by a {@link
-     *     DefaultHlsDataSourceFactory} to create {@link DataSource}s for manifests, segments and
-     *     keys.
+     * @param dataSourceFactory 数据源工厂，将由 {@link DefaultHlsDataSourceFactory} 包装以创建用于清单、片段和密钥的 {@link DataSource}。
      */
     public Factory(DataSource.Factory dataSourceFactory) {
       this(new DefaultHlsDataSourceFactory(dataSourceFactory));
     }
 
     /**
-     * Creates a new factory for {@link HlsMediaSource}s.
+     * 创建一个新的 {@link HlsMediaSource} 工厂。
      *
-     * <p>The factory will use the following default components:
+     * <p>工厂将使用以下默认组件：
      *
      * <ul>
      *   <li>{@link DefaultDrmSessionManagerProvider}
@@ -157,8 +140,7 @@ public final class HlsMediaSource extends BaseMediaSource
      *   <li>{@link DefaultCompositeSequenceableLoaderFactory}
      * </ul>
      *
-     * @param hlsDataSourceFactory An {@link HlsDataSourceFactory} for {@link DataSource}s for
-     *     manifests, segments and keys.
+     * @param hlsDataSourceFactory 用于清单、片段和密钥的 {@link DataSource} 的 {@link HlsDataSourceFactory}。
      */
     public Factory(HlsDataSourceFactory hlsDataSourceFactory) {
       this.hlsDataSourceFactory = checkNotNull(hlsDataSourceFactory);
@@ -174,16 +156,13 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
-     * Sets the factory for {@link Extractor}s for the segments. The default value is {@link
-     * DefaultHlsExtractorFactory}.
+     * 设置用于片段的 {@link Extractor} 的工厂。默认值为 {@link DefaultHlsExtractorFactory}。
      *
-     * <p>Any values passed to {@link #setSubtitleParserFactory} or {@link
-     * #experimentalParseSubtitlesDuringExtraction} will be forwarded to the provided {@link
-     * HlsExtractorFactory} instance during {@link #createMediaSource}.
+     * <p>在 {@link #createMediaSource} 期间，传递给 {@link #setSubtitleParserFactory} 或 {@link
+     * #experimentalParseSubtitlesDuringExtraction} 的任何值都将转发给提供的 {@link HlsExtractorFactory} 实例。
      *
-     * @param extractorFactory An {@link HlsExtractorFactory} for {@link Extractor}s for the
-     *     segments.
-     * @return This factory, for convenience.
+     * @param extractorFactory 用于片段的 {@link Extractor} 的 {@link HlsExtractorFactory}。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setExtractorFactory(@Nullable HlsExtractorFactory extractorFactory) {
@@ -197,9 +176,8 @@ public final class HlsMediaSource extends BaseMediaSource
       this.loadErrorHandlingPolicy =
           checkNotNull(
               loadErrorHandlingPolicy,
-              "MediaSource.Factory#setLoadErrorHandlingPolicy no longer handles null by"
-                  + " instantiating a new DefaultLoadErrorHandlingPolicy. Explicitly construct and"
-                  + " pass an instance in order to retain the old behavior.");
+              "MediaSource.Factory#setLoadErrorHandlingPolicy 不再通过实例化新的 DefaultLoadErrorHandlingPolicy 来处理 null。"
+                  + "显式构造并传递一个实例以保留旧行为。");
       return this;
     }
 
@@ -220,47 +198,42 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
-     * Sets the factory from which playlist parsers will be obtained.
+     * 设置从中获取播放列表解析器的工厂。
      *
-     * @param playlistParserFactory An {@link HlsPlaylistParserFactory}.
-     * @return This factory, for convenience.
+     * @param playlistParserFactory 一个 {@link HlsPlaylistParserFactory}。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setPlaylistParserFactory(HlsPlaylistParserFactory playlistParserFactory) {
       this.playlistParserFactory =
           checkNotNull(
               playlistParserFactory,
-              "HlsMediaSource.Factory#setPlaylistParserFactory no longer handles null by"
-                  + " instantiating a new DefaultHlsPlaylistParserFactory. Explicitly"
-                  + " construct and pass an instance in order to retain the old behavior.");
+              "HlsMediaSource.Factory#setPlaylistParserFactory 不再通过实例化新的 DefaultHlsPlaylistParserFactory 来处理 null。"
+                  + "显式构造并传递一个实例以保留旧行为。");
       return this;
     }
 
     /**
-     * Sets the {@link HlsPlaylistTracker} factory.
+     * 设置 {@link HlsPlaylistTracker} 工厂。
      *
-     * @param playlistTrackerFactory A factory for {@link HlsPlaylistTracker} instances.
-     * @return This factory, for convenience.
+     * @param playlistTrackerFactory 用于创建 {@link HlsPlaylistTracker} 实例的工厂。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setPlaylistTrackerFactory(HlsPlaylistTracker.Factory playlistTrackerFactory) {
       this.playlistTrackerFactory =
           checkNotNull(
               playlistTrackerFactory,
-              "HlsMediaSource.Factory#setPlaylistTrackerFactory no longer handles null by"
-                  + " defaulting to DefaultHlsPlaylistTracker.FACTORY. Explicitly"
-                  + " pass a reference to this instance in order to retain the old behavior.");
+              "HlsMediaSource.Factory#setPlaylistTrackerFactory 不再通过默认使用 DefaultHlsPlaylistTracker.FACTORY 来处理 null。"
+                  + "显式传递对此实例的引用以保留旧行为。");
       return this;
     }
 
     /**
-     * Sets the factory to create composite {@link SequenceableLoader}s for when this media source
-     * loads data from multiple streams (video, audio etc...).
+     * 设置用于创建复合 {@link SequenceableLoader} 的工厂，当此媒体源从多个流（视频、音频等）加载数据时使用。
      *
-     * @param compositeSequenceableLoaderFactory A factory to create composite {@link
-     *     SequenceableLoader}s for when this media source loads data from multiple streams (video,
-     *     audio etc...).
-     * @return This factory, for convenience.
+     * @param compositeSequenceableLoaderFactory 用于创建复合 {@link SequenceableLoader} 的工厂，当此媒体源从多个流（视频、音频等）加载数据时使用。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setCompositeSequenceableLoaderFactory(
@@ -268,19 +241,15 @@ public final class HlsMediaSource extends BaseMediaSource
       this.compositeSequenceableLoaderFactory =
           checkNotNull(
               compositeSequenceableLoaderFactory,
-              "HlsMediaSource.Factory#setCompositeSequenceableLoaderFactory no longer handles null"
-                  + " by instantiating a new DefaultCompositeSequenceableLoaderFactory. Explicitly"
-                  + " construct and pass an instance in order to retain the old behavior.");
+              "HlsMediaSource.Factory#setCompositeSequenceableLoaderFactory 不再通过实例化新的 DefaultCompositeSequenceableLoaderFactory 来处理 null。显式构造并传递一个实例以保留旧行为。");
       return this;
     }
 
     /**
-     * Sets whether chunkless preparation is allowed. If true, preparation without chunk downloads
-     * will be enabled for streams that provide sufficient information in their multivariant
-     * playlist.
+     * 设置是否允许无块准备。如果为 true，则对于在其多变量播放列表中提供足够信息的流，将启用无需下载块的准备。
      *
-     * @param allowChunklessPreparation Whether chunkless preparation is allowed.
-     * @return This factory, for convenience.
+     * @param allowChunklessPreparation 是否允许无块准备。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setAllowChunklessPreparation(boolean allowChunklessPreparation) {
@@ -289,23 +258,16 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
-     * Sets the type of metadata to extract from the HLS source (defaults to {@link
-     * #METADATA_TYPE_ID3}).
+     * 设置从 HLS 源中提取的元数据类型（默认为 {@link #METADATA_TYPE_ID3}）。
      *
-     * <p>HLS supports in-band ID3 in both TS and fMP4 streams, but in the fMP4 case the data is
-     * wrapped in an EMSG box [<a href="https://aomediacodec.github.io/av1-id3/">spec</a>].
+     * <p>HLS 支持在 TS 和 fMP4 流中嵌入 ID3 元数据，但在 fMP4 情况下，数据被包装在 EMSG 盒子中 [<a href="https://aomediacodec.github.io/av1-id3/">规范</a>]。
      *
-     * <p>If this is set to {@link #METADATA_TYPE_ID3} then raw ID3 metadata of will be extracted
-     * from TS sources. From fMP4 streams EMSGs containing metadata of this type (in the variant
-     * stream only) will be unwrapped to expose the inner data. All other in-band metadata will be
-     * dropped.
+     * <p>如果设置为 {@link #METADATA_TYPE_ID3}，则将从 TS 源中提取原始 ID3 元数据。对于 fMP4 流，包含此类元数据的 EMSG（仅在变体流中）将被解包以暴露内部数据。所有其他嵌入的元数据将被丢弃。
      *
-     * <p>If this is set to {@link #METADATA_TYPE_EMSG} then all EMSG data from the fMP4 variant
-     * stream will be extracted. No metadata will be extracted from TS streams, since they don't
-     * support EMSG.
+     * <p>如果设置为 {@link #METADATA_TYPE_EMSG}，则将从 fMP4 变体流中提取所有 EMSG 数据。TS 流不会提取任何元数据，因为它们不支持 EMSG。
      *
-     * @param metadataType The type of metadata to extract.
-     * @return This factory, for convenience.
+     * @param metadataType 要提取的元数据类型。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setMetadataType(@MetadataType int metadataType) {
@@ -314,13 +276,12 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
-     * Sets whether to use #EXT-X-SESSION-KEY tags provided in the multivariant playlist. If
-     * enabled, it's assumed that any single session key declared in the multivariant playlist can
-     * be used to obtain all of the keys required for playback. For media where this is not true,
-     * this option should not be enabled.
+     * 设置是否使用多变量播放列表中提供的 #EXT-X-SESSION-KEY 标签。
+     * 如果启用，则假定多变量播放列表中声明的任何单个会话密钥都可以用于获取播放所需的所有密钥
+     * 。对于不满足此条件的媒体，不应启用此选项。
      *
-     * @param useSessionKeys Whether to use #EXT-X-SESSION-KEY tags.
-     * @return This factory, for convenience.
+     * @param useSessionKeys 是否使用 #EXT-X-SESSION-KEY 标签。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setUseSessionKeys(boolean useSessionKeys) {
@@ -342,19 +303,16 @@ public final class HlsMediaSource extends BaseMediaSource
       this.drmSessionManagerProvider =
           checkNotNull(
               drmSessionManagerProvider,
-              "MediaSource.Factory#setDrmSessionManagerProvider no longer handles null by"
-                  + " instantiating a new DefaultDrmSessionManagerProvider. Explicitly construct"
-                  + " and pass an instance in order to retain the old behavior.");
+              "MediaSource.Factory#setDrmSessionManagerProvider 不再通过实例化新的 DefaultDrmSessionManagerProvider 来处理 null。"
+                  + "显式构造并传递一个实例以保留旧行为。");
       return this;
     }
 
     /**
-     * Sets the timeout for the loading thread to wait for the timestamp adjuster to initialize, in
-     * milliseconds.The default value is zero, which is interpreted as an infinite timeout.
+     * 设置加载线程等待时间戳调整器初始化的超时时间（以毫秒为单位）。默认值为零，表示无限超时。
      *
-     * @param timestampAdjusterInitializationTimeoutMs The timeout in milliseconds. A timeout of
-     *     zero is interpreted as an infinite timeout.
-     * @return This factory, for convenience.
+     * @param timestampAdjusterInitializationTimeoutMs 超时时间（以毫秒为单位）。零超时表示无限超时。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     public Factory setTimestampAdjusterInitializationTimeoutMs(
@@ -364,12 +322,10 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
-     * Sets the offset between {@link SystemClock#elapsedRealtime()} and the time since the Unix
-     * epoch. By default, is it set to {@link C#TIME_UNSET}.
+     * 设置 {@link SystemClock#elapsedRealtime()} 与 Unix 纪元以来的时间之间的偏移量。默认情况下，它设置为 {@link C#TIME_UNSET}。
      *
-     * @param elapsedRealTimeOffsetMs The offset between {@link SystemClock#elapsedRealtime()} and
-     *     the time since the Unix epoch, in milliseconds.
-     * @return This factory, for convenience.
+     * @param elapsedRealTimeOffsetMs {@link SystemClock#elapsedRealtime()} 与 Unix 纪元以来的时间之间的偏移量（以毫秒为单位）。
+     * @return 为了方便，返回此工厂。
      */
     @CanIgnoreReturnValue
     @VisibleForTesting
@@ -379,11 +335,11 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
-     * Returns a new {@link HlsMediaSource} using the current parameters.
+     * 使用当前参数返回一个新的 {@link HlsMediaSource}。
      *
-     * @param mediaItem The {@link MediaItem}.
-     * @return The new {@link HlsMediaSource}.
-     * @throws NullPointerException if {@link MediaItem#localConfiguration} is {@code null}.
+     * @param mediaItem {@link MediaItem}。
+     * @return 新的 {@link HlsMediaSource}。
+     * @throws NullPointerException 如果 {@link MediaItem#localConfiguration} 为 {@code null}。
      */
     @Override
     public HlsMediaSource createMediaSource(MediaItem mediaItem) {
@@ -560,20 +516,19 @@ public final class HlsMediaSource extends BaseMediaSource
   public void onPrimaryPlaylistRefreshed(HlsMediaPlaylist mediaPlaylist) {
     long windowStartTimeMs =
         mediaPlaylist.hasProgramDateTime ? Util.usToMs(mediaPlaylist.startTimeUs) : C.TIME_UNSET;
-    // For playlist types EVENT and VOD we know segments are never removed, so the presentation
-    // started at the same time as the window. Otherwise, we don't know the presentation start time.
+    // 对于 EVENT 和 VOD 类型的播放列表，我们知道片段永远不会被移除，因此演示的开始时间与窗口的开始时间相同。否则，我们不知道演示的开始时间。
     long presentationStartTimeMs =
         mediaPlaylist.playlistType == HlsMediaPlaylist.PLAYLIST_TYPE_EVENT
-                || mediaPlaylist.playlistType == HlsMediaPlaylist.PLAYLIST_TYPE_VOD
+            || mediaPlaylist.playlistType == HlsMediaPlaylist.PLAYLIST_TYPE_VOD
             ? windowStartTimeMs
             : C.TIME_UNSET;
-    // The multivariant playlist is non-null because the first playlist has been fetched by now.
+    // 多变量播放列表非空，因为此时第一个播放列表已经被获取。
     HlsManifest manifest =
         new HlsManifest(checkNotNull(playlistTracker.getMultivariantPlaylist()), mediaPlaylist);
     SinglePeriodTimeline timeline =
         playlistTracker.isLive()
             ? createTimelineForLive(
-                mediaPlaylist, presentationStartTimeMs, windowStartTimeMs, manifest)
+            mediaPlaylist, presentationStartTimeMs, windowStartTimeMs, manifest)
             : createTimelineForOnDemand(
                 mediaPlaylist, presentationStartTimeMs, windowStartTimeMs, manifest);
     refreshSourceInfo(timeline);
@@ -591,13 +546,13 @@ public final class HlsMediaSource extends BaseMediaSource
     long liveEdgeOffsetUs = getLiveEdgeOffsetUs(playlist);
     long targetLiveOffsetUs;
     if (liveConfiguration.targetOffsetMs != C.TIME_UNSET) {
-      // Media item has a defined target offset.
+      // 媒体项具有定义的目标偏移量。
       targetLiveOffsetUs = Util.msToUs(liveConfiguration.targetOffsetMs);
     } else {
-      // Decide target offset from playlist.
+      // 从播放列表决定目标偏移量。
       targetLiveOffsetUs = getTargetLiveOffsetUs(playlist, liveEdgeOffsetUs);
     }
-    // Ensure target live offset is within the live window and greater than the live edge offset.
+    // 确保目标实时偏移量在实时窗口内并且大于实时边缘偏移量。
     targetLiveOffsetUs =
         Util.constrainValue(
             targetLiveOffsetUs, liveEdgeOffsetUs, playlist.durationUs + liveEdgeOffsetUs);
@@ -707,20 +662,20 @@ public final class HlsMediaSource extends BaseMediaSource
   }
 
   /**
-   * Gets the target live offset, in microseconds, for a live playlist.
+   * 获取直播播放列表的目标实时偏移量（以微秒为单位）。
    *
-   * <p>The target offset is derived by checking the following in this order:
+   * <p>目标偏移量通过按以下顺序检查来推导：
    *
    * <ol>
-   *   <li>The playlist defines a start offset.
-   *   <li>The playlist defines a part hold back in server control and has part duration.
-   *   <li>The playlist defines a hold back in server control.
-   *   <li>Fallback to {@code 3 x target duration}.
+   *   <li>播放列表定义了起始偏移量。
+   *   <li>播放列表在服务器控制中定义了部分保持时间，并且具有部分持续时间。
+   *   <li>播放列表在服务器控制中定义了保持时间。
+   *   <li>回退到 {@code 3 x 目标持续时间}。
    * </ol>
    *
-   * @param playlist The playlist.
-   * @param liveEdgeOffsetUs The current live edge offset.
-   * @return The selected target live offset, in microseconds.
+   * @param playlist 播放列表。
+   * @param liveEdgeOffsetUs 当前实时边缘偏移量。
+   * @return 选择的目标实时偏移量（以微秒为单位）。
    */
   private static long getTargetLiveOffsetUs(HlsMediaPlaylist playlist, long liveEdgeOffsetUs) {
     HlsMediaPlaylist.ServerControl serverControl = playlist.serverControl;
@@ -729,12 +684,12 @@ public final class HlsMediaSource extends BaseMediaSource
       targetOffsetUs = playlist.durationUs - playlist.startOffsetUs;
     } else if (serverControl.partHoldBackUs != C.TIME_UNSET
         && playlist.partTargetDurationUs != C.TIME_UNSET) {
-      // Select part hold back only if the playlist has a part target duration.
+      // 只有在播放列表具有部分目标持续时间时，才选择部分保持时间。
       targetOffsetUs = serverControl.partHoldBackUs;
     } else if (serverControl.holdBackUs != C.TIME_UNSET) {
       targetOffsetUs = serverControl.holdBackUs;
     } else {
-      // Fallback, see RFC 8216, Section 4.4.3.8.
+      // 回退，参见 RFC 8216，第 4.4.3.8 节。
       targetOffsetUs = 3 * playlist.targetDurationUs;
     }
     return targetOffsetUs + liveEdgeOffsetUs;
@@ -756,8 +711,7 @@ public final class HlsMediaSource extends BaseMediaSource
   }
 
   /**
-   * Gets the segment that contains {@code positionUs}, or the last segment if the position is
-   * beyond the segments list.
+   * 获取包含 {@code positionUs} 的片段，如果位置超出片段列表，则返回最后一个片段。
    */
   private static HlsMediaPlaylist.Segment findClosestPrecedingSegment(
       List<HlsMediaPlaylist.Segment> segments, long positionUs) {

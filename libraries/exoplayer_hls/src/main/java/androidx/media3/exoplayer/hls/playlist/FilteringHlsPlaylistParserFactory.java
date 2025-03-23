@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.playlist;
 
 import androidx.annotation.Nullable;
@@ -23,8 +8,7 @@ import androidx.media3.exoplayer.upstream.ParsingLoadable;
 import java.util.List;
 
 /**
- * A {@link HlsPlaylistParserFactory} that includes only the streams identified by the given stream
- * keys.
+ * 一个 {@link HlsPlaylistParserFactory}，仅包含由给定流密钥标识的流。
  */
 @UnstableApi
 public final class FilteringHlsPlaylistParserFactory implements HlsPlaylistParserFactory {
@@ -33,9 +17,8 @@ public final class FilteringHlsPlaylistParserFactory implements HlsPlaylistParse
   private final List<StreamKey> streamKeys;
 
   /**
-   * @param hlsPlaylistParserFactory A factory for the parsers of the playlists which will be
-   *     filtered.
-   * @param streamKeys The stream keys. If null or empty then filtering will not occur.
+   * @param hlsPlaylistParserFactory 用于解析将被过滤的播放列表的解析器工厂。
+   * @param streamKeys 流密钥。如果为 null 或为空，则不进行过滤。
    */
   public FilteringHlsPlaylistParserFactory(
       HlsPlaylistParserFactory hlsPlaylistParserFactory, List<StreamKey> streamKeys) {

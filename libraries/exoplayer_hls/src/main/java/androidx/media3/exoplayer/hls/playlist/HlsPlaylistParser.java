@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls.playlist;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -65,11 +50,11 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
-/** HLS playlists parsing logic. */
+/** HLS 播放列表解析逻辑。 */
 @UnstableApi
 public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlaylist> {
 
-  /** Exception thrown when merging a delta update fails. */
+  /** 在合并增量更新失败时抛出的异常。 */
   public static final class DeltaUpdateException extends IOException {}
 
   private static final String LOG_TAG = "HlsPlaylistParser";
@@ -229,21 +214,17 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
   @Nullable private final HlsMediaPlaylist previousMediaPlaylist;
 
   /**
-   * Creates an instance where media playlists are parsed without inheriting attributes from a
-   * multivariant playlist.
+   * 创建一个实例，其中媒体播放列表的解析不会从多变量播放列表中继承属性。
    */
   public HlsPlaylistParser() {
     this(HlsMultivariantPlaylist.EMPTY, /* previousMediaPlaylist= */ null);
   }
 
   /**
-   * Creates an instance where parsed media playlists inherit attributes from the given multivariant
-   * playlist.
+   * 创建一个实例，其中解析的媒体播放列表从给定的多变量播放列表中继承属性。
    *
-   * @param multivariantPlaylist The multivariant playlist from which media playlists will inherit
-   *     attributes.
-   * @param previousMediaPlaylist The previous media playlist from which the new media playlist may
-   *     inherit skipped segments.
+   * @param multivariantPlaylist 媒体播放列表将从中继承属性的多变量播放列表。
+   * @param previousMediaPlaylist 新的媒体播放列表可能从中继承跳过的片段的先前媒体播放列表。
    */
   public HlsPlaylistParser(
       HlsMultivariantPlaylist multivariantPlaylist,
@@ -357,8 +338,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
       } else if (line.equals(TAG_INDEPENDENT_SEGMENTS)) {
         hasIndependentSegmentsTag = true;
       } else if (line.startsWith(TAG_MEDIA)) {
-        // Media tags are parsed at the end to include codec information from #EXT-X-STREAM-INF
-        // tags.
+        // 媒体标签在最后解析，以便包含来自 #EXT-X-STREAM-INF 标签的编解码器信息。
         mediaTags.add(line);
       } else if (line.startsWith(TAG_SESSION_KEY)) {
         String keyFormat =
@@ -449,7 +429,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
       }
     }
 
-    // TODO: Don't deduplicate variants by URL.
+    // TODO: 不要通过 URL 对变体进行去重。
     ArrayList<Variant> deduplicatedVariants = new ArrayList<>();
     HashSet<Uri> urlsInDeduplicatedVariants = new HashSet<>();
     for (int i = 0; i < variants.size(); i++) {
@@ -499,7 +479,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
                 .setFrameRate(variantFormat.frameRate);
           }
           if (uri == null) {
-            // TODO: Remove this case and add a Rendition with a null uri to videos.
+            // TODO: 移除此情况，并添加一个带有 null URI 的 Rendition 到 videos 中。
           } else {
             formatBuilder.setMetadata(metadata);
             videos.add(new Rendition(uri, formatBuilder.build(), groupId, name));
@@ -530,7 +510,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
             formatBuilder.setMetadata(metadata);
             audios.add(new Rendition(uri, formatBuilder.build(), groupId, name));
           } else if (variant != null) {
-            // TODO: Remove muxedAudioFormat and add a Rendition with a null uri to audios.
+            // TODO: 移除 muxedAudioFormat，并添加一个带有 null URI 的 Rendition 到 audios 中。
             muxedAudioFormat = formatBuilder.build();
           }
           break;
@@ -570,7 +550,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
               .setSampleMimeType(sampleMimeType)
               .setAccessibilityChannel(accessibilityChannel);
           muxedCaptionFormats.add(formatBuilder.build());
-          // TODO: Remove muxedCaptionFormats and add a Rendition with a null uri to closedCaptions.
+          // TODO: 移除 muxedCaptionFormats，并添加一个带有 null URI 的 Rendition 到 closedCaptions 中。
           break;
         default:
           // Do nothing.
@@ -756,7 +736,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
           if (value != null) {
             variableDefinitions.put(importName, value);
           } else {
-            // The multivariant playlist does not declare the imported variable. Ignore.
+            // 多变量播放列表未声明导入的变量。忽略。
           }
         } else {
           variableDefinitions.put(
@@ -772,15 +752,14 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
         int startIndex = (int) (mediaSequence - castNonNull(previousMediaPlaylist).mediaSequence);
         int endIndex = startIndex + skippedSegmentCount;
         if (startIndex < 0 || endIndex > previousMediaPlaylist.segments.size()) {
-          // Throw to force a reload if not all segments are available in the previous playlist.
+          // 如果之前的播放列表中并非所有片段都可用，则抛出异常以强制重新加载。
           throw new DeltaUpdateException();
         }
         for (int i = startIndex; i < endIndex; i++) {
           Segment segment = previousMediaPlaylist.segments.get(i);
           if (mediaSequence != previousMediaPlaylist.mediaSequence) {
-            // If the media sequences of the playlists are not the same, we need to recreate the
-            // object with the updated relative start time and the relative discontinuity
-            // sequence. With identical playlist media sequences these values do not change.
+            // 如果播放列表的媒体序列不相同，我们需要重新创建对象，并更新相对开始时间和相对不连续序列。
+            // 如果播放列表的媒体序列相同，这些值不会改变。
             int newRelativeDiscontinuitySequence =
                 previousMediaPlaylist.discontinuitySequence
                     - playlistDiscontinuitySequence
@@ -969,11 +948,9 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
           // The segment has no byte range defined.
           segmentByteRangeOffset = 0;
         } else if (isIFrameOnly && initializationSegment == null && inferredInitSegment == null) {
-          // The segment is a resource byte range without an initialization segment.
-          // As per RFC 8216, Section 4.3.3.6, we assume the initialization section exists in the
-          // bytes preceding the first segment in this segment's URL.
-          // We assume the implicit initialization segment is unencrypted, since there's no way for
-          // the playlist to provide an initialization vector for it.
+          // 该片段是一个没有初始化片段的资源字节范围。
+          // 根据 RFC 8216 第 4.3.3.6 节，我们假设初始化部分存在于该片段 URL 中第一个片段之前的字节中。
+          // 我们假设隐式初始化片段是未加密的，因为播放列表无法为其提供初始化向量。
           inferredInitSegment =
               new Segment(
                   segmentUri,
@@ -1256,7 +1233,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
   private static String replaceVariableReferences(
       String string, Map<String, String> variableDefinitions) {
     Matcher matcher = REGEX_VARIABLE_REFERENCE.matcher(string);
-    // TODO: Replace StringBuffer with StringBuilder once Java 9 is available.
+    // TODO: 一旦 Java 9 可用，将 StringBuffer 替换为 StringBuilder。
     StringBuffer stringWithReplacements = new StringBuffer();
     while (matcher.find()) {
       String groupName = matcher.group(1);
@@ -1314,7 +1291,7 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
       return false;
     }
 
-    /** Return the next line, or throw {@link NoSuchElementException} if none. */
+    /** 返回下一行，如果没有则抛出 {@link NoSuchElementException}。 */
     public String next() throws IOException {
       if (hasNext()) {
         String result = next;

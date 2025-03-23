@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import android.text.TextUtils;
@@ -42,12 +27,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /**
- * A special purpose extractor for WebVTT content in HLS.
+ * 用于 HLS 中 WebVTT 内容的专用提取器。
  *
- * <p>This extractor passes through non-empty WebVTT files untouched, however derives the correct
- * sample timestamp for each by sniffing the X-TIMESTAMP-MAP header along with the start timestamp
- * of the first cue header. Empty WebVTT files are not passed through, since it's not possible to
- * derive a sample timestamp in this case.
+ * <p>该提取器将非空的 WebVTT 文件原样传递，但通过嗅探 X-TIMESTAMP-MAP 标头以及第一个 cue 标头的起始时间戳来推导每个样本的正确时间戳。
+ * 空的 WebVTT 文件不会被传递，因为在这种情况下无法推导样本时间戳。
  */
 @UnstableApi
 public final class WebvttExtractor implements Extractor {
@@ -55,7 +38,7 @@ public final class WebvttExtractor implements Extractor {
   private static final Pattern LOCAL_TIMESTAMP = Pattern.compile("LOCAL:([^,]+)");
   private static final Pattern MEDIA_TIMESTAMP = Pattern.compile("MPEGTS:(-?\\d+)");
   private static final int HEADER_MIN_LENGTH = 6 /* "WEBVTT" */;
-  private static final int HEADER_MAX_LENGTH = 3 /* optional Byte Order Mark */ + HEADER_MIN_LENGTH;
+  private static final int HEADER_MAX_LENGTH = 3 /* 可选的字节顺序标记 */ + HEADER_MIN_LENGTH;
 
   @Nullable private final String language;
   private final TimestampAdjuster timestampAdjuster;
@@ -69,8 +52,7 @@ public final class WebvttExtractor implements Extractor {
   private int sampleSize;
 
   /**
-   * @deprecated Use {@link #WebvttExtractor(String, TimestampAdjuster, SubtitleParser.Factory,
-   *     boolean)} instead.
+   * @deprecated 请使用 {@link #WebvttExtractor(String, TimestampAdjuster, SubtitleParser.Factory, boolean)} 代替。
    */
   @Deprecated
   public WebvttExtractor(@Nullable String language, TimestampAdjuster timestampAdjuster) {
@@ -94,18 +76,18 @@ public final class WebvttExtractor implements Extractor {
     this.parseSubtitlesDuringExtraction = parseSubtitlesDuringExtraction;
   }
 
-  // Extractor implementation.
+  // Extractor 实现。
 
   @Override
   public boolean sniff(ExtractorInput input) throws IOException {
-    // Check whether there is a header without BOM.
+    // 检查是否存在不带 BOM 的标头。
     input.peekFully(
         sampleData, /* offset= */ 0, /* length= */ HEADER_MIN_LENGTH, /* allowEndOfInput= */ false);
     sampleDataWrapper.reset(sampleData, HEADER_MIN_LENGTH);
     if (WebvttParserUtil.isWebvttHeaderLine(sampleDataWrapper)) {
       return true;
     }
-    // The header did not match, try including the BOM.
+    // 标头不匹配，尝试包含 BOM。
     input.peekFully(
         sampleData,
         /* offset= */ HEADER_MIN_LENGTH,
@@ -126,22 +108,22 @@ public final class WebvttExtractor implements Extractor {
 
   @Override
   public void seek(long position, long timeUs) {
-    // This extractor is only used for the HLS use case, which should not call this method.
+    // 该提取器仅用于 HLS 场景，不应调用此方法。
     throw new IllegalStateException();
   }
 
   @Override
   public void release() {
-    // Do nothing
+    // 无操作
   }
 
   @Override
   public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException {
-    // output == null suggests init() hasn't been called
+    // output == null 表示 init() 未被调用
     Assertions.checkNotNull(output);
     int currentFileSize = (int) input.getLength();
 
-    // Increase the size of sampleData if necessary.
+    // 如有必要，增加 sampleData 的大小。
     if (sampleSize == sampleData.length) {
       sampleData =
           Arrays.copyOf(
@@ -149,7 +131,7 @@ public final class WebvttExtractor implements Extractor {
               (currentFileSize != C.LENGTH_UNSET ? currentFileSize : sampleData.length) * 3 / 2);
     }
 
-    // Consume to the input.
+    // 从输入中读取数据。
     int bytesRead = input.read(sampleData, sampleSize, sampleData.length - sampleSize);
     if (bytesRead != C.RESULT_END_OF_INPUT) {
       sampleSize += bytesRead;
@@ -158,7 +140,7 @@ public final class WebvttExtractor implements Extractor {
       }
     }
 
-    // We've reached the end of the input, which corresponds to the end of the current file.
+    // 已到达输入末尾，对应当前文件的末尾。
     processSample();
     return Extractor.RESULT_END_OF_INPUT;
   }
@@ -167,14 +149,14 @@ public final class WebvttExtractor implements Extractor {
   private void processSample() throws ParserException {
     ParsableByteArray webvttData = new ParsableByteArray(sampleData);
 
-    // Validate the first line of the header.
+    // 验证标头的第一行。
     WebvttParserUtil.validateWebvttHeaderLine(webvttData);
 
-    // Defaults to use if the header doesn't contain an X-TIMESTAMP-MAP header.
+    // 如果标头不包含 X-TIMESTAMP-MAP 标头，则使用默认值。
     long vttTimestampUs = 0;
     long tsTimestampUs = 0;
 
-    // Parse the remainder of the header looking for X-TIMESTAMP-MAP.
+    // 解析标头的其余部分，查找 X-TIMESTAMP-MAP。
     for (String line = webvttData.readLine();
         !TextUtils.isEmpty(line);
         line = webvttData.readLine()) {
@@ -182,12 +164,12 @@ public final class WebvttExtractor implements Extractor {
         Matcher localTimestampMatcher = LOCAL_TIMESTAMP.matcher(line);
         if (!localTimestampMatcher.find()) {
           throw ParserException.createForMalformedContainer(
-              "X-TIMESTAMP-MAP doesn't contain local timestamp: " + line, /* cause= */ null);
+              "X-TIMESTAMP-MAP 不包含本地时间戳: " + line, /* cause= */ null);
         }
         Matcher mediaTimestampMatcher = MEDIA_TIMESTAMP.matcher(line);
         if (!mediaTimestampMatcher.find()) {
           throw ParserException.createForMalformedContainer(
-              "X-TIMESTAMP-MAP doesn't contain media timestamp: " + line, /* cause= */ null);
+              "X-TIMESTAMP-MAP 不包含媒体时间戳: " + line, /* cause= */ null);
         }
         vttTimestampUs =
             WebvttParserUtil.parseTimestampUs(
@@ -198,10 +180,10 @@ public final class WebvttExtractor implements Extractor {
       }
     }
 
-    // Find the first cue header and parse the start time.
+    // 查找第一个 cue 标头并解析起始时间。
     Matcher cueHeaderMatcher = WebvttParserUtil.findNextCueHeader(webvttData);
     if (cueHeaderMatcher == null) {
-      // No cues found. Don't output a sample, but still output a corresponding track.
+      // 未找到 cue。不输出样本，但仍输出对应的轨道。
       buildTrackOutput(0);
       return;
     }
@@ -212,9 +194,9 @@ public final class WebvttExtractor implements Extractor {
         timestampAdjuster.adjustTsTimestamp(
             TimestampAdjuster.usToWrappedPts(firstCueTimeUs + tsTimestampUs - vttTimestampUs));
     long subsampleOffsetUs = sampleTimeUs - firstCueTimeUs;
-    // Output the track.
+    // 输出轨道。
     TrackOutput trackOutput = buildTrackOutput(subsampleOffsetUs);
-    // Output the sample.
+    // 输出样本。
     sampleDataWrapper.reset(sampleData, sampleSize);
     trackOutput.sampleData(sampleDataWrapper, sampleSize);
     trackOutput.sampleMetadata(sampleTimeUs, C.BUFFER_FLAG_KEY_FRAME, sampleSize, 0, null);

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -65,26 +50,26 @@ import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** Source of Hls (possibly adaptive) chunks. */
+/** HLS（可能是自适应的）块的来源。 */
 /* package */ class HlsChunkSource {
 
-  /** Chunk holder that allows the scheduling of retries. */
+  /** 允许调度重试的块持有者。 */
   public static final class HlsChunkHolder {
 
     public HlsChunkHolder() {
       clear();
     }
 
-    /** The chunk to be loaded next. */
+    /** 要加载的下一个块。 */
     @Nullable public Chunk chunk;
 
-    /** Indicates that the end of the stream has been reached. */
+    /** 表示流已结束。 */
     public boolean endOfStream;
 
-    /** Indicates that the chunk source is waiting for the referred playlist to be refreshed. */
+    /** 表示块源正在等待引用的播放列表刷新。 */
     @Nullable public Uri playlistUrl;
 
-    /** Clears the holder. */
+    /** 清除持有者。 */
     public void clear() {
       chunk = null;
       endOfStream = false;
@@ -93,35 +78,33 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Chunk publication state. One of {@link #CHUNK_PUBLICATION_STATE_PRELOAD}, {@link
-   * #CHUNK_PUBLICATION_STATE_PUBLISHED}, {@link #CHUNK_PUBLICATION_STATE_REMOVED}.
+   * 块发布状态。可以是 {@link #CHUNK_PUBLICATION_STATE_PRELOAD}、{@link #CHUNK_PUBLICATION_STATE_PUBLISHED}、{@link #CHUNK_PUBLICATION_STATE_REMOVED} 之一。
    */
   @Documented
   @Target(TYPE_USE)
   @IntDef({
-    CHUNK_PUBLICATION_STATE_PRELOAD,
-    CHUNK_PUBLICATION_STATE_PUBLISHED,
-    CHUNK_PUBLICATION_STATE_REMOVED
+      CHUNK_PUBLICATION_STATE_PRELOAD,
+      CHUNK_PUBLICATION_STATE_PUBLISHED,
+      CHUNK_PUBLICATION_STATE_REMOVED
   })
   @Retention(RetentionPolicy.SOURCE)
   @interface ChunkPublicationState {}
 
-  /** Indicates that the chunk is based on a preload hint. */
+  /** 表示该块基于预加载提示。 */
   public static final int CHUNK_PUBLICATION_STATE_PRELOAD = 0;
 
-  /** Indicates that the chunk is definitely published. */
+  /** 表示该块已明确发布。 */
   public static final int CHUNK_PUBLICATION_STATE_PUBLISHED = 1;
 
   /**
-   * Indicates that the chunk has been removed from the playlist.
+   * 表示该块已从播放列表中移除。
    *
-   * <p>See RFC 8216, Section 6.2.6 also.
+   * <p>另请参见 RFC 8216，第 6.2.6 节。
    */
   public static final int CHUNK_PUBLICATION_STATE_REMOVED = 2;
 
   /**
-   * The maximum number of keys that the key cache can hold. This value must be 2 or greater in
-   * order to hold initialization segment and media segment keys simultaneously.
+   * 密钥缓存可以容纳的最大密钥数量。此值必须为 2 或更大，以便同时容纳初始化片段和媒体片段的密钥。
    */
   private static final int KEY_CACHE_SIZE = 4;
 
@@ -145,40 +128,28 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   @Nullable private Uri expectedPlaylistUrl;
   private boolean independentSegments;
 
-  // Note: The track group in the selection is typically *not* equal to trackGroup. This is due to
-  // the way in which HlsSampleStreamWrapper generates track groups. Use only index based methods
-  // in ExoTrackSelection to avoid unexpected behavior.
+  // 注意：选择中的轨道组通常*不*等于 trackGroup。这是由于 HlsSampleStreamWrapper 生成轨道组的方式所致。请仅使用 ExoTrackSelection 中基于索引的方法，以避免意外行为。
   private ExoTrackSelection trackSelection;
   private long liveEdgeInPeriodTimeUs;
   private boolean seenExpectedPlaylistError;
 
   /**
-   * The time at which the last {@link #getNextChunk(LoadingInfo, long, List, boolean,
-   * HlsChunkHolder)} method was called, as measured by {@link SystemClock#elapsedRealtime}.
+   * 上次调用 {@link #getNextChunk(LoadingInfo, long, List, boolean, HlsChunkHolder)} 方法的时间，以 {@link SystemClock#elapsedRealtime} 测量。
    */
   private long lastChunkRequestRealtimeMs;
 
   /**
-   * @param extractorFactory An {@link HlsExtractorFactory} from which to obtain the extractors for
-   *     media chunks.
-   * @param playlistTracker The {@link HlsPlaylistTracker} from which to obtain media playlists.
-   * @param playlistUrls The {@link Uri}s of the media playlists that can be adapted between by this
-   *     chunk source.
-   * @param playlistFormats The {@link Format Formats} corresponding to the media playlists.
-   * @param dataSourceFactory An {@link HlsDataSourceFactory} to create {@link DataSource}s for the
-   *     chunks.
-   * @param mediaTransferListener The transfer listener which should be informed of any media data
-   *     transfers. May be null if no listener is available.
-   * @param timestampAdjusterProvider A provider of {@link TimestampAdjuster} instances. If multiple
-   *     {@link HlsChunkSource}s are used for a single playback, they should all share the same
-   *     provider.
-   * @param timestampAdjusterInitializationTimeoutMs The timeout for the loading thread to wait for
-   *     the timestamp adjuster to initialize, in milliseconds. A timeout of zero is interpreted as
-   *     an infinite timeout.
-   * @param muxedCaptionFormats List of muxed caption {@link Format}s. Null if no closed caption
-   *     information is available in the multivariant playlist.
-   * @param playerId The {@link PlayerId} of the player using this chunk source.
-   * @param cmcdConfiguration The {@link CmcdConfiguration} for this chunk source.
+   * @param extractorFactory 用于获取媒体块提取器的 {@link HlsExtractorFactory}。
+   * @param playlistTracker 用于获取媒体播放列表的 {@link HlsPlaylistTracker}。
+   * @param playlistUrls 此块源可以适应的媒体播放列表的 {@link Uri}。
+   * @param playlistFormats 与媒体播放列表对应的 {@link Format}。
+   * @param dataSourceFactory 用于创建块 {@link DataSource} 的 {@link HlsDataSourceFactory}。
+   * @param mediaTransferListener 应通知任何媒体数据传输的传输监听器。如果不可用，可以为 null。
+   * @param timestampAdjusterProvider {@link TimestampAdjuster} 实例的提供者。如果单个播放使用了多个 {@link HlsChunkSource}，它们应共享同一个提供者。
+   * @param timestampAdjusterInitializationTimeoutMs 加载线程等待时间戳调整器初始化的超时时间（以毫秒为单位）。零超时表示无限超时。
+   * @param muxedCaptionFormats 多路复用的字幕 {@link Format} 列表。如果多变量播放列表中没有隐藏字幕信息，则为 null。
+   * @param playerId 使用此块源的播放器的 {@link PlayerId}。
+   * @param cmcdConfiguration 此块源的 {@link CmcdConfiguration}。
    */
   public HlsChunkSource(
       HlsExtractorFactory extractorFactory,
@@ -211,7 +182,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
     encryptionDataSource = dataSourceFactory.createDataSource(C.DATA_TYPE_DRM);
     trackGroup = new TrackGroup(playlistFormats);
-    // Use only non-trickplay variants for preparation. See [Internal ref: b/161529098].
+    // 仅使用非 trickplay 变体进行准备。参见 [内部参考：b/161529098]。
     ArrayList<Integer> initialTrackSelection = new ArrayList<>();
     for (int i = 0; i < playlistUrls.length; i++) {
       if ((playlistFormats[i].roleFlags & C.ROLE_FLAG_TRICK_PLAY) == 0) {
@@ -223,10 +194,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * If the source is currently having difficulty providing chunks, then this method throws the
-   * underlying error. Otherwise does nothing.
+   * 如果源当前在提供块时遇到困难，则此方法会抛出底层错误。否则不执行任何操作。
    *
-   * @throws IOException The underlying error.
+   * @throws IOException 底层错误。
    */
   public void maybeThrowError() throws IOException {
     if (fatalError != null) {
@@ -237,54 +207,53 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
   }
 
-  /** Returns the track group exposed by the source. */
+  /** 返回源暴露的轨道组。 */
   public TrackGroup getTrackGroup() {
     return trackGroup;
   }
 
-  /** Returns whether the chunk source has independent segments. */
+  /** 返回块源是否具有独立的片段。 */
   public boolean hasIndependentSegments() {
     return independentSegments;
   }
 
   /**
-   * Sets the current track selection.
+   * 设置当前的轨道选择。
    *
-   * @param trackSelection The {@link ExoTrackSelection}.
+   * @param trackSelection {@link ExoTrackSelection}。
    */
   public void setTrackSelection(ExoTrackSelection trackSelection) {
-    // Deactivate the selected playlist from the old track selection for playback.
+    // 为旧轨道选择停用所选播放列表以进行播放。
     deactivatePlaylistForSelectedTrack();
     this.trackSelection = trackSelection;
   }
 
-  /** Returns the current {@link ExoTrackSelection}. */
+  /** 返回当前的 {@link ExoTrackSelection}。 */
   public ExoTrackSelection getTrackSelection() {
     return trackSelection;
   }
 
-  /** Resets the source. */
+  /** 重置源。 */
   public void reset() {
     deactivatePlaylistForSelectedTrack();
     fatalError = null;
   }
 
   /**
-   * Sets whether this chunk source is responsible for initializing timestamp adjusters.
+   * 设置此块源是否负责初始化时间戳调整器。
    *
-   * @param isPrimaryTimestampSource True if this chunk source is responsible for initializing
-   *     timestamp adjusters.
+   * @param isPrimaryTimestampSource 如果此块源负责初始化时间戳调整器，则为 true。
    */
   public void setIsPrimaryTimestampSource(boolean isPrimaryTimestampSource) {
     this.isPrimaryTimestampSource = isPrimaryTimestampSource;
   }
 
   /**
-   * Adjusts a seek position given the specified {@link SeekParameters}.
+   * 根据指定的 {@link SeekParameters} 调整搜索位置。
    *
-   * @param positionUs The seek position in microseconds.
-   * @param seekParameters Parameters that control how the seek is performed.
-   * @return The adjusted seek position, in microseconds.
+   * @param positionUs 搜索位置（以微秒为单位）。
+   * @param seekParameters 控制搜索方式的参数。
+   * @return 调整后的搜索位置（以微秒为单位）。
    */
   public long getAdjustedSeekPositionUs(long positionUs, SeekParameters seekParameters) {
     int selectedIndex = trackSelection.getSelectedIndex();
@@ -302,13 +271,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       return positionUs;
     }
 
-    // Segments start with sync samples (i.e., EXT-X-INDEPENDENT-SEGMENTS is set) and the playlist
-    // is non-empty, so we can use segment start times as sync points. Note that in the rare case
-    // that (a) an adaptive quality switch occurs between the adjustment and the seek being
-    // performed, and (b) segment start times are not aligned across variants, it's possible that
-    // the adjusted position may not be at a sync point when it was intended to be. However, this is
-    // very much an edge case, and getting it wrong is worth it for getting the vast majority of
-    // cases right whilst keeping the implementation relatively simple.
+    // 片段以同步样本开始（即设置了 EXT-X-INDEPENDENT-SEGMENTS），并且播放列表非空，因此我们可以使用片段的开始时间作为同步点。需要注意的是，在极少数情况下，
+    // 如果在调整和实际执行搜索之间发生了自适应质量切换，并且不同变体之间的片段开始时间未对齐，则调整后的位置可能不会在预期的时间点处于同步点。然而，这种情况非常罕见，
+    // 并且在绝大多数情况下保持正确的同时保持实现相对简单是值得的。
     long startOfPlaylistInPeriodUs =
         mediaPlaylist.startTimeUs - playlistTracker.getInitialStartTimeUs();
     long relativePositionUs = positionUs - startOfPlaylistInPeriodUs;
@@ -328,16 +293,15 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns the publication state of the given chunk.
+   * 返回给定块的发布状态。
    *
-   * @param mediaChunk The media chunk for which to evaluate the publication state.
-   * @return Whether the media chunk is {@link #CHUNK_PUBLICATION_STATE_PRELOAD a preload chunk},
-   *     has been {@link #CHUNK_PUBLICATION_STATE_REMOVED removed} or is definitely {@link
-   *     #CHUNK_PUBLICATION_STATE_PUBLISHED published}.
+   * @param mediaChunk 要评估发布状态的媒体块。
+   * @return 媒体块是 {@link #CHUNK_PUBLICATION_STATE_PRELOAD 预加载块}，已被 {@link #CHUNK_PUBLICATION_STATE_REMOVED 移除}，
+   * 还是明确 {@link #CHUNK_PUBLICATION_STATE_PUBLISHED 发布}。
    */
   public @ChunkPublicationState int getChunkPublicationState(HlsMediaChunk mediaChunk) {
     if (mediaChunk.partIndex == C.INDEX_UNSET) {
-      // Chunks based on full segments can't be removed and are always published.
+      // 基于完整片段的块不能被移除，并且始终是已发布的。
       return CHUNK_PUBLICATION_STATE_PUBLISHED;
     }
     Uri playlistUrl = playlistUrls[trackGroup.indexOf(mediaChunk.trackFormat)];
@@ -345,7 +309,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         checkNotNull(playlistTracker.getPlaylistSnapshot(playlistUrl, /* isForPlayback= */ false));
     int segmentIndexInPlaylist = (int) (mediaChunk.chunkIndex - mediaPlaylist.mediaSequence);
     if (segmentIndexInPlaylist < 0) {
-      // The parent segment of the previous chunk is not in the current playlist anymore.
+      // 上一个块的父片段已不在当前播放列表中。
       return CHUNK_PUBLICATION_STATE_PUBLISHED;
     }
     List<HlsMediaPlaylist.Part> partsInCurrentPlaylist =
@@ -353,18 +317,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
             ? mediaPlaylist.segments.get(segmentIndexInPlaylist).parts
             : mediaPlaylist.trailingParts;
     if (mediaChunk.partIndex >= partsInCurrentPlaylist.size()) {
-      // In case the part hinted in the previous playlist has been wrongly assigned to the then full
-      // but not yet terminated segment, we discard it regardless whether the URI is different or
-      // not. While this is theoretically possible and unspecified, it appears to be an edge case
-      // which we can avoid with a small inefficiency of discarding in vain. We could allow this
-      // here but, if the chunk is not discarded, it could create unpredictable problems later,
-      // because the media sequence in previous.chunkIndex does not match to the actual media
-      // sequence in the new playlist.
+      // 如果在上一个播放列表中提示的部分被错误地分配给了当时完整但尚未终止的片段，我们无论如何都会丢弃它，无论 URI 是否不同。虽然这在理论上是可能的且未指定，
+      // 但这似乎是一个边缘情况，我们可以通过稍微低效地无效丢弃来避免。我们可以在这里允许这种情况，但如果块没有被丢弃，它可能会在以后产生不可预测的问题，
+      // 因为 previous.chunkIndex 中的媒体序列与新的播放列表中的实际媒体序列不匹配。
       return CHUNK_PUBLICATION_STATE_REMOVED;
     }
     HlsMediaPlaylist.Part newPart = partsInCurrentPlaylist.get(mediaChunk.partIndex);
     if (newPart.isPreload) {
-      // The playlist did not change and the part in the new playlist is still a preload hint.
+      // 播放列表没有变化，并且新播放列表中的部分仍然是预加载提示。
       return CHUNK_PUBLICATION_STATE_PRELOAD;
     }
     Uri newUri = Uri.parse(UriUtil.resolve(mediaPlaylist.baseUri, newPart.url));
@@ -374,20 +334,17 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns the next chunk to load.
+   * 返回下一个要加载的块。
    *
-   * <p>If a chunk is available then {@link HlsChunkHolder#chunk} is set. If the end of the stream
-   * has been reached then {@link HlsChunkHolder#endOfStream} is set. If a chunk is not available
-   * but the end of the stream has not been reached, {@link HlsChunkHolder#playlistUrl} is set to
-   * contain the {@link Uri} that refers to the playlist that needs refreshing.
+   * <p>如果块可用，则设置 {@link HlsChunkHolder#chunk}。如果已到达流的末尾，则设置 {@link HlsChunkHolder#endOfStream}。如果块不可用但尚未到达流的末尾，
+   * 则设置 {@link HlsChunkHolder#playlistUrl} 以包含需要刷新的播放列表的 {@link Uri}。
    *
-   * @param loadingInfo The {@link LoadingInfo} when loading request is made.
-   * @param loadPositionUs The current load position relative to the period start in microseconds.
-   * @param queue The queue of buffered {@link HlsMediaChunk}s.
-   * @param allowEndOfStream Whether {@link HlsChunkHolder#endOfStream} is allowed to be set for
-   *     non-empty media playlists. If {@code false}, the last available chunk is returned instead.
-   *     If the media playlist is empty, {@link HlsChunkHolder#endOfStream} is always set.
-   * @param out A holder to populate.
+   * @param loadingInfo 发出加载请求时的 {@link LoadingInfo}。
+   * @param loadPositionUs 当前加载位置相对于周期开始的微秒数。
+   * @param queue 缓冲的 {@link HlsMediaChunk} 队列。
+   * @param allowEndOfStream 是否允许为非空媒体播放列表设置 {@link HlsChunkHolder#endOfStream}。如果为 {@code false}，则返回最后一个可用的块。如果媒体播放列表为空，
+   *     则始终设置 {@link HlsChunkHolder#endOfStream}。
+   * @param out 要填充的持有者。
    */
   public void getNextChunk(
       LoadingInfo loadingInfo,
@@ -401,12 +358,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     long bufferedDurationUs = loadPositionUs - playbackPositionUs;
     long timeToLiveEdgeUs = resolveTimeToLiveEdgeUs(playbackPositionUs);
     if (previous != null && !independentSegments) {
-      // Unless segments are known to be independent, switching tracks requires downloading
-      // overlapping segments. Hence we subtract the previous segment's duration from the buffered
-      // duration.
-      // This may affect the live-streaming adaptive track selection logic, when we compare the
-      // buffered duration to time-to-live-edge to decide whether to switch. Therefore, we subtract
-      // the duration of the last loaded segment from timeToLiveEdgeUs as well.
+      // 除非已知片段是独立的，否则切换轨道需要下载重叠的片段。因此，我们从缓冲的持续时间中减去上一个片段的持续时间。
+      // 这可能会影响直播流的自适应轨道选择逻辑，因为我们在比较缓冲的持续时间与实时边缘时间以决定是否切换时，也会从 timeToLiveEdgeUs 中减去最后加载的片段的持续时间。
       long subtractedDurationUs = previous.getDurationUs();
       bufferedDurationUs = max(0, bufferedDurationUs - subtractedDurationUs);
       if (timeToLiveEdgeUs != C.TIME_UNSET) {
@@ -425,19 +378,19 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       out.playlistUrl = selectedPlaylistUrl;
       seenExpectedPlaylistError &= selectedPlaylistUrl.equals(expectedPlaylistUrl);
       expectedPlaylistUrl = selectedPlaylistUrl;
-      // Retry when playlist is refreshed.
+      // 当播放列表刷新时重试。
       return;
     }
     @Nullable
     HlsMediaPlaylist playlist =
         playlistTracker.getPlaylistSnapshot(selectedPlaylistUrl, /* isForPlayback= */ true);
-    // playlistTracker snapshot is valid (checked by if() above), so playlist must be non-null.
+    // playlistTracker 的快照是有效的（由上面的 if() 检查），因此 playlist 必须为非空。
     checkNotNull(playlist);
     independentSegments = playlist.hasIndependentSegments;
 
     updateLiveEdgeTimeUs(playlist);
 
-    // Select the chunk.
+    // 选择块。
     long startOfPlaylistInPeriodUs = playlist.startTimeUs - playlistTracker.getInitialStartTimeUs();
     Pair<Long, Integer> nextMediaSequenceAndPartIndex =
         getNextMediaSequenceAndPartIndex(
@@ -445,16 +398,15 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     long chunkMediaSequence = nextMediaSequenceAndPartIndex.first;
     int partIndex = nextMediaSequenceAndPartIndex.second;
     if (chunkMediaSequence < playlist.mediaSequence && previous != null && switchingTrack) {
-      // We try getting the next chunk without adapting in case that's the reason for falling
-      // behind the live window.
+      // 我们尝试在不进行自适应的情况下获取下一个块，以防这是落后于直播窗口的原因。
       selectedTrackIndex = oldTrackIndex;
       selectedPlaylistUrl = playlistUrls[selectedTrackIndex];
       playlist =
           playlistTracker.getPlaylistSnapshot(selectedPlaylistUrl, /* isForPlayback= */ true);
-      // playlistTracker snapshot is valid (checked by if() above), so playlist must be non-null.
+      // playlistTracker 的快照是有效的（由上面的 if() 检查），因此 playlist 必须为非空。
       checkNotNull(playlist);
       startOfPlaylistInPeriodUs = playlist.startTimeUs - playlistTracker.getInitialStartTimeUs();
-      // Get the next segment/part without switching tracks.
+      // 在不切换轨道的情况下获取下一个片段/部分。
       Pair<Long, Integer> nextMediaSequenceAndPartIndexWithoutAdapting =
           getNextMediaSequenceAndPartIndex(
               previous,
@@ -466,8 +418,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       partIndex = nextMediaSequenceAndPartIndexWithoutAdapting.second;
     }
 
-    // If the selected track index changes from another one, we should deactivate the old playlist
-    // for playback.
+    // 如果选定的轨道索引从另一个索引更改，我们应该停用旧播放列表以进行播放。
     if (selectedTrackIndex != oldTrackIndex && oldTrackIndex != C.INDEX_UNSET) {
       Uri oldPlaylistUrl = playlistUrls[oldTrackIndex];
       playlistTracker.deactivatePlaylistForPlayback(oldPlaylistUrl);
@@ -483,7 +434,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         getNextSegmentHolder(playlist, chunkMediaSequence, partIndex);
     if (segmentBaseHolder == null) {
       if (!playlist.hasEndTag) {
-        // Reload the playlist in case of a live stream.
+        // 如果是直播流，则重新加载播放列表。
         out.playlistUrl = selectedPlaylistUrl;
         seenExpectedPlaylistError &= selectedPlaylistUrl.equals(expectedPlaylistUrl);
         expectedPlaylistUrl = selectedPlaylistUrl;
@@ -492,7 +443,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         out.endOfStream = true;
         return;
       }
-      // Use the last segment available in case of a VOD stream.
+      // 如果是 VOD 流，则使用播放列表中最后一个可用的片段。
       segmentBaseHolder =
           new SegmentBaseHolder(
               Iterables.getLast(playlist.segments),
@@ -500,7 +451,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
               /* partIndex= */ C.INDEX_UNSET);
     }
 
-    // We have a valid media segment, we can discard any playlist errors at this point.
+    // 我们有一个有效的媒体片段，此时可以丢弃任何播放列表错误。
     seenExpectedPlaylistError = false;
     expectedPlaylistUrl = null;
 
@@ -546,8 +497,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       }
     }
     lastChunkRequestRealtimeMs = SystemClock.elapsedRealtime();
-
-    // Check if the media segment or its initialization segment are fully encrypted.
+    // 检查媒体片段或其初始化片段是否完全加密。
     @Nullable
     Uri initSegmentKeyUri =
         getFullEncryptionKeyUri(playlist, segmentBaseHolder.segmentBase.initializationSegment);
@@ -570,10 +520,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         HlsMediaChunk.shouldSpliceIn(
             previous, selectedPlaylistUrl, playlist, segmentBaseHolder, startOfPlaylistInPeriodUs);
     if (shouldSpliceIn && segmentBaseHolder.isPreload) {
-      // We don't support discarding spliced-in segments [internal: b/159904763], but preload
-      // parts may need to be discarded if they are removed before becoming permanently published.
-      // Hence, don't allow this combination and instead wait with loading the next part until it
-      // becomes fully available (or the track selection selects another track).
+      // 我们不支持丢弃拼接的片段 [内部：b/159904763]，但预加载的部分如果在被永久发布之前被移除，则可能需要被丢弃。因此，不允许这种组合，而是等待下一个部分完全可用后再加载
+      // （或者轨道选择选择另一个轨道）。
       return;
     }
 
@@ -624,29 +572,28 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
 
     if (nextPartIndex < mediaSegment.parts.size()) {
-      // The requested part is available in the requested segment.
+      // 请求的部分在请求的片段中可用。
       return new SegmentBaseHolder(
           mediaSegment.parts.get(nextPartIndex), nextMediaSequence, nextPartIndex);
     } else if (segmentIndexInPlaylist + 1 < mediaPlaylist.segments.size()) {
-      // The first part of the next segment is requested, but we can use the next full segment.
+      // 请求的是下一个片段的第一个部分，但我们可以使用下一个完整的片段。
       return new SegmentBaseHolder(
           mediaPlaylist.segments.get(segmentIndexInPlaylist + 1),
           nextMediaSequence + 1,
           /* partIndex= */ C.INDEX_UNSET);
     } else if (!mediaPlaylist.trailingParts.isEmpty()) {
-      // The part index is rolling over to the first trailing part.
+      // 部分索引滚动到第一个尾部部分。
       return new SegmentBaseHolder(
           mediaPlaylist.trailingParts.get(0), nextMediaSequence + 1, /* partIndex= */ 0);
     }
-    // End of stream.
+    // 流结束。
     return null;
   }
 
   /**
-   * Called when the {@link HlsSampleStreamWrapper} has finished loading a chunk obtained from this
-   * source.
+   * 当 {@link HlsSampleStreamWrapper} 完成加载从此源获取的块时调用。
    *
-   * @param chunk The chunk whose load has been completed.
+   * @param chunk 已完成加载的块。
    */
   public void onChunkLoadCompleted(Chunk chunk) {
     if (chunk instanceof EncryptionKeyChunk) {
@@ -657,26 +604,22 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Attempts to exclude the track associated with the given chunk. Exclusion will fail if the track
-   * is the only non-excluded track in the selection.
+   * 尝试排除与给定块关联的轨道。如果该轨道是选择中唯一未排除的轨道，则排除将失败。
    *
-   * @param chunk The chunk whose load caused the exclusion attempt.
-   * @param exclusionDurationMs The number of milliseconds for which the track selection should be
-   *     excluded.
-   * @return Whether the exclusion succeeded.
+   * @param chunk 导致排除尝试的块。
+   * @param exclusionDurationMs 轨道选择应被排除的毫秒数。
+   * @return 排除是否成功。
    */
   public boolean maybeExcludeTrack(Chunk chunk, long exclusionDurationMs) {
     return trackSelection.excludeTrack(
         trackSelection.indexOf(trackGroup.indexOf(chunk.trackFormat)), exclusionDurationMs);
   }
-
   /**
-   * Called when a playlist load encounters an error.
+   * 当播放列表加载遇到错误时调用。
    *
-   * @param playlistUrl The {@link Uri} of the playlist whose load encountered an error.
-   * @param exclusionDurationMs The duration for which the playlist should be excluded. Or {@link
-   *     C#TIME_UNSET} if the playlist should not be excluded.
-   * @return True if excluding did not encounter errors. False otherwise.
+   * @param playlistUrl 加载遇到错误的播放列表的 {@link Uri}。
+   * @param exclusionDurationMs 播放列表应被排除的持续时间。如果播放列表不应被排除，则为 {@link C#TIME_UNSET}。
+   * @return 如果排除未遇到错误，则为 true。否则为 false。
    */
   public boolean onPlaylistError(Uri playlistUrl, long exclusionDurationMs) {
     int trackGroupIndex = C.INDEX_UNSET;
@@ -696,15 +639,15 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     seenExpectedPlaylistError |= playlistUrl.equals(expectedPlaylistUrl);
     return exclusionDurationMs == C.TIME_UNSET
         || (trackSelection.excludeTrack(trackSelectionIndex, exclusionDurationMs)
-            && playlistTracker.excludeMediaPlaylist(playlistUrl, exclusionDurationMs));
+        && playlistTracker.excludeMediaPlaylist(playlistUrl, exclusionDurationMs));
   }
 
   /**
-   * Returns an array of {@link MediaChunkIterator}s for upcoming media chunks.
+   * 返回即将到来的媒体块的 {@link MediaChunkIterator} 数组。
    *
-   * @param previous The previous media chunk. May be null.
-   * @param loadPositionUs The position at which the iterators will start.
-   * @return Array of {@link MediaChunkIterator}s for each track.
+   * @param previous 上一个媒体块。可能为 null。
+   * @param loadPositionUs 迭代器将开始的位置。
+   * @return 每个轨道的 {@link MediaChunkIterator} 数组。
    */
   public MediaChunkIterator[] createMediaChunkIterators(
       @Nullable HlsMediaChunk previous, long loadPositionUs) {
@@ -720,7 +663,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       @Nullable
       HlsMediaPlaylist playlist =
           playlistTracker.getPlaylistSnapshot(playlistUrl, /* isForPlayback= */ false);
-      // Playlist snapshot is valid (checked by if() above) so playlist must be non-null.
+      // 播放列表快照是有效的（由上面的 if() 检查），因此 playlist 必须为非空。
       checkNotNull(playlist);
       long startOfPlaylistInPeriodUs =
           playlist.startTimeUs - playlistTracker.getInitialStartTimeUs();
@@ -740,17 +683,15 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Evaluates whether {@link MediaChunk MediaChunks} should be removed from the back of the queue.
+   * 评估是否应从队列的后面移除 {@link MediaChunk}。
    *
-   * <p>Removing {@link MediaChunk MediaChunks} from the back of the queue can be useful if they
-   * could be replaced with chunks of a significantly higher quality (e.g. because the available
-   * bandwidth has substantially increased).
+   * <p>如果可以用质量显著更高的块替换队列后面的 {@link MediaChunk}（例如，因为可用带宽大幅增加），则移除它们可能是有用的。
    *
-   * <p>Will only be called if no {@link MediaChunk} in the queue is currently loading.
+   * <p>只有在队列中没有 {@link MediaChunk} 正在加载时才会调用。
    *
-   * @param playbackPositionUs The current playback position, in microseconds.
-   * @param queue The queue of buffered {@link MediaChunk MediaChunks}.
-   * @return The preferred queue size.
+   * @param playbackPositionUs 当前的播放位置，以微秒为单位。
+   * @param queue 缓冲的 {@link MediaChunk} 队列。
+   * @return 首选队列大小。
    */
   public int getPreferredQueueSize(long playbackPositionUs, List<? extends MediaChunk> queue) {
     if (fatalError != null || trackSelection.length() < 2) {
@@ -760,12 +701,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Returns whether an ongoing load of a chunk should be canceled.
+   * 返回是否应取消正在进行的块加载。
    *
-   * @param playbackPositionUs The current playback position, in microseconds.
-   * @param loadingChunk The currently loading {@link Chunk}.
-   * @param queue The queue of buffered {@link MediaChunk MediaChunks}.
-   * @return Whether the ongoing load of {@code loadingChunk} should be canceled.
+   * @param playbackPositionUs 当前的播放位置，以微秒为单位。
+   * @param loadingChunk 当前正在加载的 {@link Chunk}。
+   * @param queue 缓冲的 {@link MediaChunk} 队列。
+   * @return 是否应取消 {@code loadingChunk} 的正在进行的加载。
    */
   public boolean shouldCancelLoad(
       long playbackPositionUs, Chunk loadingChunk, List<? extends MediaChunk> queue) {
@@ -775,43 +716,41 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     return trackSelection.shouldCancelChunkLoad(playbackPositionUs, loadingChunk, queue);
   }
 
-  // Package methods.
+  // 包方法。
 
   /**
-   * Returns a list with all segment bases in the playlist starting from {@code mediaSequence} and
-   * {@code partIndex} in the given playlist. The list may be empty if the starting point is not in
-   * the playlist.
+   * 返回从给定播放列表中的 {@code mediaSequence} 和 {@code partIndex} 开始的所有片段基的列表。如果起始点不在播放列表中，则列表可能为空。
    */
   @VisibleForTesting
   /* package */ static List<HlsMediaPlaylist.SegmentBase> getSegmentBaseList(
       HlsMediaPlaylist playlist, long mediaSequence, int partIndex) {
     int firstSegmentIndexInPlaylist = (int) (mediaSequence - playlist.mediaSequence);
     if (firstSegmentIndexInPlaylist < 0 || playlist.segments.size() < firstSegmentIndexInPlaylist) {
-      // The first media sequence is not in the playlist.
+      // 第一个媒体序列不在播放列表中。
       return ImmutableList.of();
     }
     List<HlsMediaPlaylist.SegmentBase> segmentBases = new ArrayList<>();
     if (firstSegmentIndexInPlaylist < playlist.segments.size()) {
       if (partIndex != C.INDEX_UNSET) {
-        // The iterator starts with a part that belongs to a segment.
+        // 迭代器从一个属于片段的部分开始。
         Segment firstSegment = playlist.segments.get(firstSegmentIndexInPlaylist);
         if (partIndex == 0) {
-          // Use the full segment instead of the first part.
+          // 使用完整片段而不是第一个部分。
           segmentBases.add(firstSegment);
         } else if (partIndex < firstSegment.parts.size()) {
-          // Add the parts from the first requested segment.
+          // 添加从第一个请求的片段开始的部分。
           segmentBases.addAll(firstSegment.parts.subList(partIndex, firstSegment.parts.size()));
         }
         firstSegmentIndexInPlaylist++;
       }
       partIndex = 0;
-      // Add all remaining segments.
+      // 添加所有剩余的片段。
       segmentBases.addAll(
           playlist.segments.subList(firstSegmentIndexInPlaylist, playlist.segments.size()));
     }
 
     if (playlist.partTargetDurationUs != C.TIME_UNSET) {
-      // That's a low latency playlist.
+      // 这是一个低延迟播放列表。
       partIndex = partIndex == C.INDEX_UNSET ? 0 : partIndex;
       if (partIndex < playlist.trailingParts.size()) {
         segmentBases.addAll(
@@ -820,25 +759,22 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
     return Collections.unmodifiableList(segmentBases);
   }
-
-  /** Returns whether this chunk source obtains chunks for the playlist with the given url. */
+  /** 返回此块源是否为给定 URL 的播放列表获取块。 */
   public boolean obtainsChunksForPlaylist(Uri playlistUrl) {
     return Util.contains(playlistUrls, playlistUrl);
   }
 
-  // Private methods.
+  // 私有方法。
 
   /**
-   * Returns the media sequence number and part index to load next in the {@code mediaPlaylist}.
+   * 返回要在 {@code mediaPlaylist} 中加载的下一个媒体序列号和部分索引。
    *
-   * @param previous The last (at least partially) loaded segment.
-   * @param switchingTrack Whether the segment to load is not preceded by a segment in the same
-   *     track.
-   * @param mediaPlaylist The media playlist to which the segment to load belongs.
-   * @param startOfPlaylistInPeriodUs The start of {@code mediaPlaylist} relative to the period
-   *     start in microseconds.
-   * @param loadPositionUs The current load position relative to the period start in microseconds.
-   * @return The media sequence and part index to load.
+   * @param previous 最后（至少部分）加载的片段。
+   * @param switchingTrack 要加载的片段是否不是由同一轨道中的片段前导。
+   * @param mediaPlaylist 要加载的片段所属的媒体播放列表。
+   * @param startOfPlaylistInPeriodUs {@code mediaPlaylist} 相对于周期开始的起始时间（以微秒为单位）。
+   * @param loadPositionUs 当前加载位置相对于周期开始的微秒数。
+   * @return 要加载的媒体序列和部分索引。
    */
   private Pair<Long, Integer> getNextMediaSequenceAndPartIndex(
       @Nullable HlsMediaChunk previous,
@@ -851,7 +787,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       long targetPositionInPeriodUs =
           (previous == null || independentSegments) ? loadPositionUs : previous.startTimeUs;
       if (!mediaPlaylist.hasEndTag && targetPositionInPeriodUs >= endOfPlaylistInPeriodUs) {
-        // If the playlist is too old to contain the chunk, we need to refresh it.
+        // 如果播放列表太旧以至于不包含该块，我们需要刷新它。
         return new Pair<>(
             mediaPlaylist.mediaSequence + mediaPlaylist.segments.size(),
             /* partIndex */ C.INDEX_UNSET);
@@ -866,7 +802,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       long mediaSequence = segmentIndexInPlaylist + mediaPlaylist.mediaSequence;
       int partIndex = C.INDEX_UNSET;
       if (segmentIndexInPlaylist >= 0) {
-        // In case we are inside the live window, we try to pick a part if available.
+        // 如果我们在直播窗口内，我们尝试选择一个部分（如果可用）。
         Segment segment = mediaPlaylist.segments.get(segmentIndexInPlaylist);
         List<HlsMediaPlaylist.Part> parts =
             targetPositionInPlaylistUs < segment.relativeStartTimeUs + segment.durationUs
@@ -877,7 +813,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
           if (targetPositionInPlaylistUs < part.relativeStartTimeUs + part.durationUs) {
             if (part.isIndependent) {
               partIndex = i;
-              // Increase media sequence by one if the part is a trailing part.
+              // 如果该部分是尾部部分，则将媒体序列增加一。
               mediaSequence += parts == mediaPlaylist.trailingParts ? 1 : 0;
             }
             break;
@@ -886,13 +822,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       }
       return new Pair<>(mediaSequence, partIndex);
     }
-    // If loading has not completed, we return the previous chunk again.
+    // 如果加载未完成，我们返回上一个块。
     return (previous.isLoadCompleted()
         ? new Pair<>(
-            previous.partIndex == C.INDEX_UNSET
-                ? previous.getNextChunkIndex()
-                : previous.chunkIndex,
-            previous.partIndex == C.INDEX_UNSET ? C.INDEX_UNSET : previous.partIndex + 1)
+        previous.partIndex == C.INDEX_UNSET
+            ? previous.getNextChunkIndex()
+            : previous.chunkIndex,
+        previous.partIndex == C.INDEX_UNSET ? C.INDEX_UNSET : previous.partIndex + 1)
         : new Pair<>(previous.chunkIndex, previous.partIndex));
   }
 
@@ -922,9 +858,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
     @Nullable byte[] encryptionKey = keyCache.remove(keyUri);
     if (encryptionKey != null) {
-      // The key was present in the key cache. We re-insert it to prevent it from being evicted by
-      // the following key addition. Note that removal of the key is necessary to affect the
-      // eviction order.
+      // 密钥存在于密钥缓存中。我们重新插入它以防止它被后续的密钥添加所驱逐。注意，移除密钥是必要的，以影响驱逐顺序。
       keyCache.put(keyUri, encryptionKey);
       return null;
     }
@@ -992,8 +926,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
     public InitializationTrackSelection(TrackGroup group, int[] tracks) {
       super(group, tracks);
-      // The initially selected index corresponds to the first EXT-X-STREAMINF tag in the
-      // multivariant playlist.
+      // 最初选择的索引对应于多变量播放列表中的第一个 EXT-X-STREAMINF 标签。
       selectedIndex = indexOf(group.getFormat(tracks[0]));
     }
 
@@ -1008,14 +941,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       if (!isTrackExcluded(selectedIndex, nowMs)) {
         return;
       }
-      // Try from lowest bitrate to highest.
+      // 从最低码率到最高码率尝试。
       for (int i = length - 1; i >= 0; i--) {
         if (!isTrackExcluded(i, nowMs)) {
           selectedIndex = i;
           return;
         }
       }
-      // Should never happen.
+      // 这种情况不应发生。
       throw new IllegalStateException();
     }
 
@@ -1062,7 +995,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       result = Arrays.copyOf(data, limit);
     }
 
-    /** Return the result of this chunk, or null if loading is not complete. */
+    /** 返回此块的结果，如果加载未完成则返回 null。 */
     @Nullable
     public byte[] getResult() {
       return result;
@@ -1077,12 +1010,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     private final String playlistBaseUri;
 
     /**
-     * Creates an iterator instance wrapping a list of {@link HlsMediaPlaylist.SegmentBase}.
+     * 创建一个包装了 {@link HlsMediaPlaylist.SegmentBase} 列表的迭代器实例。
      *
-     * @param playlistBaseUri The base URI of the {@link HlsMediaPlaylist}.
-     * @param startOfPlaylistInPeriodUs The start time of the playlist in the period, in
-     *     microseconds.
-     * @param segmentBases The list of {@link HlsMediaPlaylist.SegmentBase segment bases} to wrap.
+     * @param playlistBaseUri {@link HlsMediaPlaylist} 的基础 URI。
+     * @param startOfPlaylistInPeriodUs 播放列表在周期中的开始时间，以微秒为单位。
+     * @param segmentBases 要包装的 {@link HlsMediaPlaylist.SegmentBase} 列表。
      */
     public HlsMediaPlaylistSegmentIterator(
         String playlistBaseUri,

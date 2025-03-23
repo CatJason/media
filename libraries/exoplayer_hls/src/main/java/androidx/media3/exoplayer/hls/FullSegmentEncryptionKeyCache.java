@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2019 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.hls;
 
 import android.net.Uri;
@@ -22,9 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * LRU cache that holds up to {@code maxSize} full-segment-encryption keys. Which each addition,
- * once the cache's size exceeds {@code maxSize}, the oldest item (according to insertion order) is
- * removed.
+ * LRU 缓存，最多可保存 {@code maxSize} 个完整片段加密密钥。每次添加时，如果缓存大小超过 {@code maxSize}，则移除最旧的项目（根据插入顺序）。
  */
 /* package */ final class FullSegmentEncryptionKeyCache {
 
@@ -42,8 +25,7 @@ import java.util.Map;
   }
 
   /**
-   * Returns the {@code encryptionKey} cached against this {@code uri}, or null if {@code uri} is
-   * null or not present in the cache.
+   * 返回与此 {@code uri} 对应的缓存中的 {@code encryptionKey}，如果 {@code uri} 为 null 或不在缓存中，则返回 null。
    */
   @Nullable
   public byte[] get(@Nullable Uri uri) {
@@ -54,9 +36,9 @@ import java.util.Map;
   }
 
   /**
-   * Inserts an entry into the cache.
+   * 向缓存中插入一个条目。
    *
-   * @throws NullPointerException if {@code uri} or {@code encryptionKey} are null.
+   * @throws NullPointerException 如果 {@code uri} 或 {@code encryptionKey} 为 null。
    */
   @Nullable
   public byte[] put(Uri uri, byte[] encryptionKey) {
@@ -64,19 +46,18 @@ import java.util.Map;
   }
 
   /**
-   * Returns true if {@code uri} is present in the cache.
+   * 如果 {@code uri} 存在于缓存中，则返回 true。
    *
-   * @throws NullPointerException if {@code uri} is null.
+   * @throws NullPointerException 如果 {@code uri} 为 null。
    */
   public boolean containsUri(Uri uri) {
     return backingMap.containsKey(Assertions.checkNotNull(uri));
   }
 
   /**
-   * Removes {@code uri} from the cache. If {@code uri} was present in the cahce, this returns the
-   * corresponding {@code encryptionKey}, otherwise null.
+   * 从缓存中移除 {@code uri}。如果 {@code uri} 存在于缓存中，则返回对应的 {@code encryptionKey}，否则返回 null。
    *
-   * @throws NullPointerException if {@code uri} is null.
+   * @throws NullPointerException 如果 {@code uri} 为 null。
    */
   @Nullable
   public byte[] remove(Uri uri) {
