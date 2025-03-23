@@ -1,61 +1,39 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
 
-/** Represents a service description element. */
+/** 表示服务描述元素。 */
 @UnstableApi
 public final class ServiceDescriptionElement {
 
-  /** The target live offset in milliseconds, or {@link C#TIME_UNSET} if undefined. */
+  /** 目标直播偏移量（以毫秒为单位），如果未定义则为 {@link C#TIME_UNSET}。 */
   public final long targetOffsetMs;
 
-  /** The minimum live offset in milliseconds, or {@link C#TIME_UNSET} if undefined. */
+  /** 最小直播偏移量（以毫秒为单位），如果未定义则为 {@link C#TIME_UNSET}。 */
   public final long minOffsetMs;
 
-  /** The maximum live offset in milliseconds, or {@link C#TIME_UNSET} if undefined. */
+  /** 最大直播偏移量（以毫秒为单位），如果未定义则为 {@link C#TIME_UNSET}。 */
   public final long maxOffsetMs;
 
   /**
-   * The minimum factor by which playback can be sped up for live speed adjustment, or {@link
-   * C#RATE_UNSET} if undefined.
+   * 用于直播速度调整的最小播放速度因子，如果未定义则为 {@link C#RATE_UNSET}。
    */
   public final float minPlaybackSpeed;
 
   /**
-   * The maximum factor by which playback can be sped up for live speed adjustment, or {@link
-   * C#RATE_UNSET} if undefined.
+   * 用于直播速度调整的最大播放速度因子，如果未定义则为 {@link C#RATE_UNSET}。
    */
   public final float maxPlaybackSpeed;
 
   /**
-   * Creates a service description element.
+   * 创建一个服务描述元素。
    *
-   * @param targetOffsetMs The target live offset in milliseconds, or {@link C#TIME_UNSET} if
-   *     undefined.
-   * @param minOffsetMs The minimum live offset in milliseconds, or {@link C#TIME_UNSET} if
-   *     undefined.
-   * @param maxOffsetMs The maximum live offset in milliseconds, or {@link C#TIME_UNSET} if
-   *     undefined.
-   * @param minPlaybackSpeed The minimum factor by which playback can be sped up for live speed
-   *     adjustment, or {@link C#RATE_UNSET} if undefined.
-   * @param maxPlaybackSpeed The maximum factor by which playback can be sped up for live speed
-   *     adjustment, or {@link C#RATE_UNSET} if undefined.
+   * @param targetOffsetMs 目标直播偏移量（以毫秒为单位），如果未定义则为 {@link C#TIME_UNSET}。
+   * @param minOffsetMs 最小直播偏移量（以毫秒为单位），如果未定义则为 {@link C#TIME_UNSET}。
+   * @param maxOffsetMs 最大直播偏移量（以毫秒为单位），如果未定义则为 {@link C#TIME_UNSET}。
+   * @param minPlaybackSpeed 用于直播速度调整的最小播放速度因子，如果未定义则为 {@link C#RATE_UNSET}。
+   * @param maxPlaybackSpeed 用于直播速度调整的最大播放速度因子，如果未定义则为 {@link C#RATE_UNSET}。
    */
   public ServiceDescriptionElement(
       long targetOffsetMs,

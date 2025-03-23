@@ -1,41 +1,28 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
-/** A descriptor, as defined by ISO 23009-1, 2nd edition, 5.8.2. */
+/** 描述符，定义见 ISO 23009-1 第二版 5.8.2 节。 */
 @UnstableApi
 public final class Descriptor {
 
-  /** The scheme URI. */
+  /** 方案的 URI。 */
   public final String schemeIdUri;
 
-  /** The value, or null. */
+  /** 值，可能为 null。 */
   @Nullable public final String value;
 
-  /** The identifier, or null. */
+  /** 标识符，可能为 null。 */
   @Nullable public final String id;
 
   /**
-   * @param schemeIdUri The scheme URI.
-   * @param value The value, or null.
-   * @param id The identifier, or null.
+   * 构造一个描述符实例。
+   *
+   * @param schemeIdUri 方案的 URI。
+   * @param value 值，可能为 null。
+   * @param id 标识符，可能为 null。
    */
   public Descriptor(String schemeIdUri, @Nullable String value, @Nullable String id) {
     this.schemeIdUri = schemeIdUri;

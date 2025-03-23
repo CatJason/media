@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import static androidx.media3.common.util.Util.parseXsDateTime;
@@ -43,37 +28,33 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Handles all emsg messages from all media tracks for the player.
+ * 处理播放器中所有媒体轨道的 emsg 消息。
  *
- * <p>This class will only respond to emsg messages which have schemeIdUri
- * "urn:mpeg:dash:event:2012", and value "1"/"2"/"3". When it encounters one of these messages, it
- * will handle the message according to Section 4.5.2.1 DASH -IF IOP Version 4.1:
+ * <p>该类仅响应 schemeIdUri 为 "urn:mpeg:dash:event:2012" 且 value 为 "1"/"2"/"3" 的 emsg 消息。
+ * 当遇到这些消息时，它将根据 DASH -IF IOP 版本 4.1 的第 4.5.2.1 节处理消息：
  *
  * <ul>
- *   <li>If both presentation time delta and event duration are zero, it means the media
- *       presentation has ended.
- *   <li>Else, it will parse the message data from the emsg message to find the publishTime of the
- *       expired manifest, and mark manifest with publishTime smaller than that values to be
- *       expired.
+ *   <li>如果 presentation time delta 和 event duration 都为零，则表示媒体播放已结束。
+ *   <li>否则，它将从 emsg 消息中解析消息数据，找到过期清单的 publishTime，并标记 publishTime 小于该值的清单为过期。
  * </ul>
  *
- * In both cases, the DASH media source will be notified, and a manifest reload should be triggered.
+ * 在这两种情况下，DASH 媒体源都会收到通知，并应触发清单重新加载。
  */
 @UnstableApi
 public final class PlayerEmsgHandler implements Handler.Callback {
 
   private static final int EMSG_MANIFEST_EXPIRED = 1;
 
-  /** Callbacks for player emsg events encountered during DASH live stream. */
+  /** 在 DASH 直播流中遇到播放器 emsg 事件时的回调。 */
   public interface PlayerEmsgCallback {
 
-    /** Called when the current manifest should be refreshed. */
+    /** 当当前清单需要刷新时调用。 */
     void onDashManifestRefreshRequested();
 
     /**
-     * Called when the manifest with the publish time has been expired.
+     * 当具有指定 publishTime 的清单已过期时调用。
      *
-     * @param expiredManifestPublishTimeUs The manifest publish time that has been expired.
+     * @param expiredManifestPublishTimeUs 已过期的清单 publishTime。
      */
     void onDashManifestPublishTimeExpired(long expiredManifestPublishTimeUs);
   }
@@ -92,10 +73,9 @@ public final class PlayerEmsgHandler implements Handler.Callback {
   private boolean released;
 
   /**
-   * @param manifest The initial manifest.
-   * @param playerEmsgCallback The callback that this event handler can invoke when handling emsg
-   *     messages that generate DASH media source events.
-   * @param allocator An {@link Allocator} from which allocations can be obtained.
+   * @param manifest 初始清单。
+   * @param playerEmsgCallback 该事件处理器在处理生成 DASH 媒体源事件的 emsg 消息时可以调用的回调。
+   * @param allocator 用于分配资源的 {@link Allocator}。
    */
   public PlayerEmsgHandler(
       DashManifest manifest, PlayerEmsgCallback playerEmsgCallback, Allocator allocator) {
@@ -109,9 +89,9 @@ public final class PlayerEmsgHandler implements Handler.Callback {
   }
 
   /**
-   * Updates the {@link DashManifest} that this handler works on.
+   * 更新该处理器使用的 {@link DashManifest}。
    *
-   * @param newManifest The updated manifest.
+   * @param newManifest 更新后的清单。
    */
   public void updateManifest(DashManifest newManifest) {
     isWaitingForManifestRefresh = false;
@@ -120,12 +100,12 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     removePreviouslyExpiredManifestPublishTimeValues();
   }
 
-  /** Returns a {@link TrackOutput} that emsg messages could be written to. */
+  /** 返回一个可以写入 emsg 消息的 {@link TrackOutput}。 */
   public PlayerTrackEmsgHandler newPlayerTrackEmsgHandler() {
     return new PlayerTrackEmsgHandler(allocator);
   }
 
-  /** Release this emsg handler. It should not be reused after this call. */
+  /** 释放该 emsg 处理器。调用此方法后不应再使用它。 */
   public void release() {
     released = true;
     handler.removeCallbacksAndMessages(null);
@@ -143,12 +123,12 @@ public final class PlayerEmsgHandler implements Handler.Callback {
             messageObj.eventTimeUs, messageObj.manifestPublishTimeMsInEmsg);
         return true;
       default:
-        // Do nothing.
+        // 无操作。
     }
     return false;
   }
 
-  // Internal methods.
+  // 内部方法。
 
   /* package */ boolean maybeRefreshManifestBeforeLoadingNextChunk(long presentationPositionUs) {
     if (!manifest.dynamic) {
@@ -158,8 +138,7 @@ public final class PlayerEmsgHandler implements Handler.Callback {
       return true;
     }
     boolean manifestRefreshNeeded = false;
-    // Find the smallest publishTime (greater than or equal to the current manifest's publish time)
-    // that has a corresponding expiry time.
+    // 找到大于或等于当前清单 publishTime 的最小 publishTime，并检查其对应的过期时间。
     Map.Entry<Long, Long> expiredEntry = ceilingExpiryEntryForPublishTime(manifest.publishTimeMs);
     if (expiredEntry != null) {
       long expiredPointUs = expiredEntry.getValue();
@@ -187,9 +166,7 @@ public final class PlayerEmsgHandler implements Handler.Callback {
       return true;
     }
     if (isForwardSeek) {
-      // If a forward seek has occurred, there's a chance that the seek has skipped EMSGs signalling
-      // end-of-stream or manifest expiration. We must assume that the manifest might need to be
-      // refreshed.
+      // 如果发生了向前跳转，可能会跳过指示流结束或清单过期的 EMSG。我们必须假设清单可能需要刷新。
       maybeNotifyDashManifestRefreshNeeded();
       return true;
     }
@@ -214,7 +191,7 @@ public final class PlayerEmsgHandler implements Handler.Callback {
 
   private void removePreviouslyExpiredManifestPublishTimeValues() {
     for (Iterator<Map.Entry<Long, Long>> it =
-            manifestPublishTimeToExpiryTimeUs.entrySet().iterator();
+        manifestPublishTimeToExpiryTimeUs.entrySet().iterator();
         it.hasNext(); ) {
       Map.Entry<Long, Long> entry = it.next();
       long expiredManifestPublishTime = entry.getKey();
@@ -228,10 +205,10 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     playerEmsgCallback.onDashManifestPublishTimeExpired(expiredManifestPublishTimeUs);
   }
 
-  /** Requests DASH media manifest to be refreshed if necessary. */
+  /** 请求 DASH 媒体清单刷新（如果需要）。 */
   private void maybeNotifyDashManifestRefreshNeeded() {
     if (!chunkLoadedCompletedSinceLastManifestRefreshRequest) {
-      // Don't request a refresh unless some progress has been made.
+      // 除非取得了一些进展，否则不请求刷新。
       return;
     }
     isWaitingForManifestRefresh = true;
@@ -243,21 +220,20 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     try {
       return parseXsDateTime(Util.fromUtf8Bytes(eventMessage.messageData));
     } catch (ParserException ignored) {
-      // if we can't parse this event, ignore
+      // 如果无法解析此事件，则忽略。
       return C.TIME_UNSET;
     }
   }
 
   /**
-   * Returns whether an event with given schemeIdUri and value is a DASH emsg event targeting the
-   * player.
+   * 返回具有给定 schemeIdUri 和 value 的事件是否是针对播放器的 DASH emsg 事件。
    */
   private static boolean isPlayerEmsgEvent(String schemeIdUri, String value) {
     return "urn:mpeg:dash:event:2012".equals(schemeIdUri)
         && ("1".equals(value) || "2".equals(value) || "3".equals(value));
   }
 
-  /** Handles emsg messages for a specific track for the player. */
+  /** 处理播放器特定轨道的 emsg 消息。 */
   public final class PlayerTrackEmsgHandler implements TrackOutput {
 
     private final SampleQueue sampleQueue;
@@ -298,11 +274,10 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     }
 
     /**
-     * For live streaming, check if the DASH manifest is expired before the next segment start time.
-     * If it is, the DASH media source will be notified to refresh the manifest.
+     * 对于直播流，检查 DASH 清单是否在下个分段开始时间之前过期。如果过期，将通知 DASH 媒体源刷新清单。
      *
-     * @param presentationPositionUs The next load position in presentation time.
-     * @return True if manifest refresh has been requested, false otherwise.
+     * @param presentationPositionUs 下个加载位置的时间（以微秒为单位）。
+     * @return 如果已请求清单刷新，则返回 true，否则返回 false。
      */
     public boolean maybeRefreshManifestBeforeLoadingNextChunk(long presentationPositionUs) {
       return PlayerEmsgHandler.this.maybeRefreshManifestBeforeLoadingNextChunk(
@@ -310,9 +285,9 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     }
 
     /**
-     * Called when a chunk load has been completed.
+     * 当分段加载完成时调用。
      *
-     * @param chunk The chunk whose load has been completed.
+     * @param chunk 加载完成的分段。
      */
     public void onChunkLoadCompleted(Chunk chunk) {
       if (maxLoadedChunkEndTimeUs == C.TIME_UNSET || chunk.endTimeUs > maxLoadedChunkEndTimeUs) {
@@ -322,10 +297,10 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     }
 
     /**
-     * Called when a chunk load has encountered an error.
+     * 当分段加载遇到错误时调用。
      *
-     * @param chunk The chunk whose load encountered an error.
-     * @return Whether a manifest refresh has been requested.
+     * @param chunk 加载遇到错误的分段。
+     * @return 是否已请求清单刷新。
      */
     public boolean onChunkLoadError(Chunk chunk) {
       boolean isAfterForwardSeek =
@@ -333,12 +308,12 @@ public final class PlayerEmsgHandler implements Handler.Callback {
       return PlayerEmsgHandler.this.onChunkLoadError(isAfterForwardSeek);
     }
 
-    /** Release this track emsg handler. It should not be reused after this call. */
+    /** 释放该轨道 emsg 处理器。调用此方法后不应再使用它。 */
     public void release() {
       sampleQueue.release();
     }
 
-    // Internal methods.
+    // 内部方法。
 
     private void parseAndDiscardSamples() {
       while (sampleQueue.isReady(/* loadingFinished= */ false)) {
@@ -387,7 +362,7 @@ public final class PlayerEmsgHandler implements Handler.Callback {
     }
   }
 
-  /** Holds information related to a manifest expiry event. */
+  /** 保存与清单过期事件相关的信息。 */
   private static final class ManifestExpiryEventInfo {
 
     public final long eventTimeUs;

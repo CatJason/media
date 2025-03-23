@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.media3.common.util.UnstableApi;
@@ -21,9 +6,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * A template from which URLs can be built.
+ * 用于构建 URL 的模板。
  *
- * <p>URLs are built according to the substitution rules defined in ISO/IEC 23009-1:2014 5.3.9.4.4.
+ * <p>URL 根据 ISO/IEC 23009-1:2014 5.3.9.4.4 中定义的替换规则构建。
  */
 @UnstableApi
 public final class UrlTemplate {
@@ -45,11 +30,11 @@ public final class UrlTemplate {
   private final List<String> identifierFormatTags;
 
   /**
-   * Compile an instance from the provided template string.
+   * 从提供的模板字符串编译一个实例。
    *
-   * @param template The template.
-   * @return The compiled instance.
-   * @throws IllegalArgumentException If the template string is malformed.
+   * @param template 模板字符串。
+   * @return 编译后的实例。
+   * @throws IllegalArgumentException 如果模板字符串格式不正确。
    */
   public static UrlTemplate compile(String template) {
     List<String> urlPieces = new ArrayList<>();
@@ -60,7 +45,7 @@ public final class UrlTemplate {
     return new UrlTemplate(urlPieces, identifiers, identifierFormatTags);
   }
 
-  /** Internal constructor. Use {@link #compile(String)} to build instances of this class. */
+  /** 内部构造函数。使用 {@link #compile(String)} 来构建此类的实例。 */
   private UrlTemplate(
       List<String> urlPieces, List<Integer> identifiers, List<String> identifierFormatTags) {
     this.urlPieces = urlPieces;
@@ -69,15 +54,15 @@ public final class UrlTemplate {
   }
 
   /**
-   * Constructs a Uri from the template, substituting in the provided arguments.
+   * 根据模板构建 URI，并替换提供的参数。
    *
-   * <p>Arguments whose corresponding identifiers are not present in the template will be ignored.
+   * <p>如果模板中不存在对应的标识符，则忽略相应的参数。
    *
-   * @param representationId The representation identifier.
-   * @param segmentNumber The segment number.
-   * @param bandwidth The bandwidth.
-   * @param time The time as specified by the segment timeline.
-   * @return The built Uri.
+   * @param representationId 表示标识符。
+   * @param segmentNumber 分段编号。
+   * @param bandwidth 带宽。
+   * @param time 分段时间线中指定的时间。
+   * @return 构建的 URI。
    */
   public String buildUri(String representationId, long segmentNumber, int bandwidth, long time) {
     StringBuilder builder = new StringBuilder();
@@ -98,19 +83,17 @@ public final class UrlTemplate {
   }
 
   /**
-   * Parses {@code template}, placing the decomposed components into the provided lists.
+   * 解析 {@code template}，并将分解后的组件放入提供的列表中。
    *
-   * <p>If the number of identifiers in the {@code template} is N, {@code urlPieces} will contain
-   * (N+1) strings that must be interleaved with those N arguments in order to construct a url. The
-   * N identifiers that correspond to the required arguments, together with the tags that define
-   * their required formatting, are returned in {@code identifiers} and {@code identifierFormatTags}
-   * respectively.
+   * <p>如果 {@code template} 中的标识符数量为 N，则 {@code urlPieces} 将包含 (N+1) 个字符串，
+   * 这些字符串必须与 N 个参数交错以构建 URL。与所需参数对应的 N 个标识符及其格式标签分别
+   * 返回在 {@code identifiers} 和 {@code identifierFormatTags} 中。
    *
-   * @param template The template to parse.
-   * @param urlPieces A holder for pieces of url parsed from the template.
-   * @param identifiers A holder for identifiers parsed from the template.
-   * @param identifierFormatTags A holder for format tags corresponding to the parsed identifiers.
-   * @throws IllegalArgumentException If the template string is malformed.
+   * @param template 要解析的模板。
+   * @param urlPieces 用于存放从模板解析出的 URL 片段的容器。
+   * @param identifiers 用于存放从模板解析出的标识符的容器。
+   * @param identifierFormatTags 用于存放与解析出的标识符对应的格式标签的容器。
+   * @throws IllegalArgumentException 如果模板字符串格式不正确。
    */
   private static void parseTemplate(
       String template,
@@ -145,9 +128,8 @@ public final class UrlTemplate {
           String formatTag = DEFAULT_FORMAT_TAG;
           if (formatTagIndex != -1) {
             formatTag = identifier.substring(formatTagIndex);
-            // Allowed conversions are decimal integer (which is the only conversion allowed by the
-            // DASH specification) and hexadecimal integer (due to existing content that uses it).
-            // Else we assume that the conversion is missing, and that it should be decimal integer.
+            // 允许的转换是十进制整数（DASH 规范中唯一允许的转换）和十六进制整数（由于现有内容使用它）。
+            // 否则，我们假设缺少转换，并且它应该是十进制整数。
             if (!formatTag.endsWith("d") && !formatTag.endsWith("x") && !formatTag.endsWith("X")) {
               formatTag += "d";
             }

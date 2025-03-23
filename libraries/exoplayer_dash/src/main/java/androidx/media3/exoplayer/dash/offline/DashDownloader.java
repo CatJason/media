@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.offline;
 
 import static androidx.media3.common.util.Util.castNonNull;
@@ -48,9 +33,9 @@ import java.util.concurrent.Executor;
 
 // LINT.IfChange(javadoc)
 /**
- * A downloader for DASH streams.
+ * 用于下载 DASH 流的下载器。
  *
- * <p>Example usage:
+ * <p>使用示例：
  *
  * <pre>{@code
  * SimpleCache cache = new SimpleCache(downloadFolder, new NoOpCacheEvictor(), databaseProvider);
@@ -58,8 +43,7 @@ import java.util.concurrent.Executor;
  *     new CacheDataSource.Factory()
  *         .setCache(cache)
  *         .setUpstreamDataSourceFactory(new DefaultHttpDataSource.Factory());
- * // Create a downloader for the first representation of the first adaptation set of the first
- * // period.
+ * // 为第一个周期的第一个自适应集的第一个表示创建下载器。
  * DashDownloader dashDownloader =
  *     new DashDownloader(
  *         new MediaItem.Builder()
@@ -67,9 +51,9 @@ import java.util.concurrent.Executor;
  *             .setStreamKeys(Collections.singletonList(new StreamKey(0, 0, 0)))
  *             .build(),
  *         cacheDataSourceFactory);
- * // Perform the download.
+ * // 执行下载。
  * dashDownloader.download(progressListener);
- * // Use the downloaded data for playback.
+ * // 使用下载的数据进行播放。
  * DashMediaSource mediaSource =
  *     new DashMediaSource.Factory(cacheDataSourceFactory).createMediaSource(mediaItem);
  * }</pre>
@@ -80,25 +64,22 @@ public final class DashDownloader extends SegmentDownloader<DashManifest> {
   private final BaseUrlExclusionList baseUrlExclusionList;
 
   /**
-   * Creates a new instance.
+   * 创建一个新的实例。
    *
-   * @param mediaItem The {@link MediaItem} to be downloaded.
-   * @param cacheDataSourceFactory A {@link CacheDataSource.Factory} for the cache into which the
-   *     download will be written.
+   * @param mediaItem 要下载的 {@link MediaItem}。
+   * @param cacheDataSourceFactory 用于写入下载数据的 {@link CacheDataSource.Factory}。
    */
   public DashDownloader(MediaItem mediaItem, CacheDataSource.Factory cacheDataSourceFactory) {
     this(mediaItem, cacheDataSourceFactory, Runnable::run);
   }
 
   /**
-   * Creates a new instance.
+   * 创建一个新的实例。
    *
-   * @param mediaItem The {@link MediaItem} to be downloaded.
-   * @param cacheDataSourceFactory A {@link CacheDataSource.Factory} for the cache into which the
-   *     download will be written.
-   * @param executor An {@link Executor} used to make requests for the media being downloaded.
-   *     Providing an {@link Executor} that uses multiple threads will speed up the download by
-   *     allowing parts of it to be executed in parallel.
+   * @param mediaItem 要下载的 {@link MediaItem}。
+   * @param cacheDataSourceFactory 用于写入下载数据的 {@link CacheDataSource.Factory}。
+   * @param executor 用于执行下载请求的 {@link Executor}。提供一个使用多线程的 {@link Executor} 可以加速下载，
+   *     因为它允许下载的某些部分并行执行。
    */
   public DashDownloader(
       MediaItem mediaItem, CacheDataSource.Factory cacheDataSourceFactory, Executor executor) {
@@ -129,18 +110,15 @@ public final class DashDownloader extends SegmentDownloader<DashManifest> {
   }
 
   /**
-   * Creates a new instance.
+   * 创建一个新的实例。
    *
-   * @param mediaItem The {@link MediaItem} to be downloaded.
-   * @param manifestParser A parser for DASH manifests.
-   * @param cacheDataSourceFactory A {@link CacheDataSource.Factory} for the cache into which the
-   *     download will be written.
-   * @param executor An {@link Executor} used to make requests for the media being downloaded.
-   *     Providing an {@link Executor} that uses multiple threads will speed up the download by
-   *     allowing parts of it to be executed in parallel.
-   * @param maxMergedSegmentStartTimeDiffMs The maximum difference of the start time of two
-   *     segments, up to which the segments (of the same URI) should be merged into a single
-   *     download segment, in milliseconds.
+   * @param mediaItem 要下载的 {@link MediaItem}。
+   * @param manifestParser 用于解析 DASH 清单的解析器。
+   * @param cacheDataSourceFactory 用于写入下载数据的 {@link CacheDataSource.Factory}。
+   * @param executor 用于执行下载请求的 {@link Executor}。提供一个使用多线程的 {@link Executor} 可以加速下载，
+   *     因为它允许下载的某些部分并行执行。
+   * @param maxMergedSegmentStartTimeDiffMs 两个分段的最大开始时间差（以毫秒为单位），如果小于该值，
+   *     则相同 URI 的分段将被合并为单个下载分段。
    */
   public DashDownloader(
       MediaItem mediaItem,
@@ -187,16 +165,18 @@ public final class DashDownloader extends SegmentDownloader<DashManifest> {
       Representation representation = adaptationSet.representations.get(i);
       DashSegmentIndex index;
       try {
+        // 尝试获取分段索引
         index = getSegmentIndex(dataSource, adaptationSet.type, representation, removing);
         if (index == null) {
-          // Loading succeeded but there was no index.
+          // 加载成功，但没有找到索引
           throw new DownloadException("Missing segment index");
         }
       } catch (IOException e) {
         if (!removing) {
+          // 如果不是在移除操作中，则抛出异常
           throw e;
         }
-        // Generating an incomplete segment list is allowed. Advance to the next representation.
+        // 允许生成不完整的分段列表，继续处理下一个表示
         continue;
       }
 

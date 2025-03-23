@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import android.net.Uri;
@@ -43,20 +28,19 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-/** Utility methods for DASH streams. */
+/** DASH 流处理的实用方法。 */
 @UnstableApi
 public final class DashUtil {
 
   /**
-   * Builds a {@link DataSpec} for a given {@link RangedUri} belonging to {@link Representation}.
+   * 为属于 {@link Representation} 的给定 {@link RangedUri} 构建 {@link DataSpec}。
    *
-   * @param representation The {@link Representation} to which the request belongs.
-   * @param baseUrl The base url with which to resolve the request URI.
-   * @param requestUri The {@link RangedUri} of the data to request.
-   * @param flags Flags to be set on the returned {@link DataSpec}. See {@link
-   *     DataSpec.Builder#setFlags(int)}.
-   * @param httpRequestHeaders The {@link DataSpec#httpRequestHeaders}.
-   * @return The {@link DataSpec}.
+   * @param representation 请求所属的 {@link Representation}。
+   * @param baseUrl 用于解析请求 URI 的基础 URL。
+   * @param requestUri 要请求的数据的 {@link RangedUri}。
+   * @param flags 要设置在返回的 {@link DataSpec} 上的标志。参见 {@link DataSpec.Builder#setFlags(int)}。
+   * @param httpRequestHeaders {@link DataSpec#httpRequestHeaders}。
+   * @return 构建的 {@link DataSpec}。
    */
   public static DataSpec buildDataSpec(
       Representation representation,
@@ -75,7 +59,7 @@ public final class DashUtil {
   }
 
   /**
-   * @deprecated Use {@link #buildDataSpec(Representation, String, RangedUri, int, Map)} instead.
+   * @deprecated 请使用 {@link #buildDataSpec(Representation, String, RangedUri, int, Map)} 代替。
    */
   @Deprecated
   public static DataSpec buildDataSpec(
@@ -85,7 +69,7 @@ public final class DashUtil {
   }
 
   /**
-   * @deprecated Use {@link #buildDataSpec(Representation, String, RangedUri, int, Map)} instead.
+   * @deprecated 请使用 {@link #buildDataSpec(Representation, String, RangedUri, int, Map)} 代替。
    */
   @Deprecated
   public static DataSpec buildDataSpec(
@@ -99,24 +83,24 @@ public final class DashUtil {
   }
 
   /**
-   * Loads a DASH manifest.
+   * 加载 DASH 清单。
    *
-   * @param dataSource The {@link DataSource} from which the manifest should be read.
-   * @param uri The {@link Uri} of the manifest to be read.
-   * @return An instance of {@link DashManifest}.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param dataSource 用于读取清单的 {@link DataSource}。
+   * @param uri 要读取的清单的 {@link Uri}。
+   * @return {@link DashManifest} 的实例。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   public static DashManifest loadManifest(DataSource dataSource, Uri uri) throws IOException {
     return ParsingLoadable.load(dataSource, new DashManifestParser(), uri, C.DATA_TYPE_MANIFEST);
   }
 
   /**
-   * Loads a {@link Format} for acquiring keys for a given period in a DASH manifest.
+   * 加载用于获取 DASH 清单中给定时期的密钥的 {@link Format}。
    *
-   * @param dataSource The {@link DataSource} from which data should be loaded.
-   * @param period The {@link Period}.
-   * @return The loaded {@link Format}, or null if none is defined.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param dataSource 用于加载数据的 {@link DataSource}。
+   * @param period 给定的 {@link Period}。
+   * @return 加载的 {@link Format}，如果未定义则返回 null。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   @Nullable
   public static Format loadFormatWithDrmInitData(DataSource dataSource, Period period)
@@ -139,16 +123,14 @@ public final class DashUtil {
   }
 
   /**
-   * Loads initialization data for the {@code representation} and returns the sample {@link Format}.
+   * 加载 {@code representation} 的初始化数据并返回样本 {@link Format}。
    *
-   * @param dataSource The source from which the data should be loaded.
-   * @param trackType The type of the representation. Typically one of the {@link C
-   *     androidx.media3.common.C} {@code TRACK_TYPE_*} constants.
-   * @param representation The representation which initialization chunk belongs to.
-   * @param baseUrlIndex The index of the base URL to be picked from the {@link
-   *     Representation#baseUrls list of base URLs}.
-   * @return the sample {@link Format} of the given representation.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param dataSource 用于加载数据的源。
+   * @param trackType 表示的类型。通常是 {@link C androidx.media3.common.C} 中的 {@code TRACK_TYPE_*} 常量之一。
+   * @param representation 初始化块所属的表示。
+   * @param baseUrlIndex 从 {@link Representation#baseUrls 基础 URL 列表} 中选择的基础 URL 的索引。
+   * @return 给定表示的样本 {@link Format}。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   @Nullable
   public static Format loadSampleFormat(
@@ -168,16 +150,15 @@ public final class DashUtil {
   }
 
   /**
-   * Loads initialization data for the {@code representation} and returns the sample {@link Format}.
+   * 加载 {@code representation} 的初始化数据并返回样本 {@link Format}。
    *
-   * <p>Uses the first base URL for loading the format.
+   * <p>使用第一个基础 URL 来加载格式。
    *
-   * @param dataSource The source from which the data should be loaded.
-   * @param trackType The type of the representation. Typically one of the {@link C
-   *     androidx.media3.common.C} {@code TRACK_TYPE_*} constants.
-   * @param representation The representation which initialization chunk belongs to.
-   * @return the sample {@link Format} of the given representation.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param dataSource 用于加载数据的源。
+   * @param trackType 表示的类型。通常是 {@link C androidx.media3.common.C} 中的 {@code TRACK_TYPE_*} 常量之一。
+   * @param representation 初始化块所属的表示。
+   * @return 给定表示的样本 {@link Format}。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   @Nullable
   public static Format loadSampleFormat(
@@ -186,17 +167,14 @@ public final class DashUtil {
   }
 
   /**
-   * Loads initialization and index data for the {@code representation} and returns the {@link
-   * ChunkIndex}.
+   * 加载 {@code representation} 的初始化和索引数据并返回 {@link ChunkIndex}。
    *
-   * @param dataSource The source from which the data should be loaded.
-   * @param trackType The type of the representation. Typically one of the {@link C
-   *     androidx.media3.common.C} {@code TRACK_TYPE_*} constants.
-   * @param representation The representation which initialization chunk belongs to.
-   * @param baseUrlIndex The index of the base URL with which to resolve the request URI.
-   * @return The {@link ChunkIndex} of the given representation, or null if no initialization or
-   *     index data exists.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param dataSource 用于加载数据的源。
+   * @param trackType 表示的类型。通常是 {@link C androidx.media3.common.C} 中的 {@code TRACK_TYPE_*} 常量之一。
+   * @param representation 初始化块所属的表示。
+   * @param baseUrlIndex 用于解析请求 URI 的基础 URL 的索引。
+   * @return 给定表示的 {@link ChunkIndex}，如果没有初始化或索引数据则返回 null。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   @Nullable
   public static ChunkIndex loadChunkIndex(
@@ -216,18 +194,15 @@ public final class DashUtil {
   }
 
   /**
-   * Loads initialization and index data for the {@code representation} and returns the {@link
-   * ChunkIndex}.
+   * 加载 {@code representation} 的初始化和索引数据并返回 {@link ChunkIndex}。
    *
-   * <p>Uses the first base URL for loading the index.
+   * <p>使用第一个基础 URL 来加载索引。
    *
-   * @param dataSource The source from which the data should be loaded.
-   * @param trackType The type of the representation. Typically one of the {@link C
-   *     androidx.media3.common.C} {@code TRACK_TYPE_*} constants.
-   * @param representation The representation which initialization chunk belongs to.
-   * @return The {@link ChunkIndex} of the given representation, or null if no initialization or
-   *     index data exists.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param dataSource 用于加载数据的源。
+   * @param trackType 表示的类型。通常是 {@link C androidx.media3.common.C} 中的 {@code TRACK_TYPE_*} 常量之一。
+   * @param representation 初始化块所属的表示。
+   * @return 给定表示的 {@link ChunkIndex}，如果没有初始化或索引数据则返回 null。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   @Nullable
   public static ChunkIndex loadChunkIndex(
@@ -236,15 +211,14 @@ public final class DashUtil {
   }
 
   /**
-   * Loads initialization data for the {@code representation} and optionally index data then returns
-   * a {@link BundledChunkExtractor} which contains the output.
+   * 加载 {@code representation} 的初始化数据，并可选地加载索引数据，然后返回包含输出的 {@link BundledChunkExtractor}。
    *
-   * @param chunkExtractor The {@link ChunkExtractor} to use.
-   * @param dataSource The source from which the data should be loaded.
-   * @param representation The representation which initialization chunk belongs to.
-   * @param baseUrlIndex The index of the base URL with which to resolve the request URI.
-   * @param loadIndex Whether to load index data too.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param chunkExtractor 要使用的 {@link ChunkExtractor}。
+   * @param dataSource 用于加载数据的源。
+   * @param representation 初始化块所属的表示。
+   * @param baseUrlIndex 用于解析请求 URI 的基础 URL 的索引。
+   * @param loadIndex 是否也加载索引数据。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   private static void loadInitializationData(
       ChunkExtractor chunkExtractor,
@@ -260,8 +234,7 @@ public final class DashUtil {
       if (indexUri == null) {
         return;
       }
-      // It's common for initialization and index data to be stored adjacently. Attempt to merge
-      // the two requests together to request both at once.
+      // 初始化和索引数据通常存储在一起。尝试将两个请求合并为一个请求。
       requestUri =
           initializationUri.attemptMerge(indexUri, representation.baseUrls.get(baseUrlIndex).url);
       if (requestUri == null) {
@@ -276,16 +249,15 @@ public final class DashUtil {
   }
 
   /**
-   * Loads initialization data for the {@code representation} and optionally index data then returns
-   * a {@link BundledChunkExtractor} which contains the output.
+   * 加载 {@code representation} 的初始化数据，并可选地加载索引数据，然后返回包含输出的 {@link BundledChunkExtractor}。
    *
-   * <p>Uses the first base URL for loading the initialization data.
+   * <p>使用第一个基础 URL 来加载初始化数据。
    *
-   * @param chunkExtractor The {@link ChunkExtractor} to use.
-   * @param dataSource The source from which the data should be loaded.
-   * @param representation The representation which initialization chunk belongs to.
-   * @param loadIndex Whether to load index data too.
-   * @throws IOException Thrown when there is an error while loading.
+   * @param chunkExtractor 要使用的 {@link ChunkExtractor}。
+   * @param dataSource 用于加载数据的源。
+   * @param representation 初始化块所属的表示。
+   * @param loadIndex 是否也加载索引数据。
+   * @throws IOException 加载过程中发生错误时抛出。
    */
   public static void loadInitializationData(
       ChunkExtractor chunkExtractor,
@@ -323,12 +295,11 @@ public final class DashUtil {
   }
 
   /**
-   * Resolves the cache key to be used when requesting the given ranged URI for the given {@link
-   * Representation}.
+   * 解析用于请求给定 {@link Representation} 的给定范围 URI 的缓存键。
    *
-   * @param representation The {@link Representation} to which the URI belongs to.
-   * @param rangedUri The URI for which to resolve the cache key.
-   * @return The cache key.
+   * @param representation URI 所属的 {@link Representation}。
+   * @param rangedUri 要解析缓存键的 URI。
+   * @return 缓存键。
    */
   public static String resolveCacheKey(Representation representation, RangedUri rangedUri) {
     @Nullable String cacheKey = representation.getCacheKey();
@@ -342,11 +313,11 @@ public final class DashUtil {
     boolean isWebm =
         mimeType != null
             && (mimeType.startsWith(MimeTypes.VIDEO_WEBM)
-                || mimeType.startsWith(MimeTypes.AUDIO_WEBM));
+            || mimeType.startsWith(MimeTypes.AUDIO_WEBM));
     Extractor extractor =
         isWebm
             ? new MatroskaExtractor(
-                SubtitleParser.Factory.UNSUPPORTED, MatroskaExtractor.FLAG_EMIT_RAW_SUBTITLE_DATA)
+            SubtitleParser.Factory.UNSUPPORTED, MatroskaExtractor.FLAG_EMIT_RAW_SUBTITLE_DATA)
             : new FragmentedMp4Extractor(
                 SubtitleParser.Factory.UNSUPPORTED,
                 FragmentedMp4Extractor.FLAG_EMIT_RAW_SUBTITLE_DATA);

@@ -18,6 +18,6 @@ package androidx.media3.exoplayer.dash;
 import androidx.media3.common.util.UnstableApi;
 import java.io.IOException;
 
-/** Thrown when a live playback's manifest is stale and a new manifest could not be loaded. */
+/** 当直播播放的清单已过时且无法加载新清单时抛出。 */
 @UnstableApi
 public final class DashManifestStaleException extends IOException {}

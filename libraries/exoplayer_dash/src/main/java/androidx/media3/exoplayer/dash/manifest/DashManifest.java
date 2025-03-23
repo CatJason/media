@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import android.net.Uri;
@@ -28,67 +13,60 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Represents a DASH media presentation description (mpd), as defined by ISO/IEC 23009-1:2014
- * Section 5.3.1.2.
+ * 表示 DASH 媒体呈现描述（MPD），定义见 ISO/IEC 23009-1:2014 第 5.3.1.2 节。
  */
 @UnstableApi
 public class DashManifest implements FilterableManifest<DashManifest> {
 
   /**
-   * The {@code availabilityStartTime} value in milliseconds since epoch, or {@link C#TIME_UNSET} if
-   * not present.
+   * {@code availabilityStartTime} 值，表示自纪元以来的毫秒数，如果未提供则为 {@link C#TIME_UNSET}。
    */
   public final long availabilityStartTimeMs;
 
   /**
-   * The duration of the presentation in milliseconds, or {@link C#TIME_UNSET} if not applicable.
+   * 媒体呈现的持续时间，单位为毫秒，如果不适用则为 {@link C#TIME_UNSET}。
    */
   public final long durationMs;
 
-  /** The {@code minBufferTime} value in milliseconds, or {@link C#TIME_UNSET} if not present. */
+  /** {@code minBufferTime} 值，单位为毫秒，如果未提供则为 {@link C#TIME_UNSET}。 */
   public final long minBufferTimeMs;
 
-  /** Whether the manifest has value "dynamic" for the {@code type} attribute. */
+  /** 清单的 {@code type} 属性是否为 "dynamic"。 */
   public final boolean dynamic;
 
   /**
-   * The {@code minimumUpdatePeriod} value in milliseconds, or {@link C#TIME_UNSET} if not
-   * applicable.
+   * {@code minimumUpdatePeriod} 值，单位为毫秒，如果不适用则为 {@link C#TIME_UNSET}。
    */
   public final long minUpdatePeriodMs;
 
   /**
-   * The {@code timeShiftBufferDepth} value in milliseconds, or {@link C#TIME_UNSET} if not present.
+   * {@code timeShiftBufferDepth} 值，单位为毫秒，如果未提供则为 {@link C#TIME_UNSET}。
    */
   public final long timeShiftBufferDepthMs;
 
   /**
-   * The {@code suggestedPresentationDelay} value in milliseconds, or {@link C#TIME_UNSET} if not
-   * present.
+   * {@code suggestedPresentationDelay} 值，单位为毫秒，如果未提供则为 {@link C#TIME_UNSET}。
    */
   public final long suggestedPresentationDelayMs;
 
   /**
-   * The {@code publishTime} value in milliseconds since epoch, or {@link C#TIME_UNSET} if not
-   * present.
+   * {@code publishTime} 值，表示自纪元以来的毫秒数，如果未提供则为 {@link C#TIME_UNSET}。
    */
   public final long publishTimeMs;
 
   /**
-   * The {@link UtcTimingElement}, or null if not present. Defined in DVB A168:7/2016, Section
-   * 4.7.2.
+   * {@link UtcTimingElement}，如果未提供则为 null。定义见 DVB A168:7/2016 第 4.7.2 节。
    */
   @Nullable public final UtcTimingElement utcTiming;
 
-  /** The {@link ServiceDescriptionElement}, or null if not present. */
+  /** {@link ServiceDescriptionElement}，如果未提供则为 null。 */
   @Nullable public final ServiceDescriptionElement serviceDescription;
 
-  /** The location of this manifest, or null if not present. */
+  /** 该清单的位置，如果未提供则为 null。 */
   @Nullable public final Uri location;
 
-  /** The {@link ProgramInformation}, or null if not present. */
+  /** {@link ProgramInformation}，如果未提供则为 null。 */
   @Nullable public final ProgramInformation programInformation;
-
   private final List<Period> periods;
 
   public DashManifest(
@@ -148,7 +126,7 @@ public class DashManifest implements FilterableManifest<DashManifest> {
     long shiftMs = 0;
     for (int periodIndex = 0; periodIndex < getPeriodCount(); periodIndex++) {
       if (keys.peek().periodIndex != periodIndex) {
-        // No representations selected in this period.
+        // 此周期中未选择任何表示。
         long periodDurationMs = getPeriodDurationMs(periodIndex);
         if (periodDurationMs != C.TIME_UNSET) {
           shiftMs += periodDurationMs;
@@ -206,7 +184,7 @@ public class DashManifest implements FilterableManifest<DashManifest> {
               adaptationSet.essentialProperties,
               adaptationSet.supplementalProperties));
     } while (key.periodIndex == periodIndex);
-    // Add back the last key which doesn't belong to the period being processed
+    // 此周期中未选择任何表示。
     keys.addFirst(key);
     return copyAdaptationSets;
   }

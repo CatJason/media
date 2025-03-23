@@ -1,129 +1,101 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.dash.manifest.RangedUri;
 
-/** Indexes the segments within a media stream. */
+/** 用于索引媒体流中的分段。 */
 @UnstableApi
 public interface DashSegmentIndex {
 
   int INDEX_UNBOUNDED = -1;
 
   /**
-   * Returns {@code getFirstSegmentNum()} if the index has no segments or if the given media time is
-   * earlier than the start of the first segment. Returns {@code getFirstSegmentNum() +
-   * getSegmentCount() - 1} if the given media time is later than the end of the last segment.
-   * Otherwise, returns the segment number of the segment containing the given media time.
+   * 如果索引没有分段，或者给定的媒体时间早于第一个分段的开始时间，则返回 {@code getFirstSegmentNum()}。
+   * 如果给定的媒体时间晚于最后一个分段的结束时间，则返回 {@code getFirstSegmentNum() + getSegmentCount() - 1}。
+   * 否则，返回包含给定媒体时间的分段号。
    *
-   * @param timeUs The time in microseconds.
-   * @param periodDurationUs The duration of the enclosing period in microseconds, or {@link
-   *     C#TIME_UNSET} if the period's duration is not yet known.
-   * @return The segment number of the corresponding segment.
+   * @param timeUs 时间，单位为微秒。
+   * @param periodDurationUs 所属周期的持续时间，单位为微秒，如果周期持续时间未知，则为 {@link C#TIME_UNSET}。
+   * @return 对应分段的分段号。
    */
   long getSegmentNum(long timeUs, long periodDurationUs);
 
   /**
-   * Returns the start time of a segment.
+   * 返回分段的开始时间。
    *
-   * @param segmentNum The segment number.
-   * @return The corresponding start time in microseconds.
+   * @param segmentNum 分段号。
+   * @return 对应的开始时间，单位为微秒。
    */
   long getTimeUs(long segmentNum);
 
   /**
-   * Returns the duration of a segment.
+   * 返回分段的持续时间。
    *
-   * @param segmentNum The segment number.
-   * @param periodDurationUs The duration of the enclosing period in microseconds, or {@link
-   *     C#TIME_UNSET} if the period's duration is not yet known.
-   * @return The duration of the segment, in microseconds.
+   * @param segmentNum 分段号。
+   * @param periodDurationUs 所属周期的持续时间，单位为微秒，如果周期持续时间未知，则为 {@link C#TIME_UNSET}。
+   * @return 分段的持续时间，单位为微秒。
    */
   long getDurationUs(long segmentNum, long periodDurationUs);
 
   /**
-   * Returns a {@link RangedUri} defining the location of a segment.
+   * 返回定义分段位置的 {@link RangedUri}。
    *
-   * @param segmentNum The segment number.
-   * @return The {@link RangedUri} defining the location of the data.
+   * @param segmentNum 分段号。
+   * @return 定义数据位置的 {@link RangedUri}。
    */
   RangedUri getSegmentUrl(long segmentNum);
 
-  /** Returns the segment number of the first defined segment in the index. */
+  /** 返回索引中第一个定义的分段号。 */
   long getFirstSegmentNum();
 
   /**
-   * Returns the segment number of the first available segment in the index.
+   * 返回索引中第一个可用分段的分段号。
    *
-   * @param periodDurationUs The duration of the enclosing period in microseconds, or {@link
-   *     C#TIME_UNSET} if the period's duration is not yet known.
-   * @param nowUnixTimeUs The current time in milliseconds since the Unix epoch.
-   * @return The number of the first available segment.
+   * @param periodDurationUs 所属周期的持续时间，单位为微秒，如果周期持续时间未知，则为 {@link C#TIME_UNSET}。
+   * @param nowUnixTimeUs 当前时间，单位为微秒，自 Unix 纪元起。
+   * @return 第一个可用分段的分段号。
    */
   long getFirstAvailableSegmentNum(long periodDurationUs, long nowUnixTimeUs);
 
   /**
-   * Returns the number of segments defined in the index, or {@link #INDEX_UNBOUNDED}.
+   * 返回索引中定义的分段数量，或 {@link #INDEX_UNBOUNDED}。
    *
-   * <p>An unbounded index occurs if a dynamic manifest uses SegmentTemplate elements without a
-   * SegmentTimeline element, and if the period duration is not yet known. In this case the caller
-   * can query the available segment using {@link #getFirstAvailableSegmentNum(long, long)} and
-   * {@link #getAvailableSegmentCount(long, long)}.
+   * <p>如果动态清单使用不带 SegmentTimeline 元素的 SegmentTemplate 元素，并且周期持续时间未知，则会出现无界索引。
+   * 在这种情况下，调用者可以使用 {@link #getFirstAvailableSegmentNum(long, long)} 和
+   * {@link #getAvailableSegmentCount(long, long)} 查询可用分段。
    *
-   * @param periodDurationUs The duration of the enclosing period in microseconds, or {@link
-   *     C#TIME_UNSET} if the period's duration is not yet known.
-   * @return The number of segments in the index, or {@link #INDEX_UNBOUNDED}.
+   * @param periodDurationUs 所属周期的持续时间，单位为微秒，如果周期持续时间未知，则为 {@link C#TIME_UNSET}。
+   * @return 索引中的分段数量，或 {@link #INDEX_UNBOUNDED}。
    */
   long getSegmentCount(long periodDurationUs);
 
   /**
-   * Returns the number of available segments in the index.
+   * 返回索引中可用分段的数量。
    *
-   * @param periodDurationUs The duration of the enclosing period in microseconds, or {@link
-   *     C#TIME_UNSET} if the period's duration is not yet known.
-   * @param nowUnixTimeUs The current time in milliseconds since the Unix epoch.
-   * @return The number of available segments in the index.
+   * @param periodDurationUs 所属周期的持续时间，单位为微秒，如果周期持续时间未知，则为 {@link C#TIME_UNSET}。
+   * @param nowUnixTimeUs 当前时间，单位为微秒，自 Unix 纪元起。
+   * @return 索引中可用分段的数量。
    */
   long getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs);
 
   /**
-   * Returns the time, in microseconds, at which a new segment becomes available, or {@link
-   * C#TIME_UNSET} if not applicable.
+   * 返回新分段可用的时间，单位为微秒，如果不适用，则返回 {@link C#TIME_UNSET}。
    *
-   * @param periodDurationUs The duration of the enclosing period in microseconds, or {@link
-   *     C#TIME_UNSET} if the period's duration is not yet known.
-   * @param nowUnixTimeUs The current time in milliseconds since the Unix epoch.
-   * @return The time, in microseconds, at which a new segment becomes available, or {@link
-   *     C#TIME_UNSET} if not applicable.
+   * @param periodDurationUs 所属周期的持续时间，单位为微秒，如果周期持续时间未知，则为 {@link C#TIME_UNSET}。
+   * @param nowUnixTimeUs 当前时间，单位为微秒，自 Unix 纪元起。
+   * @return 新分段可用的时间，单位为微秒，如果不适用，则返回 {@link C#TIME_UNSET}。
    */
   long getNextSegmentAvailableTimeUs(long periodDurationUs, long nowUnixTimeUs);
 
   /**
-   * Returns true if segments are defined explicitly by the index.
+   * 如果分段由索引显式定义，则返回 true。
    *
-   * <p>If true is returned, each segment is defined explicitly by the index data, and all of the
-   * listed segments are guaranteed to be available at the time when the index was obtained.
+   * <p>如果返回 true，则每个分段都由索引数据显式定义，并且在获取索引时列出的所有分段都保证可用。
    *
-   * <p>If false is returned then segment information was derived from properties such as a fixed
-   * segment duration. If the presentation is dynamic, it's possible that only a subset of the
-   * segments are available.
+   * <p>如果返回 false，则分段信息是从诸如固定分段持续时间等属性派生的。如果演示是动态的，则可能只有一部分分段可用。
    *
-   * @return Whether segments are defined explicitly by the index.
+   * @return 分段是否由索引显式定义。
    */
   boolean isExplicit();
 }

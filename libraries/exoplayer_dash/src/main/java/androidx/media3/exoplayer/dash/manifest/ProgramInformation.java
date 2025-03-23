@@ -1,40 +1,25 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
-/** A parsed program information element. */
+/** 解析后的节目信息元素。 */
 @UnstableApi
 public final class ProgramInformation {
-  /** The title for the media presentation. */
+  /** 媒体呈现的标题。 */
   @Nullable public final String title;
 
-  /** Information about the original source of the media presentation. */
+  /** 媒体呈现的原始来源信息。 */
   @Nullable public final String source;
 
-  /** A copyright statement for the media presentation. */
+  /** 媒体呈现的版权声明。 */
   @Nullable public final String copyright;
 
-  /** A URL that provides more information about the media presentation. */
+  /** 提供有关媒体呈现更多信息的 URL。 */
   @Nullable public final String moreInformationURL;
 
-  /** Declares the language code(s) for this ProgramInformation. */
+  /** 声明此节目信息的语言代码。 */
   @Nullable public final String lang;
 
   public ProgramInformation(

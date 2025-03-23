@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import androidx.media3.common.C;
@@ -21,8 +6,7 @@ import androidx.media3.exoplayer.dash.manifest.RangedUri;
 import androidx.media3.extractor.ChunkIndex;
 
 /**
- * An implementation of {@link DashSegmentIndex} that wraps a {@link ChunkIndex} parsed from a media
- * stream.
+ * 一个实现了 {@link DashSegmentIndex} 的类，用于封装从媒体流中解析出的 {@link ChunkIndex}。
  */
 @UnstableApi
 public final class DashWrappingSegmentIndex implements DashSegmentIndex {
@@ -31,8 +15,8 @@ public final class DashWrappingSegmentIndex implements DashSegmentIndex {
   private final long timeOffsetUs;
 
   /**
-   * @param chunkIndex The {@link ChunkIndex} to wrap.
-   * @param timeOffsetUs An offset to subtract from the times in the wrapped index, in microseconds.
+   * @param chunkIndex 要封装的 {@link ChunkIndex}。
+   * @param timeOffsetUs 从封装索引中的时间中减去的偏移量，单位为微秒。
    */
   public DashWrappingSegmentIndex(ChunkIndex chunkIndex, long timeOffsetUs) {
     this.chunkIndex = chunkIndex;

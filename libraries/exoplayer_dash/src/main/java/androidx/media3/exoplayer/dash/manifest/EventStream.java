@@ -1,42 +1,36 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.extractor.metadata.emsg.EventMessage;
 
-/** A DASH in-MPD EventStream element, as defined by ISO/IEC 23009-1, 2nd edition, section 5.10. */
+/** 表示 DASH MPD 中的 EventStream 元素，定义见 ISO/IEC 23009-1 第二版第 5.10 节。 */
 @UnstableApi
 public final class EventStream {
 
-  /** {@link EventMessage}s in the event stream. */
+  /** 事件流中的 {@link EventMessage} 数组。 */
   public final EventMessage[] events;
 
-  /** Presentation time of the events in microsecond, sorted in ascending order. */
+  /** 事件的呈现时间（以微秒为单位），按升序排序。 */
   public final long[] presentationTimesUs;
 
-  /** The scheme URI. */
+  /** 方案的 URI。 */
   public final String schemeIdUri;
 
-  /** The value of the event stream. Use empty string if not defined in manifest. */
+  /** 事件流的值。如果未在清单中定义，则使用空字符串。 */
   public final String value;
 
-  /** The timescale in units per seconds, as defined in the manifest. */
+  /** 时间刻度（每秒的单位数），如清单中定义。 */
   public final long timescale;
 
+  /**
+   * 构造一个事件流实例。
+   *
+   * @param schemeIdUri 方案的 URI。
+   * @param value 事件流的值。
+   * @param timescale 时间刻度（每秒的单位数）。
+   * @param presentationTimesUs 事件的呈现时间（以微秒为单位）。
+   * @param events 事件流中的 {@link EventMessage} 数组。
+   */
   public EventStream(
       String schemeIdUri,
       String value,
@@ -50,7 +44,7 @@ public final class EventStream {
     this.events = events;
   }
 
-  /** A constructed id of this {@link EventStream}. Equal to {@code schemeIdUri + "/" + value}. */
+  /** 返回此 {@link EventStream} 的构造 ID，等于 {@code schemeIdUri + "/" + value}。 */
   public String id() {
     return schemeIdUri + "/" + value;
   }

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.media3.common.C;
@@ -20,42 +5,40 @@ import androidx.media3.common.util.UnstableApi;
 import java.util.Collections;
 import java.util.List;
 
-/** Represents a set of interchangeable encoded versions of a media content component. */
+/** 表示一组可互换的媒体内容组件的编码版本。 */
 @UnstableApi
 public class AdaptationSet {
 
-  /** Value of {@link #id} indicating no value is set.= */
+  /** {@link #id} 的值，表示未设置值。 */
   public static final long ID_UNSET = -1;
 
   /**
-   * A non-negative identifier for the adaptation set that's unique in the scope of its containing
-   * period, or {@link #ID_UNSET} if not specified.
+   * 自适应集的非负标识符，在其所属周期范围内唯一，如果未指定则为 {@link #ID_UNSET}。
    */
   public final long id;
 
-  /** The {@link C.TrackType track type} of the adaptation set. */
+  /** 自适应集的 {@link C.TrackType 轨道类型}。 */
   public final @C.TrackType int type;
 
-  /** {@link Representation}s in the adaptation set. */
+  /** 自适应集中的 {@link Representation} 列表。 */
   public final List<Representation> representations;
 
-  /** Accessibility descriptors in the adaptation set. */
+  /** 自适应集中的辅助功能描述符列表。 */
   public final List<Descriptor> accessibilityDescriptors;
 
-  /** Essential properties in the adaptation set. */
+  /** 自适应集中的必要属性列表。 */
   public final List<Descriptor> essentialProperties;
 
-  /** Supplemental properties in the adaptation set. */
+  /** 自适应集中的补充属性列表。 */
   public final List<Descriptor> supplementalProperties;
 
   /**
-   * @param id A non-negative identifier for the adaptation set that's unique in the scope of its
-   *     containing period, or {@link #ID_UNSET} if not specified.
-   * @param type The {@link C.TrackType track type} of the adaptation set.
-   * @param representations {@link Representation}s in the adaptation set.
-   * @param accessibilityDescriptors Accessibility descriptors in the adaptation set.
-   * @param essentialProperties Essential properties in the adaptation set.
-   * @param supplementalProperties Supplemental properties in the adaptation set.
+   * @param id 自适应集的非负标识符，在其所属周期范围内唯一，如果未指定则为 {@link #ID_UNSET}。
+   * @param type 自适应集的 {@link C.TrackType 轨道类型}。
+   * @param representations 自适应集中的 {@link Representation} 列表。
+   * @param accessibilityDescriptors 自适应集中的辅助功能描述符列表。
+   * @param essentialProperties 自适应集中的必要属性列表。
+   * @param supplementalProperties 自适应集中的补充属性列表。
    */
   public AdaptationSet(
       long id,

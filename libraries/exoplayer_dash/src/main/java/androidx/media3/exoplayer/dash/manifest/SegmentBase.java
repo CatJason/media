@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import static androidx.media3.exoplayer.dash.DashSegmentIndex.INDEX_UNBOUNDED;
@@ -31,7 +16,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-/** An approximate representation of a SegmentBase manifest element. */
+/** 表示 SegmentBase 清单元素的近似实现。 */
 @UnstableApi
 public abstract class SegmentBase {
 
@@ -40,11 +25,9 @@ public abstract class SegmentBase {
   /* package */ final long presentationTimeOffset;
 
   /**
-   * @param initialization A {@link RangedUri} corresponding to initialization data, if such data
-   *     exists.
-   * @param timescale The timescale in units per second.
-   * @param presentationTimeOffset The presentation time offset. The value in seconds is the
-   *     division of this value and {@code timescale}.
+   * @param initialization 初始化数据对应的 {@link RangedUri}，如果存在的话。
+   * @param timescale 时间刻度，单位为每秒。
+   * @param presentationTimeOffset 表示时间偏移量。以秒为单位的值是该值除以 {@code timescale} 的结果。
    */
   public SegmentBase(
       @Nullable RangedUri initialization, long timescale, long presentationTimeOffset) {
@@ -54,11 +37,10 @@ public abstract class SegmentBase {
   }
 
   /**
-   * Returns the {@link RangedUri} defining the location of initialization data for a given
-   * representation, or null if no initialization data exists.
+   * 返回定义给定表示初始化数据位置的 {@link RangedUri}，如果不存在初始化数据则返回 null。
    *
-   * @param representation The {@link Representation} for which initialization data is required.
-   * @return A {@link RangedUri} defining the location of the initialization data, or null.
+   * @param representation 需要初始化数据的 {@link Representation}。
+   * @return 定义初始化数据位置的 {@link RangedUri}，或 null。
    */
   @Nullable
   public RangedUri getInitialization(
@@ -66,25 +48,23 @@ public abstract class SegmentBase {
     return initialization;
   }
 
-  /** Returns the presentation time offset, in microseconds. */
+  /** 返回表示时间偏移量，单位为微秒。 */
   public long getPresentationTimeOffsetUs() {
     return Util.scaleLargeTimestamp(presentationTimeOffset, C.MICROS_PER_SECOND, timescale);
   }
 
-  /** A {@link SegmentBase} that defines a single segment. */
+  /** 表示定义单个分段的 {@link SegmentBase}。 */
   public static class SingleSegmentBase extends SegmentBase {
 
     /* package */ final long indexStart;
     /* package */ final long indexLength;
 
     /**
-     * @param initialization A {@link RangedUri} corresponding to initialization data, if such data
-     *     exists.
-     * @param timescale The timescale in units per second.
-     * @param presentationTimeOffset The presentation time offset. The value in seconds is the
-     *     division of this value and {@code timescale}.
-     * @param indexStart The byte offset of the index data in the segment.
-     * @param indexLength The length of the index data in bytes.
+     * @param initialization 初始化数据对应的 {@link RangedUri}，如果存在的话。
+     * @param timescale 时间刻度，单位为每秒。
+     * @param presentationTimeOffset 表示时间偏移量。以秒为单位的值是该值除以 {@code timescale} 的结果。
+     * @param indexStart 索引数据在分段中的字节偏移量。
+     * @param indexLength 索引数据的字节长度。
      */
     public SingleSegmentBase(
         @Nullable RangedUri initialization,
@@ -113,8 +93,7 @@ public abstract class SegmentBase {
           : new RangedUri(/* referenceUri= */ null, indexStart, indexLength);
     }
   }
-
-  /** A {@link SegmentBase} that consists of multiple segments. */
+  /** 表示由多个分段组成的 {@link SegmentBase}。 */
   public abstract static class MultiSegmentBase extends SegmentBase {
 
     /* package */ final long startNumber;
@@ -124,32 +103,22 @@ public abstract class SegmentBase {
     private final long periodStartUnixTimeUs;
 
     /**
-     * Offset to the current realtime at which segments become available, in microseconds, or {@link
-     * C#TIME_UNSET} if all segments are available immediately.
+     * 相对于当前实时时间的偏移量，单位为微秒，表示分段何时可用。如果所有分段立即可用，则为 {@link C#TIME_UNSET}。
      *
-     * <p>Segments will be available once their end time &le; currentRealTime +
-     * availabilityTimeOffset.
+     * <p>分段的结束时间 &le; 当前实时时间 + 可用时间偏移量时，分段将变为可用。
      */
     @VisibleForTesting /* package */ final long availabilityTimeOffsetUs;
 
     /**
-     * @param initialization A {@link RangedUri} corresponding to initialization data, if such data
-     *     exists.
-     * @param timescale The timescale in units per second.
-     * @param presentationTimeOffset The presentation time offset. The value in seconds is the
-     *     division of this value and {@code timescale}.
-     * @param startNumber The sequence number of the first segment.
-     * @param duration The duration of each segment in the case of fixed duration segments. The
-     *     value in seconds is the division of this value and {@code timescale}. If {@code
-     *     segmentTimeline} is non-null then this parameter is ignored.
-     * @param segmentTimeline A segment timeline corresponding to the segments. If null, then
-     *     segments are assumed to be of fixed duration as specified by the {@code duration}
-     *     parameter.
-     * @param availabilityTimeOffsetUs The offset to the current realtime at which segments become
-     *     available in microseconds, or {@link C#TIME_UNSET} if not applicable.
-     * @param timeShiftBufferDepthUs The time shift buffer depth in microseconds.
-     * @param periodStartUnixTimeUs The start of the enclosing period in microseconds since the Unix
-     *     epoch.
+     * @param initialization 初始化数据对应的 {@link RangedUri}，如果存在的话。
+     * @param timescale 时间刻度，单位为每秒。
+     * @param presentationTimeOffset 表示时间偏移量。以秒为单位的值是该值除以 {@code timescale} 的结果。
+     * @param startNumber 第一个分段的序列号。
+     * @param duration 固定时长分段的分段时长。以秒为单位的值是该值除以 {@code timescale} 的结果。如果 {@code segmentTimeline} 不为 null，则忽略此参数。
+     * @param segmentTimeline 分段时间线。如果为 null，则假定分段时长为 {@code duration} 指定的固定时长。
+     * @param availabilityTimeOffsetUs 分段可用的实时时间偏移量，单位为微秒，如果不适用则为 {@link C#TIME_UNSET}。
+     * @param timeShiftBufferDepthUs 时间偏移缓冲区深度，单位为微秒。
+     * @param periodStartUnixTimeUs 所属周期的开始时间，单位为微秒（自 Unix 纪元以来）。
      */
     public MultiSegmentBase(
         @Nullable RangedUri initialization,
@@ -170,7 +139,7 @@ public abstract class SegmentBase {
       this.periodStartUnixTimeUs = periodStartUnixTimeUs;
     }
 
-    /** See {@link DashSegmentIndex#getSegmentNum(long, long)}. */
+    /** 参见 {@link DashSegmentIndex#getSegmentNum(long, long)}。 */
     public long getSegmentNum(long timeUs, long periodDurationUs) {
       final long firstSegmentNum = getFirstSegmentNum();
       final long segmentCount = getSegmentCount(periodDurationUs);
@@ -178,17 +147,17 @@ public abstract class SegmentBase {
         return firstSegmentNum;
       }
       if (segmentTimeline == null) {
-        // All segments are of equal duration (with the possible exception of the last one).
+        // 所有分段的时长相等（最后一个分段可能除外）。
         long durationUs = (duration * C.MICROS_PER_SECOND) / timescale;
         long segmentNum = startNumber + timeUs / durationUs;
-        // Ensure we stay within bounds.
+        // 确保在范围内。
         return segmentNum < firstSegmentNum
             ? firstSegmentNum
             : segmentCount == INDEX_UNBOUNDED
                 ? segmentNum
                 : min(segmentNum, firstSegmentNum + segmentCount - 1);
       } else {
-        // The index cannot be unbounded. Identify the segment using binary search.
+        // 索引不能是无限的。使用二分查找确定分段。
         long lowIndex = firstSegmentNum;
         long highIndex = firstSegmentNum + segmentCount - 1;
         while (lowIndex <= highIndex) {
@@ -206,7 +175,7 @@ public abstract class SegmentBase {
       }
     }
 
-    /** See {@link DashSegmentIndex#getDurationUs(long, long)}. */
+    /** 参见 {@link DashSegmentIndex#getDurationUs(long, long)}。 */
     public final long getSegmentDurationUs(long sequenceNumber, long periodDurationUs) {
       if (segmentTimeline != null) {
         long duration = segmentTimeline.get((int) (sequenceNumber - startNumber)).duration;
@@ -214,13 +183,13 @@ public abstract class SegmentBase {
       } else {
         long segmentCount = getSegmentCount(periodDurationUs);
         return segmentCount != INDEX_UNBOUNDED
-                && sequenceNumber == (getFirstSegmentNum() + segmentCount - 1)
+            && sequenceNumber == (getFirstSegmentNum() + segmentCount - 1)
             ? (periodDurationUs - getSegmentTimeUs(sequenceNumber))
             : ((duration * C.MICROS_PER_SECOND) / timescale);
       }
     }
 
-    /** See {@link DashSegmentIndex#getTimeUs(long)}. */
+    /** 参见 {@link DashSegmentIndex#getTimeUs(long)}。 */
     public final long getSegmentTimeUs(long sequenceNumber) {
       long unscaledSegmentTime;
       if (segmentTimeline != null) {
@@ -234,26 +203,24 @@ public abstract class SegmentBase {
     }
 
     /**
-     * Returns a {@link RangedUri} defining the location of a segment for the given index in the
-     * given representation.
+     * 返回定义给定表示中指定索引分段位置的 {@link RangedUri}。
      *
-     * <p>See {@link DashSegmentIndex#getSegmentUrl(long)}.
+     * <p>参见 {@link DashSegmentIndex#getSegmentUrl(long)}。
      */
     public abstract RangedUri getSegmentUrl(Representation representation, long index);
 
-    /** See {@link DashSegmentIndex#getFirstSegmentNum()}. */
+    /** 参见 {@link DashSegmentIndex#getFirstSegmentNum()}。 */
     public long getFirstSegmentNum() {
       return startNumber;
     }
 
-    /** See {@link DashSegmentIndex#getFirstAvailableSegmentNum(long, long)}. */
+    /** 参见 {@link DashSegmentIndex#getFirstAvailableSegmentNum(long, long)}。 */
     public long getFirstAvailableSegmentNum(long periodDurationUs, long nowUnixTimeUs) {
       long segmentCount = getSegmentCount(periodDurationUs);
       if (segmentCount != INDEX_UNBOUNDED || timeShiftBufferDepthUs == C.TIME_UNSET) {
         return getFirstSegmentNum();
       }
-      // The index is itself unbounded. We need to use the current time to calculate the range of
-      // available segments.
+      // 索引本身是无限的。需要使用当前时间计算可用分段的范围。
       long liveEdgeTimeInPeriodUs = nowUnixTimeUs - periodStartUnixTimeUs;
       long timeShiftBufferStartInPeriodUs = liveEdgeTimeInPeriodUs - timeShiftBufferDepthUs;
       long timeShiftBufferStartSegmentNum =
@@ -261,23 +228,22 @@ public abstract class SegmentBase {
       return max(getFirstSegmentNum(), timeShiftBufferStartSegmentNum);
     }
 
-    /** See {@link DashSegmentIndex#getAvailableSegmentCount(long, long)}. */
+    /** 参见 {@link DashSegmentIndex#getAvailableSegmentCount(long, long)}。 */
     public long getAvailableSegmentCount(long periodDurationUs, long nowUnixTimeUs) {
       long segmentCount = getSegmentCount(periodDurationUs);
       if (segmentCount != INDEX_UNBOUNDED) {
         return segmentCount;
       }
-      // The index is itself unbounded. We need to use the current time to calculate the range of
-      // available segments.
+      // 索引本身是无限的。需要使用当前时间计算可用分段的范围。
       long liveEdgeTimeInPeriodUs = nowUnixTimeUs - periodStartUnixTimeUs;
       long availabilityTimeOffsetUs = liveEdgeTimeInPeriodUs + this.availabilityTimeOffsetUs;
-      // getSegmentNum(availabilityTimeOffsetUs) will not be completed yet.
+      // getSegmentNum(availabilityTimeOffsetUs) 尚未完成。
       long firstIncompleteSegmentNum = getSegmentNum(availabilityTimeOffsetUs, periodDurationUs);
       long firstAvailableSegmentNum = getFirstAvailableSegmentNum(periodDurationUs, nowUnixTimeUs);
       return (int) (firstIncompleteSegmentNum - firstAvailableSegmentNum);
     }
 
-    /** See {@link DashSegmentIndex#getNextSegmentAvailableTimeUs(long, long)}. */
+    /** 参见 {@link DashSegmentIndex#getNextSegmentAvailableTimeUs(long, long)}。 */
     public long getNextSegmentAvailableTimeUs(long periodDurationUs, long nowUnixTimeUs) {
       if (segmentTimeline != null) {
         return C.TIME_UNSET;
@@ -290,39 +256,31 @@ public abstract class SegmentBase {
           - availabilityTimeOffsetUs;
     }
 
-    /** See {@link DashSegmentIndex#isExplicit()} */
+    /** 参见 {@link DashSegmentIndex#isExplicit()}。 */
     public boolean isExplicit() {
       return segmentTimeline != null;
     }
 
-    /** See {@link DashSegmentIndex#getSegmentCount(long)}. */
+    /** 参见 {@link DashSegmentIndex#getSegmentCount(long)}。 */
     public abstract long getSegmentCount(long periodDurationUs);
   }
 
-  /** A {@link MultiSegmentBase} that uses a SegmentList to define its segments. */
+  /** 使用 SegmentList 定义其分段的 {@link MultiSegmentBase}。 */
   public static final class SegmentList extends MultiSegmentBase {
 
     @Nullable /* package */ final List<RangedUri> mediaSegments;
 
     /**
-     * @param initialization A {@link RangedUri} corresponding to initialization data, if such data
-     *     exists.
-     * @param timescale The timescale in units per second.
-     * @param presentationTimeOffset The presentation time offset. The value in seconds is the
-     *     division of this value and {@code timescale}.
-     * @param startNumber The sequence number of the first segment.
-     * @param duration The duration of each segment in the case of fixed duration segments. The
-     *     value in seconds is the division of this value and {@code timescale}. If {@code
-     *     segmentTimeline} is non-null then this parameter is ignored.
-     * @param segmentTimeline A segment timeline corresponding to the segments. If null, then
-     *     segments are assumed to be of fixed duration as specified by the {@code duration}
-     *     parameter.
-     * @param availabilityTimeOffsetUs The offset to the current realtime at which segments become
-     *     available in microseconds, or {@link C#TIME_UNSET} if not applicable.
-     * @param mediaSegments A list of {@link RangedUri}s indicating the locations of the segments.
-     * @param timeShiftBufferDepthUs The time shift buffer depth in microseconds.
-     * @param periodStartUnixTimeUs The start of the enclosing period in microseconds since the Unix
-     *     epoch.
+     * @param initialization 初始化数据对应的 {@link RangedUri}，如果存在的话。
+     * @param timescale 时间刻度，单位为每秒。
+     * @param presentationTimeOffset 表示时间偏移量。以秒为单位的值是该值除以 {@code timescale} 的结果。
+     * @param startNumber 第一个分段的序列号。
+     * @param duration 固定时长分段的分段时长。以秒为单位的值是该值除以 {@code timescale} 的结果。如果 {@code segmentTimeline} 不为 null，则忽略此参数。
+     * @param segmentTimeline 分段时间线。如果为 null，则假定分段时长为 {@code duration} 指定的固定时长。
+     * @param availabilityTimeOffsetUs 分段可用的实时时间偏移量，单位为微秒，如果不适用则为 {@link C#TIME_UNSET}。
+     * @param mediaSegments 表示分段位置的 {@link RangedUri} 列表。
+     * @param timeShiftBufferDepthUs 时间偏移缓冲区深度，单位为微秒。
+     * @param periodStartUnixTimeUs 所属周期的开始时间，单位为微秒（自 Unix 纪元以来）。
      */
     public SegmentList(
         RangedUri initialization,
@@ -364,7 +322,7 @@ public abstract class SegmentBase {
     }
   }
 
-  /** A {@link MultiSegmentBase} that uses a SegmentTemplate to define its segments. */
+  /** 使用 SegmentTemplate 定义其分段的 {@link MultiSegmentBase}。 */
   public static final class SegmentTemplate extends MultiSegmentBase {
 
     @Nullable /* package */ final UrlTemplate initializationTemplate;
@@ -372,31 +330,18 @@ public abstract class SegmentBase {
     /* package */ final long endNumber;
 
     /**
-     * @param initialization A {@link RangedUri} corresponding to initialization data, if such data
-     *     exists. The value of this parameter is ignored if {@code initializationTemplate} is
-     *     non-null.
-     * @param timescale The timescale in units per second.
-     * @param presentationTimeOffset The presentation time offset. The value in seconds is the
-     *     division of this value and {@code timescale}.
-     * @param startNumber The sequence number of the first segment.
-     * @param endNumber The sequence number of the last segment as specified by the
-     *     SupplementalProperty with schemeIdUri="http://dashif.org/guidelines/last-segment-number",
-     *     or {@link C#INDEX_UNSET}.
-     * @param duration The duration of each segment in the case of fixed duration segments. The
-     *     value in seconds is the division of this value and {@code timescale}. If {@code
-     *     segmentTimeline} is non-null then this parameter is ignored.
-     * @param segmentTimeline A segment timeline corresponding to the segments. If null, then
-     *     segments are assumed to be of fixed duration as specified by the {@code duration}
-     *     parameter.
-     * @param availabilityTimeOffsetUs The offset to the current realtime at which segments become
-     *     available in microseconds, or {@link C#TIME_UNSET} if not applicable.
-     * @param initializationTemplate A template defining the location of initialization data, if
-     *     such data exists. If non-null then the {@code initialization} parameter is ignored. If
-     *     null then {@code initialization} will be used.
-     * @param mediaTemplate A template defining the location of each media segment.
-     * @param timeShiftBufferDepthUs The time shift buffer depth in microseconds.
-     * @param periodStartUnixTimeUs The start of the enclosing period in microseconds since the Unix
-     *     epoch.
+     * @param initialization 初始化数据对应的 {@link RangedUri}，如果存在的话。如果 {@code initializationTemplate} 不为 null，则忽略此参数。
+     * @param timescale 时间刻度，单位为每秒。
+     * @param presentationTimeOffset 表示时间偏移量。以秒为单位的值是该值除以 {@code timescale} 的结果。
+     * @param startNumber 第一个分段的序列号。
+     * @param endNumber 最后一个分段的序列号，由 schemeIdUri="http://dashif.org/guidelines/last-segment-number" 的 SupplementalProperty 指定，或为 {@link C#INDEX_UNSET}。
+     * @param duration 固定时长分段的分段时长。以秒为单位的值是该值除以 {@code timescale} 的结果。如果 {@code segmentTimeline} 不为 null，则忽略此参数。
+     * @param segmentTimeline 分段时间线。如果为 null，则假定分段时长为 {@code duration} 指定的固定时长。
+     * @param availabilityTimeOffsetUs 分段可用的实时时间偏移量，单位为微秒，如果不适用则为 {@link C#TIME_UNSET}。
+     * @param initializationTemplate 定义初始化数据位置的模板，如果存在的话。如果为非 null，则忽略 {@code initialization} 参数。如果为 null，则使用 {@code initialization}。
+     * @param mediaTemplate 定义每个媒体分段位置的模板。
+     * @param timeShiftBufferDepthUs 时间偏移缓冲区深度，单位为微秒。
+     * @param periodStartUnixTimeUs 所属周期的开始时间，单位为微秒（自 Unix 纪元以来）。
      */
     public SegmentTemplate(
         RangedUri initialization,
@@ -470,18 +415,15 @@ public abstract class SegmentBase {
       }
     }
   }
-
-  /** Represents a timeline segment from the MPD's SegmentTimeline list. */
+  /** 表示 MPD 的 SegmentTimeline 列表中的时间线分段。 */
   public static final class SegmentTimelineElement {
 
     /* package */ final long startTime;
     /* package */ final long duration;
 
     /**
-     * @param startTime The start time of the element. The value in seconds is the division of this
-     *     value and the {@code timescale} of the enclosing element.
-     * @param duration The duration of the element. The value in seconds is the division of this
-     *     value and the {@code timescale} of the enclosing element.
+     * @param startTime 分段的开始时间。以秒为单位的值是该值除以所属元素的 {@code timescale} 的结果。
+     * @param duration 分段的时长。以秒为单位的值是该值除以所属元素的 {@code timescale} 的结果。
      */
     public SegmentTimelineElement(long startTime, long duration) {
       this.startTime = startTime;

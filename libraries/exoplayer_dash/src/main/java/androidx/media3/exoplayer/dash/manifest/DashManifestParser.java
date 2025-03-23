@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import static androidx.media3.exoplayer.dash.manifest.BaseUrl.DEFAULT_DVB_PRIORITY;
@@ -64,7 +49,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
-/** A parser of media presentation description files. */
+/** 媒体呈现描述文件的解析器。 */
 @UnstableApi
 public class DashManifestParser extends DefaultHandler
     implements ParsingLoadable.Parser<DashManifest> {
@@ -78,9 +63,8 @@ public class DashManifestParser extends DefaultHandler
       Pattern.compile("([1-9]|[1-5][0-9]|6[0-3])=.*");
 
   /**
-   * Maps the value attribute of an AudioChannelConfiguration with schemeIdUri
-   * "urn:mpeg:mpegB:cicp:ChannelConfiguration", as defined by ISO 23001-8 clause 8.1, to a channel
-   * count.
+   * 将 AudioChannelConfiguration 的 value 属性（其 schemeIdUri 为 "urn:mpeg:mpegB:cicp:ChannelConfiguration"）
+   * 映射到通道数，定义见 ISO 23001-8 第 8.1 节。
    */
   private static final int[] MPEG_CHANNEL_CONFIGURATION_MAPPING =
       new int[] {
@@ -566,13 +550,13 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a ContentProtection element.
+   * 解析一个 ContentProtection 元素。
    *
-   * @param xpp The parser from which to read.
-   * @throws XmlPullParserException If an error occurs parsing the element.
-   * @throws IOException If an error occurs reading the element.
-   * @return The scheme type and/or {@link SchemeData} parsed from the ContentProtection element.
-   *     Either or both may be null, depending on the ContentProtection element being parsed.
+   * @param xpp 用于读取的解析器。
+   * @throws XmlPullParserException 如果解析元素时发生错误。
+   * @throws IOException 如果读取元素时发生错误。
+   * @return 从 ContentProtection 元素解析出的方案类型和/或 {@link SchemeData}。
+   *     根据正在解析的 ContentProtection 元素，两者或其中之一可能为 null。
    */
   protected Pair<@NullableType String, @NullableType SchemeData> parseContentProtection(
       XmlPullParser xpp) throws XmlPullParserException, IOException {
@@ -653,13 +637,13 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a child of an {@link AdaptationSet} element.
+   * 解析 {@link AdaptationSet} 元素的子元素。
    *
-   * <p>Called for child elements that are not specifically parsed elsewhere.
+   * <p>用于解析未被其他方法专门处理的子元素。
    *
-   * @param xpp The {@link XmlPullParser} from which the child should be parsed.
-   * @throws XmlPullParserException If an error occurs parsing the element.
-   * @throws IOException If an error occurs reading the element.
+   * @param xpp 用于解析子元素的 {@link XmlPullParser}。
+   * @throws XmlPullParserException 如果解析元素时发生错误。
+   * @throws IOException 如果读取元素时发生错误。
    */
   protected void parseAdaptationSetChild(XmlPullParser xpp)
       throws XmlPullParserException, IOException {
@@ -1113,12 +1097,12 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a single EventStream node in the manifest.
+   * 解析清单中的单个 EventStream 节点。
    *
-   * @param xpp The current xml parser.
-   * @return The {@link EventStream} parsed from this EventStream node.
-   * @throws XmlPullParserException If there is any error parsing this node.
-   * @throws IOException If there is any error reading from the underlying input stream.
+   * @param xpp 当前的 XML 解析器。
+   * @return 从该 EventStream 节点解析出的 {@link EventStream}。
+   * @throws XmlPullParserException 如果解析该节点时发生错误。
+   * @throws IOException 如果从底层输入流读取时发生错误。
    */
   protected EventStream parseEventStream(XmlPullParser xpp)
       throws XmlPullParserException, IOException {
@@ -1160,19 +1144,17 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a single Event node in the manifest.
+   * 解析清单中的单个 Event 节点。
    *
-   * @param xpp The current xml parser.
-   * @param schemeIdUri The schemeIdUri of the parent EventStream.
-   * @param value The schemeIdUri of the parent EventStream.
-   * @param timescale The timescale of the parent EventStream.
-   * @param presentationTimeOffset The unscaled presentation time offset of the parent EventStream.
-   * @param scratchOutputStream A {@link ByteArrayOutputStream} that is used when parsing event
-   *     objects.
-   * @return A pair containing the node's presentation timestamp in microseconds and the parsed
-   *     {@link EventMessage}.
-   * @throws XmlPullParserException If there is any error parsing this node.
-   * @throws IOException If there is any error reading from the underlying input stream.
+   * @param xpp 当前的 XML 解析器。
+   * @param schemeIdUri 父 EventStream 的 schemeIdUri。
+   * @param value 父 EventStream 的 schemeIdUri。
+   * @param timescale 父 EventStream 的时间刻度。
+   * @param presentationTimeOffset 父 EventStream 的未缩放表示时间偏移量。
+   * @param scratchOutputStream 解析事件对象时使用的 {@link ByteArrayOutputStream}。
+   * @return 包含节点表示时间戳（以微秒为单位）和解析出的 {@link EventMessage} 的键值对。
+   * @throws XmlPullParserException 如果解析该节点时发生错误。
+   * @throws IOException 如果从底层输入流读取时发生错误。
    */
   protected Pair<Long, EventMessage> parseEvent(
       XmlPullParser xpp,
@@ -1202,13 +1184,13 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses an event object.
+   * 解析事件对象。
    *
-   * @param xpp The current xml parser.
-   * @param scratchOutputStream A {@link ByteArrayOutputStream} that's used when parsing the object.
-   * @return The serialized byte array.
-   * @throws XmlPullParserException If there is any error parsing this node.
-   * @throws IOException If there is any error reading from the underlying input stream.
+   * @param xpp 当前的 XML 解析器。
+   * @param scratchOutputStream 解析对象时使用的 {@link ByteArrayOutputStream}。
+   * @return 序列化的字节数组。
+   * @throws XmlPullParserException 如果解析该节点时发生错误。
+   * @throws IOException 如果从底层输入流读取时发生错误。
    */
   protected byte[] parseEventObject(XmlPullParser xpp, ByteArrayOutputStream scratchOutputStream)
       throws XmlPullParserException, IOException {
@@ -1314,15 +1296,13 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Adds timeline elements for one S tag to the segment timeline.
+   * 为一个 S 标签添加时间线元素到分段时间线中。
    *
-   * @param startTime Start time of the first timeline element.
-   * @param elementDuration Duration of one timeline element.
-   * @param elementRepeatCount Number of timeline elements minus one. May be negative to indicate
-   *     that the count is determined by the total duration and the element duration.
-   * @param endTime End time of the last timeline element for this S tag, or {@link C#TIME_UNSET} if
-   *     unknown. Only needed if {@code repeatCount} is negative.
-   * @return Calculated next start time.
+   * @param startTime 第一个时间线元素的开始时间。
+   * @param elementDuration 一个时间线元素的持续时间。
+   * @param elementRepeatCount 时间线元素的数量减一。可能为负数，表示数量由总持续时间和元素持续时间决定。
+   * @param endTime 此 S 标签的最后一个时间线元素的结束时间，如果未知则为 {@link C#TIME_UNSET}。仅在 {@code repeatCount} 为负数时需要。
+   * @return 计算得出的下一个开始时间。
    */
   private long addSegmentTimelineElementsToList(
       List<SegmentTimelineElement> segmentTimeline,
@@ -1406,12 +1386,12 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a Label element.
+   * 解析一个 Label 元素。
    *
-   * @param xpp The parser from which to read.
-   * @throws XmlPullParserException If an error occurs parsing the element.
-   * @throws IOException If an error occurs reading the element.
-   * @return The parsed label.
+   * @param xpp 用于读取的解析器。
+   * @throws XmlPullParserException 如果解析元素时发生错误。
+   * @throws IOException 如果读取元素时发生错误。
+   * @return 解析出的标签。
    */
   protected Label parseLabel(XmlPullParser xpp) throws XmlPullParserException, IOException {
     String lang = xpp.getAttributeValue(null, "lang");
@@ -1420,14 +1400,14 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a BaseURL element.
+   * 解析一个 BaseURL 元素。
    *
-   * @param xpp The parser from which to read.
-   * @param parentBaseUrls The parent base URLs for resolving the parsed URLs.
-   * @param dvbProfileDeclared Whether the dvb profile is declared.
-   * @throws XmlPullParserException If an error occurs parsing the element.
-   * @throws IOException If an error occurs reading the element.
-   * @return The list of parsed and resolved URLs.
+   * @param xpp 用于读取的解析器。
+   * @param parentBaseUrls 用于解析已解析 URL 的父级基础 URL。
+   * @param dvbProfileDeclared 是否声明了 DVB 配置文件。
+   * @throws XmlPullParserException 如果解析元素时发生错误。
+   * @throws IOException 如果读取元素时发生错误。
+   * @return 解析并解析后的 URL 列表。
    */
   protected List<BaseUrl> parseBaseUrl(
       XmlPullParser xpp, List<BaseUrl> parentBaseUrls, boolean dvbProfileDeclared)
@@ -1465,13 +1445,11 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses the availabilityTimeOffset value and returns the parsed value or the parent value if it
-   * doesn't exist.
+   * 解析 availabilityTimeOffset 值，并返回解析后的值；如果不存在，则返回父级的值。
    *
-   * @param xpp The parser from which to read.
-   * @param parentAvailabilityTimeOffsetUs The availability time offset of a parent element in
-   *     microseconds.
-   * @return The parsed availabilityTimeOffset in microseconds.
+   * @param xpp 用于读取的解析器。
+   * @param parentAvailabilityTimeOffsetUs 父级元素的可用时间偏移量（以微秒为单位）。
+   * @return 解析后的 availabilityTimeOffset 值（以微秒为单位）。
    */
   protected long parseAvailabilityTimeOffsetUs(
       XmlPullParser xpp, long parentAvailabilityTimeOffsetUs) {
@@ -1588,58 +1566,70 @@ public class DashManifestParser extends DefaultHandler
     return result;
   }
 
+  /**
+   * 从 DASH 角色方案中解析角色标志。
+   *
+   * @param value 角色方案的值，可能为 null。
+   * @return 解析后的角色标志，如果无法识别则返回 0。
+   */
   protected @C.RoleFlags int parseRoleFlagsFromDashRoleScheme(@Nullable String value) {
     if (value == null) {
       return 0;
     }
     switch (value) {
       case "main":
-        return C.ROLE_FLAG_MAIN;
+        return C.ROLE_FLAG_MAIN; // 主内容
       case "alternate":
-        return C.ROLE_FLAG_ALTERNATE;
+        return C.ROLE_FLAG_ALTERNATE; // 备用内容
       case "supplementary":
-        return C.ROLE_FLAG_SUPPLEMENTARY;
+        return C.ROLE_FLAG_SUPPLEMENTARY; // 补充内容
       case "commentary":
-        return C.ROLE_FLAG_COMMENTARY;
+        return C.ROLE_FLAG_COMMENTARY; // 评论内容
       case "dub":
-        return C.ROLE_FLAG_DUB;
+        return C.ROLE_FLAG_DUB; // 配音内容
       case "emergency":
-        return C.ROLE_FLAG_EMERGENCY;
+        return C.ROLE_FLAG_EMERGENCY; // 紧急内容
       case "caption":
-        return C.ROLE_FLAG_CAPTION;
+        return C.ROLE_FLAG_CAPTION; // 字幕内容
       case "forced_subtitle":
-      // Support both hyphen and underscore (https://github.com/google/ExoPlayer/issues/9727).
+        // 支持连字符和下划线（https://github.com/google/ExoPlayer/issues/9727）
       case "forced-subtitle":
       case "subtitle":
-        return C.ROLE_FLAG_SUBTITLE;
+        return C.ROLE_FLAG_SUBTITLE; // 字幕内容
       case "sign":
-        return C.ROLE_FLAG_SIGN;
+        return C.ROLE_FLAG_SIGN; // 手语内容
       case "description":
-        return C.ROLE_FLAG_DESCRIBES_VIDEO;
+        return C.ROLE_FLAG_DESCRIBES_VIDEO; // 视频描述内容
       case "enhanced-audio-intelligibility":
-        return C.ROLE_FLAG_ENHANCED_DIALOG_INTELLIGIBILITY;
+        return C.ROLE_FLAG_ENHANCED_DIALOG_INTELLIGIBILITY; // 增强对话清晰度的音频内容
       default:
-        return 0;
+        return 0; // 无法识别的角色方案
     }
   }
 
+  /**
+   * 解析 TVA 音频用途分类（CS 值）并返回对应的角色标志。
+   *
+   * @param value TVA 音频用途分类的值，可能为 null。
+   * @return 解析后的角色标志，如果无法识别则返回 0。
+   */
   protected @C.RoleFlags int parseTvaAudioPurposeCsValue(@Nullable String value) {
     if (value == null) {
       return 0;
     }
     switch (value) {
-      case "1": // Audio description for the visually impaired.
+      case "1": // 为视障人士提供的音频描述。
         return C.ROLE_FLAG_DESCRIBES_VIDEO;
-      case "2": // Audio description for the hard of hearing.
+      case "2": // 为听力障碍人士提供的音频描述。
         return C.ROLE_FLAG_ENHANCED_DIALOG_INTELLIGIBILITY;
-      case "3": // Supplemental commentary.
+      case "3": // 补充评论。
         return C.ROLE_FLAG_SUPPLEMENTARY;
-      case "4": // Director's commentary.
+      case "4": // 导演评论。
         return C.ROLE_FLAG_COMMENTARY;
-      case "6": // Main programme audio.
+      case "6": // 主节目音频。
         return C.ROLE_FLAG_MAIN;
       default:
-        return 0;
+        return 0; // 无法识别的值
     }
   }
 
@@ -1654,11 +1644,11 @@ public class DashManifestParser extends DefaultHandler
   // Thumbnail tile information parsing
 
   /**
-   * Parses given descriptors for thumbnail tile information.
+   * 从给定的描述符中解析缩略图平铺信息。
    *
-   * @param essentialProperties List of descriptors that contain thumbnail tile information.
-   * @return A pair of Integer values, where the first is the count of horizontal tiles and the
-   *     second is the count of vertical tiles, or null if no thumbnail tile information is found.
+   * @param essentialProperties 包含缩略图平铺信息的描述符列表。
+   * @return 一个包含两个 Integer 值的 Pair，其中第一个值是水平平铺数量，第二个值是垂直平铺数量；
+   *     如果未找到缩略图平铺信息，则返回 null。
    */
   @Nullable
   protected Pair<Integer, Integer> parseTileCountFromProperties(
@@ -1666,8 +1656,8 @@ public class DashManifestParser extends DefaultHandler
     for (int i = 0; i < essentialProperties.size(); i++) {
       Descriptor descriptor = essentialProperties.get(i);
       if ((Ascii.equalsIgnoreCase("http://dashif.org/thumbnail_tile", descriptor.schemeIdUri)
-              || Ascii.equalsIgnoreCase(
-                  "http://dashif.org/guidelines/thumbnail_tile", descriptor.schemeIdUri))
+          || Ascii.equalsIgnoreCase(
+          "http://dashif.org/guidelines/thumbnail_tile", descriptor.schemeIdUri))
           && descriptor.value != null) {
         String size = descriptor.value;
         String[] sizeSplit = Util.split(size, "x");
@@ -1679,7 +1669,7 @@ public class DashManifestParser extends DefaultHandler
           int tileCountVertical = Integer.parseInt(sizeSplit[1]);
           return Pair.create(tileCountHorizontal, tileCountVertical);
         } catch (NumberFormatException e) {
-          // Ignore property if it's malformed.
+          // 如果属性格式错误，则忽略该属性。
         }
       }
     }
@@ -1689,37 +1679,36 @@ public class DashManifestParser extends DefaultHandler
   // Utility methods.
 
   /**
-   * If the provided {@link XmlPullParser} is currently positioned at the start of a tag, skips
-   * forward to the end of that tag.
+   * 如果提供的 {@link XmlPullParser} 当前位于标签的开始位置，则向前跳过该标签的结束位置。
    *
-   * @param xpp The {@link XmlPullParser}.
-   * @throws XmlPullParserException If an error occurs parsing the stream.
-   * @throws IOException If an error occurs reading the stream.
+   * @param xpp {@link XmlPullParser} 实例。
+   * @throws XmlPullParserException 如果解析流时发生错误。
+   * @throws IOException 如果读取流时发生错误。
    */
   public static void maybeSkipTag(XmlPullParser xpp) throws IOException, XmlPullParserException {
     if (!XmlPullParserUtil.isStartTag(xpp)) {
-      return;
+      return; // 如果当前不是开始标签，则直接返回。
     }
-    int depth = 1;
+    int depth = 1; // 初始化深度为 1，表示当前标签的深度。
     while (depth != 0) {
-      xpp.next();
+      xpp.next(); // 移动到下一个事件。
       if (XmlPullParserUtil.isStartTag(xpp)) {
-        depth++;
+        depth++; // 如果是开始标签，增加深度。
       } else if (XmlPullParserUtil.isEndTag(xpp)) {
-        depth--;
+        depth--; // 如果是结束标签，减少深度。
       }
     }
   }
 
-  /** Removes unnecessary {@link SchemeData}s with null {@link SchemeData#data}. */
+  /** 移除不必要的 {@link SchemeData}，即那些 {@link SchemeData#data} 为 null 的实例。 */
   private static void filterRedundantIncompleteSchemeDatas(ArrayList<SchemeData> schemeDatas) {
     for (int i = schemeDatas.size() - 1; i >= 0; i--) {
       SchemeData schemeData = schemeDatas.get(i);
       if (!schemeData.hasData()) {
         for (int j = 0; j < schemeDatas.size(); j++) {
           if (schemeDatas.get(j).canReplace(schemeData)) {
-            // schemeData is incomplete, but there is another matching SchemeData which does contain
-            // data, so we remove the incomplete one.
+            // 如果 schemeData 不完整，但存在另一个匹配的 SchemeData 并且包含数据，
+            // 则移除不完整的 schemeData。
             schemeDatas.remove(i);
             break;
           }
@@ -1755,11 +1744,11 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Derives a sample mimeType from a container mimeType and codecs attribute.
+   * 从容器 MIME 类型和 codecs 属性中推导出样本的 MIME 类型。
    *
-   * @param containerMimeType The mimeType of the container.
-   * @param codecs The codecs attribute.
-   * @return The derived sample mimeType, or null if it could not be derived.
+   * @param containerMimeType 容器的 MIME 类型。
+   * @param codecs codecs 属性。
+   * @return 推导出的样本 MIME 类型，如果无法推导则返回 null。
    */
   @Nullable
   private static String getSampleMimeType(
@@ -1782,14 +1771,13 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Checks two languages for consistency, returning the consistent language, or throwing an {@link
-   * IllegalStateException} if the languages are inconsistent.
+   * 检查两种语言是否一致，返回一致的语言；如果语言不一致，则抛出 {@link IllegalStateException}。
    *
-   * <p>Two languages are consistent if they are equal, or if one is null.
+   * <p>两种语言一致的条件是：它们相等，或者其中一种为 null。
    *
-   * @param firstLanguage The first language.
-   * @param secondLanguage The second language.
-   * @return The consistent language.
+   * @param firstLanguage 第一种语言。
+   * @param secondLanguage 第二种语言。
+   * @return 一致的语言。
    */
   @Nullable
   private static String checkLanguageConsistency(
@@ -1805,15 +1793,14 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Checks two adaptation set content types for consistency, returning the consistent type, or
-   * throwing an {@link IllegalStateException} if the types are inconsistent.
+   * 检查两个自适应集内容类型是否一致，返回一致的类型；如果类型不一致，则抛出 {@link IllegalStateException}。
    *
-   * <p>Two types are consistent if they are equal, or if one is {@link C#TRACK_TYPE_UNKNOWN}. Where
-   * one of the types is {@link C#TRACK_TYPE_UNKNOWN}, the other is returned.
+   * <p>两种类型一致的条件是：它们相等，或者其中一种为 {@link C#TRACK_TYPE_UNKNOWN}。如果其中一种类型为
+   * {@link C#TRACK_TYPE_UNKNOWN}，则返回另一种类型。
    *
-   * @param firstType The first type.
-   * @param secondType The second type.
-   * @return The consistent type.
+   * @param firstType 第一种类型。
+   * @param secondType 第二种类型。
+   * @return 一致的类型。
    */
   private static int checkContentTypeConsistency(
       @C.TrackType int firstType, @C.TrackType int secondType) {
@@ -1828,13 +1815,13 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses a {@link Descriptor} from an element.
+   * 从元素中解析一个 {@link Descriptor}。
    *
-   * @param xpp The parser from which to read.
-   * @param tag The tag of the element being parsed.
-   * @throws XmlPullParserException If an error occurs parsing the element.
-   * @throws IOException If an error occurs reading the element.
-   * @return The parsed {@link Descriptor}.
+   * @param xpp 用于读取的解析器。
+   * @param tag 正在解析的元素的标签。
+   * @throws XmlPullParserException 如果解析元素时发生错误。
+   * @throws IOException 如果读取元素时发生错误。
+   * @return 解析出的 {@link Descriptor}。
    */
   protected static Descriptor parseDescriptor(XmlPullParser xpp, String tag)
       throws XmlPullParserException, IOException {
@@ -1965,12 +1952,11 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
-   * schemeIdUri "urn:mpeg:mpegB:cicp:ChannelConfiguration", as defined by ISO 23001-8 clause 8.1.
+   * 从 AudioChannelConfiguration 的 value 属性中解析通道数量，其 schemeIdUri 为 "urn:mpeg:mpegB:cicp:ChannelConfiguration"，
+   * 定义见 ISO 23001-8 第 8.1 节。
    *
-   * @param xpp The parser from which to read.
-   * @return The parsed number of channels, or {@link Format#NO_VALUE} if the channel count could
-   *     not be parsed.
+   * @param xpp 用于读取的解析器。
+   * @return 解析出的通道数量，如果无法解析则返回 {@link Format#NO_VALUE}。
    */
   protected static int parseMpegChannelConfiguration(XmlPullParser xpp) {
     int index = parseInt(xpp, "value", C.INDEX_UNSET);
@@ -1980,14 +1966,12 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
-   * schemeIdUri "tag:dts.com,2014:dash:audio_channel_configuration:2012" as defined by Annex G
-   * (3.2) in ETSI TS 102 114 V1.6.1, or by the legacy schemeIdUri
-   * "urn:dts:dash:audio_channel_configuration:2012".
+   * 从 AudioChannelConfiguration 的 value 属性中解析通道数量，其 schemeIdUri 为
+   * "tag:dts.com,2014:dash:audio_channel_configuration:2012"（定义见 ETSI TS 102 114 V1.6.1 附录 G (3.2)），
+   * 或旧的 schemeIdUri "urn:dts:dash:audio_channel_configuration:2012"。
    *
-   * @param xpp The parser from which to read.
-   * @return The parsed number of channels, or {@link Format#NO_VALUE} if the channel count could
-   *     not be parsed.
+   * @param xpp 用于读取的解析器。
+   * @return 解析出的通道数量，如果无法解析则返回 {@link Format#NO_VALUE}。
    */
   protected static int parseDtsChannelConfiguration(XmlPullParser xpp) {
     int channelCount = parseInt(xpp, "value", Format.NO_VALUE);
@@ -1995,13 +1979,11 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
-   * schemeIdUri "tag:dts.com,2018:uhd:audio_channel_configuration" as defined by table B-5 in ETSI
-   * TS 103 491 v1.2.1.
+   * 从 AudioChannelConfiguration 的 value 属性中解析通道数量，其 schemeIdUri 为
+   * "tag:dts.com,2018:uhd:audio_channel_configuration"（定义见 ETSI TS 103 491 v1.2.1 表 B-5）。
    *
-   * @param xpp The parser from which to read.
-   * @return The parsed number of channels, or {@link Format#NO_VALUE} if the channel count could
-   *     not be parsed.
+   * @param xpp 用于读取的解析器。
+   * @return 解析出的通道数量，如果无法解析则返回 {@link Format#NO_VALUE}。
    */
   protected static int parseDtsxChannelConfiguration(XmlPullParser xpp) {
     @Nullable String value = xpp.getAttributeValue(null, "value");
@@ -2013,14 +1995,12 @@ public class DashManifestParser extends DefaultHandler
   }
 
   /**
-   * Parses the number of channels from the value attribute of an AudioChannelConfiguration with
-   * schemeIdUri "tag:dolby.com,2014:dash:audio_channel_configuration:2011" as defined by table E.5
-   * in ETSI TS 102 366, or by the legacy schemeIdUri
-   * "urn:dolby:dash:audio_channel_configuration:2011".
+   * 从 AudioChannelConfiguration 的 value 属性中解析通道数量，其 schemeIdUri 为
+   * "tag:dolby.com,2014:dash:audio_channel_configuration:2011"（定义见 ETSI TS 102 366 表 E.5），
+   * 或旧的 schemeIdUri "urn:dolby:dash:audio_channel_configuration:2011"。
    *
-   * @param xpp The parser from which to read.
-   * @return The parsed number of channels, or {@link Format#NO_VALUE} if the channel count could
-   *     not be parsed.
+   * @param xpp 用于读取的解析器。
+   * @return 解析出的通道数量，如果无法解析则返回 {@link Format#NO_VALUE}。
    */
   protected static int parseDolbyChannelConfiguration(XmlPullParser xpp) {
     @Nullable String value = xpp.getAttributeValue(null, "value");
@@ -2055,15 +2035,22 @@ public class DashManifestParser extends DefaultHandler
     return C.INDEX_UNSET;
   }
 
+  /**
+   * 获取最终的可用时间偏移量。
+   *
+   * @param baseUrlAvailabilityTimeOffsetUs BaseURL 的可用时间偏移量（以微秒为单位）。
+   * @param segmentBaseAvailabilityTimeOffsetUs SegmentBase 的可用时间偏移量（以微秒为单位）。
+   * @return 最终的可用时间偏移量（以微秒为单位）。
+   */
   private static long getFinalAvailabilityTimeOffset(
       long baseUrlAvailabilityTimeOffsetUs, long segmentBaseAvailabilityTimeOffsetUs) {
     long availabilityTimeOffsetUs = segmentBaseAvailabilityTimeOffsetUs;
     if (availabilityTimeOffsetUs == C.TIME_UNSET) {
-      // Fall back to BaseURL values if no SegmentBase specifies an offset.
+      // 如果 SegmentBase 未指定偏移量，则回退到 BaseURL 的值。
       availabilityTimeOffsetUs = baseUrlAvailabilityTimeOffsetUs;
     }
     if (availabilityTimeOffsetUs == Long.MAX_VALUE) {
-      // Replace INF value with TIME_UNSET to specify that all segments are available immediately.
+      // 将 INF 值替换为 TIME_UNSET，表示所有片段立即可用。
       availabilityTimeOffsetUs = C.TIME_UNSET;
     }
     return availabilityTimeOffsetUs;
@@ -2078,7 +2065,7 @@ public class DashManifestParser extends DefaultHandler
     return false;
   }
 
-  /** A parsed Representation element. */
+  /** 一个解析后的 Representation 元素。 */
   protected static final class RepresentationInfo {
 
     public final Format format;

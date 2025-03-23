@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import android.net.Uri;
@@ -21,14 +6,14 @@ import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.UriUtil;
 
-/** Defines a range of data located at a reference uri. */
+/** 定义位于引用 URI 上的数据范围。 */
 @UnstableApi
 public final class RangedUri {
 
-  /** The (zero based) index of the first byte of the range. */
+  /** 范围的第一个字节的（从零开始的）索引。 */
   public final long start;
 
-  /** The length of the range, or {@link C#LENGTH_UNSET} to indicate that the range is unbounded. */
+  /** 范围的长度，或 {@link C#LENGTH_UNSET} 表示范围是无限的。 */
   public final long length;
 
   private final String referenceUri;
@@ -36,12 +21,11 @@ public final class RangedUri {
   private int hashCode;
 
   /**
-   * Constructs an ranged uri.
+   * 构造一个范围 URI。
    *
-   * @param referenceUri The reference uri.
-   * @param start The (zero based) index of the first byte of the range.
-   * @param length The length of the range, or {@link C#LENGTH_UNSET} to indicate that the range is
-   *     unbounded.
+   * @param referenceUri 引用 URI。
+   * @param start 范围的第一个字节的（从零开始的）索引。
+   * @param length 范围的长度，或 {@link C#LENGTH_UNSET} 表示范围是无限的。
    */
   public RangedUri(@Nullable String referenceUri, long start, long length) {
     this.referenceUri = referenceUri == null ? "" : referenceUri;
@@ -50,37 +34,36 @@ public final class RangedUri {
   }
 
   /**
-   * Returns the resolved {@link Uri} represented by the instance.
+   * 返回实例表示的解析后的 {@link Uri}。
    *
-   * @param baseUri The base Uri.
-   * @return The {@link Uri} represented by the instance.
+   * @param baseUri 基础 URI。
+   * @return 实例表示的 {@link Uri}。
    */
   public Uri resolveUri(String baseUri) {
     return UriUtil.resolveToUri(baseUri, referenceUri);
   }
 
   /**
-   * Returns the resolved uri represented by the instance as a string.
+   * 返回实例表示的解析后的 URI 字符串。
    *
-   * @param baseUri The base Uri.
-   * @return The uri represented by the instance.
+   * @param baseUri 基础 URI。
+   * @return 实例表示的 URI。
    */
   public String resolveUriString(String baseUri) {
     return UriUtil.resolve(baseUri, referenceUri);
   }
 
   /**
-   * Attempts to merge this {@link RangedUri} with another and an optional common base uri.
+   * 尝试将此 {@link RangedUri} 与另一个 {@link RangedUri} 和可选的基础 URI 合并。
    *
-   * <p>A merge is successful if both instances define the same {@link Uri} after resolution with
-   * the base uri, and if one starts the byte after the other ends, forming a contiguous region with
-   * no overlap.
+   * <p>如果两个实例在解析基础 URI 后定义相同的 {@link Uri}，并且一个实例的起始字节是另一个实例的结束字节的下一个字节，
+   * 形成一个连续的区域且没有重叠，则合并成功。
    *
-   * <p>If {@code other} is null then the merge is considered unsuccessful, and null is returned.
+   * <p>如果 {@code other} 为 null，则合并失败，返回 null。
    *
-   * @param other The {@link RangedUri} to merge.
-   * @param baseUri The base Uri.
-   * @return The merged {@link RangedUri} if the merge was successful. Null otherwise.
+   * @param other 要合并的 {@link RangedUri}。
+   * @param baseUri 基础 URI。
+   * @return 合并成功时返回合并后的 {@link RangedUri}，否则返回 null。
    */
   @Nullable
   public RangedUri attemptMerge(@Nullable RangedUri other, String baseUri) {

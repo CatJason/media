@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import static java.lang.Math.max;
@@ -29,8 +14,7 @@ import androidx.media3.extractor.metadata.emsg.EventMessageEncoder;
 import java.io.IOException;
 
 /**
- * A {@link SampleStream} consisting of serialized {@link EventMessage}s read from an {@link
- * EventStream}.
+ * 一个 {@link SampleStream}，由从 {@link EventStream} 读取的序列化 {@link EventMessage} 组成。
  */
 /* package */ final class EventSampleStream implements SampleStream {
 
@@ -75,9 +59,9 @@ import java.io.IOException;
   }
 
   /**
-   * Seeks to the specified position in microseconds.
+   * 跳转到指定的时间位置（以微秒为单位）。
    *
-   * @param positionUs The seek position in microseconds.
+   * @param positionUs 跳转的时间位置，单位为微秒。
    */
   public void seekToUs(long positionUs) {
     currentIndex =
@@ -94,7 +78,7 @@ import java.io.IOException;
 
   @Override
   public void maybeThrowError() throws IOException {
-    // Do nothing.
+    // 无操作。
   }
 
   @Override
@@ -111,7 +95,7 @@ import java.io.IOException;
       return C.RESULT_FORMAT_READ;
     }
     if (noMoreEventsInStream) {
-      // More events may be appended later.
+      // 后续可能会追加更多事件。
       return C.RESULT_NOTHING_READ;
     }
     int sampleIndex = currentIndex;

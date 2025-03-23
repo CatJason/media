@@ -1,58 +1,43 @@
-/*
- * Copyright 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash.manifest;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 import com.google.common.base.Objects;
 
-/** A base URL, as defined by ISO 23009-1, 2nd edition, 5.6. and ETSI TS 103 285 V1.2.1, 10.8.2.1 */
+/** 表示一个基础 URL，定义见 ISO 23009-1 第二版 5.6 节和 ETSI TS 103 285 V1.2.1 第 10.8.2.1 节。 */
 @UnstableApi
 public final class BaseUrl {
 
-  /** The default weight. */
+  /** 默认权重。 */
   public static final int DEFAULT_WEIGHT = 1;
 
-  /** The default priority. */
+  /** 默认优先级。 */
   public static final int DEFAULT_DVB_PRIORITY = 1;
 
-  /** Constant representing an unset priority in a manifest that does not declare a DVB profile. */
+  /** 表示未设置优先级的常量，适用于未声明 DVB 配置文件的清单。 */
   public static final int PRIORITY_UNSET = Integer.MIN_VALUE;
 
-  /** The URL. */
+  /** URL。 */
   public final String url;
 
-  /** The service location. */
+  /** 服务位置。 */
   public final String serviceLocation;
 
-  /** The priority. */
+  /** 优先级。 */
   public final int priority;
 
-  /** The weight. */
+  /** 权重。 */
   public final int weight;
 
   /**
-   * Creates an instance with {@link #PRIORITY_UNSET an unset priority}, {@link #DEFAULT_WEIGHT
-   * default weight} and using the URL as the service location.
+   * 创建一个实例，使用 {@link #PRIORITY_UNSET 未设置的优先级}、{@link #DEFAULT_WEIGHT 默认权重}，
+   * 并将 URL 作为服务位置。
    */
   public BaseUrl(String url) {
     this(url, /* serviceLocation= */ url, PRIORITY_UNSET, DEFAULT_WEIGHT);
   }
 
-  /** Creates an instance. */
+  /** 创建一个实例。 */
   public BaseUrl(String url, String serviceLocation, int priority, int weight) {
     this.url = url;
     this.serviceLocation = serviceLocation;

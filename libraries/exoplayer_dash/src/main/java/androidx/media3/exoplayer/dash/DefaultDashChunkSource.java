@@ -82,28 +82,27 @@ public class DefaultDashChunkSource implements DashChunkSource {
     private final ChunkExtractor.Factory chunkExtractorFactory;
 
     /**
-     * Equivalent to {@link #Factory(ChunkExtractor.Factory, DataSource.Factory, int) new
-     * Factory(BundledChunkExtractor.FACTORY, dataSourceFactory, maxSegmentsPerLoad = 1)}.
+     * 等价于 {@link #Factory(ChunkExtractor.Factory, DataSource.Factory, int) new
+     * Factory(BundledChunkExtractor.FACTORY, dataSourceFactory, maxSegmentsPerLoad = 1)}。
      */
     public Factory(DataSource.Factory dataSourceFactory) {
       this(dataSourceFactory, /* maxSegmentsPerLoad= */ 1);
     }
 
     /**
-     * Equivalent to {@link #Factory(ChunkExtractor.Factory, DataSource.Factory, int) new
-     * Factory(BundledChunkExtractor.FACTORY, dataSourceFactory, maxSegmentsPerLoad)}.
+     * 等价于 {@link #Factory(ChunkExtractor.Factory, DataSource.Factory, int) new
+     * Factory(BundledChunkExtractor.FACTORY, dataSourceFactory, maxSegmentsPerLoad)}。
      */
     public Factory(DataSource.Factory dataSourceFactory, int maxSegmentsPerLoad) {
       this(BundledChunkExtractor.FACTORY, dataSourceFactory, maxSegmentsPerLoad);
     }
 
     /**
-     * Creates a new instance.
+     * 创建一个新的实例。
      *
-     * @param chunkExtractorFactory Creates {@link ChunkExtractor} instances to use for extracting
-     *     chunks.
-     * @param dataSourceFactory Creates the {@link DataSource} to use for downloading chunks.
-     * @param maxSegmentsPerLoad See {@link DefaultDashChunkSource#DefaultDashChunkSource}.
+     * @param chunkExtractorFactory 用于创建 {@link ChunkExtractor} 实例，以提取块。
+     * @param dataSourceFactory 用于创建 {@link DataSource} 实例，以下载块。
+     * @param maxSegmentsPerLoad 参见 {@link DefaultDashChunkSource#DefaultDashChunkSource}。
      */
     public Factory(
         ChunkExtractor.Factory chunkExtractorFactory,
@@ -172,8 +171,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     /**
      * {@inheritDoc}
      *
-     * <p>This implementation delegates determining of the output format to the {@link
-     * ChunkExtractor.Factory} passed to the constructor of this class.
+     * <p>此实现将输出格式的确定委托给传递给此类的构造函数的 {@link ChunkExtractor.Factory}。
      */
     @Override
     public Format getOutputTextFormat(Format sourceFormat) {
@@ -200,34 +198,30 @@ public class DefaultDashChunkSource implements DashChunkSource {
   private boolean missingLastSegment;
 
   /**
-   * The time at which the last {@link #getNextChunk(LoadingInfo, long, List, ChunkHolder)} method
-   * was called, as measured by {@link SystemClock#elapsedRealtime}.
+   * 上次调用 {@link #getNextChunk(LoadingInfo, long, List, ChunkHolder)} 方法的时间，
+   * 以 {@link SystemClock#elapsedRealtime} 测量。
    */
   private long lastChunkRequestRealtimeMs;
 
   /**
-   * @param chunkExtractorFactory Creates {@link ChunkExtractor} instances to use for extracting
-   *     chunks.
-   * @param manifestLoaderErrorThrower Throws errors affecting loading of manifests.
-   * @param manifest The initial manifest.
-   * @param baseUrlExclusionList The base URL exclusion list.
-   * @param periodIndex The index of the period in the manifest.
-   * @param adaptationSetIndices The indices of the adaptation sets in the period.
-   * @param trackSelection The track selection.
-   * @param trackType The {@link C.TrackType type} of the tracks in the selection.
-   * @param dataSource A {@link DataSource} suitable for loading the media data.
-   * @param elapsedRealtimeOffsetMs If known, an estimate of the instantaneous difference between
-   *     server-side unix time and {@link SystemClock#elapsedRealtime()} in milliseconds, specified
-   *     as the server's unix time minus the local elapsed time. Or {@link C#TIME_UNSET} if unknown.
-   * @param maxSegmentsPerLoad The maximum number of segments to combine into a single request. Note
-   *     that segments will only be combined if their {@link Uri}s are the same and if their data
-   *     ranges are adjacent.
-   * @param enableEventMessageTrack Whether to output an event message track.
-   * @param closedCaptionFormats The {@link Format Formats} of closed caption tracks to be output.
-   * @param playerTrackEmsgHandler The {@link PlayerTrackEmsgHandler} instance to handle emsg
-   *     messages targeting the player. Maybe null if this is not necessary.
-   * @param playerId The {@link PlayerId} of the player using this chunk source.
-   * @param cmcdConfiguration The {@link CmcdConfiguration} for this chunk source.
+   * @param chunkExtractorFactory 用于创建 {@link ChunkExtractor} 实例，以提取块。
+   * @param manifestLoaderErrorThrower 抛出影响清单加载的错误。
+   * @param manifest 初始清单。
+   * @param baseUrlExclusionList 基础 URL 排除列表。
+   * @param periodIndex 清单中周期的索引。
+   * @param adaptationSetIndices 周期中自适应集的索引。
+   * @param trackSelection 轨道选择。
+   * @param trackType 轨道选择中的 {@link C.TrackType 类型}。
+   * @param dataSource 用于加载媒体数据的 {@link DataSource}。
+   * @param elapsedRealtimeOffsetMs 如果已知，服务器端 Unix 时间与 {@link SystemClock#elapsedRealtime()} 之间的瞬时差异估计值（以毫秒为单位），
+   *     指定为服务器的 Unix 时间减去本地运行时间。如果未知，则为 {@link C#TIME_UNSET}。
+   * @param maxSegmentsPerLoad 单个请求中组合的最大段数。注意，段仅在它们的 {@link Uri} 相同且数据范围相邻时才会被组合。
+   * @param enableEventMessageTrack 是否输出事件消息轨道。
+   * @param closedCaptionFormats 要输出的封闭字幕轨道的 {@link Format 格式}。
+   * @param playerTrackEmsgHandler 用于处理针对播放器的 emsg 消息的 {@link PlayerTrackEmsgHandler} 实例。
+   *     如果不需要，则可能为 null。
+   * @param playerId 使用此块源的播放器的 {@link PlayerId}。
+   * @param cmcdConfiguration 此块源的 {@link CmcdConfiguration}。
    */
   public DefaultDashChunkSource(
       ChunkExtractor.Factory chunkExtractorFactory,
@@ -287,7 +281,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
 
   @Override
   public long getAdjustedSeekPositionUs(long positionUs, SeekParameters seekParameters) {
-    // Segments are aligned across representations, so any segment index will do.
+    // 段在表示之间是对齐的，因此可以使用任何段索引。
     for (RepresentationHolder representationHolder : representationHolders) {
       if (representationHolder.segmentIndex != null) {
         long segmentCount = representationHolder.getSegmentCount();
@@ -306,7 +300,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
         return seekParameters.resolveSeekPositionUs(positionUs, firstSyncUs, secondSyncUs);
       }
     }
-    // We don't have a segment index to adjust the seek position with yet.
+    // 我们还没有段索引来调整搜索位置。
     return positionUs;
   }
 
@@ -444,7 +438,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
         pendingIndexUri = selectedRepresentation.getIndexUri();
       }
       if (pendingInitializationUri != null || pendingIndexUri != null) {
-        // We have initialization and/or index requests to make.
+        // 我们有初始化请求和/或索引请求需要处理。
         out.chunk =
             newInitializationChunk(
                 representationHolder,
@@ -465,7 +459,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     boolean periodEnded = !isLastPeriodInDynamicManifest || periodDurationUs != C.TIME_UNSET;
 
     if (representationHolder.getSegmentCount() == 0) {
-      // The index doesn't define any segments.
+      // 索引没有定义任何段。
       out.endOfStream = periodEnded;
       return;
     }
@@ -478,8 +472,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
       long lastSegmentDurationUs =
           lastAvailableSegmentEndTimeUs
               - representationHolder.getSegmentStartTimeUs(lastAvailableSegmentNum);
-      // Account for some inaccuracy in the overall period duration value by assuming that the
-      // period is finished once no further full sample fits into the overall duration.
+      // 通过假设在整体持续时间内无法再容纳完整的样本，来考虑整体周期持续时间值的一些不准确性。
       periodEnded &= (lastAvailableSegmentEndTimeUs + lastSegmentDurationUs >= periodDurationUs);
     }
     long segmentNum =
@@ -490,20 +483,20 @@ public class DefaultDashChunkSource implements DashChunkSource {
             firstAvailableSegmentNum,
             lastAvailableSegmentNum);
     if (segmentNum < firstAvailableSegmentNum) {
-      // This is before the first chunk in the current manifest.
+      // 这早于当前清单中的第一个块。
       fatalError = new BehindLiveWindowException();
       return;
     }
 
     if (segmentNum > lastAvailableSegmentNum
         || (missingLastSegment && segmentNum >= lastAvailableSegmentNum)) {
-      // The segment is beyond the end of the period.
+      // 段超出了周期的结束位置。
       out.endOfStream = periodEnded;
       return;
     }
 
     if (periodEnded && representationHolder.getSegmentStartTimeUs(segmentNum) >= periodDurationUs) {
-      // The period duration clips the period to a position before the segment.
+      // 周期持续时间将周期剪裁到段之前的位置。
       out.endOfStream = true;
       return;
     }
@@ -512,9 +505,9 @@ public class DefaultDashChunkSource implements DashChunkSource {
     if (periodDurationUs != C.TIME_UNSET) {
       while (maxSegmentCount > 1
           && representationHolder.getSegmentStartTimeUs(segmentNum + maxSegmentCount - 1)
-              >= periodDurationUs) {
-        // The period duration clips the period to a position before the last segment in the range
-        // [segmentNum, segmentNum + maxSegmentCount - 1]. Reduce maxSegmentCount.
+          >= periodDurationUs) {
+        // 周期持续时间将周期剪裁到范围 [segmentNum, segmentNum + maxSegmentCount - 1] 中最后一个段之前的位置。
+        // 减少 maxSegmentCount。
         maxSegmentCount--;
       }
     }
@@ -541,9 +534,8 @@ public class DefaultDashChunkSource implements DashChunkSource {
       InitializationChunk initializationChunk = (InitializationChunk) chunk;
       int trackIndex = trackSelection.indexOf(initializationChunk.trackFormat);
       RepresentationHolder representationHolder = representationHolders[trackIndex];
-      // The null check avoids overwriting an index obtained from the manifest with one obtained
-      // from the stream. If the manifest defines an index then the stream shouldn't, but in cases
-      // where it does we should ignore it.
+      // 空值检查可以避免用从流中获取的索引覆盖从清单中获取的索引。
+      // 如果清单中定义了索引，那么流中不应该再定义索引，但在某些情况下，如果流中定义了索引，我们应该忽略它。
       if (representationHolder.segmentIndex == null) {
         @Nullable
         ChunkIndex chunkIndex =
@@ -573,7 +565,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     if (playerTrackEmsgHandler != null && playerTrackEmsgHandler.onChunkLoadError(chunk)) {
       return true;
     }
-    // Workaround for missing segment at the end of the period
+    // 针对时间段末尾缺少片段的临时解决方案
     if (!manifest.dynamic
         && chunk instanceof MediaChunk
         && loadErrorInfo.exception instanceof InvalidResponseCodeException
@@ -596,8 +588,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     BaseUrl newBaseUrl =
         baseUrlExclusionList.selectBaseUrl(representationHolder.representation.baseUrls);
     if (newBaseUrl != null && !representationHolder.selectedBaseUrl.equals(newBaseUrl)) {
-      // The base URL has changed since the failing chunk was created. Request a replacement chunk,
-      // which will use the new base URL.
+      // 自创建失败的分片以来，基础 URL 已发生变化。请求一个替换分片，它将使用新的基础 URL。
       return true;
     }
 
@@ -611,7 +602,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     LoadErrorHandlingPolicy.FallbackSelection fallbackSelection =
         loadErrorHandlingPolicy.getFallbackSelectionFor(fallbackOptions, loadErrorInfo);
     if (fallbackSelection == null || !fallbackOptions.isFallbackAvailable(fallbackSelection.type)) {
-      // Policy indicated to not use any fallback or a fallback type that is not available.
+      // 策略指示不使用任何回退方案，或使用了不可用的回退类型。
       return false;
     }
 
@@ -704,18 +695,16 @@ public class DefaultDashChunkSource implements DashChunkSource {
   }
 
   /**
-   * Creates a new {@link Chunk} for initialization.
+   * 创建一个新的 {@link Chunk} 用于初始化。
    *
-   * @param representationHolder The {@link Representation} holder for initialization.
-   * @param dataSource The source from which the data should be loaded.
-   * @param trackFormat The format of the track to which this chunk belongs.
-   * @param trackSelectionReason One of the {@link C.SelectionReason selection reasons}.
-   * @param trackSelectionData Additional data related to track selection.
-   * @param initializationUri The URI pointing to initialization data. Can be {@code null} if {@code
-   *     indexUri} is not {@code null}.
-   * @param indexUri The URI pointing to index data. Can be {@code null} if {@code
-   *     initializationUri} is not {@code null}.
-   * @param cmcdDataFactory The {@link CmcdData.Factory} for generating CMCD data.
+   * @param representationHolder 用于初始化的 {@link Representation} 持有者。
+   * @param dataSource 用于加载数据的数据源。
+   * @param trackFormat 该分片所属轨道的格式。
+   * @param trackSelectionReason {@link C.SelectionReason} 选择原因之一。
+   * @param trackSelectionData 与轨道选择相关的附加数据。
+   * @param initializationUri 指向初始化数据的 URI。如果 {@code indexUri} 不为 {@code null}，则可以为 {@code null}。
+   * @param indexUri 指向索引数据的 URI。如果 {@code initializationUri} 不为 {@code null}，则可以为 {@code null}。
+   * @param cmcdDataFactory 用于生成 CMCD 数据的 {@link CmcdData.Factory}。
    */
   @RequiresNonNull("#1.chunkExtractor")
   protected Chunk newInitializationChunk(
@@ -730,8 +719,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     Representation representation = representationHolder.representation;
     RangedUri requestUri;
     if (initializationUri != null) {
-      // It's common for initialization and index data to be stored adjacently. Attempt to merge
-      // the two requests together to request both at once.
+      // 初始化和索引数据通常存储在一起。尝试将这两个请求合并，以便一次性请求两者。
       requestUri =
           initializationUri.attemptMerge(indexUri, representationHolder.selectedBaseUrl.url);
       if (requestUri == null) {
@@ -762,7 +750,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
         representationHolder.chunkExtractor);
   }
 
-  // TODO: b/289983417 - Stop using deprecated SingleSampleMediaChunk when legacy subtitle decoding
+  // TODO: b/289983417 - 当不再支持旧版字幕解码时，停止使用已弃用的 SingleSampleMediaChunk。
   // is no longer supported.
   @SuppressWarnings("deprecation")
   protected Chunk newMediaChunk(
@@ -829,7 +817,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
         RangedUri mergedSegmentUri =
             segmentUri.attemptMerge(nextSegmentUri, representationHolder.selectedBaseUrl.url);
         if (mergedSegmentUri == null) {
-          // Unable to merge segment fetches because the URIs do not merge.
+          // 无法合并片段请求，因为 URI 无法合并。
           break;
         }
         segmentUri = mergedSegmentUri;
@@ -928,13 +916,12 @@ public class DefaultDashChunkSource implements DashChunkSource {
     private final long nowPeriodTimeUs;
 
     /**
-     * Creates iterator.
+     * 创建迭代器。
      *
-     * @param representation The {@link RepresentationHolder} to wrap.
-     * @param firstAvailableSegmentNum The number of the first available segment.
-     * @param lastAvailableSegmentNum The number of the last available segment.
-     * @param nowPeriodTimeUs The current time in microseconds since the start of the period used
-     *     for calculating if segments are available at full network speed.
+     * @param representation 要包装的 {@link RepresentationHolder}。
+     * @param firstAvailableSegmentNum 第一个可用片段的编号。
+     * @param lastAvailableSegmentNum 最后一个可用片段的编号。
+     * @param nowPeriodTimeUs 以微秒为单位的当前时间，从周期开始计算，用于判断片段是否以全网络速度可用。
      */
     public RepresentationSegmentIterator(
         RepresentationHolder representation,
@@ -976,7 +963,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
     }
   }
 
-  /** Holds information about a snapshot of a single {@link Representation}. */
+  /** 保存关于单个 {@link Representation} 快照的信息。 */
   protected static final class RepresentationHolder {
 
     @Nullable /* package */ final ChunkExtractor chunkExtractor;
@@ -1056,20 +1043,18 @@ public class DefaultDashChunkSource implements DashChunkSource {
       long newIndexStartTimeUs = newIndex.getTimeUs(newIndexFirstSegmentNum);
       long newSegmentNumShift = segmentNumShift;
       if (oldIndexEndTimeUs == newIndexStartTimeUs) {
-        // The new index continues where the old one ended, with no overlap.
+        // 新索引从旧索引结束的位置继续，没有重叠。
         newSegmentNumShift += oldIndexLastSegmentNum + 1 - newIndexFirstSegmentNum;
       } else if (oldIndexEndTimeUs < newIndexStartTimeUs) {
-        // There's a gap between the old index and the new one which means we've slipped behind the
-        // live window and can't proceed.
+        // 旧索引和新索引之间存在间隙，这意味着我们已经落后于直播窗口，无法继续。
         throw new BehindLiveWindowException();
       } else if (newIndexStartTimeUs < oldIndexStartTimeUs) {
-        // The new index overlaps with (but does not have a start position contained within) the old
-        // index. This can only happen if extra segments have been added to the start of the index.
+        // 新索引与旧索引重叠（但其起始位置不包含在旧索引内）。这只能在索引开头添加了额外片段时发生。
         newSegmentNumShift -=
             newIndex.getSegmentNum(oldIndexStartTimeUs, newPeriodDurationUs)
                 - oldIndexFirstSegmentNum;
       } else {
-        // The new index overlaps with (and has a start position contained within) the old index.
+        // 新索引与旧索引重叠（且其起始位置包含在旧索引内）。
         newSegmentNumShift +=
             oldIndex.getSegmentNum(newIndexStartTimeUs, newPeriodDurationUs)
                 - newIndexFirstSegmentNum;
@@ -1147,9 +1132,8 @@ public class DefaultDashChunkSource implements DashChunkSource {
 
     public boolean isSegmentAvailableAtFullNetworkSpeed(long segmentNum, long nowPeriodTimeUs) {
       if (checkStateNotNull(segmentIndex).isExplicit()) {
-        // We don't support segment availability for explicit indices (internal ref: b/172894901).
-        // Hence, also assume all segments in explicit indices are always available at full network
-        // speed even if they end in the future.
+        // 我们不支持显式索引的片段可用性检查（内部参考：b/172894901）。
+        // 因此，假设显式索引中的所有片段始终以全网络速度可用，即使它们的结束时间在未来。
         return true;
       }
       return nowPeriodTimeUs == C.TIME_UNSET || getSegmentEndTimeUs(segmentNum) <= nowPeriodTimeUs;

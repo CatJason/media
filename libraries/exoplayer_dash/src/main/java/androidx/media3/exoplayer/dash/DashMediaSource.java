@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -94,7 +79,9 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** A DASH {@link MediaSource}. */
+/**
+ * A DASH {@link MediaSource}.
+ */
 @UnstableApi
 public final class DashMediaSource extends BaseMediaSource {
 
@@ -102,12 +89,15 @@ public final class DashMediaSource extends BaseMediaSource {
     MediaLibraryInfo.registerModule("media3.exoplayer.dash");
   }
 
-  /** Factory for {@link DashMediaSource}s. */
+  /**
+   * Factory for {@link DashMediaSource}s.
+   */
   @SuppressWarnings("deprecation") // Implement deprecated type for backwards compatibility.
   public static final class Factory implements MediaSourceFactory {
 
     private final DashChunkSource.Factory chunkSourceFactory;
-    @Nullable private final DataSource.Factory manifestDataSourceFactory;
+    @Nullable
+    private final DataSource.Factory manifestDataSourceFactory;
 
     private CmcdConfiguration.Factory cmcdConfigurationFactory;
     private DrmSessionManagerProvider drmSessionManagerProvider;
@@ -115,12 +105,13 @@ public final class DashMediaSource extends BaseMediaSource {
     private LoadErrorHandlingPolicy loadErrorHandlingPolicy;
     private long fallbackTargetLiveOffsetMs;
     private long minLiveStartPositionUs;
-    @Nullable private ParsingLoadable.Parser<? extends DashManifest> manifestParser;
+    @Nullable
+    private ParsingLoadable.Parser<? extends DashManifest> manifestParser;
 
     /**
-     * Creates a new factory for {@link DashMediaSource}s.
+     * 创建一个新的 {@link DashMediaSource} 工厂。
      *
-     * <p>The factory will use the following default components:
+     * <p>该工厂将使用以下默认组件：
      *
      * <ul>
      *   <li>{@link DefaultDashChunkSource.Factory}
@@ -129,17 +120,16 @@ public final class DashMediaSource extends BaseMediaSource {
      *   <li>{@link DefaultCompositeSequenceableLoaderFactory}
      * </ul>
      *
-     * @param dataSourceFactory A factory for {@link DataSource} instances that will be used to load
-     *     manifest and media data.
+     * @param dataSourceFactory 用于创建加载清单和媒体数据的 {@link DataSource} 实例的工厂。
      */
     public Factory(DataSource.Factory dataSourceFactory) {
       this(new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory);
     }
 
     /**
-     * Creates a new factory for {@link DashMediaSource}s.
+     * 创建一个新的 {@link DashMediaSource} 工厂。
      *
-     * <p>The factory will use the following default components:
+     * <p>该工厂将使用以下默认组件：
      *
      * <ul>
      *   <li>{@link DefaultDrmSessionManagerProvider}
@@ -147,11 +137,9 @@ public final class DashMediaSource extends BaseMediaSource {
      *   <li>{@link DefaultCompositeSequenceableLoaderFactory}
      * </ul>
      *
-     * @param chunkSourceFactory A factory for {@link DashChunkSource} instances.
-     * @param manifestDataSourceFactory A factory for {@link DataSource} instances that will be used
-     *     to load (and refresh) the manifest. May be {@code null} if the factory will only ever be
-     *     used to create media sources with sideloaded manifests via {@link
-     *     #createMediaSource(DashManifest, MediaItem)}.
+     * @param chunkSourceFactory        用于创建 {@link DashChunkSource} 实例的工厂。
+     * @param manifestDataSourceFactory 用于加载（和刷新）清单的 {@link DataSource} 实例的工厂。
+     *                                  如果该工厂仅用于通过 {@link #createMediaSource(DashManifest, MediaItem)} 创建带有旁加载清单的媒体源，则可以为 {@code null}。
      */
     public Factory(
         DashChunkSource.Factory chunkSourceFactory,
@@ -180,9 +168,8 @@ public final class DashMediaSource extends BaseMediaSource {
       this.drmSessionManagerProvider =
           checkNotNull(
               drmSessionManagerProvider,
-              "MediaSource.Factory#setDrmSessionManagerProvider no longer handles null by"
-                  + " instantiating a new DefaultDrmSessionManagerProvider. Explicitly construct"
-                  + " and pass an instance in order to retain the old behavior.");
+              "MediaSource.Factory#setDrmSessionManagerProvider 不再通过实例化新的 DefaultDrmSessionManagerProvider 来处理 null。"
+                  + " 显式构造并传递一个实例以保留旧的行为。");
       return this;
     }
 
@@ -192,9 +179,8 @@ public final class DashMediaSource extends BaseMediaSource {
       this.loadErrorHandlingPolicy =
           checkNotNull(
               loadErrorHandlingPolicy,
-              "MediaSource.Factory#setLoadErrorHandlingPolicy no longer handles null by"
-                  + " instantiating a new DefaultLoadErrorHandlingPolicy. Explicitly construct and"
-                  + " pass an instance in order to retain the old behavior.");
+              "MediaSource.Factory#setLoadErrorHandlingPolicy 不再通过实例化新的 DefaultLoadErrorHandlingPolicy 来处理 null。"
+                  + " 显式构造并传递一个实例以保留旧的行为。");
       return this;
     }
 
@@ -215,13 +201,12 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     /**
-     * Sets the target {@link Player#getCurrentLiveOffset() offset for live streams} that is used if
-     * no value is defined in the {@link MediaItem} or the manifest.
+     * 设置用于直播流的 {@link Player#getCurrentLiveOffset() 当前直播偏移量} 的目标值，如果 {@link MediaItem} 或清单中未定义该值，则使用此值。
      *
-     * <p>The default value is {@link #DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS}.
+     * <p>默认值为 {@link #DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS}。
      *
-     * @param fallbackTargetLiveOffsetMs The fallback live target offset in milliseconds.
-     * @return This factory, for convenience.
+     * @param fallbackTargetLiveOffsetMs 回退的直播目标偏移量（以毫秒为单位）。
+     * @return 返回此工厂，方便链式调用。
      */
     @CanIgnoreReturnValue
     public Factory setFallbackTargetLiveOffsetMs(long fallbackTargetLiveOffsetMs) {
@@ -230,17 +215,14 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     /**
-     * Sets the minimum position to start playback from in a live stream, in microseconds relative
-     * to the start of the live window.
+     * 设置直播流中播放开始的最小位置（以微秒为单位），相对于直播窗口的起始位置。
      *
-     * <p>This value will override any suggested value from the manifest and helps to prevent {@link
-     * androidx.media3.exoplayer.source.BehindLiveWindowException} issues.
+     * <p>该值将覆盖清单中建议的任何值，并有助于防止 {@link androidx.media3.exoplayer.source.BehindLiveWindowException} 问题。
      *
-     * <p>The default value is {@link #MIN_LIVE_DEFAULT_START_POSITION_US}.
+     * <p>默认值为 {@link #MIN_LIVE_DEFAULT_START_POSITION_US}。
      *
-     * @param minLiveStartPositionUs The minimum live start position, in microseconds relative to
-     *     the start of the live window.
-     * @return This factory, for convenience.
+     * @param minLiveStartPositionUs 最小直播开始位置（以微秒为单位），相对于直播窗口的起始位置。
+     * @return 返回此工厂，方便链式调用。
      */
     @CanIgnoreReturnValue
     public Factory setMinLiveStartPositionUs(long minLiveStartPositionUs) {
@@ -249,10 +231,10 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     /**
-     * Sets the manifest parser to parse loaded manifest data when loading a manifest URI.
+     * 设置用于解析加载的清单数据的清单解析器，当加载清单 URI 时使用。
      *
-     * @param manifestParser A parser for loaded manifest data.
-     * @return This factory, for convenience.
+     * @param manifestParser 用于解析加载的清单数据的解析器。
+     * @return 返回此工厂，方便链式调用。
      */
     @CanIgnoreReturnValue
     public Factory setManifestParser(
@@ -262,14 +244,11 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     /**
-     * Sets the factory to create composite {@link SequenceableLoader}s for when this media source
-     * loads data from multiple streams (video, audio etc...). The default is an instance of {@link
-     * DefaultCompositeSequenceableLoaderFactory}.
+     * 设置用于创建组合 {@link SequenceableLoader} 的工厂，当此媒体源从多个流（视频、音频等）加载数据时使用。
+     * 默认值为 {@link DefaultCompositeSequenceableLoaderFactory} 的实例。
      *
-     * @param compositeSequenceableLoaderFactory A factory to create composite {@link
-     *     SequenceableLoader}s for when this media source loads data from multiple streams (video,
-     *     audio etc...).
-     * @return This factory, for convenience.
+     * @param compositeSequenceableLoaderFactory 用于创建组合 {@link SequenceableLoader} 的工厂，当此媒体源从多个流（视频、音频等）加载数据时使用。
+     * @return 返回此工厂，方便链式调用。
      */
     @CanIgnoreReturnValue
     public Factory setCompositeSequenceableLoaderFactory(
@@ -277,19 +256,17 @@ public final class DashMediaSource extends BaseMediaSource {
       this.compositeSequenceableLoaderFactory =
           checkNotNull(
               compositeSequenceableLoaderFactory,
-              "DashMediaSource.Factory#setCompositeSequenceableLoaderFactory no longer handles null"
-                  + " by instantiating a new DefaultCompositeSequenceableLoaderFactory. Explicitly"
-                  + " construct and pass an instance in order to retain the old behavior.");
+              "DashMediaSource.Factory#setCompositeSequenceableLoaderFactory 不再通过实例化新的 DefaultCompositeSequenceableLoaderFactory 来处理 null。"
+                  + " 显式构造并传递一个实例以保留旧的行为。");
       return this;
     }
 
     /**
-     * Returns a new {@link DashMediaSource} using the current parameters and the specified
-     * sideloaded manifest.
+     * 使用当前参数和指定的旁加载清单创建一个新的 {@link DashMediaSource}。
      *
-     * @param manifest The manifest. {@link DashManifest#dynamic} must be false.
-     * @return The new {@link DashMediaSource}.
-     * @throws IllegalArgumentException If {@link DashManifest#dynamic} is true.
+     * @param manifest 清单。{@link DashManifest#dynamic} 必须为 false。
+     * @return 新的 {@link DashMediaSource}。
+     * @throws IllegalArgumentException 如果 {@link DashManifest#dynamic} 为 true。
      */
     public DashMediaSource createMediaSource(DashManifest manifest) {
       return createMediaSource(
@@ -302,13 +279,12 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     /**
-     * Returns a new {@link DashMediaSource} using the current parameters and the specified
-     * sideloaded manifest.
+     * 使用当前参数和指定的旁加载清单创建一个新的 {@link DashMediaSource}。
      *
-     * @param manifest The manifest. {@link DashManifest#dynamic} must be false.
-     * @param mediaItem The {@link MediaItem} to be included in the timeline.
-     * @return The new {@link DashMediaSource}.
-     * @throws IllegalArgumentException If {@link DashManifest#dynamic} is true.
+     * @param manifest  清单。{@link DashManifest#dynamic} 必须为 false。
+     * @param mediaItem 要包含在时间轴中的 {@link MediaItem}。
+     * @return 新的 {@link DashMediaSource}。
+     * @throws IllegalArgumentException 如果 {@link DashManifest#dynamic} 为 true。
      */
     public DashMediaSource createMediaSource(DashManifest manifest, MediaItem mediaItem) {
       Assertions.checkArgument(!manifest.dynamic);
@@ -338,11 +314,11 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     /**
-     * Returns a new {@link DashMediaSource} using the current parameters.
+     * 使用当前参数创建一个新的 {@link DashMediaSource}。
      *
-     * @param mediaItem The media item of the dash stream.
-     * @return The new {@link DashMediaSource}.
-     * @throws NullPointerException if {@link MediaItem#localConfiguration} is {@code null}.
+     * @param mediaItem DASH 流的媒体项。
+     * @return 新的 {@link DashMediaSource}。
+     * @throws NullPointerException 如果 {@link MediaItem#localConfiguration} 为 {@code null}。
      */
     @Override
     public DashMediaSource createMediaSource(MediaItem mediaItem) {
@@ -377,29 +353,27 @@ public final class DashMediaSource extends BaseMediaSource {
 
     @Override
     public @C.ContentType int[] getSupportedTypes() {
-      return new int[] {C.CONTENT_TYPE_DASH};
+      return new int[]{C.CONTENT_TYPE_DASH};
     }
   }
 
   /**
-   * The default target {@link Player#getCurrentLiveOffset() offset for live streams} that is used
-   * if no value is defined in the {@link MediaItem} or the manifest.
+   * 默认的目标 {@link Player#getCurrentLiveOffset() 直播流偏移量}，如果 {@link MediaItem} 或清单中未定义该值，则使用此值。
    */
   public static final long DEFAULT_FALLBACK_TARGET_LIVE_OFFSET_MS = 30_000;
 
-  /** The media id used by media items of dash media sources without a manifest URI. */
+  /**
+   * 用于没有清单 URI 的 DASH 媒体源的媒体项的默认媒体 ID。
+   */
   public static final String DEFAULT_MEDIA_ID = "DashMediaSource";
 
   /**
-   * The minimum default start position for live streams, in microseconds relative to the start of
-   * the live window.
+   * 直播流的最小默认开始位置，以微秒为单位，相对于直播窗口的起始位置。
    */
   public static final long MIN_LIVE_DEFAULT_START_POSITION_US = 5_000_000;
 
   /**
-   * The interval in milliseconds between invocations of {@link
-   * MediaSourceCaller#onSourceInfoRefreshed(MediaSource, Timeline)} when the source's {@link
-   * Timeline} is changing dynamically (for example, for incomplete live streams).
+   * 当源的 {@link Timeline} 动态变化时（例如，对于不完整的直播流），调用 {@link MediaSourceCaller#onSourceInfoRefreshed(MediaSource, Timeline)} 的时间间隔（以毫秒为单位）。
    */
   private static final long DEFAULT_NOTIFY_MANIFEST_INTERVAL_MS = 5000;
 
@@ -409,7 +383,8 @@ public final class DashMediaSource extends BaseMediaSource {
   private final DataSource.Factory manifestDataSourceFactory;
   private final DashChunkSource.Factory chunkSourceFactory;
   private final CompositeSequenceableLoaderFactory compositeSequenceableLoaderFactory;
-  @Nullable private final CmcdConfiguration cmcdConfiguration;
+  @Nullable
+  private final CmcdConfiguration cmcdConfiguration;
   private final DrmSessionManager drmSessionManager;
   private final LoadErrorHandlingPolicy loadErrorHandlingPolicy;
   private final BaseUrlExclusionList baseUrlExclusionList;
@@ -427,7 +402,8 @@ public final class DashMediaSource extends BaseMediaSource {
 
   private DataSource dataSource;
   private Loader loader;
-  @Nullable private TransferListener mediaTransferListener;
+  @Nullable
+  private TransferListener mediaTransferListener;
 
   private IOException manifestFatalError;
   private Handler handler;
@@ -498,9 +474,9 @@ public final class DashMediaSource extends BaseMediaSource {
   }
 
   /**
-   * Manually replaces the manifest {@link Uri}.
+   * 手动替换清单的 {@link Uri}。
    *
-   * @param manifestUri The replacement manifest {@link Uri}.
+   * @param manifestUri 替换的清单 {@link Uri}。
    */
   public void replaceManifestUri(Uri manifestUri) {
     synchronized (manifestUriLock) {
@@ -655,20 +631,17 @@ public final class DashMediaSource extends BaseMediaSource {
     if (newManifest.dynamic) {
       boolean isManifestStale = false;
       if (oldPeriodCount - removedPeriodCount > newManifest.getPeriodCount()) {
-        // After discarding old periods, we should never have more periods than listed in the new
-        // manifest. That would mean that a previously announced period is no longer advertised. If
-        // this condition occurs, assume that we are hitting a manifest server that is out of sync
-        // and behind.
-        Log.w(TAG, "Loaded out of sync manifest");
+        // 在丢弃旧的周期后，我们不应该拥有比新清单中列出的更多的周期。这意味着之前公布的周期不再被广告。
+        // 如果这种情况发生，假设我们正在访问一个不同步且滞后的清单服务器。
+        Log.w(TAG, "加载了不同步的清单");
         isManifestStale = true;
       } else if (expiredManifestPublishTimeUs != C.TIME_UNSET
           && newManifest.publishTimeMs * 1000 <= expiredManifestPublishTimeUs) {
-        // If we receive a dynamic manifest that's older than expected (i.e. its publish time has
-        // expired, or it's dynamic and we know the presentation has ended), then this manifest is
-        // stale.
+        // 如果我们接收到一个动态清单，但它比预期的更旧（即其发布时间已过期，或者它是动态的且我们知道演示已结束），
+        // 那么此清单是过时的。
         Log.w(
             TAG,
-            "Loaded stale dynamic manifest: "
+            "加载了过时的动态清单: "
                 + newManifest.publishTimeMs
                 + ", "
                 + expiredManifestPublishTimeUs);
@@ -694,21 +667,20 @@ public final class DashMediaSource extends BaseMediaSource {
     firstPeriodId += removedPeriodCount;
 
     synchronized (manifestUriLock) {
-      // Checks whether replaceManifestUri(Uri) was called to manually replace the URI between the
-      // start and end of this load. If it was then isSameUriInstance evaluates to false, and we
-      // prefer the manual replacement to one derived from the previous request.
+      // 检查在本次加载的开始和结束之间是否调用了 replaceManifestUri(Uri) 来手动替换 URI。
+      // 如果调用了，则 isSameUriInstance 的值为 false，我们优先使用手动替换的 URI 而不是从之前的请求派生的 URI。
       @SuppressWarnings("ReferenceEquality")
       boolean isSameUriInstance = loadable.dataSpec.uri == manifestUri;
       if (isSameUriInstance) {
-        // Replace the manifest URI with one specified by a manifest Location element (if present),
-        // or with the final (possibly redirected) URI. This follows the recommendation in
-        // DASH-IF-IOP 4.3, section 3.2.15.3. See: https://dashif.org/docs/DASH-IF-IOP-v4.3.pdf.
+        // 如果清单中存在 Location 元素，则使用它指定的 URI 替换清单 URI；
+        // 否则使用最终的（可能是重定向的）URI。这遵循 DASH-IF-IOP 4.3 第 3.2.15.3 节的建议。
+        // 参见：https://dashif.org/docs/DASH-IF-IOP-v4.3.pdf。
         manifestUri = manifest.location != null ? manifest.location : loadable.getUri();
       }
     }
 
     if (manifest.dynamic && elapsedRealtimeOffsetMs == C.TIME_UNSET) {
-      // Determine elapsedRealtimeOffsetMs before processing the manifest further.
+      // 在进一步处理清单之前，确定 elapsedRealtimeOffsetMs。
       if (manifest.utcTiming != null) {
         resolveUtcTimingElement(manifest.utcTiming);
       } else {
@@ -807,20 +779,25 @@ public final class DashMediaSource extends BaseMediaSource {
 
   private void resolveUtcTimingElement(UtcTimingElement timingElement) {
     String scheme = timingElement.schemeIdUri;
+    // 根据 UTC 定时元素的 schemeIdUri 进行不同的处理
     if (Util.areEqual(scheme, "urn:mpeg:dash:utc:direct:2014")
         || Util.areEqual(scheme, "urn:mpeg:dash:utc:direct:2012")) {
+      // 如果 scheme 是直接 UTC 时间，调用直接解析方法
       resolveUtcTimingElementDirect(timingElement);
     } else if (Util.areEqual(scheme, "urn:mpeg:dash:utc:http-iso:2014")
         || Util.areEqual(scheme, "urn:mpeg:dash:utc:http-iso:2012")) {
+      // 如果 scheme 是 HTTP ISO 格式，调用 HTTP 解析方法，并传入 ISO8601 解析器
       resolveUtcTimingElementHttp(timingElement, new Iso8601Parser());
     } else if (Util.areEqual(scheme, "urn:mpeg:dash:utc:http-xsdate:2014")
         || Util.areEqual(scheme, "urn:mpeg:dash:utc:http-xsdate:2012")) {
+      // 如果 scheme 是 HTTP XSDate 格式，调用 HTTP 解析方法，并传入 XSDate 解析器
       resolveUtcTimingElementHttp(timingElement, new XsDateTimeParser());
     } else if (Util.areEqual(scheme, "urn:mpeg:dash:utc:ntp:2014")
         || Util.areEqual(scheme, "urn:mpeg:dash:utc:ntp:2012")) {
+      // 如果 scheme 是 NTP 格式，加载 NTP 时间偏移量
       loadNtpTimeOffset();
     } else {
-      // Unsupported scheme.
+      // 如果 scheme 不支持，抛出异常并调用错误处理方法
       onUtcTimestampResolutionError(new IOException("Unsupported UTC timing scheme"));
     }
   }
@@ -872,16 +849,16 @@ public final class DashMediaSource extends BaseMediaSource {
   }
 
   private void processManifest(boolean scheduleRefresh) {
-    // Update any periods.
+    // 更新所有周期
     for (int i = 0; i < periodsById.size(); i++) {
       int id = periodsById.keyAt(i);
       if (id >= firstPeriodId) {
         periodsById.valueAt(i).updateManifest(manifest, id - firstPeriodId);
       } else {
-        // This period has been removed from the manifest so it doesn't need to be updated.
+        // 该周期已从清单中移除，因此无需更新
       }
     }
-    // Update the window.
+    // 更新窗口
     Period firstPeriod = manifest.getPeriod(0);
     int lastPeriodIndex = manifest.getPeriodCount() - 1;
     Period lastPeriod = manifest.getPeriod(lastPeriodIndex);
@@ -894,7 +871,7 @@ public final class DashMediaSource extends BaseMediaSource {
         getAvailableEndTimeInManifestUs(lastPeriod, lastPeriodDurationUs, nowUnixTimeUs);
     boolean windowChangingImplicitly = manifest.dynamic && !isIndexExplicit(lastPeriod);
     if (windowChangingImplicitly && manifest.timeShiftBufferDepthMs != C.TIME_UNSET) {
-      // Update the available start time to reflect the manifest's time shift buffer depth.
+      // 更新可用开始时间以反映清单的时间偏移缓冲区深度
       long timeShiftBufferStartTimeInManifestUs =
           windowEndTimeInManifestUs - Util.msToUs(manifest.timeShiftBufferDepthMs);
       windowStartTimeInManifestUs =
@@ -915,9 +892,8 @@ public final class DashMediaSource extends BaseMediaSource {
       windowDefaultPositionUs = nowInWindowUs - Util.msToUs(liveConfiguration.targetOffsetMs);
       long minimumWindowDefaultPositionUs = min(minLiveStartPositionUs, windowDurationUs / 2);
       if (windowDefaultPositionUs < minimumWindowDefaultPositionUs) {
-        // The default position is too close to the start of the live window. Set it to the minimum
-        // default position provided the window is at least twice as big. Else set it to the middle
-        // of the window.
+        // 默认位置太接近直播窗口的起始位置。如果窗口至少是两倍大，则将其设置为提供的最小默认位置。
+        // 否则将其设置为窗口的中间位置。
         windowDefaultPositionUs = minimumWindowDefaultPositionUs;
       }
     }
@@ -937,9 +913,9 @@ public final class DashMediaSource extends BaseMediaSource {
     refreshSourceInfo(timeline);
 
     if (!sideloadedManifest) {
-      // Remove any pending simulated refresh.
+      // 移除任何挂起的模拟刷新
       handler.removeCallbacks(simulateManifestRefreshRunnable);
-      // If the window is changing implicitly, post a simulated manifest refresh to update it.
+      // 如果窗口正在隐式变化，则发布模拟清单刷新以更新窗口
       if (windowChangingImplicitly) {
         handler.postDelayed(
             simulateManifestRefreshRunnable,
@@ -951,12 +927,11 @@ public final class DashMediaSource extends BaseMediaSource {
       } else if (scheduleRefresh
           && manifest.dynamic
           && manifest.minUpdatePeriodMs != C.TIME_UNSET) {
-        // Schedule an explicit refresh if needed.
+        // 如果需要，安排显式刷新
         long minUpdatePeriodMs = manifest.minUpdatePeriodMs;
         if (minUpdatePeriodMs == 0) {
-          // TODO: This is a temporary hack to avoid constantly refreshing the MPD in cases where
-          // minimumUpdatePeriod is set to 0. In such cases we shouldn't refresh unless there is
-          // explicit signaling in the stream, according to:
+          // TODO: 这是一个临时解决方案，用于避免在 minimumUpdatePeriod 设置为 0 的情况下不断刷新 MPD。
+          // 在这种情况下，除非流中有明确的信号，否则不应刷新，根据：
           // http://azure.microsoft.com/blog/2014/09/13/dash-live-streaming-with-azure-media-service
           minUpdatePeriodMs = 5000;
         }
@@ -969,29 +944,27 @@ public final class DashMediaSource extends BaseMediaSource {
 
   private void updateLiveConfiguration(long nowInWindowUs, long windowDurationUs) {
     MediaItem.LiveConfiguration mediaItemLiveConfiguration = getMediaItem().liveConfiguration;
-    // Default maximum offset: start of window.
+    // 默认的最大偏移量：窗口的起始位置
     long maxPossibleLiveOffsetMs = usToMs(nowInWindowUs);
     long maxLiveOffsetMs = maxPossibleLiveOffsetMs;
-    // Override maximum offset with user or media defined values if they are smaller.
+    // 如果用户或媒体定义的偏移量更小，则覆盖最大偏移量
     if (mediaItemLiveConfiguration.maxOffsetMs != C.TIME_UNSET) {
       maxLiveOffsetMs = min(maxLiveOffsetMs, mediaItemLiveConfiguration.maxOffsetMs);
     } else if (manifest.serviceDescription != null
         && manifest.serviceDescription.maxOffsetMs != C.TIME_UNSET) {
       maxLiveOffsetMs = min(maxLiveOffsetMs, manifest.serviceDescription.maxOffsetMs);
     }
-    // Default minimum offset: end of window.
+    // 默认的最小偏移量：窗口的结束位置
     long minLiveOffsetMs = usToMs(nowInWindowUs - windowDurationUs);
     if (minLiveOffsetMs < 0 && maxLiveOffsetMs > 0) {
-      // The current time is in the window, so assume all clocks are synchronized and set the
-      // minimum to a live offset of zero.
+      // 当前时间在窗口内，因此假设所有时钟已同步，并将最小偏移量设置为零
       minLiveOffsetMs = 0;
     }
     if (manifest.minBufferTimeMs != C.TIME_UNSET) {
-      // Ensure to leave one GOP as minimum and don't exceed the maximum possible offset.
+      // 确保保留一个 GOP 作为最小缓冲，且不超过最大可能的偏移量
       minLiveOffsetMs = min(minLiveOffsetMs + manifest.minBufferTimeMs, maxPossibleLiveOffsetMs);
     }
-    // Override minimum offset with user and media defined values if they are larger, but don't
-    // exceed the maximum possible offset.
+    // 如果用户或媒体定义的偏移量更大，则覆盖最小偏移量，但不超过最大可能的偏移量
     if (mediaItemLiveConfiguration.minOffsetMs != C.TIME_UNSET) {
       minLiveOffsetMs =
           constrainValue(
@@ -1003,13 +976,12 @@ public final class DashMediaSource extends BaseMediaSource {
               manifest.serviceDescription.minOffsetMs, minLiveOffsetMs, maxPossibleLiveOffsetMs);
     }
     if (minLiveOffsetMs > maxLiveOffsetMs) {
-      // The values can be set by different sources and may disagree. Prefer the maximum offset
-      // under the assumption that it is safer for playback.
+      // 如果最小偏移量大于最大偏移量，则优先使用最大偏移量，以确保播放安全
       maxLiveOffsetMs = minLiveOffsetMs;
     }
     long targetOffsetMs;
     if (liveConfiguration.targetOffsetMs != C.TIME_UNSET) {
-      // Keep existing target offset even if the media configuration changes.
+      // 如果已有目标偏移量，则保持不变，即使媒体配置发生变化
       targetOffsetMs = liveConfiguration.targetOffsetMs;
     } else if (manifest.serviceDescription != null
         && manifest.serviceDescription.targetOffsetMs != C.TIME_UNSET) {
@@ -1023,6 +995,7 @@ public final class DashMediaSource extends BaseMediaSource {
       targetOffsetMs = minLiveOffsetMs;
     }
     if (targetOffsetMs > maxLiveOffsetMs) {
+      // 如果目标偏移量超过最大偏移量，则将其限制在安全范围内
       long safeDistanceFromWindowStartUs = min(minLiveStartPositionUs, windowDurationUs / 2);
       long maxTargetOffsetForSafeDistanceToWindowStartMs =
           usToMs(nowInWindowUs - safeDistanceFromWindowStartUs);
@@ -1045,10 +1018,9 @@ public final class DashMediaSource extends BaseMediaSource {
     if (minPlaybackSpeed == C.RATE_UNSET
         && maxPlaybackSpeed == C.RATE_UNSET
         && (manifest.serviceDescription == null
-            || manifest.serviceDescription.targetOffsetMs == C.TIME_UNSET)) {
-      // Force unit speed (instead of automatic adjustment with fallback speeds) if there are no
-      // specific speed limits defined by the media item or the manifest, and the manifest contains
-      // no low-latency target offset either.
+        || manifest.serviceDescription.targetOffsetMs == C.TIME_UNSET)) {
+      // 如果媒体项或清单中没有定义特定的速度限制，并且清单中也没有低延迟目标偏移量，
+      // 则强制使用单位速度（而不是自动调整回退速度）
       minPlaybackSpeed = 1f;
       maxPlaybackSpeed = 1f;
     }
@@ -1121,14 +1093,14 @@ public final class DashMediaSource extends BaseMediaSource {
                 + periodStartUs
                 + index.getNextSegmentAvailableTimeUs(periodDurationUs, nowUnixTimeUs);
         long requiredIntervalUs = nextSegmentShiftUnixTimeUs - nowUnixTimeUs;
-        // Avoid multiple refreshes within a very small amount of time.
+        // 避免在极短时间内多次刷新
         if (requiredIntervalUs < intervalUs - 100_000
             || (requiredIntervalUs > intervalUs && requiredIntervalUs < intervalUs + 100_000)) {
           intervalUs = requiredIntervalUs;
         }
       }
     }
-    // Round up to compensate for a potential loss in the us to ms conversion.
+    // 向上取整以补偿从微秒到毫秒转换时可能产生的精度损失
     return LongMath.divide(intervalUs, 1000, RoundingMode.CEILING);
   }
 
@@ -1140,8 +1112,8 @@ public final class DashMediaSource extends BaseMediaSource {
     for (int i = 0; i < period.adaptationSets.size(); i++) {
       AdaptationSet adaptationSet = period.adaptationSets.get(i);
       List<Representation> representations = adaptationSet.representations;
-      // Exclude other adaptation sets from duration calculations, if we have at least one audio or
-      // video adaptation set. See: https://github.com/google/ExoPlayer/issues/4029.
+      // 如果我们至少有一个音频或视频自适应集，则从时长计算中排除其他自适应集。
+      // 参见：https://github.com/google/ExoPlayer/issues/4029。
       boolean adaptationSetIsNotAudioVideo =
           adaptationSet.type != C.TRACK_TYPE_AUDIO && adaptationSet.type != C.TRACK_TYPE_VIDEO;
       if ((haveAudioVideoAdaptationSets && adaptationSetIsNotAudioVideo)
@@ -1168,38 +1140,50 @@ public final class DashMediaSource extends BaseMediaSource {
 
   private static long getAvailableEndTimeInManifestUs(
       Period period, long periodDurationUs, long nowUnixTimeUs) {
+    // 将周期的起始时间从毫秒转换为微秒
     long periodStartTimeInManifestUs = Util.msToUs(period.startMs);
+    // 初始化可用结束时间为最大值
     long availableEndTimeInManifestUs = Long.MAX_VALUE;
+    // 检查周期中是否包含音频或视频自适应集
     boolean haveAudioVideoAdaptationSets = hasVideoOrAudioAdaptationSets(period);
+    // 遍历周期中的所有自适应集
     for (int i = 0; i < period.adaptationSets.size(); i++) {
       AdaptationSet adaptationSet = period.adaptationSets.get(i);
       List<Representation> representations = adaptationSet.representations;
-      // Exclude other adaptation sets from duration calculations, if we have at least one audio or
-      // video adaptation set. See: https://github.com/google/ExoPlayer/issues/4029
+      // 如果存在至少一个音频或视频自适应集，则从时长计算中排除其他自适应集。
+      // 参见：https://github.com/google/ExoPlayer/issues/4029
       boolean adaptationSetIsNotAudioVideo =
           adaptationSet.type != C.TRACK_TYPE_AUDIO && adaptationSet.type != C.TRACK_TYPE_VIDEO;
       if ((haveAudioVideoAdaptationSets && adaptationSetIsNotAudioVideo)
           || representations.isEmpty()) {
-        continue;
+        continue; // 跳过非音视频自适应集或空表示
       }
+      // 获取第一个表示的分段索引
       @Nullable DashSegmentIndex index = representations.get(0).getIndex();
       if (index == null) {
+        // 如果索引为空，则返回周期的结束时间
         return periodStartTimeInManifestUs + periodDurationUs;
       }
+      // 获取可用分段的数量
       long availableSegmentCount = index.getAvailableSegmentCount(periodDurationUs, nowUnixTimeUs);
       if (availableSegmentCount == 0) {
+        // 如果没有可用分段，则返回周期的起始时间
         return periodStartTimeInManifestUs;
       }
+      // 计算第一个和最后一个可用分段的编号
       long firstAvailableSegmentNum =
           index.getFirstAvailableSegmentNum(periodDurationUs, nowUnixTimeUs);
       long lastAvailableSegmentNum = firstAvailableSegmentNum + availableSegmentCount - 1;
+      // 计算当前自适应集的可用结束时间
       long adaptationSetAvailableEndTimeInManifestUs =
           periodStartTimeInManifestUs
               + index.getTimeUs(lastAvailableSegmentNum)
               + index.getDurationUs(lastAvailableSegmentNum, periodDurationUs);
+      // 更新全局可用结束时间为所有自适应集的最小值
       availableEndTimeInManifestUs =
           min(availableEndTimeInManifestUs, adaptationSetAvailableEndTimeInManifestUs);
     }
+    // 返回计算出的可用结束时间
     return availableEndTimeInManifestUs;
   }
 
@@ -1236,7 +1220,8 @@ public final class DashMediaSource extends BaseMediaSource {
     private final long windowDefaultStartPositionUs;
     private final DashManifest manifest;
     private final MediaItem mediaItem;
-    @Nullable private final MediaItem.LiveConfiguration liveConfiguration;
+    @Nullable
+    private final MediaItem.LiveConfiguration liveConfiguration;
 
     public DashTimeline(
         long presentationStartTimeMs,
@@ -1319,43 +1304,50 @@ public final class DashMediaSource extends BaseMediaSource {
     }
 
     private long getAdjustedWindowDefaultStartPositionUs(long defaultPositionProjectionUs) {
+      // 获取窗口的默认起始位置
       long windowDefaultStartPositionUs = this.windowDefaultStartPositionUs;
+      // 如果窗口不是动态移动的，直接返回默认起始位置
       if (!isMovingLiveWindow(manifest)) {
         return windowDefaultStartPositionUs;
       }
+      // 如果默认位置投影值大于 0，则调整默认起始位置
       if (defaultPositionProjectionUs > 0) {
         windowDefaultStartPositionUs += defaultPositionProjectionUs;
+        // 如果调整后的位置超出直播窗口的结束位置，则返回 TIME_UNSET
         if (windowDefaultStartPositionUs > windowDurationUs) {
-          // The projection takes us beyond the end of the live window.
           return C.TIME_UNSET;
         }
       }
-      // Attempt to snap to the start of the corresponding video segment.
+      // 尝试将默认起始位置对齐到对应视频分段的起始位置
       int periodIndex = 0;
       long defaultStartPositionInPeriodUs = offsetInFirstPeriodUs + windowDefaultStartPositionUs;
       long periodDurationUs = manifest.getPeriodDurationUs(periodIndex);
+      // 遍历周期，找到包含默认起始位置的周期
       while (periodIndex < manifest.getPeriodCount() - 1
           && defaultStartPositionInPeriodUs >= periodDurationUs) {
         defaultStartPositionInPeriodUs -= periodDurationUs;
         periodIndex++;
         periodDurationUs = manifest.getPeriodDurationUs(periodIndex);
       }
+      // 获取当前周期
       androidx.media3.exoplayer.dash.manifest.Period period = manifest.getPeriod(periodIndex);
+      // 获取视频自适应集的索引
       int videoAdaptationSetIndex = period.getAdaptationSetIndex(C.TRACK_TYPE_VIDEO);
+      // 如果没有视频自适应集，则无法对齐，直接返回默认起始位置
       if (videoAdaptationSetIndex == C.INDEX_UNSET) {
-        // No video adaptation set for snapping.
         return windowDefaultStartPositionUs;
       }
-      // If there are multiple video adaptation sets with unaligned segments, the initial time may
-      // not correspond to the start of a segment in both, but this is an edge case.
+      // 如果存在多个视频自适应集且分段未对齐，初始时间可能不对应两个分段的起始位置，但这是边缘情况
       @Nullable
       DashSegmentIndex snapIndex =
           period.adaptationSets.get(videoAdaptationSetIndex).representations.get(0).getIndex();
+      // 如果视频自适应集没有分段索引或分段为空，则无法对齐，直接返回默认起始位置
       if (snapIndex == null || snapIndex.getSegmentCount(periodDurationUs) == 0) {
-        // Video adaptation set does not include a non-empty index for snapping.
         return windowDefaultStartPositionUs;
       }
+      // 获取包含默认起始位置的分段编号
       long segmentNum = snapIndex.getSegmentNum(defaultStartPositionInPeriodUs, periodDurationUs);
+      // 计算对齐后的默认起始位置
       return windowDefaultStartPositionUs
           + snapIndex.getTimeUs(segmentNum)
           - defaultStartPositionInPeriodUs;
@@ -1492,24 +1484,28 @@ public final class DashMediaSource extends BaseMediaSource {
   }
 
   /**
-   * A {@link LoaderErrorThrower} that throws fatal {@link IOException} that has occurred during
-   * manifest loading from the manifest {@code loader}, or exception with the loaded manifest.
+   * 一个 {@link LoaderErrorThrower}，用于抛出在清单加载过程中发生的致命 {@link IOException}，或者抛出与已加载清单相关的异常。
    */
   /* package */ final class ManifestLoadErrorThrower implements LoaderErrorThrower {
 
     @Override
     public void maybeThrowError() throws IOException {
+      // 抛出加载器中的错误
       loader.maybeThrowError();
+      // 抛出与清单相关的错误
       maybeThrowManifestError();
     }
 
     @Override
     public void maybeThrowError(int minRetryCount) throws IOException {
+      // 抛出加载器中的错误，并指定最小重试次数
       loader.maybeThrowError(minRetryCount);
+      // 抛出与清单相关的错误
       maybeThrowManifestError();
     }
 
     private void maybeThrowManifestError() throws IOException {
+      // 如果存在清单致命错误，则抛出该错误
       if (manifestFatalError != null) {
         throw manifestFatalError;
       }

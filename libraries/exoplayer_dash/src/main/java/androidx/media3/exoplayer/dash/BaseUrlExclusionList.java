@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.dash;
 
 import static androidx.media3.common.util.Util.castNonNull;
@@ -35,8 +20,7 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Holds the state of {@link #exclude(BaseUrl, long) excluded} base URLs to be used to {@link
- * #selectBaseUrl(List) select} a base URL based on these exclusions.
+ * 用于管理被 {@link #exclude(BaseUrl, long) 排除} 的 Base URL 状态，并根据这些排除规则 {@link #selectBaseUrl(List) 选择} Base URL。
  */
 @UnstableApi
 public final class BaseUrlExclusionList {
@@ -46,12 +30,12 @@ public final class BaseUrlExclusionList {
   private final Map<List<Pair<String, Integer>>, BaseUrl> selectionsTaken = new HashMap<>();
   private final Random random;
 
-  /** Creates an instance. */
+  /** 创建一个实例。 */
   public BaseUrlExclusionList() {
     this(new Random());
   }
 
-  /** Creates an instance with the given {@link Random}. */
+  /** 使用指定的 {@link Random} 创建一个实例。 */
   @VisibleForTesting
   /* package */ BaseUrlExclusionList(Random random) {
     this.random = random;
@@ -60,10 +44,10 @@ public final class BaseUrlExclusionList {
   }
 
   /**
-   * Excludes the given base URL.
+   * 排除指定的 Base URL。
    *
-   * @param baseUrlToExclude The base URL to exclude.
-   * @param exclusionDurationMs The duration of exclusion, in milliseconds.
+   * @param baseUrlToExclude 要排除的 Base URL。
+   * @param exclusionDurationMs 排除的持续时间，单位为毫秒。
    */
   public void exclude(BaseUrl baseUrlToExclude, long exclusionDurationMs) {
     long excludeUntilMs = SystemClock.elapsedRealtime() + exclusionDurationMs;
@@ -74,14 +58,13 @@ public final class BaseUrlExclusionList {
   }
 
   /**
-   * Selects the base URL to use from the given list.
+   * 从给定的 Base URL 列表中选择一个 Base URL。
    *
-   * <p>The list is reduced by service location and priority of base URLs that have been passed to
-   * {@link #exclude(BaseUrl, long)}. The base URL to use is then selected from the remaining base
-   * URLs by priority and weight.
+   * <p>该列表会根据已通过 {@link #exclude(BaseUrl, long)} 排除的 Base URL 的服务位置和优先级进行缩减。
+   * 然后从剩余的 Base URL 中根据优先级和权重选择一个 Base URL。
    *
-   * @param baseUrls The list of {@link BaseUrl base URLs} to select from.
-   * @return The selected base URL after exclusion or null if all elements have been excluded.
+   * @param baseUrls 要从中选择的 {@link BaseUrl Base URL} 列表。
+   * @return 排除后选择的 Base URL，如果所有元素都被排除则返回 null。
    */
   @Nullable
   public BaseUrl selectBaseUrl(List<BaseUrl> baseUrls) {
@@ -89,38 +72,38 @@ public final class BaseUrlExclusionList {
     if (includedBaseUrls.size() < 2) {
       return Iterables.getFirst(includedBaseUrls, /* defaultValue= */ null);
     }
-    // Sort by priority and service location to make the sort order of the candidates deterministic.
+    // 按优先级和服务位置排序，使候选者的顺序具有确定性。
     Collections.sort(includedBaseUrls, BaseUrlExclusionList::compareBaseUrl);
-    // Get candidates of the lowest priority from the head of the sorted list.
+    // 从排序后的列表头部获取最低优先级的候选者。
     List<Pair<String, Integer>> candidateKeys = new ArrayList<>();
     int lowestPriority = includedBaseUrls.get(0).priority;
     for (int i = 0; i < includedBaseUrls.size(); i++) {
       BaseUrl baseUrl = includedBaseUrls.get(i);
       if (lowestPriority != baseUrl.priority) {
         if (candidateKeys.size() == 1) {
-          // Only a single candidate of lowest priority; no choice.
+          // 只有一个最低优先级的候选者；无需选择。
           return includedBaseUrls.get(0);
         }
         break;
       }
       candidateKeys.add(new Pair<>(baseUrl.serviceLocation, baseUrl.weight));
     }
-    // Check whether selection has already been taken.
+    // 检查是否已经进行过选择。
     @Nullable BaseUrl baseUrl = selectionsTaken.get(candidateKeys);
     if (baseUrl == null) {
-      // Weighted random selection from multiple candidates of the same priority.
+      // 从多个相同优先级的候选者中进行加权随机选择。
       baseUrl = selectWeighted(includedBaseUrls.subList(0, candidateKeys.size()));
-      // Remember the selection taken for later.
+      // 记住已进行的选择，以便后续使用。
       selectionsTaken.put(candidateKeys, baseUrl);
     }
     return baseUrl;
   }
 
   /**
-   * Returns the number of priority levels for the given list of base URLs after exclusion.
+   * 返回排除后给定 Base URL 列表的优先级级别数量。
    *
-   * @param baseUrls The list of base URLs.
-   * @return The number of priority levels after exclusion.
+   * @param baseUrls Base URL 列表。
+   * @return 排除后的优先级级别数量。
    */
   public int getPriorityCountAfterExclusion(List<BaseUrl> baseUrls) {
     Set<Integer> priorities = new HashSet<>();
@@ -132,10 +115,10 @@ public final class BaseUrlExclusionList {
   }
 
   /**
-   * Returns the number of priority levels of the given list of base URLs.
+   * 返回给定 Base URL 列表的优先级级别数量。
    *
-   * @param baseUrls The list of base URLs.
-   * @return The number of priority levels before exclusion.
+   * @param baseUrls Base URL 列表。
+   * @return 排除前的优先级级别数量。
    */
   public static int getPriorityCount(List<BaseUrl> baseUrls) {
     Set<Integer> priorities = new HashSet<>();
@@ -145,14 +128,14 @@ public final class BaseUrlExclusionList {
     return priorities.size();
   }
 
-  /** Resets the state. */
+  /** 重置状态。 */
   public void reset() {
     excludedServiceLocations.clear();
     excludedPriorities.clear();
     selectionsTaken.clear();
   }
 
-  // Internal methods.
+  // 内部方法。
 
   private List<BaseUrl> applyExclusions(List<BaseUrl> baseUrls) {
     long nowMs = SystemClock.elapsedRealtime();
@@ -206,7 +189,7 @@ public final class BaseUrlExclusionList {
     }
   }
 
-  /** Compare by priority and service location. */
+  /** 按优先级和服务位置进行比较。 */
   private static int compareBaseUrl(BaseUrl a, BaseUrl b) {
     int compare = Integer.compare(a.priority, b.priority);
     return compare != 0 ? compare : a.serviceLocation.compareTo(b.serviceLocation);

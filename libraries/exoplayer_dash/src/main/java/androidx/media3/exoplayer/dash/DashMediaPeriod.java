@@ -450,14 +450,14 @@ import java.util.regex.Pattern;
       boolean[] streamResetFlags,
       long positionUs,
       int[] streamIndexToTrackGroupIndex) {
-    // Create newly selected primary and event streams.
+    // 创建新选择的主流和事件流
     for (int i = 0; i < selections.length; i++) {
       ExoTrackSelection selection = selections[i];
       if (selection == null) {
         continue;
       }
       if (streams[i] == null) {
-        // Create new stream for selection.
+        // 为选择创建新流
         streamResetFlags[i] = true;
         int trackGroupIndex = streamIndexToTrackGroupIndex[i];
         TrackGroupInfo trackGroupInfo = trackGroupInfos[trackGroupIndex];
@@ -469,15 +469,14 @@ import java.util.regex.Pattern;
           streams[i] = new EventSampleStream(eventStream, format, manifest.dynamic);
         }
       } else if (streams[i] instanceof ChunkSampleStream) {
-        // Update selection in existing stream.
+        // 更新现有流中的选择
         @SuppressWarnings("unchecked")
         ChunkSampleStream<DashChunkSource> stream = (ChunkSampleStream<DashChunkSource>) streams[i];
         stream.getChunkSource().updateTrackSelection(selection);
       }
     }
-    // Create newly selected embedded streams from the corresponding primary stream. Note that this
-    // second pass is needed because the primary stream may not have been created yet in a first
-    // pass if the index of the primary stream is greater than the index of the embedded stream.
+    // 从对应的主流创建新选择的嵌入流。注意，由于主流的索引可能大于嵌入流的索引，
+    // 因此在第一次遍历时可能尚未创建主流，因此需要第二次遍历。
     for (int i = 0; i < selections.length; i++) {
       if (streams[i] == null && selections[i] != null) {
         int trackGroupIndex = streamIndexToTrackGroupIndex[i];
@@ -485,8 +484,7 @@ import java.util.regex.Pattern;
         if (trackGroupInfo.trackGroupCategory == TrackGroupInfo.CATEGORY_EMBEDDED) {
           int primaryStreamIndex = getPrimaryStreamIndex(i, streamIndexToTrackGroupIndex);
           if (primaryStreamIndex == C.INDEX_UNSET) {
-            // If an embedded track is selected without the corresponding primary track, create an
-            // empty sample stream instead.
+            // 如果选择了嵌入轨道但没有选择对应的主轨道，则创建一个空的样本流
             streams[i] = new EmptySampleStream();
           } else {
             streams[i] =
@@ -555,18 +553,15 @@ import java.util.regex.Pattern;
   }
 
   /**
-   * Groups adaptation sets. Two adaptations sets belong to the same group if either:
+   * 对自适应集进行分组。两个自适应集属于同一组的条件是：
    *
    * <ul>
-   *   <li>One is a trick-play adaptation set and uses a {@code
-   *       http://dashif.org/guidelines/trickmode} essential or supplemental property to indicate
-   *       that the other is the main adaptation set to which it corresponds.
-   *   <li>The two adaptation sets are marked as safe for switching using {@code
-   *       urn:mpeg:dash:adaptation-set-switching:2016} supplemental properties.
+   *   <li>一个是 trick-play 自适应集，并使用 {@code http://dashif.org/guidelines/trickmode} 的 essential 或 supplemental 属性来指示其对应的主自适应集。
+   *   <li>两个自适应集使用 {@code urn:mpeg:dash:adaptation-set-switching:2016} 的 supplemental 属性标记为可以安全切换。
    * </ul>
    *
-   * @param adaptationSets The adaptation sets to merge.
-   * @return An array of groups, where each group is an array of adaptation set indices.
+   * @param adaptationSets 需要合并的自适应集。
+   * @return 一个数组，其中每个元素是一个组的自适应集索引数组。
    */
   private static int[][] getGroupedAdaptationSetIndices(List<AdaptationSet> adaptationSets) {
     int adaptationSetCount = adaptationSets.size();
@@ -576,8 +571,7 @@ import java.util.regex.Pattern;
     SparseArray<List<Integer>> adaptationSetIndexToGroupedIndices =
         new SparseArray<>(adaptationSetCount);
 
-    // Initially make each adaptation set belong to its own group. Also build the
-    // adaptationSetIdToIndex map.
+    // 初始时，每个自适应集属于其自己的组。同时构建 adaptationSetIdToIndex 映射。
     for (int i = 0; i < adaptationSetCount; i++) {
       adaptationSetIdToIndex.put(adaptationSets.get(i).id, i);
       List<Integer> initialGroup = new ArrayList<>();
@@ -586,16 +580,16 @@ import java.util.regex.Pattern;
       adaptationSetIndexToGroupedIndices.put(i, initialGroup);
     }
 
-    // Merge adaptation set groups.
+    // 合并自适应集组。
     for (int i = 0; i < adaptationSetCount; i++) {
       int mergedGroupIndex = i;
       AdaptationSet adaptationSet = adaptationSets.get(i);
 
-      // Trick-play adaptation sets are merged with their corresponding main adaptation sets.
+      // 将 trick-play 自适应集与其对应的主自适应集合并。
       @Nullable
       Descriptor trickPlayProperty = findTrickPlayProperty(adaptationSet.essentialProperties);
       if (trickPlayProperty == null) {
-        // Trick-play can also be specified using a supplemental property.
+        // trick-play 也可以通过 supplemental 属性指定。
         trickPlayProperty = findTrickPlayProperty(adaptationSet.supplementalProperties);
       }
       if (trickPlayProperty != null) {
@@ -606,8 +600,7 @@ import java.util.regex.Pattern;
         }
       }
 
-      // Adaptation sets that are safe for switching are merged, using the smallest index for the
-      // merged group.
+      // 对于可以安全切换的自适应集，将其合并，并使用最小的索引作为合并组的索引。
       if (mergedGroupIndex == i) {
         @Nullable
         Descriptor adaptationSetSwitchingProperty =
@@ -625,7 +618,7 @@ import java.util.regex.Pattern;
         }
       }
 
-      // Merge the groups if necessary.
+      // 如果需要，合并组。
       if (mergedGroupIndex != i) {
         List<Integer> thisGroup = adaptationSetIndexToGroupedIndices.get(i);
         List<Integer> mergedGroup = adaptationSetIndexToGroupedIndices.get(mergedGroupIndex);
@@ -638,24 +631,21 @@ import java.util.regex.Pattern;
     int[][] groupedAdaptationSetIndices = new int[adaptationSetGroupedIndices.size()][];
     for (int i = 0; i < groupedAdaptationSetIndices.length; i++) {
       groupedAdaptationSetIndices[i] = Ints.toArray(adaptationSetGroupedIndices.get(i));
-      // Restore the original adaptation set order within each group.
+      // 在每个组内恢复自适应集的原始顺序。
       Arrays.sort(groupedAdaptationSetIndices[i]);
     }
     return groupedAdaptationSetIndices;
   }
 
   /**
-   * Iterates through list of primary track groups and identifies embedded tracks.
+   * 遍历主轨道组列表并识别嵌入轨道。
    *
-   * @param primaryGroupCount The number of primary track groups.
-   * @param adaptationSets The list of {@link AdaptationSet} of the current DASH period.
-   * @param groupedAdaptationSetIndices The indices of {@link AdaptationSet} that belongs to the
-   *     same primary group, grouped in primary track groups order.
-   * @param primaryGroupHasEventMessageTrackFlags An output array to be filled with flags indicating
-   *     whether each of the primary track groups contains an embedded event message track.
-   * @param primaryGroupClosedCaptionTrackFormats An output array to be filled with track formats
-   *     for closed caption tracks embedded in each of the primary track groups.
-   * @return Total number of embedded track groups.
+   * @param primaryGroupCount 主轨道组的数量。
+   * @param adaptationSets 当前 DASH 周期的 {@link AdaptationSet} 列表。
+   * @param groupedAdaptationSetIndices 属于同一主轨道组的 {@link AdaptationSet} 索引，按主轨道组顺序分组。
+   * @param primaryGroupHasEventMessageTrackFlags 输出数组，用于填充标志，指示每个主轨道组是否包含嵌入的事件消息轨道。
+   * @param primaryGroupClosedCaptionTrackFormats 输出数组，用于填充每个主轨道组中嵌入的闭路字幕轨道的格式。
+   * @return 嵌入轨道组的总数。
    */
   private static int identifyEmbeddedTracks(
       int primaryGroupCount,
@@ -665,12 +655,15 @@ import java.util.regex.Pattern;
       Format[][] primaryGroupClosedCaptionTrackFormats) {
     int numEmbeddedTrackGroups = 0;
     for (int i = 0; i < primaryGroupCount; i++) {
+      // 检查当前主轨道组是否包含事件消息轨道
       if (hasEventMessageTrack(adaptationSets, groupedAdaptationSetIndices[i])) {
         primaryGroupHasEventMessageTrackFlags[i] = true;
         numEmbeddedTrackGroups++;
       }
+      // 获取当前主轨道组中的闭路字幕轨道格式
       primaryGroupClosedCaptionTrackFormats[i] =
           getClosedCaptionTrackFormats(adaptationSets, groupedAdaptationSetIndices[i]);
+      // 如果存在闭路字幕轨道，则增加嵌入轨道组的计数
       if (primaryGroupClosedCaptionTrackFormats[i].length != 0) {
         numEmbeddedTrackGroups++;
       }
@@ -914,18 +907,22 @@ import java.util.regex.Pattern;
       Descriptor descriptor, Pattern serviceDescriptorRegex, Format baseFormat) {
     @Nullable String value = descriptor.value;
     if (value == null) {
-      // There are embedded closed caption tracks, but service information is not declared.
+      // 存在嵌入的闭路字幕轨道，但未声明服务信息
       return new Format[] {baseFormat};
     }
+    // 按分号分割服务信息
     String[] services = Util.split(value, ";");
     Format[] formats = new Format[services.length];
     for (int i = 0; i < services.length; i++) {
+      // 使用正则表达式匹配服务信息
       Matcher matcher = serviceDescriptorRegex.matcher(services[i]);
       if (!matcher.matches()) {
-        // If we can't parse service information for all services, assume a single track.
+        // 如果无法解析所有服务的服务信息，则假定为单轨道
         return new Format[] {baseFormat};
       }
+      // 解析无障碍通道编号
       int accessibilityChannel = Integer.parseInt(matcher.group(1));
+      // 构建格式对象
       formats[i] =
           baseFormat
               .buildUpon()
@@ -938,19 +935,20 @@ import java.util.regex.Pattern;
   }
 
   /**
-   * Modifies the provided {@link Format} array if subtitle/caption parsing is configured to happen
-   * during extraction.
+   * 如果配置为在提取期间解析字幕/文本，则修改提供的 {@link Format} 数组。
    */
   private static void maybeUpdateFormatsForParsedText(
       DashChunkSource.Factory chunkSourceFactory, Format[] formats) {
     for (int i = 0; i < formats.length; i++) {
+      // 获取解析后的文本格式并更新数组
       formats[i] = chunkSourceFactory.getOutputTextFormat(formats[i]);
     }
   }
 
-  // We won't assign the array to a variable that erases the generic type, and then write into it.
+  // 我们不会将数组分配给一个会擦除泛型类型的变量，然后再写入它。
   @SuppressWarnings({"unchecked", "rawtypes"})
   private static ChunkSampleStream<DashChunkSource>[] newSampleStreamArray(int length) {
+    // 创建指定长度的 ChunkSampleStream 数组
     return new ChunkSampleStream[length];
   }
 
@@ -963,20 +961,17 @@ import java.util.regex.Pattern;
     public @interface TrackGroupCategory {}
 
     /**
-     * A normal track group that has its samples drawn from the stream. For example: a video Track
-     * Group or an audio Track Group.
+     * 一个普通的轨道组，其样本从流中提取。例如：视频轨道组或音频轨道组。
      */
     private static final int CATEGORY_PRIMARY = 0;
 
     /**
-     * A track group whose samples are embedded within one of the primary streams. For example: an
-     * EMSG track has its sample embedded in emsg atoms in one of the primary streams.
+     * 一个轨道组，其样本嵌入在某个主流中。例如：EMSG 轨道的样本嵌入在主流的 emsg 原子中。
      */
     private static final int CATEGORY_EMBEDDED = 1;
 
     /**
-     * A track group that has its samples listed explicitly in the DASH manifest file. For example:
-     * an EventStream track has its sample (Events) included directly in the DASH manifest file.
+     * 一个轨道组，其样本直接在 DASH 清单文件中列出。例如：EventStream 轨道的样本（事件）直接包含在 DASH 清单文件中。
      */
     private static final int CATEGORY_MANIFEST_EVENTS = 2;
 
@@ -989,7 +984,7 @@ import java.util.regex.Pattern;
     public final int embeddedEventMessageTrackGroupIndex;
     public final int embeddedClosedCaptionTrackGroupIndex;
 
-    /** Only non-empty for track groups representing embedded caption tracks. */
+    /** 仅对表示嵌入字幕轨道的轨道组有效，包含嵌入字幕轨道的原始格式列表。 */
     public final ImmutableList<Format> embeddedClosedCaptionTrackOriginalFormats;
 
     public static TrackGroupInfo primaryTrack(

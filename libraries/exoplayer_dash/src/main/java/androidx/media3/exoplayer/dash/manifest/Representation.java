@@ -29,50 +29,47 @@ import androidx.media3.exoplayer.dash.manifest.SegmentBase.SingleSegmentBase;
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
-
-/** A DASH representation. */
+/** 表示 DASH 中的一个表示（Representation）。 */
 @UnstableApi
 public abstract class Representation {
 
-  /** A default value for {@link #revisionId}. */
+  /** {@link #revisionId} 的默认值。 */
   public static final long REVISION_ID_DEFAULT = -1;
 
   /**
-   * Identifies the revision of the media contained within the representation. If the media can
-   * change over time (e.g. as a result of it being re-encoded), then this identifier can be set to
-   * uniquely identify the revision of the media. The timestamp at which the media was encoded is
-   * often a suitable.
+   * 标识表示中包含的媒体的修订版本。如果媒体可能随时间变化（例如由于重新编码），则可以使用此标识符唯一标识媒体的修订版本。
+   * 通常可以使用媒体的编码时间戳作为此标识符。
    */
   public final long revisionId;
 
-  /** The format of the representation. */
+  /** 表示的格式。 */
   public final Format format;
 
-  /** The base URLs of the representation. */
+  /** 表示的基础 URL 列表。 */
   public final ImmutableList<BaseUrl> baseUrls;
 
-  /** The offset of the presentation timestamps in the media stream relative to media time. */
+  /** 媒体流中表示时间戳相对于媒体时间的偏移量，单位为微秒。 */
   public final long presentationTimeOffsetUs;
 
-  /** The in-band event streams in the representation. May be empty. */
+  /** 表示中的带内事件流列表。可能为空。 */
   public final List<Descriptor> inbandEventStreams;
 
-  /** Essential properties in the representation. May be empty. */
+  /** 表示中的必要属性列表。可能为空。 */
   public final List<Descriptor> essentialProperties;
 
-  /** Supplemental properties in the adaptation set. May be empty. */
+  /** 表示中的补充属性列表。可能为空。 */
   public final List<Descriptor> supplementalProperties;
 
   @Nullable private final RangedUri initializationUri;
 
   /**
-   * Constructs a new instance.
+   * 构造一个新的实例。
    *
-   * @param revisionId Identifies the revision of the content.
-   * @param format The format of the representation.
-   * @param baseUrls The list of base URLs of the representation.
-   * @param segmentBase A segment base element for the representation.
-   * @return The constructed instance.
+   * @param revisionId 标识内容的修订版本。
+   * @param format 表示的格式。
+   * @param baseUrls 表示的基础 URL 列表。
+   * @param segmentBase 表示的段基础元素。
+   * @return 构造的实例。
    */
   public static Representation newInstance(
       long revisionId, Format format, List<BaseUrl> baseUrls, SegmentBase segmentBase) {
@@ -86,20 +83,18 @@ public abstract class Representation {
         /* supplementalProperties= */ ImmutableList.of(),
         /* cacheKey= */ null);
   }
-
   /**
-   * Constructs a new instance.
+   * 构造一个新的实例。
    *
-   * @param revisionId Identifies the revision of the content.
-   * @param format The format of the representation.
-   * @param baseUrls The list of base URLs of the representation.
-   * @param segmentBase A segment base element for the representation.
-   * @param inbandEventStreams The in-band event streams in the representation. May be null.
-   * @param essentialProperties Essential properties in the representation. May be empty.
-   * @param supplementalProperties Supplemental properties in the representation. May be empty.
-   * @param cacheKey An optional key to be returned from {@link #getCacheKey()}, or null. This
-   *     parameter is ignored if {@code segmentBase} consists of multiple segments.
-   * @return The constructed instance.
+   * @param revisionId 标识内容的修订版本。
+   * @param format 表示的格式。
+   * @param baseUrls 表示的基础 URL 列表。
+   * @param segmentBase 表示的段基础元素。
+   * @param inbandEventStreams 表示中的带内事件流列表。可能为 null。
+   * @param essentialProperties 表示中的必要属性列表。可能为空。
+   * @param supplementalProperties 表示中的补充属性列表。可能为空。
+   * @param cacheKey 可选的缓存键，由 {@link #getCacheKey()} 返回，或为 null。如果 {@code segmentBase} 包含多个分段，则忽略此参数。
+   * @return 构造的实例。
    */
   public static Representation newInstance(
       long revisionId,
@@ -132,7 +127,7 @@ public abstract class Representation {
           supplementalProperties);
     } else {
       throw new IllegalArgumentException(
-          "segmentBase must be of type SingleSegmentBase or " + "MultiSegmentBase");
+          "segmentBase 必须是 SingleSegmentBase 或 MultiSegmentBase 类型");
     }
   }
 
@@ -157,10 +152,8 @@ public abstract class Representation {
     initializationUri = segmentBase.getInitialization(this);
     presentationTimeOffsetUs = segmentBase.getPresentationTimeOffsetUs();
   }
-
   /**
-   * Returns a {@link RangedUri} defining the location of the representation's initialization data,
-   * or null if no initialization data exists.
+   * 返回定义表示初始化数据位置的 {@link RangedUri}，如果不存在初始化数据则返回 null。
    */
   @Nullable
   public RangedUri getInitializationUri() {
@@ -168,27 +161,25 @@ public abstract class Representation {
   }
 
   /**
-   * Returns a {@link RangedUri} defining the location of the representation's segment index, or
-   * null if the representation provides an index directly.
+   * 返回定义表示分段索引位置的 {@link RangedUri}，如果表示直接提供索引则返回 null。
    */
   @Nullable
   public abstract RangedUri getIndexUri();
 
-  /** Returns an index if the representation provides one directly, or null otherwise. */
+  /** 如果表示直接提供索引，则返回索引，否则返回 null。 */
   @Nullable
   public abstract DashSegmentIndex getIndex();
 
-  /** Returns a cache key for the representation if set, or null. */
+  /** 返回表示的缓存键（如果已设置），否则返回 null。 */
   @Nullable
   public abstract String getCacheKey();
-
-  /** A DASH representation consisting of a single segment. */
+  /** 表示由单个分段组成的 DASH 表示。 */
   public static class SingleSegmentRepresentation extends Representation {
 
-    /** The uri of the single segment. */
+    /** 单个分段的 URI。 */
     public final Uri uri;
 
-    /** The content length, or {@link C#LENGTH_UNSET} if unknown. */
+    /** 内容长度，如果未知则为 {@link C#LENGTH_UNSET}。 */
     public final long contentLength;
 
     @Nullable private final String cacheKey;
@@ -196,16 +187,16 @@ public abstract class Representation {
     @Nullable private final SingleSegmentIndex segmentIndex;
 
     /**
-     * @param revisionId Identifies the revision of the content.
-     * @param format The format of the representation.
-     * @param uri The uri of the media.
-     * @param initializationStart The offset of the first byte of initialization data.
-     * @param initializationEnd The offset of the last byte of initialization data.
-     * @param indexStart The offset of the first byte of index data.
-     * @param indexEnd The offset of the last byte of index data.
-     * @param inbandEventStreams The in-band event streams in the representation. May be null.
-     * @param cacheKey An optional key to be returned from {@link #getCacheKey()}, or null.
-     * @param contentLength The content length, or {@link C#LENGTH_UNSET} if unknown.
+     * @param revisionId 标识内容的修订版本。
+     * @param format 表示的格式。
+     * @param uri 媒体的 URI。
+     * @param initializationStart 初始化数据的第一个字节的偏移量。
+     * @param initializationEnd 初始化数据的最后一个字节的偏移量。
+     * @param indexStart 索引数据的第一个字节的偏移量。
+     * @param indexEnd 索引数据的最后一个字节的偏移量。
+     * @param inbandEventStreams 表示中的带内事件流列表。可能为 null。
+     * @param cacheKey 可选的缓存键，由 {@link #getCacheKey()} 返回，或为 null。
+     * @param contentLength 内容长度，如果未知则为 {@link C#LENGTH_UNSET}。
      */
     public static SingleSegmentRepresentation newInstance(
         long revisionId,
@@ -236,15 +227,15 @@ public abstract class Representation {
     }
 
     /**
-     * @param revisionId Identifies the revision of the content.
-     * @param format The format of the representation.
-     * @param baseUrls The base urls of the representation.
-     * @param segmentBase The segment base underlying the representation.
-     * @param inbandEventStreams The in-band event streams in the representation. May be null.
-     * @param essentialProperties Essential properties in the representation. May be empty.
-     * @param supplementalProperties Supplemental properties in the representation. May be empty.
-     * @param cacheKey An optional key to be returned from {@link #getCacheKey()}, or null.
-     * @param contentLength The content length, or {@link C#LENGTH_UNSET} if unknown.
+     * @param revisionId 标识内容的修订版本。
+     * @param format 表示的格式。
+     * @param baseUrls 表示的基础 URL 列表。
+     * @param segmentBase 表示的基础分段元素。
+     * @param inbandEventStreams 表示中的带内事件流列表。可能为 null。
+     * @param essentialProperties 表示中的必要属性列表。可能为空。
+     * @param supplementalProperties 表示中的补充属性列表。可能为空。
+     * @param cacheKey 可选的缓存键，由 {@link #getCacheKey()} 返回，或为 null。
+     * @param contentLength 内容长度，如果未知则为 {@link C#LENGTH_UNSET}。
      */
     public SingleSegmentRepresentation(
         long revisionId,
@@ -268,8 +259,8 @@ public abstract class Representation {
       this.indexUri = segmentBase.getIndex();
       this.cacheKey = cacheKey;
       this.contentLength = contentLength;
-      // If we have an index uri then the index is defined externally, and we shouldn't return one
-      // directly. If we don't, then we can't do better than an index defining a single segment.
+      // 如果有索引 URI，则索引是外部定义的，我们不应直接返回索引。
+      // 如果没有索引 URI，则我们只能返回一个定义单个分段的索引。
       segmentIndex =
           indexUri != null ? null : new SingleSegmentIndex(new RangedUri(null, 0, contentLength));
     }
@@ -292,23 +283,22 @@ public abstract class Representation {
       return cacheKey;
     }
   }
-
-  /** A DASH representation consisting of multiple segments. */
+  /** 表示由多个分段组成的 DASH 表示。 */
   public static class MultiSegmentRepresentation extends Representation
       implements DashSegmentIndex {
 
     @VisibleForTesting /* package */ final MultiSegmentBase segmentBase;
 
     /**
-     * Creates the multi-segment Representation.
+     * 创建多分段表示。
      *
-     * @param revisionId Identifies the revision of the content.
-     * @param format The format of the representation.
-     * @param baseUrls The base URLs of the representation.
-     * @param segmentBase The segment base underlying the representation.
-     * @param inbandEventStreams The in-band event streams in the representation. May be null.
-     * @param essentialProperties Essential properties in the representation. May be empty.
-     * @param supplementalProperties Supplemental properties in the representation. May be empty.
+     * @param revisionId 标识内容的修订版本。
+     * @param format 表示的格式。
+     * @param baseUrls 表示的基础 URL 列表。
+     * @param segmentBase 表示的基础分段元素。
+     * @param inbandEventStreams 表示中的带内事件流列表。可能为 null。
+     * @param essentialProperties 表示中的必要属性列表。可能为空。
+     * @param supplementalProperties 表示中的补充属性列表。可能为空。
      */
     public MultiSegmentRepresentation(
         long revisionId,
