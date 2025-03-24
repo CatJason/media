@@ -26,52 +26,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Representation of a media item. */
+/** 媒体项的表示。 */
 public final class MediaItem {
 
   /**
-   * Creates a {@link MediaItem} for the given URI.
+   * 为给定的 URI 创建一个 {@link MediaItem}。
    *
-   * @param uri The URI.
-   * @return An {@link MediaItem} for the given URI.
+   * @param uri URI 字符串。
+   * @return 为给定 URI 创建的 {@link MediaItem}。
    */
   public static MediaItem fromUri(String uri) {
     return new MediaItem.Builder().setUri(uri).build();
   }
 
   /**
-   * Creates a {@link MediaItem} for the given {@link Uri URI}.
+   * 为给定的 {@link Uri URI} 创建一个 {@link MediaItem}。
    *
-   * @param uri The {@link Uri uri}.
-   * @return An {@link MediaItem} for the given URI.
+   * @param uri {@link Uri URI} 对象。
+   * @return 为给定 URI 创建的 {@link MediaItem}。
    */
   public static MediaItem fromUri(Uri uri) {
     return new MediaItem.Builder().setUri(uri).build();
   }
 
-  /** A builder for {@link MediaItem} instances. */
+  /** {@link MediaItem} 实例的构建器。 */
   public static final class Builder {
 
-    @Nullable private String mediaId;
-    @Nullable private Uri uri;
-    @Nullable private String mimeType;
-    // TODO: Change this to ClippingProperties once all the deprecated individual setters are
-    // removed.
-    private ClippingConfiguration.Builder clippingConfiguration;
-    // TODO: Change this to @Nullable DrmConfiguration once all the deprecated individual setters
-    // are removed.
-    private DrmConfiguration.Builder drmConfiguration;
-    private List<StreamKey> streamKeys;
-    @Nullable private String customCacheKey;
-    private ImmutableList<SubtitleConfiguration> subtitleConfigurations;
-    @Nullable private AdsConfiguration adsConfiguration;
-    @Nullable private Object tag;
-    private long imageDurationMs;
-    @Nullable private MediaMetadata mediaMetadata;
-    // TODO: Change this to LiveConfiguration once all the deprecated individual setters
-    // are removed.
-    private LiveConfiguration.Builder liveConfiguration;
-    private RequestMetadata requestMetadata;
+    @Nullable private String mediaId; // 媒体项的唯一标识符
+    @Nullable private Uri uri; // 媒体项的 URI
+    @Nullable private String mimeType; // 媒体项的 MIME 类型
+    // TODO: 在所有已弃用的单独设置方法被移除后，将此更改为 ClippingProperties。
+    private ClippingConfiguration.Builder clippingConfiguration; // 剪辑配置
+    // TODO: 在所有已弃用的单独设置方法被移除后，将此更改为 @Nullable DrmConfiguration。
+    private DrmConfiguration.Builder drmConfiguration; // DRM 配置
+    private List<StreamKey> streamKeys; // 流密钥列表
+    @Nullable private String customCacheKey; // 自定义缓存键
+    private ImmutableList<SubtitleConfiguration> subtitleConfigurations; // 字幕配置列表
+    @Nullable private AdsConfiguration adsConfiguration; // 广告配置
+    @Nullable private Object tag; // 自定义标签
+    private long imageDurationMs; // 图像持续时间（毫秒）
+    @Nullable private MediaMetadata mediaMetadata; // 媒体元数据
+    // TODO: 在所有已弃用的单独设置方法被移除后，将此更改为 LiveConfiguration。
+    private LiveConfiguration.Builder liveConfiguration; // 直播配置
+    private RequestMetadata requestMetadata; // 请求元数据
 
     /** Creates a builder. */
     @SuppressWarnings("deprecation") // Temporarily uses DrmConfiguration.Builder() constructor.
@@ -110,62 +107,59 @@ public final class MediaItem {
         imageDurationMs = localConfiguration.imageDurationMs;
       }
     }
-
     /**
-     * Sets the optional media ID which identifies the media item.
+     * 设置可选的媒体 ID，用于标识媒体项。
      *
-     * <p>By default {@link #DEFAULT_MEDIA_ID} is used.
+     * <p>默认使用 {@link #DEFAULT_MEDIA_ID}。
      */
     @CanIgnoreReturnValue
     public Builder setMediaId(String mediaId) {
-      this.mediaId = checkNotNull(mediaId);
+      this.mediaId = checkNotNull(mediaId); // 确保 mediaId 不为 null
       return this;
     }
 
     /**
-     * Sets the optional URI.
+     * 设置可选的 URI。
      *
-     * <p>If {@code uri} is null or unset then no {@link LocalConfiguration} object is created
-     * during {@link #build()} and no other {@code Builder} methods that would populate {@link
-     * MediaItem#localConfiguration} should be called.
+     * <p>如果 {@code uri} 为 null 或未设置，则在 {@link #build()} 过程中不会创建 {@link LocalConfiguration} 对象，
+     * 也不应调用其他会填充 {@link MediaItem#localConfiguration} 的 {@code Builder} 方法。
      */
     @CanIgnoreReturnValue
     public Builder setUri(@Nullable String uri) {
-      return setUri(uri == null ? null : Uri.parse(uri));
+      return setUri(uri == null ? null : Uri.parse(uri)); // 将字符串 URI 转换为 Uri 对象
     }
 
     /**
-     * Sets the optional URI.
+     * 设置可选的 URI。
      *
-     * <p>If {@code uri} is null or unset then no {@link LocalConfiguration} object is created
-     * during {@link #build()} and no other {@code Builder} methods that would populate {@link
-     * MediaItem#localConfiguration} should be called.
+     * <p>如果 {@code uri} 为 null 或未设置，则在 {@link #build()} 过程中不会创建 {@link LocalConfiguration} 对象，
+     * 也不应调用其他会填充 {@link MediaItem#localConfiguration} 的 {@code Builder} 方法。
      */
     @CanIgnoreReturnValue
     public Builder setUri(@Nullable Uri uri) {
-      this.uri = uri;
+      this.uri = uri; // 设置 URI
       return this;
     }
 
     /**
-     * Sets the optional MIME type.
+     * 设置可选的 MIME 类型。
      *
-     * <p>The MIME type may be used as a hint for inferring the type of the media item.
+     * <p>MIME 类型可以作为推断媒体项类型的提示。
      *
-     * <p>This method should only be called if {@link #setUri} is passed a non-null value.
+     * <p>只有在 {@link #setUri} 传递了非 null 值时才应调用此方法。
      *
-     * @param mimeType The MIME type.
+     * @param mimeType MIME 类型。
      */
     @CanIgnoreReturnValue
     public Builder setMimeType(@Nullable String mimeType) {
-      this.mimeType = mimeType;
+      this.mimeType = mimeType; // 设置 MIME 类型
       return this;
     }
 
-    /** Sets the {@link ClippingConfiguration}, defaults to {@link ClippingConfiguration#UNSET}. */
+    /** 设置 {@link ClippingConfiguration}，默认为 {@link ClippingConfiguration#UNSET}。 */
     @CanIgnoreReturnValue
     public Builder setClippingConfiguration(ClippingConfiguration clippingConfiguration) {
-      this.clippingConfiguration = clippingConfiguration.buildUpon();
+      this.clippingConfiguration = clippingConfiguration.buildUpon(); // 使用 ClippingConfiguration 的构建器
       return this;
     }
 
@@ -999,59 +993,55 @@ public final class MediaItem {
     }
   }
 
-  /** Configuration for playing back linear ads with a media item. */
+  /** 用于播放线性广告的配置。 */
   public static final class AdsConfiguration {
 
-    /** Builder for {@link AdsConfiguration} instances. */
+    /** {@link AdsConfiguration} 实例的构建器。 */
     public static final class Builder {
 
-      private Uri adTagUri;
-      @Nullable private Object adsId;
+      private Uri adTagUri; // 广告标签 URI
+      @Nullable private Object adsId; // 广告标识符
 
       /**
-       * Constructs a new instance.
+       * 创建一个新实例。
        *
-       * @param adTagUri The ad tag URI to load.
+       * @param adTagUri 要加载的广告标签 URI。
        */
       public Builder(Uri adTagUri) {
-        this.adTagUri = adTagUri;
+        this.adTagUri = adTagUri; // 初始化广告标签 URI
       }
 
-      /** Sets the ad tag URI to load. */
+      /** 设置要加载的广告标签 URI。 */
       @CanIgnoreReturnValue
       public Builder setAdTagUri(Uri adTagUri) {
-        this.adTagUri = adTagUri;
+        this.adTagUri = adTagUri; // 更新广告标签 URI
         return this;
       }
 
       /**
-       * Sets the ads identifier.
+       * 设置广告标识符。
        *
-       * <p>See details on {@link AdsConfiguration#adsId} for how the ads identifier is used and how
-       * it's calculated if not explicitly set.
+       * <p>有关广告标识符的用途以及未显式设置时如何计算，请参阅 {@link AdsConfiguration#adsId} 的详细说明。
        */
       @CanIgnoreReturnValue
       public Builder setAdsId(@Nullable Object adsId) {
-        this.adsId = adsId;
+        this.adsId = adsId; // 设置广告标识符
         return this;
       }
 
+      /** 构建 {@link AdsConfiguration} 实例。 */
       public AdsConfiguration build() {
-        return new AdsConfiguration(this);
+        return new AdsConfiguration(this); // 返回构建的 AdsConfiguration 实例
       }
     }
 
-    /** The ad tag URI to load. */
+    /** 要加载的广告标签 URI。 */
     public final Uri adTagUri;
 
     /**
-     * An opaque identifier for ad playback state associated with this item, or {@code null} if the
-     * combination of the {@link MediaItem.Builder#setMediaId(String) media ID} and {@link #adTagUri
-     * ad tag URI} should be used as the ads identifier.
+     * 与此项关联的广告播放状态的不透明标识符，如果未设置，则使用 {@link MediaItem.Builder#setMediaId(String) 媒体 ID} 和 {@link #adTagUri 广告标签 URI} 的组合作为广告标识符。
      *
-     * <p>Media items in the playlist that have the same ads identifier and ads loader share the
-     * same ad playback state. To resume ad playback when recreating the playlist on returning from
-     * the background, pass the same ads identifiers to the player.
+     * <p>播放列表中具有相同广告标识符和广告加载器的媒体项共享相同的广告播放状态。在从后台返回时重新创建播放列表以恢复广告播放时，请向播放器传递相同的广告标识符。
      */
     @Nullable public final Object adsId;
 
@@ -1087,76 +1077,72 @@ public final class MediaItem {
 
     private static final String FIELD_AD_TAG_URI = Util.intToStringMaxRadix(0);
 
-    /** Restores a {@code AdsConfiguration} from a {@link Bundle}. */
+    /** 从 {@link Bundle} 中恢复一个 {@code AdsConfiguration} 实例。 */
     @UnstableApi
     public static AdsConfiguration fromBundle(Bundle bundle) {
-      @Nullable Uri adTagUri = bundle.getParcelable(FIELD_AD_TAG_URI);
-      checkNotNull(adTagUri);
-      return new AdsConfiguration.Builder(adTagUri).build();
+      @Nullable Uri adTagUri = bundle.getParcelable(FIELD_AD_TAG_URI); // 从 Bundle 中获取广告标签 URI
+      checkNotNull(adTagUri); // 确保广告标签 URI 不为 null
+      return new AdsConfiguration.Builder(adTagUri).build(); // 使用广告标签 URI 构建 AdsConfiguration 实例
     }
 
     /**
-     * Returns a {@link Bundle} representing the information stored in this object.
+     * 返回表示此对象中存储信息的 {@link Bundle}。
      *
-     * <p>It omits the {@link #adsId} field. The {@link #adsId} of an instance restored from such a
-     * bundle by {@link #fromBundle} will be {@code null}.
+     * <p>它省略了 {@link #adsId} 字段。通过 {@link #fromBundle} 从此类 Bundle 恢复的实例的 {@link #adsId} 将为 {@code null}。
      */
     @UnstableApi
     public Bundle toBundle() {
       Bundle bundle = new Bundle();
-      bundle.putParcelable(FIELD_AD_TAG_URI, adTagUri);
-      return bundle;
+      bundle.putParcelable(FIELD_AD_TAG_URI, adTagUri); // 将广告标签 URI 添加到 Bundle
+      return bundle; // 返回 Bundle
     }
   }
 
-  /** Properties for local playback. */
+  /** 本地播放的属性配置。 */
   public static final class LocalConfiguration {
 
-    /** The {@link Uri}. */
+    /** 媒体资源的 {@link Uri}。 */
     public final Uri uri;
 
     /**
-     * The optional MIME type of the item, or {@code null} if unspecified.
+     * 可选的媒体项 MIME 类型，如果未指定则为 {@code null}。
      *
-     * <p>The MIME type can be used to disambiguate media items that have a URI which does not allow
-     * to infer the actual media type.
+     * <p>MIME 类型可用于区分那些 URI 无法推断实际媒体类型的媒体项。
      */
     @Nullable public final String mimeType;
 
-    /** Optional {@link DrmConfiguration} for the media. */
+    /** 可选的媒体 {@link DrmConfiguration}（数字版权管理配置）。 */
     @Nullable public final DrmConfiguration drmConfiguration;
 
-    /** Optional ads configuration. */
+    /** 可选的广告配置。 */
     @Nullable public final AdsConfiguration adsConfiguration;
 
-    /** Optional stream keys by which the manifest is filtered. */
+    /** 用于过滤清单的可选流密钥列表。 */
     @UnstableApi public final List<StreamKey> streamKeys;
 
-    /** Optional custom cache key (only used for progressive streams). */
+    /** 可选的缓存键（仅用于渐进式流媒体）。 */
     @UnstableApi @Nullable public final String customCacheKey;
 
-    /** Optional subtitles to be sideloaded. */
+    /** 可选的字幕配置列表，用于侧载字幕。 */
     public final ImmutableList<SubtitleConfiguration> subtitleConfigurations;
 
     /**
-     * @deprecated Use {@link #subtitleConfigurations} instead.
+     * @deprecated 请使用 {@link #subtitleConfigurations} 替代。
      */
-    @SuppressWarnings("deprecation") // Using deprecated type in deprecated field
+    @SuppressWarnings("deprecation") // 在已弃用的字段中使用已弃用的类型
     @UnstableApi
     @Deprecated
     public final List<Subtitle> subtitles;
 
     /**
-     * Optional tag for custom attributes. The tag for the media source which will be published in
-     * the {@code androidx.media3.common.Timeline} of the source as {@code
-     * androidx.media3.common.Timeline.Window#tag}.
+     * 用于自定义属性的可选标签。该标签将作为 {@code androidx.media3.common.Timeline.Window#tag} 发布在媒体源的 {@code androidx.media3.common.Timeline} 中。
      */
     @Nullable public final Object tag;
 
-    /** Duration for image assets in milliseconds. */
+    /** 图像资源的持续时间，单位为毫秒。 */
     @UnstableApi public final long imageDurationMs;
 
-    @SuppressWarnings("deprecation") // Setting deprecated subtitles field.
+    @SuppressWarnings("deprecation") // 设置已弃用的 subtitles 字段。
     private LocalConfiguration(
         Uri uri,
         @Nullable String mimeType,
@@ -1168,7 +1154,7 @@ public final class MediaItem {
         @Nullable Object tag,
         long imageDurationMs) {
       this.uri = uri;
-      this.mimeType = MimeTypes.normalizeMimeType(mimeType);
+      this.mimeType = MimeTypes.normalizeMimeType(mimeType); // 规范化 MIME 类型
       this.drmConfiguration = drmConfiguration;
       this.adsConfiguration = adsConfiguration;
       this.streamKeys = streamKeys;
@@ -1176,7 +1162,7 @@ public final class MediaItem {
       this.subtitleConfigurations = subtitleConfigurations;
       ImmutableList.Builder<Subtitle> subtitles = ImmutableList.builder();
       for (int i = 0; i < subtitleConfigurations.size(); i++) {
-        subtitles.add(subtitleConfigurations.get(i).buildUpon().buildSubtitle());
+        subtitles.add(subtitleConfigurations.get(i).buildUpon().buildSubtitle()); // 构建字幕列表
       }
       this.subtitles = subtitles.build();
       this.tag = tag;
@@ -1186,10 +1172,10 @@ public final class MediaItem {
     @Override
     public boolean equals(@Nullable Object obj) {
       if (this == obj) {
-        return true;
+        return true; // 如果是同一个对象，返回 true
       }
       if (!(obj instanceof LocalConfiguration)) {
-        return false;
+        return false; // 如果对象不是 LocalConfiguration 类型，返回 false
       }
       LocalConfiguration other = (LocalConfiguration) obj;
 
@@ -1201,7 +1187,7 @@ public final class MediaItem {
           && Util.areEqual(customCacheKey, other.customCacheKey)
           && subtitleConfigurations.equals(other.subtitleConfigurations)
           && Util.areEqual(tag, other.tag)
-          && Util.areEqual(imageDurationMs, other.imageDurationMs);
+          && Util.areEqual(imageDurationMs, other.imageDurationMs); // 比较所有字段
     }
 
     @Override
@@ -1215,7 +1201,7 @@ public final class MediaItem {
       result = 31 * result + subtitleConfigurations.hashCode();
       result = 31 * result + (tag == null ? 0 : tag.hashCode());
       result = (int) (31L * result + imageDurationMs);
-      return result;
+      return result; // 计算哈希值
     }
 
     private static final String FIELD_URI = Util.intToStringMaxRadix(0);
@@ -1228,212 +1214,205 @@ public final class MediaItem {
     private static final String FIELD_IMAGE_DURATION_MS = Util.intToStringMaxRadix(7);
 
     /**
-     * Returns a {@link Bundle} representing the information stored in this object.
+     * 返回表示此对象中存储信息的 {@link Bundle}。
      *
-     * <p>It omits the {@link #tag} field. The {@link #tag} of an instance restored from such a
-     * bundle by {@link #fromBundle} will be {@code null}.
+     * <p>它省略了 {@link #tag} 字段。通过 {@link #fromBundle} 从此类 Bundle 恢复的实例的 {@link #tag} 将为 {@code null}。
      */
     @UnstableApi
     public Bundle toBundle() {
       Bundle bundle = new Bundle();
-      bundle.putParcelable(FIELD_URI, uri);
+      bundle.putParcelable(FIELD_URI, uri); // 添加 URI
       if (mimeType != null) {
-        bundle.putString(FIELD_MIME_TYPE, mimeType);
+        bundle.putString(FIELD_MIME_TYPE, mimeType); // 添加 MIME 类型
       }
       if (drmConfiguration != null) {
-        bundle.putBundle(FIELD_DRM_CONFIGURATION, drmConfiguration.toBundle());
+        bundle.putBundle(FIELD_DRM_CONFIGURATION, drmConfiguration.toBundle()); // 添加 DRM 配置
       }
       if (adsConfiguration != null) {
-        bundle.putBundle(FIELD_ADS_CONFIGURATION, adsConfiguration.toBundle());
+        bundle.putBundle(FIELD_ADS_CONFIGURATION, adsConfiguration.toBundle()); // 添加广告配置
       }
       if (!streamKeys.isEmpty()) {
         bundle.putParcelableArrayList(
             FIELD_STREAM_KEYS,
-            BundleCollectionUtil.toBundleArrayList(streamKeys, StreamKey::toBundle));
+            BundleCollectionUtil.toBundleArrayList(streamKeys, StreamKey::toBundle)); // 添加流密钥
       }
       if (customCacheKey != null) {
-        bundle.putString(FIELD_CUSTOM_CACHE_KEY, customCacheKey);
+        bundle.putString(FIELD_CUSTOM_CACHE_KEY, customCacheKey); // 添加自定义缓存键
       }
       if (!subtitleConfigurations.isEmpty()) {
         bundle.putParcelableArrayList(
             FIELD_SUBTITLE_CONFIGURATION,
             BundleCollectionUtil.toBundleArrayList(
-                subtitleConfigurations, SubtitleConfiguration::toBundle));
+                subtitleConfigurations, SubtitleConfiguration::toBundle)); // 添加字幕配置
       }
       if (imageDurationMs != C.TIME_UNSET) {
-        bundle.putLong(FIELD_IMAGE_DURATION_MS, imageDurationMs);
+        bundle.putLong(FIELD_IMAGE_DURATION_MS, imageDurationMs); // 添加图像持续时间
       }
-      return bundle;
+      return bundle; // 返回 Bundle
     }
 
-    /** Restores a {@code LocalConfiguration} from a {@link Bundle}. */
+    /** 从 {@link Bundle} 中恢复一个 {@code LocalConfiguration} 实例。 */
     @UnstableApi
     public static LocalConfiguration fromBundle(Bundle bundle) {
       @Nullable Bundle drmBundle = bundle.getBundle(FIELD_DRM_CONFIGURATION);
       DrmConfiguration drmConfiguration =
-          drmBundle == null ? null : DrmConfiguration.fromBundle(drmBundle);
+          drmBundle == null ? null : DrmConfiguration.fromBundle(drmBundle); // 恢复 DRM 配置
       @Nullable Bundle adsBundle = bundle.getBundle(FIELD_ADS_CONFIGURATION);
       AdsConfiguration adsConfiguration =
-          adsBundle == null ? null : AdsConfiguration.fromBundle(adsBundle);
+          adsBundle == null ? null : AdsConfiguration.fromBundle(adsBundle); // 恢复广告配置
       @Nullable List<Bundle> streamKeysBundles = bundle.getParcelableArrayList(FIELD_STREAM_KEYS);
       List<StreamKey> streamKeys =
           streamKeysBundles == null
               ? ImmutableList.of()
-              : BundleCollectionUtil.fromBundleList(StreamKey::fromBundle, streamKeysBundles);
+              : BundleCollectionUtil.fromBundleList(StreamKey::fromBundle, streamKeysBundles); // 恢复流密钥
       @Nullable
       List<Bundle> subtitleBundles = bundle.getParcelableArrayList(FIELD_SUBTITLE_CONFIGURATION);
       ImmutableList<SubtitleConfiguration> subtitleConfiguration =
           subtitleBundles == null
               ? ImmutableList.of()
               : BundleCollectionUtil.fromBundleList(
-                  SubtitleConfiguration::fromBundle, subtitleBundles);
-      long imageDurationMs = bundle.getLong(FIELD_IMAGE_DURATION_MS, C.TIME_UNSET);
+                  SubtitleConfiguration::fromBundle, subtitleBundles); // 恢复字幕配置
+      long imageDurationMs = bundle.getLong(FIELD_IMAGE_DURATION_MS, C.TIME_UNSET); // 恢复图像持续时间
 
       return new LocalConfiguration(
-          checkNotNull(bundle.getParcelable(FIELD_URI)),
-          bundle.getString(FIELD_MIME_TYPE),
+          checkNotNull(bundle.getParcelable(FIELD_URI)), // 恢复 URI
+          bundle.getString(FIELD_MIME_TYPE), // 恢复 MIME 类型
           drmConfiguration,
           adsConfiguration,
           streamKeys,
-          bundle.getString(FIELD_CUSTOM_CACHE_KEY),
+          bundle.getString(FIELD_CUSTOM_CACHE_KEY), // 恢复自定义缓存键
           subtitleConfiguration,
           /* tag= */ null,
           imageDurationMs);
     }
   }
 
-  /** Live playback configuration. */
+  /** 直播播放配置。 */
   public static final class LiveConfiguration {
 
-    /** Builder for {@link LiveConfiguration} instances. */
+    /** {@link LiveConfiguration} 实例的构建器。 */
     public static final class Builder {
-      private long targetOffsetMs;
-      private long minOffsetMs;
-      private long maxOffsetMs;
-      private float minPlaybackSpeed;
-      private float maxPlaybackSpeed;
+      private long targetOffsetMs; // 目标直播偏移量（毫秒）
+      private long minOffsetMs; // 最小允许的直播偏移量（毫秒）
+      private long maxOffsetMs; // 最大允许的直播偏移量（毫秒）
+      private float minPlaybackSpeed; // 最小播放速度
+      private float maxPlaybackSpeed; // 最大播放速度
 
-      /** Creates a new instance with default values. */
+      /** 使用默认值创建一个新实例。 */
       public Builder() {
-        this.targetOffsetMs = C.TIME_UNSET;
-        this.minOffsetMs = C.TIME_UNSET;
-        this.maxOffsetMs = C.TIME_UNSET;
-        this.minPlaybackSpeed = C.RATE_UNSET;
-        this.maxPlaybackSpeed = C.RATE_UNSET;
+        this.targetOffsetMs = C.TIME_UNSET; // 默认值为未设置
+        this.minOffsetMs = C.TIME_UNSET; // 默认值为未设置
+        this.maxOffsetMs = C.TIME_UNSET; // 默认值为未设置
+        this.minPlaybackSpeed = C.RATE_UNSET; // 默认值为未设置
+        this.maxPlaybackSpeed = C.RATE_UNSET; // 默认值为未设置
       }
 
       private Builder(LiveConfiguration liveConfiguration) {
-        this.targetOffsetMs = liveConfiguration.targetOffsetMs;
-        this.minOffsetMs = liveConfiguration.minOffsetMs;
-        this.maxOffsetMs = liveConfiguration.maxOffsetMs;
-        this.minPlaybackSpeed = liveConfiguration.minPlaybackSpeed;
-        this.maxPlaybackSpeed = liveConfiguration.maxPlaybackSpeed;
+        this.targetOffsetMs = liveConfiguration.targetOffsetMs; // 从现有配置中复制目标偏移量
+        this.minOffsetMs = liveConfiguration.minOffsetMs; // 从现有配置中复制最小偏移量
+        this.maxOffsetMs = liveConfiguration.maxOffsetMs; // 从现有配置中复制最大偏移量
+        this.minPlaybackSpeed = liveConfiguration.minPlaybackSpeed; // 从现有配置中复制最小播放速度
+        this.maxPlaybackSpeed = liveConfiguration.maxPlaybackSpeed; // 从现有配置中复制最大播放速度
       }
 
       /**
-       * Sets the target live offset, in milliseconds.
+       * 设置目标直播偏移量，单位为毫秒。
        *
-       * <p>See {@code Player#getCurrentLiveOffset()}.
+       * <p>参见 {@code Player#getCurrentLiveOffset()}。
        *
-       * <p>Defaults to {@link C#TIME_UNSET}, indicating the media-defined default will be used.
+       * <p>默认值为 {@link C#TIME_UNSET}，表示使用媒体定义的默认值。
        */
       @CanIgnoreReturnValue
       public Builder setTargetOffsetMs(long targetOffsetMs) {
-        this.targetOffsetMs = targetOffsetMs;
+        this.targetOffsetMs = targetOffsetMs; // 设置目标偏移量
         return this;
       }
 
       /**
-       * Sets the minimum allowed live offset, in milliseconds.
+       * 设置最小允许的直播偏移量，单位为毫秒。
        *
-       * <p>See {@code Player#getCurrentLiveOffset()}.
+       * <p>参见 {@code Player#getCurrentLiveOffset()}。
        *
-       * <p>Defaults to {@link C#TIME_UNSET}, indicating the media-defined default will be used.
+       * <p>默认值为 {@link C#TIME_UNSET}，表示使用媒体定义的默认值。
        */
       @CanIgnoreReturnValue
       public Builder setMinOffsetMs(long minOffsetMs) {
-        this.minOffsetMs = minOffsetMs;
+        this.minOffsetMs = minOffsetMs; // 设置最小偏移量
         return this;
       }
 
       /**
-       * Sets the maximum allowed live offset, in milliseconds.
+       * 设置最大允许的直播偏移量，单位为毫秒。
        *
-       * <p>See {@code Player#getCurrentLiveOffset()}.
+       * <p>参见 {@code Player#getCurrentLiveOffset()}。
        *
-       * <p>Defaults to {@link C#TIME_UNSET}, indicating the media-defined default will be used.
+       * <p>默认值为 {@link C#TIME_UNSET}，表示使用媒体定义的默认值。
        */
       @CanIgnoreReturnValue
       public Builder setMaxOffsetMs(long maxOffsetMs) {
-        this.maxOffsetMs = maxOffsetMs;
+        this.maxOffsetMs = maxOffsetMs; // 设置最大偏移量
         return this;
       }
 
       /**
-       * Sets the minimum playback speed.
+       * 设置最小播放速度。
        *
-       * <p>Defaults to {@link C#RATE_UNSET}, indicating the media-defined default will be used.
+       * <p>默认值为 {@link C#RATE_UNSET}，表示使用媒体定义的默认值。
        */
       @CanIgnoreReturnValue
       public Builder setMinPlaybackSpeed(float minPlaybackSpeed) {
-        this.minPlaybackSpeed = minPlaybackSpeed;
+        this.minPlaybackSpeed = minPlaybackSpeed; // 设置最小播放速度
         return this;
       }
 
       /**
-       * Sets the maximum playback speed.
+       * 设置最大播放速度。
        *
-       * <p>Defaults to {@link C#RATE_UNSET}, indicating the media-defined default will be used.
+       * <p>默认值为 {@link C#RATE_UNSET}，表示使用媒体定义的默认值。
        */
       @CanIgnoreReturnValue
       public Builder setMaxPlaybackSpeed(float maxPlaybackSpeed) {
-        this.maxPlaybackSpeed = maxPlaybackSpeed;
+        this.maxPlaybackSpeed = maxPlaybackSpeed; // 设置最大播放速度
         return this;
       }
 
-      /** Creates a {@link LiveConfiguration} with the values from this builder. */
+      /** 使用此构建器的值创建一个 {@link LiveConfiguration} 实例。 */
       public LiveConfiguration build() {
-        return new LiveConfiguration(this);
+        return new LiveConfiguration(this); // 构建并返回 LiveConfiguration 实例
       }
     }
 
     /**
-     * A live playback configuration with unset values, meaning media-defined default values will be
-     * used.
+     * 一个未设置的直播播放配置，表示将使用媒体定义的默认值。
      */
     public static final LiveConfiguration UNSET = new LiveConfiguration.Builder().build();
 
     /**
-     * Target offset from the live edge, in milliseconds, or {@link C#TIME_UNSET} to use the
-     * media-defined default.
+     * 目标直播边缘的偏移量，单位为毫秒，或 {@link C#TIME_UNSET} 以使用媒体定义的默认值。
      */
     public final long targetOffsetMs;
 
     /**
-     * The minimum allowed offset from the live edge, in milliseconds, or {@link C#TIME_UNSET} to
-     * use the media-defined default.
+     * 允许的最小直播边缘偏移量，单位为毫秒，或 {@link C#TIME_UNSET} 以使用媒体定义的默认值。
      */
     public final long minOffsetMs;
 
     /**
-     * The maximum allowed offset from the live edge, in milliseconds, or {@link C#TIME_UNSET} to
-     * use the media-defined default.
+     * 允许的最大直播边缘偏移量，单位为毫秒，或 {@link C#TIME_UNSET} 以使用媒体定义的默认值。
      */
     public final long maxOffsetMs;
 
     /**
-     * Minimum factor by which playback can be sped up, or {@link C#RATE_UNSET} to use the
-     * media-defined default.
+     * 播放速度的最小倍数，或 {@link C#RATE_UNSET} 以使用媒体定义的默认值。
      */
     public final float minPlaybackSpeed;
 
     /**
-     * Maximum factor by which playback can be sped up, or {@link C#RATE_UNSET} to use the
-     * media-defined default.
+     * 播放速度的最大倍数，或 {@link C#RATE_UNSET} 以使用媒体定义的默认值。
      */
     public final float maxPlaybackSpeed;
 
-    @SuppressWarnings("deprecation") // Using the deprecated constructor while it exists.
+    @SuppressWarnings("deprecation") // 在构造函数存在时使用已弃用的构造函数。
     private LiveConfiguration(Builder builder) {
       this(
           builder.targetOffsetMs,
@@ -1444,7 +1423,7 @@ public final class MediaItem {
     }
 
     /**
-     * @deprecated Use {@link Builder} instead.
+     * @deprecated 请使用 {@link Builder} 替代。
      */
     @UnstableApi
     @Deprecated
@@ -1454,25 +1433,25 @@ public final class MediaItem {
         long maxOffsetMs,
         float minPlaybackSpeed,
         float maxPlaybackSpeed) {
-      this.targetOffsetMs = targetOffsetMs;
-      this.minOffsetMs = minOffsetMs;
-      this.maxOffsetMs = maxOffsetMs;
-      this.minPlaybackSpeed = minPlaybackSpeed;
-      this.maxPlaybackSpeed = maxPlaybackSpeed;
+      this.targetOffsetMs = targetOffsetMs; // 设置目标偏移量
+      this.minOffsetMs = minOffsetMs; // 设置最小偏移量
+      this.maxOffsetMs = maxOffsetMs; // 设置最大偏移量
+      this.minPlaybackSpeed = minPlaybackSpeed; // 设置最小播放速度
+      this.maxPlaybackSpeed = maxPlaybackSpeed; // 设置最大播放速度
     }
 
-    /** Returns a {@link Builder} initialized with the values of this instance. */
+    /** 返回一个用此实例的值初始化的 {@link Builder}。 */
     public Builder buildUpon() {
-      return new Builder(this);
+      return new Builder(this); // 返回一个新的构建器实例
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
       if (this == obj) {
-        return true;
+        return true; // 如果是同一个对象，返回 true
       }
       if (!(obj instanceof LiveConfiguration)) {
-        return false;
+        return false; // 如果对象不是 LiveConfiguration 类型，返回 false
       }
       LiveConfiguration other = (LiveConfiguration) obj;
 
@@ -1480,7 +1459,7 @@ public final class MediaItem {
           && minOffsetMs == other.minOffsetMs
           && maxOffsetMs == other.maxOffsetMs
           && minPlaybackSpeed == other.minPlaybackSpeed
-          && maxPlaybackSpeed == other.maxPlaybackSpeed;
+          && maxPlaybackSpeed == other.maxPlaybackSpeed; // 比较所有字段
     }
 
     @Override
@@ -1490,7 +1469,7 @@ public final class MediaItem {
       result = 31 * result + (int) (maxOffsetMs ^ (maxOffsetMs >>> 32));
       result = 31 * result + (minPlaybackSpeed != 0 ? Float.floatToIntBits(minPlaybackSpeed) : 0);
       result = 31 * result + (maxPlaybackSpeed != 0 ? Float.floatToIntBits(maxPlaybackSpeed) : 0);
-      return result;
+      return result; // 计算哈希值
     }
 
     private static final String FIELD_TARGET_OFFSET_MS = Util.intToStringMaxRadix(0);
@@ -1503,24 +1482,24 @@ public final class MediaItem {
     public Bundle toBundle() {
       Bundle bundle = new Bundle();
       if (targetOffsetMs != UNSET.targetOffsetMs) {
-        bundle.putLong(FIELD_TARGET_OFFSET_MS, targetOffsetMs);
+        bundle.putLong(FIELD_TARGET_OFFSET_MS, targetOffsetMs); // 添加目标偏移量
       }
       if (minOffsetMs != UNSET.minOffsetMs) {
-        bundle.putLong(FIELD_MIN_OFFSET_MS, minOffsetMs);
+        bundle.putLong(FIELD_MIN_OFFSET_MS, minOffsetMs); // 添加最小偏移量
       }
       if (maxOffsetMs != UNSET.maxOffsetMs) {
-        bundle.putLong(FIELD_MAX_OFFSET_MS, maxOffsetMs);
+        bundle.putLong(FIELD_MAX_OFFSET_MS, maxOffsetMs); // 添加最大偏移量
       }
       if (minPlaybackSpeed != UNSET.minPlaybackSpeed) {
-        bundle.putFloat(FIELD_MIN_PLAYBACK_SPEED, minPlaybackSpeed);
+        bundle.putFloat(FIELD_MIN_PLAYBACK_SPEED, minPlaybackSpeed); // 添加最小播放速度
       }
       if (maxPlaybackSpeed != UNSET.maxPlaybackSpeed) {
-        bundle.putFloat(FIELD_MAX_PLAYBACK_SPEED, maxPlaybackSpeed);
+        bundle.putFloat(FIELD_MAX_PLAYBACK_SPEED, maxPlaybackSpeed); // 添加最大播放速度
       }
-      return bundle;
+      return bundle; // 返回 Bundle
     }
 
-    /** Restores a {@code LiveConfiguration} from a {@link Bundle}. */
+    /** 从 {@link Bundle} 中恢复一个 {@code LiveConfiguration} 实例。 */
     @UnstableApi
     public static LiveConfiguration fromBundle(Bundle bundle) {
       return new LiveConfiguration.Builder()
@@ -1534,7 +1513,7 @@ public final class MediaItem {
               bundle.getFloat(FIELD_MIN_PLAYBACK_SPEED, /* defaultValue= */ UNSET.minPlaybackSpeed))
           .setMaxPlaybackSpeed(
               bundle.getFloat(FIELD_MAX_PLAYBACK_SPEED, /* defaultValue= */ UNSET.maxPlaybackSpeed))
-          .build();
+          .build(); // 从 Bundle 中恢复配置
     }
   }
 
@@ -1822,163 +1801,146 @@ public final class MediaItem {
       super(builder);
     }
   }
-
-  /** Optionally clips the media item to a custom start and end position. */
-  // TODO: Mark this final when ClippingProperties is deleted.
+  /** 可选地将媒体项剪辑到自定义的开始和结束位置。 */
+// TODO: 当 ClippingProperties 被删除时，将此标记为 final。
   public static class ClippingConfiguration {
 
-    /** A clipping configuration with default values. */
+    /** 具有默认值的剪辑配置。 */
     public static final ClippingConfiguration UNSET = new ClippingConfiguration.Builder().build();
 
-    /** Builder for {@link ClippingConfiguration} instances. */
+    /** {@link ClippingConfiguration} 实例的构建器。 */
     public static final class Builder {
-      private long startPositionUs;
-      private long endPositionUs;
-      private boolean relativeToLiveWindow;
-      private boolean relativeToDefaultPosition;
-      private boolean startsAtKeyFrame;
+      private long startPositionUs; // 开始位置（微秒）
+      private long endPositionUs; // 结束位置（微秒）
+      private boolean relativeToLiveWindow; // 是否相对于直播窗口
+      private boolean relativeToDefaultPosition; // 是否相对于默认位置
+      private boolean startsAtKeyFrame; // 是否从关键帧开始
 
-      /** Creates a new instance with default values. */
+      /** 使用默认值创建一个新实例。 */
       public Builder() {
-        endPositionUs = C.TIME_END_OF_SOURCE;
+        endPositionUs = C.TIME_END_OF_SOURCE; // 默认结束位置为媒体末尾
       }
 
       private Builder(ClippingConfiguration clippingConfiguration) {
-        startPositionUs = clippingConfiguration.startPositionUs;
-        endPositionUs = clippingConfiguration.endPositionUs;
-        relativeToLiveWindow = clippingConfiguration.relativeToLiveWindow;
-        relativeToDefaultPosition = clippingConfiguration.relativeToDefaultPosition;
-        startsAtKeyFrame = clippingConfiguration.startsAtKeyFrame;
+        startPositionUs = clippingConfiguration.startPositionUs; // 复制开始位置
+        endPositionUs = clippingConfiguration.endPositionUs; // 复制结束位置
+        relativeToLiveWindow = clippingConfiguration.relativeToLiveWindow; // 复制是否相对于直播窗口
+        relativeToDefaultPosition = clippingConfiguration.relativeToDefaultPosition; // 复制是否相对于默认位置
+        startsAtKeyFrame = clippingConfiguration.startsAtKeyFrame; // 复制是否从关键帧开始
       }
 
       /**
-       * Sets the optional start position in milliseconds which must be a value larger than or equal
-       * to zero (Default: 0).
+       * 设置可选的开始位置（毫秒），必须大于或等于零（默认值：0）。
        */
       @CanIgnoreReturnValue
       public Builder setStartPositionMs(@IntRange(from = 0) long startPositionMs) {
-        return setStartPositionUs(msToUs(startPositionMs));
+        return setStartPositionUs(msToUs(startPositionMs)); // 将毫秒转换为微秒并设置
       }
 
       /**
-       * Sets the optional start position in microseconds which must be a value larger than or equal
-       * to zero (Default: 0).
+       * 设置可选的开始位置（微秒），必须大于或等于零（默认值：0）。
        */
       @UnstableApi
       @CanIgnoreReturnValue
       public Builder setStartPositionUs(@IntRange(from = 0) long startPositionUs) {
-        Assertions.checkArgument(startPositionUs >= 0);
-        this.startPositionUs = startPositionUs;
+        Assertions.checkArgument(startPositionUs >= 0); // 验证开始位置是否合法
+        this.startPositionUs = startPositionUs; // 设置开始位置
         return this;
       }
 
       /**
-       * Sets the optional end position in milliseconds which must be a value larger than or equal
-       * to zero, or {@link C#TIME_END_OF_SOURCE} to end when playback reaches the end of media
-       * (Default: {@link C#TIME_END_OF_SOURCE}).
+       * 设置可选的结束位置（毫秒），必须大于或等于零，或 {@link C#TIME_END_OF_SOURCE} 表示播放到媒体末尾（默认值：{@link C#TIME_END_OF_SOURCE}）。
        */
       @CanIgnoreReturnValue
       public Builder setEndPositionMs(long endPositionMs) {
-        return setEndPositionUs(msToUs(endPositionMs));
+        return setEndPositionUs(msToUs(endPositionMs)); // 将毫秒转换为微秒并设置
       }
 
       /**
-       * Sets the optional end position in milliseconds which must be a value larger than or equal
-       * to zero, or {@link C#TIME_END_OF_SOURCE} to end when playback reaches the end of media
-       * (Default: {@link C#TIME_END_OF_SOURCE}).
+       * 设置可选的结束位置（微秒），必须大于或等于零，或 {@link C#TIME_END_OF_SOURCE} 表示播放到媒体末尾（默认值：{@link C#TIME_END_OF_SOURCE}）。
        */
       @UnstableApi
       @CanIgnoreReturnValue
       public Builder setEndPositionUs(long endPositionUs) {
-        Assertions.checkArgument(endPositionUs == C.TIME_END_OF_SOURCE || endPositionUs >= 0);
-        this.endPositionUs = endPositionUs;
+        Assertions.checkArgument(endPositionUs == C.TIME_END_OF_SOURCE || endPositionUs >= 0); // 验证结束位置是否合法
+        this.endPositionUs = endPositionUs; // 设置结束位置
         return this;
       }
 
       /**
-       * Sets whether the start/end positions should move with the live window for live streams. If
-       * {@code false}, live streams end when playback reaches the end position in live window seen
-       * when the media is first loaded (Default: {@code false}).
+       * 设置开始/结束位置是否应随直播窗口移动。如果为 {@code false}，直播流将在播放到达首次加载媒体时看到的直播窗口的结束位置时结束（默认值：{@code false}）。
        */
       @CanIgnoreReturnValue
       public Builder setRelativeToLiveWindow(boolean relativeToLiveWindow) {
-        this.relativeToLiveWindow = relativeToLiveWindow;
+        this.relativeToLiveWindow = relativeToLiveWindow; // 设置是否相对于直播窗口
         return this;
       }
 
       /**
-       * Sets whether the start position and the end position are relative to the default position
-       * in the window (Default: {@code false}).
+       * 设置开始位置和结束位置是否相对于窗口中的默认位置（默认值：{@code false}）。
        */
       @CanIgnoreReturnValue
       public Builder setRelativeToDefaultPosition(boolean relativeToDefaultPosition) {
-        this.relativeToDefaultPosition = relativeToDefaultPosition;
+        this.relativeToDefaultPosition = relativeToDefaultPosition; // 设置是否相对于默认位置
         return this;
       }
 
       /**
-       * Sets whether the start point is guaranteed to be a key frame. If {@code false}, the
-       * playback transition into the clip may not be seamless (Default: {@code false}).
+       * 设置起始点是否保证是关键帧。如果为 {@code false}，进入剪辑的播放过渡可能不流畅（默认值：{@code false}）。
        */
       @CanIgnoreReturnValue
       public Builder setStartsAtKeyFrame(boolean startsAtKeyFrame) {
-        this.startsAtKeyFrame = startsAtKeyFrame;
+        this.startsAtKeyFrame = startsAtKeyFrame; // 设置是否从关键帧开始
         return this;
       }
 
       /**
-       * Returns a {@link ClippingConfiguration} instance initialized with the values of this
-       * builder.
+       * 返回一个用此构建器的值初始化的 {@link ClippingConfiguration} 实例。
        */
       public ClippingConfiguration build() {
-        return new ClippingConfiguration(this);
+        return new ClippingConfiguration(this); // 构建并返回 ClippingConfiguration 实例
       }
 
       /**
-       * @deprecated Use {@link #build()} instead.
+       * @deprecated 请使用 {@link #build()} 替代。
        */
-      @SuppressWarnings("deprecation") // Building deprecated type to support deprecated methods
+      @SuppressWarnings("deprecation") // 构建已弃用的类型以支持已弃用的方法
       @UnstableApi
       @Deprecated
       public ClippingProperties buildClippingProperties() {
-        return new ClippingProperties(this);
+        return new ClippingProperties(this); // 构建并返回 ClippingProperties 实例
       }
     }
-
-    /** The start position in milliseconds. This is a value larger than or equal to zero. */
+    /** 开始位置（毫秒）。该值必须大于或等于零。 */
     @IntRange(from = 0)
     public final long startPositionMs;
 
-    /** The start position in microseconds. This is a value larger than or equal to zero. */
+    /** 开始位置（微秒）。该值必须大于或等于零。 */
     @UnstableApi
     @IntRange(from = 0)
     public final long startPositionUs;
 
     /**
-     * The end position in milliseconds. This is a value larger than or equal to zero or {@link
-     * C#TIME_END_OF_SOURCE} to play to the end of the stream.
+     * 结束位置（毫秒）。该值必须大于或等于零，或 {@link C#TIME_END_OF_SOURCE} 表示播放到流末尾。
      */
     public final long endPositionMs;
 
     /**
-     * The end position in microseconds. This is a value larger than or equal to zero or {@link
-     * C#TIME_END_OF_SOURCE} to play to the end of the stream.
+     * 结束位置（微秒）。该值必须大于或等于零，或 {@link C#TIME_END_OF_SOURCE} 表示播放到流末尾。
      */
     @UnstableApi public final long endPositionUs;
 
     /**
-     * Whether the clipping of active media periods moves with a live window. If {@code false},
-     * playback ends when it reaches {@link #endPositionMs}.
+     * 活动媒体周期的剪辑是否随直播窗口移动。如果为 {@code false}，播放将在到达 {@link #endPositionMs} 时结束。
      */
     public final boolean relativeToLiveWindow;
 
     /**
-     * Whether {@link #startPositionMs} and {@link #endPositionMs} are relative to the default
-     * position.
+     * {@link #startPositionMs} 和 {@link #endPositionMs} 是否相对于默认位置。
      */
     public final boolean relativeToDefaultPosition;
 
-    /** Sets whether the start point is guaranteed to be a key frame. */
+    /** 设置起始点是否保证是关键帧。 */
     public final boolean startsAtKeyFrame;
 
     private ClippingConfiguration(Builder builder) {
@@ -2111,99 +2073,94 @@ public final class MediaItem {
   }
 
   /**
-   * Metadata that helps the player to understand a playback request represented by a {@link
-   * MediaItem}.
+   * 帮助播放器理解由 {@link MediaItem} 表示的播放请求的元数据。
    *
-   * <p>This metadata is most useful for cases where playback requests are forwarded to other player
-   * instances (e.g. from a {@code androidx.media3.session.MediaController}) and the player creating
-   * the request doesn't know the required {@link LocalConfiguration} for playback.
+   * <p>此元数据在播放请求被转发到其他播放器实例（例如从 {@code androidx.media3.session.MediaController}）且创建请求的播放器不知道播放所需的 {@link LocalConfiguration} 时最为有用。
    */
   public static final class RequestMetadata {
 
-    /** Empty request metadata. */
+    /** 空的请求元数据。 */
     public static final RequestMetadata EMPTY = new Builder().build();
 
-    /** Builder for {@link RequestMetadata} instances. */
+    /** {@link RequestMetadata} 实例的构建器。 */
     public static final class Builder {
 
-      @Nullable private Uri mediaUri;
-      @Nullable private String searchQuery;
-      @Nullable private Bundle extras;
+      @Nullable private Uri mediaUri; // 请求媒体的 URI
+      @Nullable private String searchQuery; // 请求媒体的搜索查询
+      @Nullable private Bundle extras; // 可选的附加信息 Bundle
 
-      /** Constructs an instance. */
+      /** 创建一个实例。 */
       public Builder() {}
 
       private Builder(RequestMetadata requestMetadata) {
-        this.mediaUri = requestMetadata.mediaUri;
-        this.searchQuery = requestMetadata.searchQuery;
-        this.extras = requestMetadata.extras;
+        this.mediaUri = requestMetadata.mediaUri; // 复制媒体 URI
+        this.searchQuery = requestMetadata.searchQuery; // 复制搜索查询
+        this.extras = requestMetadata.extras; // 复制附加信息
       }
 
-      /** Sets the URI of the requested media, or null if not known or applicable. */
+      /** 设置请求媒体的 URI，如果未知或不适用则为 null。 */
       @CanIgnoreReturnValue
       public Builder setMediaUri(@Nullable Uri mediaUri) {
-        this.mediaUri = mediaUri;
+        this.mediaUri = mediaUri; // 设置媒体 URI
         return this;
       }
 
-      /** Sets the search query for the requested media, or null if not applicable. */
+      /** 设置请求媒体的搜索查询，如果不适用则为 null。 */
       @CanIgnoreReturnValue
       public Builder setSearchQuery(@Nullable String searchQuery) {
-        this.searchQuery = searchQuery;
+        this.searchQuery = searchQuery; // 设置搜索查询
         return this;
       }
 
-      /** Sets optional extras {@link Bundle}. */
+      /** 设置可选的附加信息 {@link Bundle}。 */
       @CanIgnoreReturnValue
       public Builder setExtras(@Nullable Bundle extras) {
-        this.extras = extras;
+        this.extras = extras; // 设置附加信息
         return this;
       }
 
-      /** Builds the request metadata. */
+      /** 构建请求元数据。 */
       public RequestMetadata build() {
-        return new RequestMetadata(this);
+        return new RequestMetadata(this); // 返回构建的 RequestMetadata 实例
       }
     }
 
-    /** The URI of the requested media, or null if not known or applicable. */
+    /** 请求媒体的 URI，如果未知或不适用则为 null。 */
     @Nullable public final Uri mediaUri;
 
-    /** The search query for the requested media, or null if not applicable. */
+    /** 请求媒体的搜索查询，如果不适用则为 null。 */
     @Nullable public final String searchQuery;
 
     /**
-     * Optional extras {@link Bundle}.
+     * 可选的附加信息 {@link Bundle}。
      *
-     * <p>Given the complexities of checking the equality of two {@link Bundle} instances, the
-     * contents of these extras are not considered in the {@link #equals(Object)} or {@link
-     * #hashCode()} implementation.
+     * <p>由于检查两个 {@link Bundle} 实例是否相等的复杂性，这些附加信息的内容不会在 {@link #equals(Object)} 或 {@link #hashCode()} 实现中被考虑。
      */
     @Nullable public final Bundle extras;
 
     private RequestMetadata(Builder builder) {
-      this.mediaUri = builder.mediaUri;
-      this.searchQuery = builder.searchQuery;
-      this.extras = builder.extras;
+      this.mediaUri = builder.mediaUri; // 初始化媒体 URI
+      this.searchQuery = builder.searchQuery; // 初始化搜索查询
+      this.extras = builder.extras; // 初始化附加信息
     }
 
-    /** Returns a {@link Builder} initialized with the values of this instance. */
+    /** 返回一个用此实例的值初始化的 {@link Builder}。 */
     public Builder buildUpon() {
-      return new Builder(this);
+      return new Builder(this); // 返回一个新的构建器实例
     }
 
     @Override
     public boolean equals(@Nullable Object o) {
       if (this == o) {
-        return true;
+        return true; // 如果是同一个对象，返回 true
       }
       if (!(o instanceof RequestMetadata)) {
-        return false;
+        return false; // 如果对象不是 RequestMetadata 类型，返回 false
       }
       RequestMetadata that = (RequestMetadata) o;
       return Util.areEqual(mediaUri, that.mediaUri)
           && Util.areEqual(searchQuery, that.searchQuery)
-          && ((extras == null) == (that.extras == null));
+          && ((extras == null) == (that.extras == null)); // 比较媒体 URI、搜索查询和附加信息的存在性
     }
 
     @Override
@@ -2211,7 +2168,7 @@ public final class MediaItem {
       int result = mediaUri == null ? 0 : mediaUri.hashCode();
       result = 31 * result + (searchQuery == null ? 0 : searchQuery.hashCode());
       result = 31 * result + (extras == null ? 0 : 1);
-      return result;
+      return result; // 计算哈希值
     }
 
     private static final String FIELD_MEDIA_URI = Util.intToStringMaxRadix(0);
@@ -2222,69 +2179,66 @@ public final class MediaItem {
     public Bundle toBundle() {
       Bundle bundle = new Bundle();
       if (mediaUri != null) {
-        bundle.putParcelable(FIELD_MEDIA_URI, mediaUri);
+        bundle.putParcelable(FIELD_MEDIA_URI, mediaUri); // 添加媒体 URI
       }
       if (searchQuery != null) {
-        bundle.putString(FIELD_SEARCH_QUERY, searchQuery);
+        bundle.putString(FIELD_SEARCH_QUERY, searchQuery); // 添加搜索查询
       }
       if (extras != null) {
-        bundle.putBundle(FIELD_EXTRAS, extras);
+        bundle.putBundle(FIELD_EXTRAS, extras); // 添加附加信息
       }
-      return bundle;
+      return bundle; // 返回 Bundle
     }
 
-    /** Restores a {@code RequestMetadata} from a {@link Bundle}. */
+    /** 从 {@link Bundle} 中恢复一个 {@code RequestMetadata} 实例。 */
     @UnstableApi
     public static RequestMetadata fromBundle(Bundle bundle) {
       return new RequestMetadata.Builder()
-          .setMediaUri(bundle.getParcelable(FIELD_MEDIA_URI))
-          .setSearchQuery(bundle.getString(FIELD_SEARCH_QUERY))
-          .setExtras(bundle.getBundle(FIELD_EXTRAS))
-          .build();
+          .setMediaUri(bundle.getParcelable(FIELD_MEDIA_URI)) // 恢复媒体 URI
+          .setSearchQuery(bundle.getString(FIELD_SEARCH_QUERY)) // 恢复搜索查询
+          .setExtras(bundle.getBundle(FIELD_EXTRAS)) // 恢复附加信息
+          .build(); // 构建并返回 RequestMetadata 实例
     }
   }
-
   /**
-   * The default media ID that is used if the media ID is not explicitly set by {@link
-   * Builder#setMediaId(String)}.
+   * 默认的媒体 ID，如果未通过 {@link Builder#setMediaId(String)} 显式设置媒体 ID，则使用此值。
    */
   public static final String DEFAULT_MEDIA_ID = "";
 
-  /** Empty {@link MediaItem}. */
+  /** 空的 {@link MediaItem}。 */
   public static final MediaItem EMPTY = new MediaItem.Builder().build();
 
-  /** Identifies the media item. */
+  /** 标识媒体项的唯一 ID。 */
   public final String mediaId;
 
   /**
-   * Optional configuration for local playback. May be {@code null} if shared over process
-   * boundaries.
+   * 可选的本地播放配置。如果跨进程边界共享，则可能为 {@code null}。
    */
   @Nullable public final LocalConfiguration localConfiguration;
 
   /**
-   * @deprecated Use {@link #localConfiguration} instead.
+   * @deprecated 请使用 {@link #localConfiguration} 替代。
    */
   @UnstableApi @Deprecated @Nullable public final LocalConfiguration playbackProperties;
 
-  /** The live playback configuration. */
+  /** 直播播放配置。 */
   public final LiveConfiguration liveConfiguration;
 
-  /** The media metadata. */
+  /** 媒体元数据。 */
   public final MediaMetadata mediaMetadata;
 
-  /** The clipping properties. */
+  /** 剪辑配置。 */
   public final ClippingConfiguration clippingConfiguration;
 
   /**
-   * @deprecated Use {@link #clippingConfiguration} instead.
+   * @deprecated 请使用 {@link #clippingConfiguration} 替代。
    */
-  @SuppressWarnings("deprecation") // Keeping deprecated field with deprecated type
+  @SuppressWarnings("deprecation") // 保留已弃用的字段与已弃用的类型
   @UnstableApi
   @Deprecated
   public final ClippingProperties clippingProperties;
 
-  /** The media {@link RequestMetadata}. */
+  /** 媒体的 {@link RequestMetadata}。 */
   public final RequestMetadata requestMetadata;
 
   // Using ClippingProperties until they're deleted.
@@ -2371,31 +2325,28 @@ public final class MediaItem {
     }
     return bundle;
   }
-
   /**
-   * Returns a {@link Bundle} representing the information stored in this object.
+   * 返回表示此对象中存储信息的 {@link Bundle}。
    *
-   * <p>It omits the {@link #localConfiguration} field. The {@link #localConfiguration} of an
-   * instance restored from such a bundle by {@link #fromBundle} will be {@code null}.
+   * <p>它省略了 {@link #localConfiguration} 字段。通过 {@link #fromBundle} 从此类 Bundle 恢复的实例的 {@link #localConfiguration} 将为 {@code null}。
    */
   @UnstableApi
   public Bundle toBundle() {
-    return toBundle(/* includeLocalConfiguration= */ false);
+    return toBundle(/* includeLocalConfiguration= */ false); // 默认不包含 localConfiguration
   }
 
   /**
-   * Returns a {@link Bundle} representing the information stored in this {@link #MediaItem} object,
-   * while including the {@link #localConfiguration} field if it is not null (otherwise skips it).
+   * 返回表示此 {@link #MediaItem} 对象中存储信息的 {@link Bundle}，同时包含 {@link #localConfiguration} 字段（如果它不为 null，否则跳过）。
    */
   @UnstableApi
   public Bundle toBundleIncludeLocalConfiguration() {
-    return toBundle(/* includeLocalConfiguration= */ true);
+    return toBundle(/* includeLocalConfiguration= */ true); // 包含 localConfiguration
   }
 
   /**
-   * Restores a {@code MediaItem} from a {@link Bundle}.
+   * 从 {@link Bundle} 中恢复一个 {@code MediaItem}。
    *
-   * <p>The {@link #localConfiguration} of a restored instance will always be {@code null}.
+   * <p>恢复的实例的 {@link #localConfiguration} 将始终为 {@code null}。
    */
   @UnstableApi
   @SuppressWarnings("deprecation") // Unbundling to ClippingProperties while it still exists.

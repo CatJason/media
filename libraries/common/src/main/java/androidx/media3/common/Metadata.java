@@ -9,16 +9,15 @@ import com.google.common.primitives.Longs;
 import java.util.Arrays;
 import java.util.List;
 
-/** A collection of metadata entries. */
+/** 元数据条目的集合。 */
 @UnstableApi
 public final class Metadata implements Parcelable {
 
-  /** A metadata entry. */
+  /** 元数据条目。 */
   public interface Entry extends Parcelable {
 
     /**
-     * Returns the {@link Format} that can be used to decode the wrapped metadata in {@link
-     * #getWrappedMetadataBytes()}, or null if this Entry doesn't contain wrapped metadata.
+     * 返回可用于解码 {@link #getWrappedMetadataBytes()} 中包装元数据的 {@link Format}，如果此条目不包含包装元数据，则返回 null。
      */
     @Nullable
     default Format getWrappedMetadataFormat() {
@@ -26,8 +25,7 @@ public final class Metadata implements Parcelable {
     }
 
     /**
-     * Returns the bytes of the wrapped metadata in this Entry, or null if it doesn't contain
-     * wrapped metadata.
+     * 返回此条目中包装元数据的字节数组，如果它不包含包装元数据，则返回 null。
      */
     @Nullable
     default byte[] getWrappedMetadataBytes() {
@@ -35,10 +33,9 @@ public final class Metadata implements Parcelable {
     }
 
     /**
-     * Updates the {@link MediaMetadata.Builder} with the type-specific values stored in this {@code
-     * Entry}.
+     * 使用此 {@code Entry} 中存储的类型特定值更新 {@link MediaMetadata.Builder}。
      *
-     * @param builder The builder to be updated.
+     * @param builder 要更新的构建器。
      */
     default void populateMediaMetadata(MediaMetadata.Builder builder) {}
   }
@@ -46,24 +43,24 @@ public final class Metadata implements Parcelable {
   private final Entry[] entries;
 
   /**
-   * The presentation time of the metadata, in microseconds.
+   * 元数据的呈现时间，单位为微秒。
    *
-   * <p>This time is an offset from the start of the current {@link Timeline.Period}.
+   * <p>此时间是相对于当前 {@link Timeline.Period} 开始时间的偏移量。
    *
-   * <p>This time is {@link C#TIME_UNSET} when not known or undefined.
+   * <p>当时间未知或未定义时，此时间为 {@link C#TIME_UNSET}。
    */
   public final long presentationTimeUs;
 
   /**
-   * @param entries The metadata entries.
+   * @param entries 元数据条目。
    */
   public Metadata(Entry... entries) {
     this(/* presentationTimeUs= */ C.TIME_UNSET, entries);
   }
 
   /**
-   * @param presentationTimeUs The presentation time for the metadata entries.
-   * @param entries The metadata entries.
+   * @param presentationTimeUs 元数据条目的呈现时间。
+   * @param entries 元数据条目。
    */
   public Metadata(long presentationTimeUs, Entry... entries) {
     this.presentationTimeUs = presentationTimeUs;
@@ -71,15 +68,15 @@ public final class Metadata implements Parcelable {
   }
 
   /**
-   * @param entries The metadata entries.
+   * @param entries 元数据条目。
    */
   public Metadata(List<? extends Entry> entries) {
     this(entries.toArray(new Entry[0]));
   }
 
   /**
-   * @param presentationTimeUs The presentation time for the metadata entries.
-   * @param entries The metadata entries.
+   * @param presentationTimeUs 元数据条目的呈现时间。
+   * @param entries 元数据条目。
    */
   public Metadata(long presentationTimeUs, List<? extends Entry> entries) {
     this(presentationTimeUs, entries.toArray(new Entry[0]));
@@ -93,28 +90,26 @@ public final class Metadata implements Parcelable {
     presentationTimeUs = in.readLong();
   }
 
-  /** Returns the number of metadata entries. */
+  /** 返回元数据条目的数量。 */
   public int length() {
     return entries.length;
   }
 
   /**
-   * Returns the entry at the specified index.
+   * 返回指定索引处的条目。
    *
-   * @param index The index of the entry.
-   * @return The entry at the specified index.
+   * @param index 条目的索引。
+   * @return 指定索引处的条目。
    */
   public Metadata.Entry get(int index) {
     return entries[index];
   }
 
   /**
-   * Returns a copy of this metadata with the entries of the specified metadata appended. Returns
-   * this instance if {@code other} is null.
+   * 返回此元数据的副本，并附加指定元数据的条目。如果 {@code other} 为 null，则返回此实例。
    *
-   * @param other The metadata that holds the entries to append. If null, this methods returns this
-   *     instance.
-   * @return The metadata instance with the appended entries.
+   * @param other 包含要附加条目的元数据。如果为 null，则返回此实例。
+   * @return 包含附加条目的元数据实例。
    */
   public Metadata copyWithAppendedEntriesFrom(@Nullable Metadata other) {
     if (other == null) {
@@ -124,10 +119,10 @@ public final class Metadata implements Parcelable {
   }
 
   /**
-   * Returns a copy of this metadata with the specified entries appended.
+   * 返回此元数据的副本，并附加指定的条目。
    *
-   * @param entriesToAppend The entries to append.
-   * @return The metadata instance with the appended entries.
+   * @param entriesToAppend 要附加的条目。
+   * @return 包含附加条目的元数据实例。
    */
   public Metadata copyWithAppendedEntries(Entry... entriesToAppend) {
     if (entriesToAppend.length == 0) {
@@ -138,10 +133,10 @@ public final class Metadata implements Parcelable {
   }
 
   /**
-   * Returns a copy of this metadata with the specified presentation time.
+   * 返回此元数据的副本，并使用指定的呈现时间。
    *
-   * @param presentationTimeUs The new presentation time, in microseconds.
-   * @return The metadata instance with the new presentation time.
+   * @param presentationTimeUs 新的呈现时间，单位为微秒。
+   * @return 包含新呈现时间的元数据实例。
    */
   public Metadata copyWithPresentationTimeUs(long presentationTimeUs) {
     if (this.presentationTimeUs == presentationTimeUs) {
@@ -176,7 +171,7 @@ public final class Metadata implements Parcelable {
         + (presentationTimeUs == C.TIME_UNSET ? "" : ", presentationTimeUs=" + presentationTimeUs);
   }
 
-  // Parcelable implementation.
+  // Parcelable 实现。
 
   @Override
   public int describeContents() {

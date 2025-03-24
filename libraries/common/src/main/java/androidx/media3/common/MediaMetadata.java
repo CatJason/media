@@ -31,48 +31,48 @@ import java.util.List;
  */
 public final class MediaMetadata {
 
-  /** A builder for {@link MediaMetadata} instances. */
+  /** {@link MediaMetadata} 实例的构建器。 */
   public static final class Builder {
 
-    @Nullable private CharSequence title;
-    @Nullable private CharSequence artist;
-    @Nullable private CharSequence albumTitle;
-    @Nullable private CharSequence albumArtist;
-    @Nullable private CharSequence displayTitle;
-    @Nullable private CharSequence subtitle;
-    @Nullable private CharSequence description;
-    @Nullable private Long durationMs;
-    @Nullable private Rating userRating;
-    @Nullable private Rating overallRating;
-    @Nullable private byte[] artworkData;
-    @Nullable private @PictureType Integer artworkDataType;
-    @Nullable private Uri artworkUri;
-    @Nullable private Integer trackNumber;
-    @Nullable private Integer totalTrackCount;
+    @Nullable private CharSequence title; // 媒体标题
+    @Nullable private CharSequence artist; // 艺术家
+    @Nullable private CharSequence albumTitle; // 专辑标题
+    @Nullable private CharSequence albumArtist; // 专辑艺术家
+    @Nullable private CharSequence displayTitle; // 显示标题
+    @Nullable private CharSequence subtitle; // 副标题
+    @Nullable private CharSequence description; // 描述
+    @Nullable private Long durationMs; // 持续时间（毫秒）
+    @Nullable private Rating userRating; // 用户评分
+    @Nullable private Rating overallRating; // 总体评分
+    @Nullable private byte[] artworkData; // 封面图片数据
+    @Nullable private @PictureType Integer artworkDataType; // 封面图片数据类型
+    @Nullable private Uri artworkUri; // 封面图片 URI
+    @Nullable private Integer trackNumber; // 曲目编号
+    @Nullable private Integer totalTrackCount; // 总曲目数
 
-    @SuppressWarnings("deprecation") // Builder for deprecated field.
+    @SuppressWarnings("deprecation") // 已弃用字段的构建器
     @Nullable
-    private @FolderType Integer folderType;
+    private @FolderType Integer folderType; // 文件夹类型（已弃用）
 
-    @Nullable private Boolean isBrowsable;
-    @Nullable private Boolean isPlayable;
-    @Nullable private Integer recordingYear;
-    @Nullable private Integer recordingMonth;
-    @Nullable private Integer recordingDay;
-    @Nullable private Integer releaseYear;
-    @Nullable private Integer releaseMonth;
-    @Nullable private Integer releaseDay;
-    @Nullable private CharSequence writer;
-    @Nullable private CharSequence composer;
-    @Nullable private CharSequence conductor;
-    @Nullable private Integer discNumber;
-    @Nullable private Integer totalDiscCount;
-    @Nullable private CharSequence genre;
-    @Nullable private CharSequence compilation;
-    @Nullable private CharSequence station;
-    @Nullable private @MediaType Integer mediaType;
-    @Nullable private Bundle extras;
-    private ImmutableList<String> supportedCommands;
+    @Nullable private Boolean isBrowsable; // 是否可浏览
+    @Nullable private Boolean isPlayable; // 是否可播放
+    @Nullable private Integer recordingYear; // 录制年份
+    @Nullable private Integer recordingMonth; // 录制月份
+    @Nullable private Integer recordingDay; // 录制日期
+    @Nullable private Integer releaseYear; // 发行年份
+    @Nullable private Integer releaseMonth; // 发行月份
+    @Nullable private Integer releaseDay; // 发行日期
+    @Nullable private CharSequence writer; // 作词者
+    @Nullable private CharSequence composer; // 作曲者
+    @Nullable private CharSequence conductor; // 指挥者
+    @Nullable private Integer discNumber; // 光盘编号
+    @Nullable private Integer totalDiscCount; // 总光盘数
+    @Nullable private CharSequence genre; // 流派
+    @Nullable private CharSequence compilation; // 合辑
+    @Nullable private CharSequence station; // 电台
+    @Nullable private @MediaType Integer mediaType; // 媒体类型
+    @Nullable private Bundle extras; // 额外信息（键值对）
+    private ImmutableList<String> supportedCommands; // 支持的命令列表
 
     public Builder() {
       supportedCommands = ImmutableList.of();
@@ -117,35 +117,35 @@ public final class MediaMetadata {
       this.extras = mediaMetadata.extras;
     }
 
-    /** Sets the title. */
+    /** 设置标题。 */
     @CanIgnoreReturnValue
     public Builder setTitle(@Nullable CharSequence title) {
       this.title = title;
       return this;
     }
 
-    /** Sets the artist. */
+    /** 设置艺术家。 */
     @CanIgnoreReturnValue
     public Builder setArtist(@Nullable CharSequence artist) {
       this.artist = artist;
       return this;
     }
 
-    /** Sets the album title. */
+    /** 设置专辑标题。 */
     @CanIgnoreReturnValue
     public Builder setAlbumTitle(@Nullable CharSequence albumTitle) {
       this.albumTitle = albumTitle;
       return this;
     }
 
-    /** Sets the album artist. */
+    /** 设置专辑艺术家。 */
     @CanIgnoreReturnValue
     public Builder setAlbumArtist(@Nullable CharSequence albumArtist) {
       this.albumArtist = albumArtist;
       return this;
     }
 
-    /** Sets the display title. */
+    /** 设置显示标题。 */
     @CanIgnoreReturnValue
     public Builder setDisplayTitle(@Nullable CharSequence displayTitle) {
       this.displayTitle = displayTitle;
@@ -153,9 +153,9 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the subtitle.
+     * 设置副标题。
      *
-     * <p>This is the secondary title of the media, unrelated to closed captions.
+     * <p>这是媒体的次要标题，与隐藏式字幕无关。
      */
     @CanIgnoreReturnValue
     public Builder setSubtitle(@Nullable CharSequence subtitle) {
@@ -163,7 +163,7 @@ public final class MediaMetadata {
       return this;
     }
 
-    /** Sets the description. */
+    /** 设置描述。 */
     @CanIgnoreReturnValue
     public Builder setDescription(@Nullable CharSequence description) {
       this.description = description;
@@ -171,13 +171,12 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the optional duration, non-negative and in milliseconds.
+     * 设置可选的持续时间，非负值，单位为毫秒。
      *
-     * <p>The duration is populated by the app when building the metadata object and is for
-     * informational purpose only. For retrieving the duration of the media item currently being
-     * played, use {@link Player#getDuration()} instead.
+     * <p>持续时间由应用程序在构建元数据对象时填充，仅用于信息目的。要获取当前播放媒体项的持续时间，
+     * 请使用 {@link Player#getDuration()}。
      *
-     * @throws IllegalArgumentException if the duration is negative.
+     * @throws IllegalArgumentException 如果持续时间为负数。
      */
     @UnstableApi
     @CanIgnoreReturnValue
@@ -187,14 +186,14 @@ public final class MediaMetadata {
       return this;
     }
 
-    /** Sets the user {@link Rating}. */
+    /** 设置用户 {@link Rating}。 */
     @CanIgnoreReturnValue
     public Builder setUserRating(@Nullable Rating userRating) {
       this.userRating = userRating;
       return this;
     }
 
-    /** Sets the overall {@link Rating}. */
+    /** 设置总体 {@link Rating}。 */
     @CanIgnoreReturnValue
     public Builder setOverallRating(@Nullable Rating overallRating) {
       this.overallRating = overallRating;
@@ -202,8 +201,8 @@ public final class MediaMetadata {
     }
 
     /**
-     * @deprecated Use {@link #setArtworkData(byte[] data, Integer pictureType)} or {@link
-     *     #maybeSetArtworkData(byte[] data, int pictureType)}, providing a {@link PictureType}.
+     * @deprecated 使用 {@link #setArtworkData(byte[] data, Integer pictureType)} 或 {@link
+     *     #maybeSetArtworkData(byte[] data, int pictureType)}，并提供 {@link PictureType}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -213,8 +212,7 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the artwork data as a compressed byte array with an associated {@link PictureType
-     * artworkDataType}.
+     * 设置封面图片数据为压缩的字节数组，并关联 {@link PictureType artworkDataType}。
      */
     @CanIgnoreReturnValue
     public Builder setArtworkData(
@@ -225,12 +223,12 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the artwork data as a compressed byte array in the event that the associated {@link
-     * PictureType} is {@link #PICTURE_TYPE_FRONT_COVER}, the existing {@link PictureType} is not
-     * {@link #PICTURE_TYPE_FRONT_COVER}, or the current artworkData is not set.
+     * 在以下情况下设置封面图片数据为压缩的字节数组：
+     * - 关联的 {@link PictureType} 是 {@link #PICTURE_TYPE_FRONT_COVER}；
+     * - 当前的 {@link PictureType} 不是 {@link #PICTURE_TYPE_FRONT_COVER}；
+     * - 当前的 `artworkData` 未设置。
      *
-     * <p>Use {@link #setArtworkData(byte[], Integer)} to set the artwork data without checking the
-     * {@link PictureType}.
+     * <p>使用 {@link #setArtworkData(byte[], Integer)} 可以在不检查 {@link PictureType} 的情况下设置封面图片数据。
      */
     @CanIgnoreReturnValue
     public Builder maybeSetArtworkData(byte[] artworkData, @PictureType int artworkDataType) {
@@ -243,21 +241,21 @@ public final class MediaMetadata {
       return this;
     }
 
-    /** Sets the artwork {@link Uri}. */
+    /** 设置封面图片的 {@link Uri}。 */
     @CanIgnoreReturnValue
     public Builder setArtworkUri(@Nullable Uri artworkUri) {
       this.artworkUri = artworkUri;
       return this;
     }
 
-    /** Sets the track number. */
+    /** 设置曲目编号。 */
     @CanIgnoreReturnValue
     public Builder setTrackNumber(@Nullable Integer trackNumber) {
       this.trackNumber = trackNumber;
       return this;
     }
 
-    /** Sets the total number of tracks. */
+    /** 设置总曲目数。 */
     @CanIgnoreReturnValue
     public Builder setTotalTrackCount(@Nullable Integer totalTrackCount) {
       this.totalTrackCount = totalTrackCount;
@@ -265,12 +263,12 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the {@link FolderType}.
+     * 设置 {@link FolderType}。
      *
-     * @deprecated Use {@link #setIsBrowsable} to indicate if an item is a browsable folder and use
-     *     {@link #setMediaType} to indicate the type of the folder.
+     * @deprecated 使用 {@link #setIsBrowsable} 来指示一个项是否是可浏览的文件夹，并使用
+     *     {@link #setMediaType} 来指示文件夹的类型。
      */
-    @SuppressWarnings("deprecation") // Using deprecated type.
+    @SuppressWarnings("deprecation") // 使用已弃用的类型。
     @Deprecated
     @CanIgnoreReturnValue
     public Builder setFolderType(@Nullable @FolderType Integer folderType) {
@@ -278,14 +276,14 @@ public final class MediaMetadata {
       return this;
     }
 
-    /** Sets whether the media is a browsable folder. */
+    /** 设置媒体项是否是可浏览的文件夹。 */
     @CanIgnoreReturnValue
     public Builder setIsBrowsable(@Nullable Boolean isBrowsable) {
       this.isBrowsable = isBrowsable;
       return this;
     }
 
-    /** Sets whether the media is playable. */
+    /** 设置媒体项是否可播放。 */
     @CanIgnoreReturnValue
     public Builder setIsPlayable(@Nullable Boolean isPlayable) {
       this.isPlayable = isPlayable;
@@ -293,7 +291,7 @@ public final class MediaMetadata {
     }
 
     /**
-     * @deprecated Use {@link #setRecordingYear(Integer)} instead.
+     * @deprecated 使用 {@link #setRecordingYear(Integer)} 替代。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -302,7 +300,7 @@ public final class MediaMetadata {
       return setRecordingYear(year);
     }
 
-    /** Sets the year of the recording date. */
+    /** 设置录制日期的年份。 */
     @CanIgnoreReturnValue
     public Builder setRecordingYear(@Nullable Integer recordingYear) {
       this.recordingYear = recordingYear;
@@ -310,9 +308,9 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the month of the recording date.
+     * 设置录制日期的月份。
      *
-     * <p>Value should be between 1 and 12.
+     * <p>值应在 1 到 12 之间。
      */
     @CanIgnoreReturnValue
     public Builder setRecordingMonth(
@@ -322,9 +320,9 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the day of the recording date.
+     * 设置录制日期的日。
      *
-     * <p>Value should be between 1 and 31.
+     * <p>值应在 1 到 31 之间。
      */
     @CanIgnoreReturnValue
     public Builder setRecordingDay(@Nullable @IntRange(from = 1, to = 31) Integer recordingDay) {
@@ -332,7 +330,7 @@ public final class MediaMetadata {
       return this;
     }
 
-    /** Sets the year of the release date. */
+    /** 设置发行日期的年份。 */
     @CanIgnoreReturnValue
     public Builder setReleaseYear(@Nullable Integer releaseYear) {
       this.releaseYear = releaseYear;
@@ -340,9 +338,9 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the month of the release date.
+     * 设置发行日期的月份。
      *
-     * <p>Value should be between 1 and 12.
+     * <p>值应在 1 到 12 之间。
      */
     @CanIgnoreReturnValue
     public Builder setReleaseMonth(@Nullable @IntRange(from = 1, to = 12) Integer releaseMonth) {
@@ -351,9 +349,9 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the day of the release date.
+     * 设置发行日期的日。
      *
-     * <p>Value should be between 1 and 31.
+     * <p>值应在 1 到 31 之间。
      */
     @CanIgnoreReturnValue
     public Builder setReleaseDay(@Nullable @IntRange(from = 1, to = 31) Integer releaseDay) {
@@ -361,70 +359,70 @@ public final class MediaMetadata {
       return this;
     }
 
-    /** Sets the writer. */
+    /** 设置作词者。 */
     @CanIgnoreReturnValue
     public Builder setWriter(@Nullable CharSequence writer) {
       this.writer = writer;
       return this;
     }
 
-    /** Sets the composer. */
+    /** 设置作曲者。 */
     @CanIgnoreReturnValue
     public Builder setComposer(@Nullable CharSequence composer) {
       this.composer = composer;
       return this;
     }
 
-    /** Sets the conductor. */
+    /** 设置指挥者。 */
     @CanIgnoreReturnValue
     public Builder setConductor(@Nullable CharSequence conductor) {
       this.conductor = conductor;
       return this;
     }
 
-    /** Sets the disc number. */
+    /** 设置光盘编号。 */
     @CanIgnoreReturnValue
     public Builder setDiscNumber(@Nullable Integer discNumber) {
       this.discNumber = discNumber;
       return this;
     }
 
-    /** Sets the total number of discs. */
+    /** 设置总光盘数。 */
     @CanIgnoreReturnValue
     public Builder setTotalDiscCount(@Nullable Integer totalDiscCount) {
       this.totalDiscCount = totalDiscCount;
       return this;
     }
 
-    /** Sets the genre. */
+    /** 设置流派。 */
     @CanIgnoreReturnValue
     public Builder setGenre(@Nullable CharSequence genre) {
       this.genre = genre;
       return this;
     }
 
-    /** Sets the compilation. */
+    /** 设置合辑。 */
     @CanIgnoreReturnValue
     public Builder setCompilation(@Nullable CharSequence compilation) {
       this.compilation = compilation;
       return this;
     }
 
-    /** Sets the name of the station streaming the media. */
+    /** 设置流媒体的电台名称。 */
     @CanIgnoreReturnValue
     public Builder setStation(@Nullable CharSequence station) {
       this.station = station;
       return this;
     }
 
-    /** Sets the {@link MediaType}. */
+    /** 设置 {@link MediaType}。 */
     @CanIgnoreReturnValue
     public Builder setMediaType(@Nullable @MediaType Integer mediaType) {
       this.mediaType = mediaType;
       return this;
     }
 
-    /** Sets the extras {@link Bundle}. */
+    /** 设置额外的 {@link Bundle} 数据。 */
     @CanIgnoreReturnValue
     public Builder setExtras(@Nullable Bundle extras) {
       this.extras = extras;
@@ -432,8 +430,7 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets the IDs of the supported commands (see for instance {@code
-     * CommandButton.sessionCommand.customAction} of the Media3 session module).
+     * 设置支持的命令的 ID（例如 Media3 会话模块中的 {@code CommandButton.sessionCommand.customAction}）。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -443,13 +440,13 @@ public final class MediaMetadata {
     }
 
     /**
-     * Sets all fields supported by the {@link Metadata.Entry entries} within the {@link Metadata}.
+     * 设置 {@link Metadata} 中所有 {@link Metadata.Entry} 条目支持的字段。
      *
-     * <p>Fields are only set if the {@link Metadata.Entry} has an implementation for {@link
-     * Metadata.Entry#populateMediaMetadata(Builder)}.
+     * <p>只有 {@link Metadata.Entry} 实现了 {@link Metadata.Entry#populateMediaMetadata(Builder)} 方法时，
+     * 才会设置相应的字段。
      *
-     * <p>In the event that multiple {@link Metadata.Entry} objects within the {@link Metadata}
-     * relate to the same {@link MediaMetadata} field, then the last one will be used.
+     * <p>如果 {@link Metadata} 中多个 {@link Metadata.Entry} 对象与同一个 {@link MediaMetadata} 字段相关，
+     * 则最后一个条目的值将被使用。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -460,16 +457,13 @@ public final class MediaMetadata {
       }
       return this;
     }
-
     /**
-     * Sets all fields supported by the {@link Metadata.Entry entries} within the list of {@link
-     * Metadata}.
+     * 设置 {@link Metadata} 列表中所有 {@link Metadata.Entry} 条目支持的字段。
      *
-     * <p>Fields are only set if the {@link Metadata.Entry} has an implementation for {@link
-     * Metadata.Entry#populateMediaMetadata(Builder)}.
+     * <p>只有 {@link Metadata.Entry} 实现了 {@link Metadata.Entry#populateMediaMetadata(Builder)} 方法时，
+     * 才会设置相应的字段。
      *
-     * <p>In the event that multiple {@link Metadata.Entry} objects within any of the {@link
-     * Metadata} relate to the same {@link MediaMetadata} field, then the last one will be used.
+     * <p>如果多个 {@link Metadata.Entry} 对象与同一个 {@link MediaMetadata} 字段相关，则最后一个条目的值将被使用。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -485,10 +479,10 @@ public final class MediaMetadata {
     }
 
     /**
-     * Populates all the fields from {@code mediaMetadata}.
+     * 从 {@code mediaMetadata} 中填充所有字段。
      *
-     * <p>Fields are populated when they are non-null with an exception that both {@code artworkUri}
-     * and {@code artworkData} are populated, when at least one of them is non-null.
+     * <p>当字段非空时会被填充，但有一个例外：如果 {@code artworkUri} 和 {@code artworkData} 中至少有一个非空，
+     * 则这两个字段都会被填充。
      */
     @SuppressWarnings("deprecation") // Populating deprecated fields.
     @CanIgnoreReturnValue
@@ -634,203 +628,191 @@ public final class MediaMetadata {
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    MEDIA_TYPE_MIXED,
-    MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_AUDIO_BOOK_CHAPTER,
-    MEDIA_TYPE_PODCAST_EPISODE,
-    MEDIA_TYPE_RADIO_STATION,
-    MEDIA_TYPE_NEWS,
-    MEDIA_TYPE_VIDEO,
-    MEDIA_TYPE_TRAILER,
-    MEDIA_TYPE_MOVIE,
-    MEDIA_TYPE_TV_SHOW,
-    MEDIA_TYPE_ALBUM,
-    MEDIA_TYPE_ARTIST,
-    MEDIA_TYPE_GENRE,
-    MEDIA_TYPE_PLAYLIST,
-    MEDIA_TYPE_YEAR,
-    MEDIA_TYPE_AUDIO_BOOK,
-    MEDIA_TYPE_PODCAST,
-    MEDIA_TYPE_TV_CHANNEL,
-    MEDIA_TYPE_TV_SERIES,
-    MEDIA_TYPE_TV_SEASON,
-    MEDIA_TYPE_FOLDER_MIXED,
-    MEDIA_TYPE_FOLDER_ALBUMS,
-    MEDIA_TYPE_FOLDER_ARTISTS,
-    MEDIA_TYPE_FOLDER_GENRES,
-    MEDIA_TYPE_FOLDER_PLAYLISTS,
-    MEDIA_TYPE_FOLDER_YEARS,
-    MEDIA_TYPE_FOLDER_AUDIO_BOOKS,
-    MEDIA_TYPE_FOLDER_PODCASTS,
-    MEDIA_TYPE_FOLDER_TV_CHANNELS,
-    MEDIA_TYPE_FOLDER_TV_SERIES,
-    MEDIA_TYPE_FOLDER_TV_SHOWS,
-    MEDIA_TYPE_FOLDER_RADIO_STATIONS,
-    MEDIA_TYPE_FOLDER_NEWS,
-    MEDIA_TYPE_FOLDER_VIDEOS,
-    MEDIA_TYPE_FOLDER_TRAILERS,
-    MEDIA_TYPE_FOLDER_MOVIES,
+      MEDIA_TYPE_MIXED, // 未确定类型或多种媒体类型的混合
+      MEDIA_TYPE_MUSIC, // 音乐
+      MEDIA_TYPE_AUDIO_BOOK_CHAPTER, // 有声书章节
+      MEDIA_TYPE_PODCAST_EPISODE, // 播客单集
+      MEDIA_TYPE_RADIO_STATION, // 电台
+      MEDIA_TYPE_NEWS, // 新闻
+      MEDIA_TYPE_VIDEO, // 视频
+      MEDIA_TYPE_TRAILER, // 电影预告片
+      MEDIA_TYPE_MOVIE, // 电影
+      MEDIA_TYPE_TV_SHOW, // 电视节目
+      MEDIA_TYPE_ALBUM, // 专辑
+      MEDIA_TYPE_ARTIST, // 艺术家
+      MEDIA_TYPE_GENRE, // 流派
+      MEDIA_TYPE_PLAYLIST, // 播放列表
+      MEDIA_TYPE_YEAR, // 年份
+      MEDIA_TYPE_AUDIO_BOOK, // 有声书
+      MEDIA_TYPE_PODCAST, // 播客
+      MEDIA_TYPE_TV_CHANNEL, // 电视频道
+      MEDIA_TYPE_TV_SERIES, // 电视系列
+      MEDIA_TYPE_TV_SEASON, // 电视季
+      MEDIA_TYPE_FOLDER_MIXED, // 包含混合或未确定内容的文件夹
+      MEDIA_TYPE_FOLDER_ALBUMS, // 包含专辑的文件夹
+      MEDIA_TYPE_FOLDER_ARTISTS, // 包含艺术家的文件夹
+      MEDIA_TYPE_FOLDER_GENRES, // 包含流派的文件夹
+      MEDIA_TYPE_FOLDER_PLAYLISTS, // 包含播放列表的文件夹
+      MEDIA_TYPE_FOLDER_YEARS, // 包含年份的文件夹
+      MEDIA_TYPE_FOLDER_AUDIO_BOOKS, // 包含有声书的文件夹
+      MEDIA_TYPE_FOLDER_PODCASTS, // 包含播客的文件夹
+      MEDIA_TYPE_FOLDER_TV_CHANNELS, // 包含电视频道的文件夹
+      MEDIA_TYPE_FOLDER_TV_SERIES, // 包含电视系列的文件夹
+      MEDIA_TYPE_FOLDER_TV_SHOWS, // 包含电视节目的文件夹
+      MEDIA_TYPE_FOLDER_RADIO_STATIONS, // 包含电台的文件夹
+      MEDIA_TYPE_FOLDER_NEWS, // 包含新闻的文件夹
+      MEDIA_TYPE_FOLDER_VIDEOS, // 包含视频的文件夹
+      MEDIA_TYPE_FOLDER_TRAILERS, // 包含电影预告片的文件夹
+      MEDIA_TYPE_FOLDER_MOVIES, // 包含电影的文件夹
   })
   public @interface MediaType {}
 
-  /** Media of undetermined type or a mix of multiple {@linkplain MediaType media types}. */
+  /** 未确定类型的媒体或多种 {@linkplain MediaType 媒体类型} 的混合。 */
   public static final int MEDIA_TYPE_MIXED = 0;
 
-  /** {@link MediaType} for music. */
+  /** 音乐的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_MUSIC = 1;
 
-  /** {@link MediaType} for an audio book chapter. */
+  /** 有声书章节的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_AUDIO_BOOK_CHAPTER = 2;
 
-  /** {@link MediaType} for a podcast episode. */
+  /** 播客单集的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_PODCAST_EPISODE = 3;
 
-  /** {@link MediaType} for a radio station. */
+  /** 电台的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_RADIO_STATION = 4;
 
-  /** {@link MediaType} for news. */
+  /** 新闻的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_NEWS = 5;
 
-  /** {@link MediaType} for a video. */
+  /** 视频的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_VIDEO = 6;
 
-  /** {@link MediaType} for a movie trailer. */
+  /** 电影预告片的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_TRAILER = 7;
 
-  /** {@link MediaType} for a movie. */
+  /** 电影的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_MOVIE = 8;
 
-  /** {@link MediaType} for a TV show. */
+  /** 电视节目的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_TV_SHOW = 9;
 
   /**
-   * {@link MediaType} for a group of items (e.g., {@link #MEDIA_TYPE_MUSIC music}) belonging to an
-   * album.
+   * 属于专辑的一组项目（例如 {@link #MEDIA_TYPE_MUSIC 音乐}）的 {@link MediaType}。
    */
   public static final int MEDIA_TYPE_ALBUM = 10;
 
   /**
-   * {@link MediaType} for a group of items (e.g., {@link #MEDIA_TYPE_MUSIC music}) from the same
-   * artist.
+   * 来自同一艺术家的一组项目（例如 {@link #MEDIA_TYPE_MUSIC 音乐}）的 {@link MediaType}。
    */
   public static final int MEDIA_TYPE_ARTIST = 11;
 
   /**
-   * {@link MediaType} for a group of items (e.g., {@link #MEDIA_TYPE_MUSIC music}) of the same
-   * genre.
+   * 属于同一流派的一组项目（例如 {@link #MEDIA_TYPE_MUSIC 音乐}）的 {@link MediaType}。
    */
   public static final int MEDIA_TYPE_GENRE = 12;
 
   /**
-   * {@link MediaType} for a group of items (e.g., {@link #MEDIA_TYPE_MUSIC music}) forming a
-   * playlist.
+   * 形成播放列表的一组项目（例如 {@link #MEDIA_TYPE_MUSIC 音乐}）的 {@link MediaType}。
    */
   public static final int MEDIA_TYPE_PLAYLIST = 13;
 
   /**
-   * {@link MediaType} for a group of items (e.g., {@link #MEDIA_TYPE_MUSIC music}) from the same
-   * year.
+   * 来自同一年的一组项目（例如 {@link #MEDIA_TYPE_MUSIC 音乐}）的 {@link MediaType}。
    */
   public static final int MEDIA_TYPE_YEAR = 14;
 
   /**
-   * {@link MediaType} for a group of items forming an audio book. Items in this group are typically
-   * of type {@link #MEDIA_TYPE_AUDIO_BOOK_CHAPTER}.
+   * 形成有声书的一组项目的 {@link MediaType}。此组中的项目通常是 {@link #MEDIA_TYPE_AUDIO_BOOK_CHAPTER} 类型。
    */
   public static final int MEDIA_TYPE_AUDIO_BOOK = 15;
 
   /**
-   * {@link MediaType} for a group of items belonging to a podcast. Items in this group are
-   * typically of type {@link #MEDIA_TYPE_PODCAST_EPISODE}.
+   * 属于播客的一组项目的 {@link MediaType}。此组中的项目通常是 {@link #MEDIA_TYPE_PODCAST_EPISODE} 类型。
    */
   public static final int MEDIA_TYPE_PODCAST = 16;
 
   /**
-   * {@link MediaType} for a group of items that are part of a TV channel. Items in this group are
-   * typically of type {@link #MEDIA_TYPE_TV_SHOW}, {@link #MEDIA_TYPE_TV_SERIES} or {@link
-   * #MEDIA_TYPE_MOVIE}.
+   * 属于电视频道的一组项目的 {@link MediaType}。此组中的项目通常是 {@link #MEDIA_TYPE_TV_SHOW}、{@link #MEDIA_TYPE_TV_SERIES} 或 {@link #MEDIA_TYPE_MOVIE} 类型。
    */
   public static final int MEDIA_TYPE_TV_CHANNEL = 17;
 
   /**
-   * {@link MediaType} for a group of items that are part of a TV series. Items in this group are
-   * typically of type {@link #MEDIA_TYPE_TV_SHOW} or {@link #MEDIA_TYPE_TV_SEASON}.
+   * 属于电视系列的一组项目的 {@link MediaType}。此组中的项目通常是 {@link #MEDIA_TYPE_TV_SHOW} 或 {@link #MEDIA_TYPE_TV_SEASON} 类型。
    */
   public static final int MEDIA_TYPE_TV_SERIES = 18;
 
   /**
-   * {@link MediaType} for a group of items that are part of a TV series. Items in this group are
-   * typically of type {@link #MEDIA_TYPE_TV_SHOW}.
+   * 属于电视季的一组项目的 {@link MediaType}。此组中的项目通常是 {@link #MEDIA_TYPE_TV_SHOW} 类型。
    */
   public static final int MEDIA_TYPE_TV_SEASON = 19;
 
-  /** {@link MediaType} for a folder with mixed or undetermined content. */
+  /** 包含混合或未确定内容的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_MIXED = 20;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_ALBUM albums}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_ALBUM 专辑} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_ALBUMS = 21;
 
-  /** {@link MediaType} for a folder containing {@linkplain #FIELD_ARTIST artists}. */
+  /** 包含 {@linkplain #FIELD_ARTIST 艺术家} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_ARTISTS = 22;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_GENRE genres}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_GENRE 流派} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_GENRES = 23;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_PLAYLIST playlists}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_PLAYLIST 播放列表} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_PLAYLISTS = 24;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_YEAR years}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_YEAR 年份} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_YEARS = 25;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_AUDIO_BOOK audio books}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_AUDIO_BOOK 有声书} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_AUDIO_BOOKS = 26;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_PODCAST podcasts}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_PODCAST 播客} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_PODCASTS = 27;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_TV_CHANNEL TV channels}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_TV_CHANNEL 电视频道} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_TV_CHANNELS = 28;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_TV_SERIES TV series}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_TV_SERIES 电视系列} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_TV_SERIES = 29;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_TV_SHOW TV shows}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_TV_SHOW 电视节目} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_TV_SHOWS = 30;
 
   /**
-   * {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_RADIO_STATION radio
-   * stations}.
+   * 包含 {@linkplain #MEDIA_TYPE_RADIO_STATION 电台} 的文件夹的 {@link MediaType}。
    */
   public static final int MEDIA_TYPE_FOLDER_RADIO_STATIONS = 31;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_NEWS news}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_NEWS 新闻} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_NEWS = 32;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_VIDEO videos}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_VIDEO 视频} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_VIDEOS = 33;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_TRAILER movie trailers}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_TRAILER 电影预告片} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_TRAILERS = 34;
 
-  /** {@link MediaType} for a folder containing {@linkplain #MEDIA_TYPE_MOVIE movies}. */
+  /** 包含 {@linkplain #MEDIA_TYPE_MOVIE 电影} 的文件夹的 {@link MediaType}。 */
   public static final int MEDIA_TYPE_FOLDER_MOVIES = 35;
 
   /**
-   * The folder type of the media item.
+   * 媒体项的文件夹类型。
    *
-   * <p>This can be used as the type of a browsable bluetooth folder (see section 6.10.2.2 of the <a
+   * <p>这可以用作可浏览蓝牙文件夹的类型（参见 <a
    * href="https://www.bluetooth.com/specifications/specs/a-v-remote-control-profile-1-6-2/">Bluetooth
-   * AVRCP 1.6.2</a>).
+   * AVRCP 1.6.2</a> 的第 6.10.2.2 节）。
    *
-   * <p>One of {@link #FOLDER_TYPE_NONE}, {@link #FOLDER_TYPE_MIXED}, {@link #FOLDER_TYPE_TITLES},
+   * <p>可以是以下之一：{@link #FOLDER_TYPE_NONE}, {@link #FOLDER_TYPE_MIXED}, {@link #FOLDER_TYPE_TITLES},
    * {@link #FOLDER_TYPE_ALBUMS}, {@link #FOLDER_TYPE_ARTISTS}, {@link #FOLDER_TYPE_GENRES}, {@link
-   * #FOLDER_TYPE_PLAYLISTS} or {@link #FOLDER_TYPE_YEARS}.
+   * #FOLDER_TYPE_PLAYLISTS} 或 {@link #FOLDER_TYPE_YEARS}。
    *
-   * @deprecated Use {@link #isBrowsable} to indicate if an item is a browsable folder and use
-   *     {@link #mediaType} to indicate the type of the folder.
+   * @deprecated 使用 {@link #isBrowsable} 来指示一个项是否是可浏览的文件夹，并使用
+   *     {@link #mediaType} 来指示文件夹的类型。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与 Kotlin 使用时的向后兼容性
+// 在添加 TYPE_USE 之前。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
@@ -849,74 +831,73 @@ public final class MediaMetadata {
   public @interface FolderType {}
 
   /**
-   * Type for an item that is not a folder.
+   * 表示不是文件夹的项的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to false instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 false。
    */
   @Deprecated public static final int FOLDER_TYPE_NONE = -1;
 
   /**
-   * Type for a folder containing media of mixed types.
+   * 表示包含混合类型媒体的文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true and {@link #mediaType} set to {@link
-   *     #MEDIA_TYPE_FOLDER_MIXED} instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true 且 {@link #mediaType} 设置为 {@link
+   *     #MEDIA_TYPE_FOLDER_MIXED}。
    */
   @Deprecated public static final int FOLDER_TYPE_MIXED = 0;
 
   /**
-   * Type for a folder containing only playable media.
+   * 表示仅包含可播放媒体的文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true。
    */
   @Deprecated public static final int FOLDER_TYPE_TITLES = 1;
 
   /**
-   * Type for a folder containing media categorized by album.
+   * 表示按专辑分类的媒体文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true and {@link #mediaType} set to {@link
-   *     #MEDIA_TYPE_FOLDER_ALBUMS} instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true 且 {@link #mediaType} 设置为 {@link
+   *     #MEDIA_TYPE_FOLDER_ALBUMS}。
    */
   @Deprecated public static final int FOLDER_TYPE_ALBUMS = 2;
 
   /**
-   * Type for a folder containing media categorized by artist.
+   * 表示按艺术家分类的媒体文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true and {@link #mediaType} set to {@link
-   *     #MEDIA_TYPE_FOLDER_ARTISTS} instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true 且 {@link #mediaType} 设置为 {@link
+   *     #MEDIA_TYPE_FOLDER_ARTISTS}。
    */
   @Deprecated public static final int FOLDER_TYPE_ARTISTS = 3;
 
   /**
-   * Type for a folder containing media categorized by genre.
+   * 表示按流派分类的媒体文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true and {@link #mediaType} set to {@link
-   *     #MEDIA_TYPE_FOLDER_GENRES} instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true 且 {@link #mediaType} 设置为 {@link
+   *     #MEDIA_TYPE_FOLDER_GENRES}。
    */
   @Deprecated public static final int FOLDER_TYPE_GENRES = 4;
 
   /**
-   * Type for a folder containing a playlist.
+   * 表示包含播放列表的文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true and {@link #mediaType} set to {@link
-   *     #MEDIA_TYPE_FOLDER_PLAYLISTS} instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true 且 {@link #mediaType} 设置为 {@link
+   *     #MEDIA_TYPE_FOLDER_PLAYLISTS}。
    */
   @Deprecated public static final int FOLDER_TYPE_PLAYLISTS = 5;
 
   /**
-   * Type for a folder containing media categorized by year.
+   * 表示按年份分类的媒体文件夹的类型。
    *
-   * @deprecated Use {@link #isBrowsable} set to true and {@link #mediaType} set to {@link
-   *     #MEDIA_TYPE_FOLDER_YEARS} instead.
+   * @deprecated 改用 {@link #isBrowsable} 设置为 true 且 {@link #mediaType} 设置为 {@link
+   *     #MEDIA_TYPE_FOLDER_YEARS}。
    */
   @Deprecated public static final int FOLDER_TYPE_YEARS = 6;
 
   /**
-   * The picture type of the artwork.
+   * 封面图片的类型。
    *
-   * <p>Values sourced from the ID3 v2.4 specification (See section 4.14 of
-   * https://id3.org/id3v2.4.0-frames).
+   * <p>值来源于 ID3 v2.4 规范（参见 https://id3.org/id3v2.4.0-frames 的第 4.14 节）。
    *
-   * <p>One of {@link #PICTURE_TYPE_OTHER}, {@link #PICTURE_TYPE_FILE_ICON}, {@link
+   * <p>可以是以下之一：{@link #PICTURE_TYPE_OTHER}, {@link #PICTURE_TYPE_FILE_ICON}, {@link
    * #PICTURE_TYPE_FILE_ICON_OTHER}, {@link #PICTURE_TYPE_FRONT_COVER}, {@link
    * #PICTURE_TYPE_BACK_COVER}, {@link #PICTURE_TYPE_LEAFLET_PAGE}, {@link #PICTURE_TYPE_MEDIA},
    * {@link #PICTURE_TYPE_LEAD_ARTIST_PERFORMER}, {@link #PICTURE_TYPE_ARTIST_PERFORMER}, {@link
@@ -924,8 +905,8 @@ public final class MediaMetadata {
    * {@link #PICTURE_TYPE_LYRICIST}, {@link #PICTURE_TYPE_RECORDING_LOCATION}, {@link
    * #PICTURE_TYPE_DURING_RECORDING}, {@link #PICTURE_TYPE_DURING_PERFORMANCE}, {@link
    * #PICTURE_TYPE_MOVIE_VIDEO_SCREEN_CAPTURE}, {@link #PICTURE_TYPE_A_BRIGHT_COLORED_FISH}, {@link
-   * #PICTURE_TYPE_ILLUSTRATION}, {@link #PICTURE_TYPE_BAND_ARTIST_LOGO} or {@link
-   * #PICTURE_TYPE_PUBLISHER_STUDIO_LOGO}.
+   * #PICTURE_TYPE_ILLUSTRATION}, {@link #PICTURE_TYPE_BAND_ARTIST_LOGO} 或 {@link
+   * #PICTURE_TYPE_PUBLISHER_STUDIO_LOGO}。
    */
   // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
   // with Kotlin usages from before TYPE_USE was added.
@@ -956,182 +937,220 @@ public final class MediaMetadata {
     PICTURE_TYPE_PUBLISHER_STUDIO_LOGO
   })
   public @interface PictureType {}
-
+  /** 其他类型的图片。 */
   public static final int PICTURE_TYPE_OTHER = 0x00;
+
+  /** 文件图标类型的图片。 */
   public static final int PICTURE_TYPE_FILE_ICON = 0x01;
+
+  /** 其他文件图标类型的图片。 */
   public static final int PICTURE_TYPE_FILE_ICON_OTHER = 0x02;
+
+  /** 封面图片（如专辑封面）。 */
   public static final int PICTURE_TYPE_FRONT_COVER = 0x03;
+
+  /** 封底图片（如专辑封底）。 */
   public static final int PICTURE_TYPE_BACK_COVER = 0x04;
+
+  /** 小册子页面的图片。 */
   public static final int PICTURE_TYPE_LEAFLET_PAGE = 0x05;
+
+  /** 媒体相关的图片（如 CD 或 DVD 的图片）。 */
   public static final int PICTURE_TYPE_MEDIA = 0x06;
+
+  /** 主要艺术家或表演者的图片。 */
   public static final int PICTURE_TYPE_LEAD_ARTIST_PERFORMER = 0x07;
+
+  /** 艺术家或表演者的图片。 */
   public static final int PICTURE_TYPE_ARTIST_PERFORMER = 0x08;
+
+  /** 指挥者的图片。 */
   public static final int PICTURE_TYPE_CONDUCTOR = 0x09;
+
+  /** 乐队或乐团的图片。 */
   public static final int PICTURE_TYPE_BAND_ORCHESTRA = 0x0A;
+
+  /** 作曲者的图片。 */
   public static final int PICTURE_TYPE_COMPOSER = 0x0B;
+
+  /** 作词者的图片。 */
   public static final int PICTURE_TYPE_LYRICIST = 0x0C;
+
+  /** 录制地点的图片。 */
   public static final int PICTURE_TYPE_RECORDING_LOCATION = 0x0D;
+
+  /** 录制过程中的图片。 */
   public static final int PICTURE_TYPE_DURING_RECORDING = 0x0E;
+
+  /** 表演过程中的图片。 */
   public static final int PICTURE_TYPE_DURING_PERFORMANCE = 0x0F;
+
+  /** 电影或视频的屏幕截图。 */
   public static final int PICTURE_TYPE_MOVIE_VIDEO_SCREEN_CAPTURE = 0x10;
+
+  /** 一条明亮的彩色鱼的图片（通常是测试用途）。 */
   public static final int PICTURE_TYPE_A_BRIGHT_COLORED_FISH = 0x11;
+
+  /** 插画图片。 */
   public static final int PICTURE_TYPE_ILLUSTRATION = 0x12;
+
+  /** 乐队或艺术家的标志图片。 */
   public static final int PICTURE_TYPE_BAND_ARTIST_LOGO = 0x13;
+
+  /** 出版商或工作室的标志图片。 */
   public static final int PICTURE_TYPE_PUBLISHER_STUDIO_LOGO = 0x14;
 
   /** Empty {@link MediaMetadata}. */
   public static final MediaMetadata EMPTY = new MediaMetadata.Builder().build();
 
-  /** Optional title. */
+  /** 可选的标题。 */
   @Nullable public final CharSequence title;
 
-  /** Optional artist. */
+  /** 可选的艺术家。 */
   @Nullable public final CharSequence artist;
 
-  /** Optional album title. */
+  /** 可选的专辑标题。 */
   @Nullable public final CharSequence albumTitle;
 
-  /** Optional album artist. */
+  /** 可选的专辑艺术家。 */
   @Nullable public final CharSequence albumArtist;
 
-  /** Optional display title. */
+  /** 可选的显示标题。 */
   @Nullable public final CharSequence displayTitle;
 
   /**
-   * Optional subtitle.
+   * 可选的副标题。
    *
-   * <p>This is the secondary title of the media, unrelated to closed captions.
+   * <p>这是媒体的次要标题，与隐藏式字幕无关。
    */
   @Nullable public final CharSequence subtitle;
 
-  /** Optional description. */
+  /** 可选的描述。 */
   @Nullable public final CharSequence description;
 
   /**
-   * Optional duration, non-negative and in milliseconds.
+   * 可选的持续时间，非负值，单位为毫秒。
    *
-   * <p>This field is populated by the app when building the metadata object and is for
-   * informational purpose only. For retrieving the duration of the media item currently being
-   * played, use {@link Player#getDuration()} instead.
+   * <p>该字段由应用程序在构建元数据对象时填充，仅用于信息目的。要获取当前播放媒体项的持续时间，
+   * 请使用 {@link Player#getDuration()}。
    */
   @UnstableApi @Nullable public final Long durationMs;
 
-  /** Optional user {@link Rating}. */
+  /** 可选的用户 {@link Rating}。 */
   @Nullable public final Rating userRating;
 
-  /** Optional overall {@link Rating}. */
+  /** 可选的总体 {@link Rating}。 */
   @Nullable public final Rating overallRating;
 
-  /** Optional artwork data as a compressed byte array. */
+  /** 可选的封面图片数据，以压缩的字节数组形式存储。 */
   @Nullable public final byte[] artworkData;
 
-  /** Optional {@link PictureType} of the artwork data. */
+  /** 可选的封面图片数据的 {@link PictureType}。 */
   @Nullable public final @PictureType Integer artworkDataType;
 
-  /** Optional artwork {@link Uri}. */
+  /** 可选的封面图片 {@link Uri}。 */
   @Nullable public final Uri artworkUri;
 
-  /** Optional track number. */
+  /** 可选的曲目编号。 */
   @Nullable public final Integer trackNumber;
 
-  /** Optional total number of tracks. */
+  /** 可选的总曲目数。 */
   @Nullable public final Integer totalTrackCount;
 
   /**
-   * Optional {@link FolderType}.
+   * 可选的 {@link FolderType}。
    *
-   * @deprecated Use {@link #isBrowsable} to indicate if an item is a browsable folder and use
-   *     {@link #mediaType} to indicate the type of the folder.
+   * @deprecated 使用 {@link #isBrowsable} 来指示一个项是否是可浏览的文件夹，并使用
+   *     {@link #mediaType} 来指示文件夹的类型。
    */
-  @SuppressWarnings("deprecation") // Defining field of deprecated type.
+  @SuppressWarnings("deprecation") // 定义已弃用类型的字段。
   @Deprecated
   @Nullable
   public final @FolderType Integer folderType;
 
-  /** Optional boolean to indicate that the media is a browsable folder. */
+  /** 可选的布尔值，指示媒体项是否是可浏览的文件夹。 */
   @Nullable public final Boolean isBrowsable;
 
-  /** Optional boolean to indicate that the media is playable. */
+  /** 可选的布尔值，指示媒体项是否可播放。 */
   @Nullable public final Boolean isPlayable;
 
   /**
-   * @deprecated Use {@link #recordingYear} instead.
+   * @deprecated 使用 {@link #recordingYear} 替代。
    */
   @UnstableApi @Deprecated @Nullable public final Integer year;
 
-  /** Optional year of the recording date. */
+  /** 可选的录制日期的年份。 */
   @Nullable public final Integer recordingYear;
 
   /**
-   * Optional month of the recording date.
+   * 可选的录制日期的月份。
    *
-   * <p>Note that there is no guarantee that the month and day are a valid combination.
+   * <p>请注意，无法保证月份和日期的组合是有效的。
    */
   @Nullable public final Integer recordingMonth;
 
   /**
-   * Optional day of the recording date.
+   * 可选的录制日期的日。
    *
-   * <p>Note that there is no guarantee that the month and day are a valid combination.
+   * <p>请注意，无法保证月份和日期的组合是有效的。
    */
   @Nullable public final Integer recordingDay;
 
-  /** Optional year of the release date. */
+  /** 可选的发行日期的年份。 */
   @Nullable public final Integer releaseYear;
 
   /**
-   * Optional month of the release date.
+   * 可选的发行日期的月份。
    *
-   * <p>Note that there is no guarantee that the month and day are a valid combination.
+   * <p>请注意，无法保证月份和日期的组合是有效的。
    */
   @Nullable public final Integer releaseMonth;
 
   /**
-   * Optional day of the release date.
+   * 可选的发行日期的日。
    *
-   * <p>Note that there is no guarantee that the month and day are a valid combination.
+   * <p>请注意，无法保证月份和日期的组合是有效的。
    */
   @Nullable public final Integer releaseDay;
 
-  /** Optional writer. */
+  /** 可选的作词者。 */
   @Nullable public final CharSequence writer;
 
-  /** Optional composer. */
+  /** 可选的作曲者。 */
   @Nullable public final CharSequence composer;
 
-  /** Optional conductor. */
+  /** 可选的指挥者。 */
   @Nullable public final CharSequence conductor;
 
-  /** Optional disc number. */
+  /** 可选的光盘编号。 */
   @Nullable public final Integer discNumber;
 
-  /** Optional total number of discs. */
+  /** 可选的总光盘数。 */
   @Nullable public final Integer totalDiscCount;
 
-  /** Optional genre. */
+  /** 可选的流派。 */
   @Nullable public final CharSequence genre;
 
-  /** Optional compilation. */
+  /** 可选的合辑。 */
   @Nullable public final CharSequence compilation;
 
-  /** Optional name of the station streaming the media. */
+  /** 可选的流媒体的电台名称。 */
   @Nullable public final CharSequence station;
 
-  /** Optional {@link MediaType}. */
+  /** 可选的 {@link MediaType}。 */
   @Nullable public final @MediaType Integer mediaType;
 
   /**
-   * Optional extras {@link Bundle}.
+   * 可选的额外信息 {@link Bundle}。
    *
-   * <p>Given the complexities of checking the equality of two {@link Bundle} instances, the
-   * contents of these extras are not considered in the {@link #equals(Object)} and {@link
-   * #hashCode()} implementation.
+   * <p>由于检查两个 {@link Bundle} 实例是否相等的复杂性，这些额外信息的内容不会在
+   * {@link #equals(Object)} 和 {@link #hashCode()} 实现中被考虑。
    */
   @Nullable public final Bundle extras;
 
   /**
-   * The IDs of the supported commands of this media item (see for instance {@code
-   * CommandButton.sessionCommand.customAction} of the Media3 session module).
+   * 此媒体项支持的命令的 ID（例如 Media3 会话模块中的 {@code
+   * CommandButton.sessionCommand.customAction}）。
    */
   @UnstableApi public final ImmutableList<String> supportedCommands;
 
@@ -1191,13 +1210,15 @@ public final class MediaMetadata {
     this.extras = builder.extras;
   }
 
-  /** Returns a new {@link Builder} instance with the current {@link MediaMetadata} fields. */
+  /** 返回一个新的 {@link Builder} 实例，并使用当前 {@link MediaMetadata} 的字段进行初始化。 */
   public Builder buildUpon() {
     return new Builder(/* mediaMetadata= */ this);
   }
 
-  /** Note: Equality checking does not consider {@link #extras}. */
-  @SuppressWarnings("deprecation") // Comparing deprecated fields.
+  /**
+   * 注意：相等性检查不会考虑 {@link #extras}。
+   */
+  @SuppressWarnings("deprecation") // 比较已弃用的字段。
   @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
@@ -1284,42 +1305,111 @@ public final class MediaMetadata {
         extras == null,
         supportedCommands);
   }
-
+  /** 标题字段的标识符。 */
   private static final String FIELD_TITLE = Util.intToStringMaxRadix(0);
+
+  /** 艺术家字段的标识符。 */
   private static final String FIELD_ARTIST = Util.intToStringMaxRadix(1);
+
+  /** 专辑标题字段的标识符。 */
   private static final String FIELD_ALBUM_TITLE = Util.intToStringMaxRadix(2);
+
+  /** 专辑艺术家字段的标识符。 */
   private static final String FIELD_ALBUM_ARTIST = Util.intToStringMaxRadix(3);
+
+  /** 显示标题字段的标识符。 */
   private static final String FIELD_DISPLAY_TITLE = Util.intToStringMaxRadix(4);
+
+  /** 副标题字段的标识符。 */
   private static final String FIELD_SUBTITLE = Util.intToStringMaxRadix(5);
+
+  /** 描述字段的标识符。 */
   private static final String FIELD_DESCRIPTION = Util.intToStringMaxRadix(6);
-  // 7 is reserved to maintain backward compatibility for a previously defined field.
+
+// 7 保留以保持与之前定义字段的向后兼容性。
+
+  /** 用户评分字段的标识符。 */
   private static final String FIELD_USER_RATING = Util.intToStringMaxRadix(8);
+
+  /** 总体评分字段的标识符。 */
   private static final String FIELD_OVERALL_RATING = Util.intToStringMaxRadix(9);
+
+  /** 封面图片数据字段的标识符。 */
   private static final String FIELD_ARTWORK_DATA = Util.intToStringMaxRadix(10);
+
+  /** 封面图片 URI 字段的标识符。 */
   private static final String FIELD_ARTWORK_URI = Util.intToStringMaxRadix(11);
+
+  /** 曲目编号字段的标识符。 */
   private static final String FIELD_TRACK_NUMBER = Util.intToStringMaxRadix(12);
+
+  /** 总曲目数字段的标识符。 */
   private static final String FIELD_TOTAL_TRACK_COUNT = Util.intToStringMaxRadix(13);
+
+  /** 文件夹类型字段的标识符。 */
   private static final String FIELD_FOLDER_TYPE = Util.intToStringMaxRadix(14);
+
+  /** 是否可播放字段的标识符。 */
   private static final String FIELD_IS_PLAYABLE = Util.intToStringMaxRadix(15);
+
+  /** 录制日期年份字段的标识符。 */
   private static final String FIELD_RECORDING_YEAR = Util.intToStringMaxRadix(16);
+
+  /** 录制日期月份字段的标识符。 */
   private static final String FIELD_RECORDING_MONTH = Util.intToStringMaxRadix(17);
+
+  /** 录制日期日字段的标识符。 */
   private static final String FIELD_RECORDING_DAY = Util.intToStringMaxRadix(18);
+
+  /** 发行日期年份字段的标识符。 */
   private static final String FIELD_RELEASE_YEAR = Util.intToStringMaxRadix(19);
+
+  /** 发行日期月份字段的标识符。 */
   private static final String FIELD_RELEASE_MONTH = Util.intToStringMaxRadix(20);
+
+  /** 发行日期日字段的标识符。 */
   private static final String FIELD_RELEASE_DAY = Util.intToStringMaxRadix(21);
+
+  /** 作词者字段的标识符。 */
   private static final String FIELD_WRITER = Util.intToStringMaxRadix(22);
+
+  /** 作曲者字段的标识符。 */
   private static final String FIELD_COMPOSER = Util.intToStringMaxRadix(23);
+
+  /** 指挥者字段的标识符。 */
   private static final String FIELD_CONDUCTOR = Util.intToStringMaxRadix(24);
+
+  /** 光盘编号字段的标识符。 */
   private static final String FIELD_DISC_NUMBER = Util.intToStringMaxRadix(25);
+
+  /** 总光盘数字段的标识符。 */
   private static final String FIELD_TOTAL_DISC_COUNT = Util.intToStringMaxRadix(26);
+
+  /** 流派字段的标识符。 */
   private static final String FIELD_GENRE = Util.intToStringMaxRadix(27);
+
+  /** 合辑字段的标识符。 */
   private static final String FIELD_COMPILATION = Util.intToStringMaxRadix(28);
+
+  /** 封面图片数据类型字段的标识符。 */
   private static final String FIELD_ARTWORK_DATA_TYPE = Util.intToStringMaxRadix(29);
+
+  /** 电台名称字段的标识符。 */
   private static final String FIELD_STATION = Util.intToStringMaxRadix(30);
+
+  /** 媒体类型字段的标识符。 */
   private static final String FIELD_MEDIA_TYPE = Util.intToStringMaxRadix(31);
+
+  /** 是否可浏览字段的标识符。 */
   private static final String FIELD_IS_BROWSABLE = Util.intToStringMaxRadix(32);
+
+  /** 持续时间字段的标识符（单位：毫秒）。 */
   private static final String FIELD_DURATION_MS = Util.intToStringMaxRadix(33);
+
+  /** 支持的命令字段的标识符。 */
   private static final String FIELD_SUPPORTED_COMMANDS = Util.intToStringMaxRadix(34);
+
+  /** 额外信息字段的标识符。 */
   private static final String FIELD_EXTRAS = Util.intToStringMaxRadix(1000);
 
   @SuppressWarnings("deprecation") // Bundling deprecated fields.

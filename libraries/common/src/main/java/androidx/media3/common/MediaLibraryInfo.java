@@ -5,55 +5,53 @@ import androidx.media3.common.util.TraceUtil;
 import androidx.media3.common.util.UnstableApi;
 import java.util.HashSet;
 
-/** Information about the media libraries. */
+/** 关于媒体库的信息。 */
 @UnstableApi
 public final class MediaLibraryInfo {
 
-  /** A tag to use when logging library information. */
+  /** 用于记录库信息的标签。 */
   public static final String TAG = "AndroidXMedia3";
 
-  /** The version of the library expressed as a string, for example "1.2.3" or "1.2.0-beta01". */
-  // Intentionally hardcoded. Do not derive from other constants (e.g. VERSION_INT) or vice versa.
+  /** 以字符串形式表示的库版本，例如 "1.2.3" 或 "1.2.0-beta01"。 */
+  // 特意硬编码。不要从其他常量（例如 VERSION_INT）派生，反之亦然。
   public static final String VERSION = "1.5.1";
 
-  /** The version of the library expressed as {@code TAG + "/" + VERSION}. */
-  // Intentionally hardcoded. Do not derive from other constants (e.g. VERSION) or vice versa.
+  /** 以 {@code TAG + "/" + VERSION} 形式表示的库版本。 */
+  // 特意硬编码。不要从其他常量（例如 VERSION）派生，反之亦然。
   public static final String VERSION_SLASHY = "AndroidXMedia3/1.5.1";
 
   /**
-   * The version of the library expressed as an integer, for example 1002003300.
+   * 以整数形式表示的库版本，例如 1002003300。
    *
-   * <p>Three digits are used for each of the first three components of {@link #VERSION}, then a
-   * single digit represents the cycle of this version: alpha (0), beta (1), rc (2) or stable (3).
-   * Finally two digits are used for the cycle number (always 00 for stable releases).
+   * <p>使用三位数字表示 {@link #VERSION} 的前三个部分，然后使用一位数字表示此版本的周期：
+   * alpha (0)、beta (1)、rc (2) 或稳定版 (3)。最后使用两位数字表示周期编号（稳定版始终为 00）。
    *
-   * <p>For example "1.2.0-rc05" has the corresponding integer version 1002000205
-   * (001-002-000-2-05), and "123.45.6" has the corresponding integer version 123045006300
-   * (123-045-006-3-00).
+   * <p>例如，"1.2.0-rc05" 对应的整数版本为 1002000205 (001-002-000-2-05)，
+   * 而 "123.45.6" 对应的整数版本为 123045006300 (123-045-006-3-00)。
    */
-  // Intentionally hardcoded. Do not derive from other constants (e.g. VERSION) or vice versa.
+  // 特意硬编码。不要从其他常量（例如 VERSION）派生，反之亦然。
   public static final int VERSION_INT = 1_005_001_3_00;
 
-  /** Whether the library was compiled with {@link Assertions} checks enabled. */
+  /** 库是否在编译时启用了 {@link Assertions} 检查。 */
   public static final boolean ASSERTIONS_ENABLED = true;
 
-  /** Whether the library was compiled with {@link TraceUtil} trace enabled. */
+  /** 库是否在编译时启用了 {@link TraceUtil} 跟踪功能。 */
   public static final boolean TRACE_ENABLED = true;
 
   private static final HashSet<String> registeredModules = new HashSet<>();
   private static String registeredModulesString = "media3.common";
 
-  private MediaLibraryInfo() {} // Prevents instantiation.
+  private MediaLibraryInfo() {} // 防止实例化。
 
-  /** Returns a string consisting of registered module names separated by ", ". */
+  /** 返回由注册模块名称组成的字符串，模块名称之间用 ", " 分隔。 */
   public static synchronized String registeredModules() {
     return registeredModulesString;
   }
 
   /**
-   * Registers a module to be returned in the {@link #registeredModules()} string.
+   * 注册一个模块，该模块的名称将包含在 {@link #registeredModules()} 返回的字符串中。
    *
-   * @param name The name of the module being registered.
+   * @param name 要注册的模块名称。
    */
   public static synchronized void registerModule(String name) {
     if (registeredModules.add(name)) {

@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.video;
 
 import android.media.MediaFormat;
@@ -20,19 +5,18 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.Format;
 import androidx.media3.common.util.UnstableApi;
 
-/** A listener for metadata corresponding to video frames being rendered. */
+/** 用于监听与正在渲染的视频帧相关的元数据的监听器。 */
 @UnstableApi
 public interface VideoFrameMetadataListener {
   /**
-   * Called on the playback thread when a video frame is about to be rendered.
+   * 在视频帧即将被渲染时在播放线程上调用。
    *
-   * @param presentationTimeUs The presentation time of the frame, in microseconds.
-   * @param releaseTimeNs The wallclock time at which the frame should be displayed, in nanoseconds.
-   *     If the platform API version of the device is less than 21, then this is a best effort.
-   * @param format The format associated with the frame.
-   * @param mediaFormat The framework media format associated with the frame, or {@code null} if not
-   *     known or not applicable (e.g., because the frame was not output by a {@link
-   *     android.media.MediaCodec MediaCodec}).
+   * @param presentationTimeUs 视频帧的呈现时间，单位为微秒。
+   * @param releaseTimeNs 视频帧应该被显示的墙钟时间，单位为纳秒。
+   *     如果设备的平台 API 版本小于 21，则此值为最佳估计值。
+   * @param format 与视频帧关联的格式。
+   * @param mediaFormat 与视频帧关联的框架媒体格式，如果未知或不适用（例如，因为视频帧不是由 {@link
+   *     android.media.MediaCodec MediaCodec} 输出），则为 {@code null}。
    */
   void onVideoFrameAboutToBeRendered(
       long presentationTimeUs,

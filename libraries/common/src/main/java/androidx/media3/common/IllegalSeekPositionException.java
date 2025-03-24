@@ -3,25 +3,24 @@ package androidx.media3.common;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * Thrown when an attempt is made to seek to a position that does not exist in the player's {@link
- * Timeline}.
+ * 当尝试跳转到播放器的 {@link Timeline} 中不存在的位置时抛出的异常。
  */
 @UnstableApi
 public final class IllegalSeekPositionException extends IllegalStateException {
 
-  /** The {@link Timeline} in which the seek was attempted. */
+  /** 尝试跳转的 {@link Timeline}。 */
   public final Timeline timeline;
 
-  /** The index of the window being seeked to. */
+  /** 尝试跳转到的窗口索引。 */
   public final int windowIndex;
 
-  /** The seek position in the specified window. */
+  /** 在指定窗口中的跳转位置（单位：毫秒）。 */
   public final long positionMs;
 
   /**
-   * @param timeline The {@link Timeline} in which the seek was attempted.
-   * @param windowIndex The index of the window being seeked to.
-   * @param positionMs The seek position in the specified window.
+   * @param timeline 尝试跳转的 {@link Timeline}。
+   * @param windowIndex 尝试跳转到的窗口索引。
+   * @param positionMs 在指定窗口中的跳转位置（单位：毫秒）。
    */
   public IllegalSeekPositionException(Timeline timeline, int windowIndex, long positionMs) {
     this.timeline = timeline;

@@ -7,24 +7,22 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
-/** A label for a {@link Format}. */
+/** 用于标识 {@link Format} 的标签。 */
 @UnstableApi
 public class Label {
   /**
-   * The language of this label, as an IETF BCP 47 conformant tag, or null if unknown or not
-   * applicable.
+   * 标签的语言，符合 IETF BCP 47 标准的标签，如果未知或不适用则为 null。
    */
   @Nullable public final String language;
 
-  /** The value for this label. */
+  /** 标签的值。 */
   public final String value;
 
   /**
-   * Creates a label.
+   * 创建一个标签。
    *
-   * @param language The language of this label, as an IETF BCP 47 conformant tag, or null if
-   *     unknown or not applicable.
-   * @param value The label value.
+   * @param language 标签的语言，符合 IETF BCP 47 标准的标签，如果未知或不适用则为 null。
+   * @param value 标签的值。
    */
   public Label(@Nullable String language, String value) {
     this.language = Util.normalizeLanguageCode(language);
@@ -50,20 +48,20 @@ public class Label {
     return result;
   }
 
-  private static final String FIELD_LANGUAGE_INDEX = Util.intToStringMaxRadix(0);
-  private static final String FIELD_VALUE_INDEX = Util.intToStringMaxRadix(1);
+  private static final String FIELD_LANGUAGE_INDEX = Util.intToStringMaxRadix(0); // 语言字段的标识符
+  private static final String FIELD_VALUE_INDEX = Util.intToStringMaxRadix(1); // 值字段的标识符
 
-  /** Serializes this instance to a {@link Bundle}. */
+  /** 将此实例序列化为 {@link Bundle}。 */
   public Bundle toBundle() {
     Bundle bundle = new Bundle();
     if (language != null) {
-      bundle.putString(FIELD_LANGUAGE_INDEX, language);
+      bundle.putString(FIELD_LANGUAGE_INDEX, language); // 添加语言字段
     }
-    bundle.putString(FIELD_VALUE_INDEX, value);
+    bundle.putString(FIELD_VALUE_INDEX, value); // 添加值字段
     return bundle;
   }
 
-  /** Deserializes an instance from a {@link Bundle} produced by {@link #toBundle()}. */
+  /** 从 {@link #toBundle()} 生成的 {@link Bundle} 中反序列化一个实例。 */
   public static Label fromBundle(Bundle bundle) {
     return new Label(
         bundle.getString(FIELD_LANGUAGE_INDEX), checkNotNull(bundle.getString(FIELD_VALUE_INDEX)));

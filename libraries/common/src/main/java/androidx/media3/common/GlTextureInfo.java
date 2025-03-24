@@ -3,10 +3,10 @@ package androidx.media3.common;
 import androidx.media3.common.util.GlUtil;
 import androidx.media3.common.util.UnstableApi;
 
-/** Contains information describing an OpenGL texture. */
+/** 包含描述 OpenGL 纹理的信息。 */
 @UnstableApi
 public final class GlTextureInfo {
-  /** A {@link GlTextureInfo} instance with all fields unset. */
+  /** 一个所有字段均未设置的 {@link GlTextureInfo} 实例。 */
   public static final GlTextureInfo UNSET =
       new GlTextureInfo(
           /* texId= */ C.INDEX_UNSET,
@@ -15,37 +15,33 @@ public final class GlTextureInfo {
           /* width= */ C.LENGTH_UNSET,
           /* height= */ C.LENGTH_UNSET);
 
-  /** The OpenGL texture identifier, or {@link C#INDEX_UNSET} if not specified. */
+  /** OpenGL 纹理标识符，如果未指定则为 {@link C#INDEX_UNSET}。 */
   public final int texId;
 
   /**
-   * Identifier of a framebuffer object associated with the texture, or {@link C#INDEX_UNSET} if not
-   * specified.
+   * 与纹理关联的帧缓冲区对象标识符，如果未指定则为 {@link C#INDEX_UNSET}。
    */
   public final int fboId;
 
   /**
-   * Identifier of a renderbuffer object attached with the framebuffer, or {@link C#INDEX_UNSET} if
-   * not specified.
+   * 与帧缓冲区关联的渲染缓冲区对象标识符，如果未指定则为 {@link C#INDEX_UNSET}。
    */
   public final int rboId;
 
-  /** The width of the texture, in pixels, or {@link C#LENGTH_UNSET} if not specified. */
+  /** 纹理的宽度，单位为像素，如果未指定则为 {@link C#LENGTH_UNSET}。 */
   public final int width;
 
-  /** The height of the texture, in pixels, or {@link C#LENGTH_UNSET} if not specified. */
+  /** 纹理的高度，单位为像素，如果未指定则为 {@link C#LENGTH_UNSET}。 */
   public final int height;
 
   /**
-   * Creates a new instance.
+   * 创建一个新实例。
    *
-   * @param texId The OpenGL texture identifier, or {@link C#INDEX_UNSET} if not specified.
-   * @param fboId Identifier of a framebuffer object associated with the texture, or {@link
-   *     C#INDEX_UNSET} if not specified.
-   * @param rboId Identifier of a renderbuffer object associated with the texture, or {@link
-   *     C#INDEX_UNSET} if not specified.
-   * @param width The width of the texture, in pixels, or {@link C#LENGTH_UNSET} if not specified.
-   * @param height The height of the texture, in pixels, or {@link C#LENGTH_UNSET} if not specified.
+   * @param texId OpenGL 纹理标识符，如果未指定则为 {@link C#INDEX_UNSET}。
+   * @param fboId 与纹理关联的帧缓冲区对象标识符，如果未指定则为 {@link C#INDEX_UNSET}。
+   * @param rboId 与纹理关联的渲染缓冲区对象标识符，如果未指定则为 {@link C#INDEX_UNSET}。
+   * @param width 纹理的宽度，单位为像素，如果未指定则为 {@link C#LENGTH_UNSET}。
+   * @param height 纹理的高度，单位为像素，如果未指定则为 {@link C#LENGTH_UNSET}。
    */
   public GlTextureInfo(int texId, int fboId, int rboId, int width, int height) {
     this.texId = texId;
@@ -55,7 +51,7 @@ public final class GlTextureInfo {
     this.height = height;
   }
 
-  /** Releases all information associated with this instance. */
+  /** 释放与此实例关联的所有资源。 */
   public void release() throws GlUtil.GlException {
     if (texId != C.INDEX_UNSET) {
       GlUtil.deleteTexture(texId);

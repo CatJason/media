@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer.video;
 
 import static androidx.media3.common.util.EGLSurfaceTexture.SECURE_MODE_NONE;
@@ -35,13 +20,13 @@ import androidx.media3.common.util.UnstableApi;
 import com.google.errorprone.annotations.InlineMe;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** A placeholder {@link Surface}. */
+/** 一个占位符 {@link Surface}。 */
 @UnstableApi
 public final class PlaceholderSurface extends Surface {
 
   private static final String TAG = "PlaceholderSurface";
 
-  /** Whether the surface is secure. */
+  /** 该 Surface 是否是安全的。 */
   public final boolean secure;
 
   private static @SecureMode int secureMode;
@@ -51,10 +36,10 @@ public final class PlaceholderSurface extends Surface {
   private boolean threadReleased;
 
   /**
-   * Returns whether the device supports secure placeholder surfaces.
+   * 返回设备是否支持安全的占位符 Surface。
    *
-   * @param context Any {@link Context}.
-   * @return Whether the device supports secure placeholder surfaces.
+   * @param context 任意 {@link Context}。
+   * @return 设备是否支持安全的占位符 Surface。
    */
   public static synchronized boolean isSecureSupported(Context context) {
     if (!secureModeInitialized) {
@@ -65,7 +50,7 @@ public final class PlaceholderSurface extends Surface {
   }
 
   /**
-   * @deprecated Use {@link #newInstance(Context, boolean)} instead.
+   * @deprecated 请使用 {@link #newInstance(Context, boolean)} 代替。
    */
   @InlineMe(
       replacement = "PlaceholderSurface.newInstance(context, secure)",
@@ -76,14 +61,11 @@ public final class PlaceholderSurface extends Surface {
   }
 
   /**
-   * Returns a newly created placeholder surface. The surface must be released by calling {@link
-   * #release} when it's no longer required.
+   * 返回一个新创建的占位符 Surface。当不再需要时，必须通过调用 {@link #release} 释放该 Surface。
    *
-   * @param context Any {@link Context}.
-   * @param secure Whether a secure surface is required. Must only be requested if {@link
-   *     #isSecureSupported(Context)} returns {@code true}.
-   * @throws IllegalStateException If a secure surface is requested on a device for which {@link
-   *     #isSecureSupported(Context)} returns {@code false}.
+   * @param context 任意 {@link Context}。
+   * @param secure 是否需要安全的 Surface。仅在 {@link #isSecureSupported(Context)} 返回 {@code true} 时才能请求。
+   * @throws IllegalStateException 如果在 {@link #isSecureSupported(Context)} 返回 {@code false} 的设备上请求了安全的 Surface。
    */
   public static PlaceholderSurface newInstance(Context context, boolean secure) {
     Assertions.checkState(!secure || isSecureSupported(context));
@@ -101,10 +83,9 @@ public final class PlaceholderSurface extends Surface {
   @Override
   public void release() {
     super.release();
-    // The Surface may be released multiple times (explicitly and by Surface.finalize()). The
-    // implementation of super.release() has its own deduplication logic. Below we need to
-    // deduplicate ourselves. Synchronization is required as we don't control the thread on which
-    // Surface.finalize() is called.
+    // Surface 可能会被多次释放（显式释放和通过 Surface.finalize() 释放）。
+    // super.release() 的实现有它自己的去重逻辑。下面我们需要自己处理去重。
+    // 由于我们无法控制 Surface.finalize() 的调用线程，因此需要同步。
     synchronized (thread) {
       if (!threadReleased) {
         thread.release();
@@ -118,10 +99,9 @@ public final class PlaceholderSurface extends Surface {
       if (GlUtil.isSurfacelessContextExtensionSupported()) {
         return SECURE_MODE_SURFACELESS_CONTEXT;
       } else {
-        // If we can't use surfaceless contexts, we use a protected 1 * 1 pixel buffer surface.
-        // This may require support for EXT_protected_surface, but in practice it works on some
-        // devices that don't have that extension. See also
-        // https://github.com/google/ExoPlayer/issues/3558.
+        // 如果无法使用无表面上下文，我们使用一个受保护的 1 * 1 像素缓冲区 Surface。
+        // 这可能需要支持 EXT_protected_surface，但在实践中，它在一些没有该扩展的设备上也能工作。
+        // 另请参阅 https://github.com/google/ExoPlayer/issues/3558。
         return SECURE_MODE_PROTECTED_PBUFFER;
       }
     } else {
@@ -160,7 +140,7 @@ public final class PlaceholderSurface extends Surface {
         }
       }
       if (wasInterrupted) {
-        // Restore the interrupted status.
+        // 恢复中断状态。
         Thread.currentThread().interrupt();
       }
       if (initException != null) {
