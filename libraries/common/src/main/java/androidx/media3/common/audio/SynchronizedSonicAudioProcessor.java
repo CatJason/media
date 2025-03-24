@@ -3,8 +3,7 @@ package androidx.media3.common.audio;
 import java.nio.ByteBuffer;
 
 /**
- * A thread safe version {@link SonicAudioProcessor} that synchronizes calls before forwarding them
- * to {@link SonicAudioProcessor}.
+ * {@link SonicAudioProcessor} 的线程安全版本，在将调用转发给 {@link SonicAudioProcessor} 之前进行同步。
  */
 /* package */ class SynchronizedSonicAudioProcessor implements AudioProcessor {
 

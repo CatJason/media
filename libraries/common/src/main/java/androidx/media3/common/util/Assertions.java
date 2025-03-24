@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import android.os.Looper;
@@ -22,17 +7,17 @@ import androidx.media3.common.MediaLibraryInfo;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
 
-/** Provides methods for asserting the truth of expressions and properties. */
+/** 提供用于断言表达式和属性是否为真的方法。 */
 @UnstableApi
 public final class Assertions {
 
   private Assertions() {}
 
   /**
-   * Throws {@link IllegalArgumentException} if {@code expression} evaluates to false.
+   * 如果 {@code expression} 为 false，则抛出 {@link IllegalArgumentException}。
    *
-   * @param expression The expression to evaluate.
-   * @throws IllegalArgumentException If {@code expression} is false.
+   * @param expression 要评估的表达式。
+   * @throws IllegalArgumentException 如果 {@code expression} 为 false。
    */
   @Pure
   public static void checkArgument(boolean expression) {
@@ -42,12 +27,11 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalArgumentException} if {@code expression} evaluates to false.
+   * 如果 {@code expression} 为 false，则抛出 {@link IllegalArgumentException}。
    *
-   * @param expression The expression to evaluate.
-   * @param errorMessage The exception message if an exception is thrown. The message is converted
-   *     to a {@link String} using {@link String#valueOf(Object)}.
-   * @throws IllegalArgumentException If {@code expression} is false.
+   * @param expression 要评估的表达式。
+   * @param errorMessage 抛出异常时的异常消息。消息通过 {@link String#valueOf(Object)} 转换为 {@link String}。
+   * @throws IllegalArgumentException 如果 {@code expression} 为 false。
    */
   @Pure
   public static void checkArgument(boolean expression, Object errorMessage) {
@@ -57,13 +41,13 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IndexOutOfBoundsException} if {@code index} falls outside the specified bounds.
+   * 如果 {@code index} 超出指定范围，则抛出 {@link IndexOutOfBoundsException}。
    *
-   * @param index The index to test.
-   * @param start The start of the allowed range (inclusive).
-   * @param limit The end of the allowed range (exclusive).
-   * @return The {@code index} that was validated.
-   * @throws IndexOutOfBoundsException If {@code index} falls outside the specified bounds.
+   * @param index 要测试的索引。
+   * @param start 允许范围的起始值（包含）。
+   * @param limit 允许范围的结束值（不包含）。
+   * @return 已验证的 {@code index}。
+   * @throws IndexOutOfBoundsException 如果 {@code index} 超出指定范围。
    */
   @Pure
   public static int checkIndex(int index, int start, int limit) {
@@ -74,10 +58,10 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalStateException} if {@code expression} evaluates to false.
+   * 如果 {@code expression} 为 false，则抛出 {@link IllegalStateException}。
    *
-   * @param expression The expression to evaluate.
-   * @throws IllegalStateException If {@code expression} is false.
+   * @param expression 要评估的表达式。
+   * @throws IllegalStateException 如果 {@code expression} 为 false。
    */
   @Pure
   public static void checkState(boolean expression) {
@@ -87,12 +71,11 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalStateException} if {@code expression} evaluates to false.
+   * 如果 {@code expression} 为 false，则抛出 {@link IllegalStateException}。
    *
-   * @param expression The expression to evaluate.
-   * @param errorMessage The exception message if an exception is thrown. The message is converted
-   *     to a {@link String} using {@link String#valueOf(Object)}.
-   * @throws IllegalStateException If {@code expression} is false.
+   * @param expression 要评估的表达式。
+   * @param errorMessage 抛出异常时的异常消息。消息通过 {@link String#valueOf(Object)} 转换为 {@link String}。
+   * @throws IllegalStateException 如果 {@code expression} 为 false。
    */
   @Pure
   public static void checkState(boolean expression, Object errorMessage) {
@@ -102,12 +85,12 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalStateException} if {@code reference} is null.
+   * 如果 {@code reference} 为 null，则抛出 {@link IllegalStateException}。
    *
-   * @param <T> The type of the reference.
-   * @param reference The reference.
-   * @return The non-null reference that was validated.
-   * @throws IllegalStateException If {@code reference} is null.
+   * @param <T> 引用的类型。
+   * @param reference 引用。
+   * @return 已验证的非 null 引用。
+   * @throws IllegalStateException 如果 {@code reference} 为 null。
    */
   @SuppressWarnings({"nullness:contracts.postcondition", "nullness:return"})
   @EnsuresNonNull({"#1"})
@@ -120,14 +103,13 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalStateException} if {@code reference} is null.
+   * 如果 {@code reference} 为 null，则抛出 {@link IllegalStateException}。
    *
-   * @param <T> The type of the reference.
-   * @param reference The reference.
-   * @param errorMessage The exception message to use if the check fails. The message is converted
-   *     to a string using {@link String#valueOf(Object)}.
-   * @return The non-null reference that was validated.
-   * @throws IllegalStateException If {@code reference} is null.
+   * @param <T> 引用的类型。
+   * @param reference 引用。
+   * @param errorMessage 检查失败时使用的异常消息。消息通过 {@link String#valueOf(Object)} 转换为字符串。
+   * @return 已验证的非 null 引用。
+   * @throws IllegalStateException 如果 {@code reference} 为 null。
    */
   @SuppressWarnings({"nullness:contracts.postcondition", "nullness:return"})
   @EnsuresNonNull({"#1"})
@@ -140,12 +122,12 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link NullPointerException} if {@code reference} is null.
+   * 如果 {@code reference} 为 null，则抛出 {@link NullPointerException}。
    *
-   * @param <T> The type of the reference.
-   * @param reference The reference.
-   * @return The non-null reference that was validated.
-   * @throws NullPointerException If {@code reference} is null.
+   * @param <T> 引用的类型。
+   * @param reference 引用。
+   * @return 已验证的非 null 引用。
+   * @throws NullPointerException 如果 {@code reference} 为 null。
    */
   @SuppressWarnings({"nullness:contracts.postcondition", "nullness:return"})
   @EnsuresNonNull({"#1"})
@@ -158,14 +140,13 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link NullPointerException} if {@code reference} is null.
+   * 如果 {@code reference} 为 null，则抛出 {@link NullPointerException}。
    *
-   * @param <T> The type of the reference.
-   * @param reference The reference.
-   * @param errorMessage The exception message to use if the check fails. The message is converted
-   *     to a string using {@link String#valueOf(Object)}.
-   * @return The non-null reference that was validated.
-   * @throws NullPointerException If {@code reference} is null.
+   * @param <T> 引用的类型。
+   * @param reference 引用。
+   * @param errorMessage 检查失败时使用的异常消息。消息通过 {@link String#valueOf(Object)} 转换为字符串。
+   * @return 已验证的非 null 引用。
+   * @throws NullPointerException 如果 {@code reference} 为 null。
    */
   @SuppressWarnings({"nullness:contracts.postcondition", "nullness:return"})
   @EnsuresNonNull({"#1"})
@@ -178,11 +159,11 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalArgumentException} if {@code string} is null or zero length.
+   * 如果 {@code string} 为 null 或长度为 0，则抛出 {@link IllegalArgumentException}。
    *
-   * @param string The string to check.
-   * @return The non-null, non-empty string that was validated.
-   * @throws IllegalArgumentException If {@code string} is null or 0-length.
+   * @param string 要检查的字符串。
+   * @return 已验证的非 null、非空字符串。
+   * @throws IllegalArgumentException 如果 {@code string} 为 null 或长度为 0。
    */
   @SuppressWarnings({"nullness:contracts.postcondition", "nullness:return"})
   @EnsuresNonNull({"#1"})
@@ -195,13 +176,12 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalArgumentException} if {@code string} is null or zero length.
+   * 如果 {@code string} 为 null 或长度为 0，则抛出 {@link IllegalArgumentException}。
    *
-   * @param string The string to check.
-   * @param errorMessage The exception message to use if the check fails. The message is converted
-   *     to a string using {@link String#valueOf(Object)}.
-   * @return The non-null, non-empty string that was validated.
-   * @throws IllegalArgumentException If {@code string} is null or 0-length.
+   * @param string 要检查的字符串。
+   * @param errorMessage 检查失败时使用的异常消息。消息通过 {@link String#valueOf(Object)} 转换为字符串。
+   * @return 已验证的非 null、非空字符串。
+   * @throws IllegalArgumentException 如果 {@code string} 为 null 或长度为 0。
    */
   @SuppressWarnings({"nullness:contracts.postcondition", "nullness:return"})
   @EnsuresNonNull({"#1"})
@@ -214,10 +194,9 @@ public final class Assertions {
   }
 
   /**
-   * Throws {@link IllegalStateException} if the calling thread is not the application's main
-   * thread.
+   * 如果调用线程不是应用程序的主线程，则抛出 {@link IllegalStateException}。
    *
-   * @throws IllegalStateException If the calling thread is not the application's main thread.
+   * @throws IllegalStateException 如果调用线程不是应用程序的主线程。
    */
   @Pure
   public static void checkMainThread() {

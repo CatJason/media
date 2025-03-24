@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import static androidx.media3.common.util.Assertions.checkArgument;
@@ -32,7 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Provides utilities for handling various types of codec-specific data. */
+/** 提供处理各种类型编解码器特定数据的工具方法。 */
 @SuppressLint("InlinedApi")
 @UnstableApi
 public final class CodecSpecificDataUtil {
@@ -47,7 +32,7 @@ public final class CodecSpecificDataUtil {
   private static final int EXTENDED_PAR = 0x0F;
   private static final int RECTANGULAR = 0x00;
 
-  // Codecs to constant mappings.
+  // 编解码器到常量的映射。
   // H263
   private static final String CODEC_ID_H263 = "s263";
   // AVC.
@@ -68,11 +53,11 @@ public final class CodecSpecificDataUtil {
   private static final String TAG = "CodecSpecificDataUtil";
 
   /**
-   * Parses an ALAC AudioSpecificConfig (i.e. an <a
-   * href="https://github.com/macosforge/alac/blob/master/ALACMagicCookieDescription.txt">ALACSpecificConfig</a>).
+   * 解析 ALAC AudioSpecificConfig（即 <a
+   * href="https://github.com/macosforge/alac/blob/master/ALACMagicCookieDescription.txt">ALACSpecificConfig</a>）。
    *
-   * @param audioSpecificConfig A byte array containing the AudioSpecificConfig to parse.
-   * @return A pair consisting of the sample rate in Hz and the channel count.
+   * @param audioSpecificConfig 包含要解析的 AudioSpecificConfig 的字节数组。
+   * @return 包含采样率（Hz）和声道数的 Pair。
    */
   public static Pair<Integer, Integer> parseAlacAudioSpecificConfig(byte[] audioSpecificConfig) {
     ParsableByteArray byteArray = new ParsableByteArray(audioSpecificConfig);
@@ -84,23 +69,20 @@ public final class CodecSpecificDataUtil {
   }
 
   /**
-   * Returns initialization data for formats with MIME type {@link MimeTypes#APPLICATION_CEA708}.
+   * 返回 MIME 类型为 {@link MimeTypes#APPLICATION_CEA708} 的格式的初始化数据。
    *
-   * @param isWideAspectRatio Whether the CEA-708 closed caption service is formatted for displays
-   *     with 16:9 aspect ratio.
-   * @return Initialization data for formats with MIME type {@link MimeTypes#APPLICATION_CEA708}.
+   * @param isWideAspectRatio CEA-708 闭路字幕服务是否针对 16:9 宽高比的显示器进行了格式化。
+   * @return MIME 类型为 {@link MimeTypes#APPLICATION_CEA708} 的格式的初始化数据。
    */
   public static List<byte[]> buildCea708InitializationData(boolean isWideAspectRatio) {
     return Collections.singletonList(isWideAspectRatio ? new byte[] {1} : new byte[] {0});
   }
 
   /**
-   * Returns whether the CEA-708 closed caption service with the given initialization data is
-   * formatted for displays with 16:9 aspect ratio.
+   * 返回具有给定初始化数据的 CEA-708 闭路字幕服务是否针对 16:9 宽高比的显示器进行了格式化。
    *
-   * @param initializationData The initialization data to parse.
-   * @return Whether the CEA-708 closed caption service is formatted for displays with 16:9 aspect
-   *     ratio.
+   * @param initializationData 要解析的初始化数据。
+   * @return CEA-708 闭路字幕服务是否针对 16:9 宽高比的显示器进行了格式化。
    */
   public static boolean parseCea708InitializationData(List<byte[]> initializationData) {
     return initializationData.size() == 1
@@ -109,17 +91,15 @@ public final class CodecSpecificDataUtil {
   }
 
   /**
-   * Returns initialization data in CodecPrivate format of VP9.
+   * 返回 VP9 的 CodecPrivate 格式的初始化数据。
    *
-   * <p>Each feature of VP9 CodecPrivate is defined by the binary format of ID (1 byte), length (1
-   * byte), and data (1 byte). See <a>
-   * href="https://www.webmproject.org/docs/container/#vp9-codec-feature-metadata-codecprivate">CodecPrivate
-   * format of VP9</a> for more details.
+   * <p>VP9 CodecPrivate 的每个功能由 ID（1 字节）、长度（1 字节）和数据（1 字节）的二进制格式定义。有关更多详细信息，请参阅 <a>
+   * href="https://www.webmproject.org/docs/container/#vp9-codec-feature-metadata-codecprivate">VP9 的 CodecPrivate 格式</a>。
    *
-   * @param profile The VP9 codec profile.
-   * @param level The VP9 codec level.
-   * @param bitDepth The bit depth of the luma and color components.
-   * @param chromaSubsampling The chroma subsampling.
+   * @param profile VP9 编解码器配置文件。
+   * @param level VP9 编解码器级别。
+   * @param bitDepth 亮度和颜色分量的位深度。
+   * @param chromaSubsampling 色度子采样。
    */
   public static ImmutableList<byte[]> buildVp9CodecPrivateInitializationData(
       byte profile, byte level, byte bitDepth, byte chromaSubsampling) {
@@ -130,19 +110,18 @@ public final class CodecSpecificDataUtil {
     byte length = 0x01;
     return ImmutableList.of(
         new byte[] {
-          profileId, length, profile,
-          levelId, length, level,
-          bitDepthId, length, bitDepth,
-          chromaSubsamplingId, length, chromaSubsampling
+            profileId, length, profile,
+            levelId, length, level,
+            bitDepthId, length, bitDepth,
+            chromaSubsamplingId, length, chromaSubsampling
         });
   }
 
   /**
-   * Parses an MPEG-4 Visual configuration information, as defined in ISO/IEC14496-2.
+   * 解析 MPEG-4 视频配置信息，定义在 ISO/IEC14496-2 中。
    *
-   * @param videoSpecificConfig A byte array containing the MPEG-4 Visual configuration information
-   *     to parse.
-   * @return A pair of the video's width and height.
+   * @param videoSpecificConfig 包含要解析的 MPEG-4 视频配置信息的字节数组。
+   * @return 视频宽度和高度的 Pair。
    */
   public static Pair<Integer, Integer> getVideoResolutionFromMpeg4VideoConfig(
       byte[] videoSpecificConfig) {
@@ -160,10 +139,10 @@ public final class CodecSpecificDataUtil {
       break;
     }
 
-    checkArgument(foundVOL, "Invalid input: VOL not found.");
+    checkArgument(foundVOL, "无效输入：未找到 VOL。");
 
     ParsableBitArray scratchBits = new ParsableBitArray(videoSpecificConfig);
-    // Skip the start codecs from the bitstream
+    // 跳过比特流中的起始码
     scratchBits.skipBits((offset + 4) * 8);
     scratchBits.skipBits(1); // random_accessible_vol
     scratchBits.skipBits(8); // video_object_type_indication
@@ -190,7 +169,7 @@ public final class CodecSpecificDataUtil {
     int videoObjectLayerShape = scratchBits.readBits(2);
     checkArgument(
         videoObjectLayerShape == RECTANGULAR,
-        "Only supports rectangular video object layer shape.");
+        "仅支持矩形视频对象层形状。");
 
     checkArgument(scratchBits.readBit()); // marker_bit
     int vopTimeIncrementResolution = scratchBits.readBits(16);
@@ -219,13 +198,12 @@ public final class CodecSpecificDataUtil {
   }
 
   /**
-   * Builds an RFC 6381 AVC codec string using the provided parameters.
+   * 使用提供的参数构建 RFC 6381 AVC 编解码器字符串。
    *
-   * @param profileIdc The encoding profile.
-   * @param constraintsFlagsAndReservedZero2Bits The constraint flags followed by the reserved zero
-   *     2 bits, all contained in the least significant byte of the integer.
-   * @param levelIdc The encoding level.
-   * @return An RFC 6381 AVC codec string built using the provided parameters.
+   * @param profileIdc 编码配置文件。
+   * @param constraintsFlagsAndReservedZero2Bits 约束标志，后跟保留的 2 位零，全部包含在整数的低字节中。
+   * @param levelIdc 编码级别。
+   * @return 使用提供的参数构建的 RFC 6381 AVC 编解码器字符串。
    */
   public static String buildAvcCodecString(
       int profileIdc, int constraintsFlagsAndReservedZero2Bits, int levelIdc) {
@@ -233,7 +211,7 @@ public final class CodecSpecificDataUtil {
         "avc1.%02X%02X%02X", profileIdc, constraintsFlagsAndReservedZero2Bits, levelIdc);
   }
 
-  /** Builds an RFC 6381 HEVC codec string using the provided parameters. */
+  /** 使用提供的参数构建 RFC 6381 HEVC 编解码器字符串。 */
   public static String buildHevcCodecString(
       int generalProfileSpace,
       boolean generalTierFlag,
@@ -250,7 +228,7 @@ public final class CodecSpecificDataUtil {
                 generalProfileCompatibilityFlags,
                 generalTierFlag ? 'H' : 'L',
                 generalLevelIdc));
-    // Omit trailing zero bytes.
+    // 省略尾随的零字节。
     int trailingZeroIndex = constraintBytes.length;
     while (trailingZeroIndex > 0 && constraintBytes[trailingZeroIndex - 1] == 0) {
       trailingZeroIndex--;
@@ -261,18 +239,16 @@ public final class CodecSpecificDataUtil {
     return builder.toString();
   }
 
-  /** Builds an RFC 6381 H263 codec string using profile and level. */
+  /** 使用配置文件和级别构建 RFC 6381 H263 编解码器字符串。 */
   public static String buildH263CodecString(int profile, int level) {
     return Util.formatInvariant("s263.%d.%d", profile, level);
   }
 
   /**
-   * Returns profile and level (as defined by {@link MediaCodecInfo.CodecProfileLevel})
-   * corresponding to the codec description string (as defined by RFC 6381) of the given format.
+   * 返回与给定格式的编解码器描述字符串（定义在 RFC 6381 中）对应的配置文件和级别（定义在 {@link MediaCodecInfo.CodecProfileLevel} 中）。
    *
-   * @param format Media format with a codec description string, as defined by RFC 6381.
-   * @return A pair (profile constant, level constant) if the codec of the {@code format} is
-   *     well-formed and recognized, or null otherwise.
+   * @param format 具有编解码器描述字符串的媒体格式，定义在 RFC 6381 中。
+   * @return 如果 {@code format} 的编解码器格式正确且被识别，则返回 Pair（配置文件常量，级别常量），否则返回 null。
    */
   @Nullable
   public static Pair<Integer, Integer> getCodecProfileAndLevel(Format format) {
@@ -280,7 +256,7 @@ public final class CodecSpecificDataUtil {
       return null;
     }
     String[] parts = format.codecs.split("\\.");
-    // Dolby Vision can use DV, AVC or HEVC codec IDs, so check the MIME type first.
+    // Dolby Vision 可以使用 DV、AVC 或 HEVC 编解码器 ID，因此首先检查 MIME 类型。
     if (MimeTypes.VIDEO_DOLBY_VISION.equals(format.sampleMimeType)) {
       return getDolbyVisionProfileAndLevel(format.codecs, parts);
     }
@@ -305,27 +281,25 @@ public final class CodecSpecificDataUtil {
   }
 
   /**
-   * Returns Hevc profile and level corresponding to the codec description string (as defined by RFC
-   * 6381) and it {@link ColorInfo}.
+   * 返回与编解码器描述字符串（定义在 RFC 6381 中）及其 {@link ColorInfo} 对应的 HEVC 配置文件和级别。
    *
-   * @param codec The codec description string (as defined by RFC 6381).
-   * @param parts The codec string split by ".".
-   * @param colorInfo The {@link ColorInfo}.
-   * @return A pair (profile constant, level constant) if profile and level are recognized, or
-   *     {@code null} otherwise.
+   * @param codec 编解码器描述字符串，定义在 RFC 6381 中。
+   * @param parts 按 "." 分割的编解码器字符串。
+   * @param colorInfo {@link ColorInfo}。
+   * @return 如果配置文件和级别被识别，则返回 Pair（配置文件常量，级别常量），否则返回 {@code null}。
    */
   @Nullable
   public static Pair<Integer, Integer> getHevcProfileAndLevel(
       String codec, String[] parts, @Nullable ColorInfo colorInfo) {
     if (parts.length < 4) {
-      // The codec has fewer parts than required by the HEVC codec string format.
-      Log.w(TAG, "Ignoring malformed HEVC codec string: " + codec);
+      // 编解码器的部分少于 HEVC 编解码器字符串格式所需的部分。
+      Log.w(TAG, "忽略格式错误的 HEVC 编解码器字符串：" + codec);
       return null;
     }
-    // The profile_space gets ignored.
+    // 忽略 profile_space。
     Matcher matcher = PROFILE_PATTERN.matcher(parts[1]);
     if (!matcher.matches()) {
-      Log.w(TAG, "Ignoring malformed HEVC codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 HEVC 编解码器字符串：" + codec);
       return null;
     }
     @Nullable String profileString = matcher.group(1);
@@ -336,35 +310,32 @@ public final class CodecSpecificDataUtil {
       if (colorInfo != null && colorInfo.colorTransfer == C.COLOR_TRANSFER_ST2084) {
         profile = MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10;
       } else {
-        // For all other cases, we map to the Main10 profile. Note that this includes HLG
-        // HDR. On Android 13+, the platform guarantees that a decoder that advertises
-        // HEVCProfileMain10 will be able to decode HLG. This is not guaranteed for older
-        // Android versions, but we still map to Main10 for backwards compatibility.
+        // 对于所有其他情况，我们映射到 Main10 配置文件。注意，这包括 HLG HDR。在 Android 13+ 上，平台保证支持 HEVCProfileMain10 的解码器将能够解码 HLG。对于较旧的 Android 版本，此保证不成立，但我们仍然映射到 Main10 以保持向后兼容性。
         profile = MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10;
       }
     } else if ("6".equals(profileString)) {
-      // Framework does not have profileLevel.HEVCProfileMultiviewMain defined.
+      // 框架未定义 profileLevel.HEVCProfileMultiviewMain。
       profile = 6;
     } else {
-      Log.w(TAG, "Unknown HEVC profile string: " + profileString);
+      Log.w(TAG, "未知的 HEVC 配置文件字符串：" + profileString);
       return null;
     }
     @Nullable String levelString = parts[3];
     @Nullable Integer level = hevcCodecStringToProfileLevel(levelString);
     if (level == null) {
-      Log.w(TAG, "Unknown HEVC level string: " + levelString);
+      Log.w(TAG, "未知的 HEVC 级别字符串：" + levelString);
       return null;
     }
     return new Pair<>(profile, level);
   }
 
   /**
-   * Constructs a NAL unit consisting of the NAL start code followed by the specified data.
+   * 构建一个由 NAL 起始码后跟指定数据组成的 NAL 单元。
    *
-   * @param data An array containing the data that should follow the NAL start code.
-   * @param offset The start offset into {@code data}.
-   * @param length The number of bytes to copy from {@code data}
-   * @return The constructed NAL unit.
+   * @param data 包含应跟在 NAL 起始码之后的数据的数组。
+   * @param offset {@code data} 中的起始偏移量。
+   * @param length 要从 {@code data} 复制的字节数。
+   * @return 构建的 NAL 单元。
    */
   public static byte[] buildNalUnit(byte[] data, int offset, int length) {
     byte[] nalUnit = new byte[length + NAL_START_CODE.length];
@@ -374,15 +345,12 @@ public final class CodecSpecificDataUtil {
   }
 
   /**
-   * Splits an array of NAL units.
+   * 将 NAL 单元数组分割。
    *
-   * <p>If the input consists of NAL start code delimited units, then the returned array consists of
-   * the split NAL units, each of which is still prefixed with the NAL start code. For any other
-   * input, null is returned.
+   * <p>如果输入由 NAL 起始码分隔的单元组成，则返回的数组由分割后的 NAL 单元组成，每个单元仍以 NAL 起始码为前缀。对于任何其他输入，返回 null。
    *
-   * @param data An array of data.
-   * @return The individual NAL units, or null if the input did not consist of NAL start code
-   *     delimited units.
+   * @param data 数据数组。
+   * @return 各个 NAL 单元，如果输入不由 NAL 起始码分隔的单元组成，则返回 null。
    */
   @Nullable
   public static byte[][] splitNalUnits(byte[] data) {
@@ -407,14 +375,16 @@ public final class CodecSpecificDataUtil {
     return split;
   }
 
+
   /**
-   * Finds the next occurrence of the NAL start code from a given index.
+   * 从给定索引开始查找下一个 NAL 起始码。
    *
-   * @param data The data in which to search.
-   * @param index The first index to test.
-   * @return The index of the first byte of the found start code, or {@link C#INDEX_UNSET}.
+   * @param data 要在其中搜索的数据。
+   * @param index 要测试的第一个索引。
+   * @return 找到的起始码的第一个字节的索引，或 {@link C#INDEX_UNSET}。
    */
   private static int findNalStartCode(byte[] data, int index) {
+
     int endIndex = data.length - NAL_START_CODE.length;
     for (int i = index; i <= endIndex; i++) {
       if (isNalStartCode(data, i)) {
@@ -425,13 +395,14 @@ public final class CodecSpecificDataUtil {
   }
 
   /**
-   * Tests whether there exists a NAL start code at a given index.
+   * 测试给定索引处是否存在 NAL 起始码。
    *
-   * @param data The data.
-   * @param index The index to test.
-   * @return Whether there exists a start code that begins at {@code index}.
+   * @param data 数据。
+   * @param index 要测试的索引。
+   * @return 是否存在以 {@code index} 开头的起始码。
    */
   private static boolean isNalStartCode(byte[] data, int index) {
+
     if (data.length - index <= NAL_START_CODE.length) {
       return false;
     }
@@ -447,39 +418,39 @@ public final class CodecSpecificDataUtil {
   private static Pair<Integer, Integer> getDolbyVisionProfileAndLevel(
       String codec, String[] parts) {
     if (parts.length < 3) {
-      // The codec has fewer parts than required by the Dolby Vision codec string format.
-      Log.w(TAG, "Ignoring malformed Dolby Vision codec string: " + codec);
+      // 编解码器的部分少于 Dolby Vision 编解码器字符串格式所需的部分。
+      Log.w(TAG, "忽略格式错误的 Dolby Vision 编解码器字符串：" + codec);
       return null;
     }
-    // The profile_space gets ignored.
+    // 忽略 profile_space。
     Matcher matcher = PROFILE_PATTERN.matcher(parts[1]);
     if (!matcher.matches()) {
-      Log.w(TAG, "Ignoring malformed Dolby Vision codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 Dolby Vision 编解码器字符串：" + codec);
       return null;
     }
     @Nullable String profileString = matcher.group(1);
     @Nullable Integer profile = dolbyVisionStringToProfile(profileString);
     if (profile == null) {
-      Log.w(TAG, "Unknown Dolby Vision profile string: " + profileString);
+      Log.w(TAG, "未知的 Dolby Vision 配置文件字符串：" + profileString);
       return null;
     }
     String levelString = parts[2];
     @Nullable Integer level = dolbyVisionStringToLevel(levelString);
     if (level == null) {
-      Log.w(TAG, "Unknown Dolby Vision level string: " + levelString);
+      Log.w(TAG, "未知的 Dolby Vision 级别字符串：" + levelString);
       return null;
     }
     return new Pair<>(profile, level);
   }
 
-  /** Returns H263 profile and level from codec string. */
+  /** 从编解码器字符串中返回 H263 配置文件和级别。 */
   private static Pair<Integer, Integer> getH263ProfileAndLevel(String codec, String[] parts) {
     Pair<Integer, Integer> defaultProfileAndLevel =
         new Pair<>(
             MediaCodecInfo.CodecProfileLevel.H263ProfileBaseline,
             MediaCodecInfo.CodecProfileLevel.H263Level10);
     if (parts.length < 3) {
-      Log.w(TAG, "Ignoring malformed H263 codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 H263 编解码器字符串：" + codec);
       return defaultProfileAndLevel;
     }
 
@@ -488,7 +459,7 @@ public final class CodecSpecificDataUtil {
       int level = Integer.parseInt(parts[2]);
       return new Pair<>(profile, level);
     } catch (NumberFormatException e) {
-      Log.w(TAG, "Ignoring malformed H263 codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 H263 编解码器字符串：" + codec);
       return defaultProfileAndLevel;
     }
   }
@@ -496,39 +467,39 @@ public final class CodecSpecificDataUtil {
   @Nullable
   private static Pair<Integer, Integer> getAvcProfileAndLevel(String codec, String[] parts) {
     if (parts.length < 2) {
-      // The codec has fewer parts than required by the AVC codec string format.
-      Log.w(TAG, "Ignoring malformed AVC codec string: " + codec);
+      // 编解码器的部分少于 AVC 编解码器字符串格式所需的部分。
+      Log.w(TAG, "忽略格式错误的 AVC 编解码器字符串：" + codec);
       return null;
     }
     int profileInteger;
     int levelInteger;
     try {
       if (parts[1].length() == 6) {
-        // Format: avc1.xxccyy, where xx is profile and yy level, both hexadecimal.
+        // 格式：avc1.xxccyy，其中 xx 是配置文件，yy 是级别，均为十六进制。
         profileInteger = Integer.parseInt(parts[1].substring(0, 2), 16);
         levelInteger = Integer.parseInt(parts[1].substring(4), 16);
       } else if (parts.length >= 3) {
-        // Format: avc1.xx.[y]yy where xx is profile and [y]yy level, both decimal.
+        // 格式：avc1.xx.[y]yy，其中 xx 是配置文件，[y]yy 是级别，均为十进制。
         profileInteger = Integer.parseInt(parts[1]);
         levelInteger = Integer.parseInt(parts[2]);
       } else {
-        // We don't recognize the format.
-        Log.w(TAG, "Ignoring malformed AVC codec string: " + codec);
+        // 我们不识别该格式。
+        Log.w(TAG, "忽略格式错误的 AVC 编解码器字符串：" + codec);
         return null;
       }
     } catch (NumberFormatException e) {
-      Log.w(TAG, "Ignoring malformed AVC codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 AVC 编解码器字符串：" + codec);
       return null;
     }
 
     int profile = avcProfileNumberToConst(profileInteger);
     if (profile == -1) {
-      Log.w(TAG, "Unknown AVC profile: " + profileInteger);
+      Log.w(TAG, "未知的 AVC 配置文件：" + profileInteger);
       return null;
     }
     int level = avcLevelNumberToConst(levelInteger);
     if (level == -1) {
-      Log.w(TAG, "Unknown AVC level: " + levelInteger);
+      Log.w(TAG, "未知的 AVC 级别：" + levelInteger);
       return null;
     }
     return new Pair<>(profile, level);
@@ -537,7 +508,7 @@ public final class CodecSpecificDataUtil {
   @Nullable
   private static Pair<Integer, Integer> getVp9ProfileAndLevel(String codec, String[] parts) {
     if (parts.length < 3) {
-      Log.w(TAG, "Ignoring malformed VP9 codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 VP9 编解码器字符串：" + codec);
       return null;
     }
     int profileInteger;
@@ -546,18 +517,18 @@ public final class CodecSpecificDataUtil {
       profileInteger = Integer.parseInt(parts[1]);
       levelInteger = Integer.parseInt(parts[2]);
     } catch (NumberFormatException e) {
-      Log.w(TAG, "Ignoring malformed VP9 codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 VP9 编解码器字符串：" + codec);
       return null;
     }
 
     int profile = vp9ProfileNumberToConst(profileInteger);
     if (profile == -1) {
-      Log.w(TAG, "Unknown VP9 profile: " + profileInteger);
+      Log.w(TAG, "未知的 VP9 配置文件：" + profileInteger);
       return null;
     }
     int level = vp9LevelNumberToConst(levelInteger);
     if (level == -1) {
-      Log.w(TAG, "Unknown VP9 level: " + levelInteger);
+      Log.w(TAG, "未知的 VP9 级别：" + levelInteger);
       return null;
     }
     return new Pair<>(profile, level);
@@ -567,7 +538,7 @@ public final class CodecSpecificDataUtil {
   private static Pair<Integer, Integer> getAv1ProfileAndLevel(
       String codec, String[] parts, @Nullable ColorInfo colorInfo) {
     if (parts.length < 4) {
-      Log.w(TAG, "Ignoring malformed AV1 codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 AV1 编解码器字符串：" + codec);
       return null;
     }
     int profileInteger;
@@ -578,16 +549,16 @@ public final class CodecSpecificDataUtil {
       levelInteger = Integer.parseInt(parts[2].substring(0, 2));
       bitDepthInteger = Integer.parseInt(parts[3]);
     } catch (NumberFormatException e) {
-      Log.w(TAG, "Ignoring malformed AV1 codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 AV1 编解码器字符串：" + codec);
       return null;
     }
 
     if (profileInteger != 0) {
-      Log.w(TAG, "Unknown AV1 profile: " + profileInteger);
+      Log.w(TAG, "未知的 AV1 配置文件：" + profileInteger);
       return null;
     }
     if (bitDepthInteger != 8 && bitDepthInteger != 10) {
-      Log.w(TAG, "Unknown AV1 bit depth: " + bitDepthInteger);
+      Log.w(TAG, "未知的 AV1 位深度：" + bitDepthInteger);
       return null;
     }
     int profile;
@@ -595,8 +566,8 @@ public final class CodecSpecificDataUtil {
       profile = MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8;
     } else if (colorInfo != null
         && (colorInfo.hdrStaticInfo != null
-            || colorInfo.colorTransfer == C.COLOR_TRANSFER_HLG
-            || colorInfo.colorTransfer == C.COLOR_TRANSFER_ST2084)) {
+        || colorInfo.colorTransfer == C.COLOR_TRANSFER_HLG
+        || colorInfo.colorTransfer == C.COLOR_TRANSFER_ST2084)) {
       profile = MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10;
     } else {
       profile = MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10;
@@ -604,7 +575,7 @@ public final class CodecSpecificDataUtil {
 
     int level = av1LevelNumberToConst(levelInteger);
     if (level == -1) {
-      Log.w(TAG, "Unknown AV1 level: " + levelInteger);
+      Log.w(TAG, "未知的 AV1 级别：" + levelInteger);
       return null;
     }
     return new Pair<>(profile, level);
@@ -613,24 +584,24 @@ public final class CodecSpecificDataUtil {
   @Nullable
   private static Pair<Integer, Integer> getAacCodecProfileAndLevel(String codec, String[] parts) {
     if (parts.length != 3) {
-      Log.w(TAG, "Ignoring malformed MP4A codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 MP4A 编解码器字符串：" + codec);
       return null;
     }
     try {
-      // Get the object type indication, which is a hexadecimal value (see RFC 6381/ISO 14496-1).
+      // 获取对象类型指示，它是一个十六进制值（参见 RFC 6381/ISO 14496-1）。
       int objectTypeIndication = Integer.parseInt(parts[1], 16);
       @Nullable String mimeType = MimeTypes.getMimeTypeFromMp4ObjectType(objectTypeIndication);
       if (MimeTypes.AUDIO_AAC.equals(mimeType)) {
-        // For MPEG-4 audio this is followed by an audio object type indication as a decimal number.
+        // 对于 MPEG-4 音频，其后是音频对象类型指示，为十进制数。
         int audioObjectTypeIndication = Integer.parseInt(parts[2]);
         int profile = mp4aAudioObjectTypeToProfile(audioObjectTypeIndication);
         if (profile != -1) {
-          // Level is set to zero in AAC decoder CodecProfileLevels.
+          // 在 AAC 解码器的 CodecProfileLevels 中，级别设置为零。
           return new Pair<>(profile, 0);
         }
       }
     } catch (NumberFormatException e) {
-      Log.w(TAG, "Ignoring malformed MP4A codec string: " + codec);
+      Log.w(TAG, "忽略格式错误的 MP4A 编解码器字符串：" + codec);
     }
     return null;
   }
@@ -657,7 +628,7 @@ public final class CodecSpecificDataUtil {
   }
 
   private static int avcLevelNumberToConst(int levelNumber) {
-    // TODO: Find int for CodecProfileLevel.AVCLevel1b.
+    // TODO: 找到 CodecProfileLevel.AVCLevel1b 的整数值。
     switch (levelNumber) {
       case 10:
         return MediaCodecInfo.CodecProfileLevel.AVCLevel1;
@@ -845,7 +816,7 @@ public final class CodecSpecificDataUtil {
     if (levelString == null) {
       return null;
     }
-    // TODO (Internal: b/179261323): use framework constant for level 13.
+    // TODO (内部问题: b/179261323): 使用框架常量表示级别 13。
     switch (levelString) {
       case "01":
         return MediaCodecInfo.CodecProfileLevel.DolbyVisionLevelHd24;
@@ -879,8 +850,7 @@ public final class CodecSpecificDataUtil {
   }
 
   private static int av1LevelNumberToConst(int levelNumber) {
-    // See https://aomediacodec.github.io/av1-spec/av1-spec.pdf Annex A: Profiles and levels for
-    // more information on mapping AV1 codec strings to levels.
+    // 有关将 AV1 编解码器字符串映射到级别的更多信息，请参阅 https://aomediacodec.github.io/av1-spec/av1-spec.pdf 附录 A：配置文件和级别。
     switch (levelNumber) {
       case 0:
         return MediaCodecInfo.CodecProfileLevel.AV1Level2;

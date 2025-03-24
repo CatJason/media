@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import android.os.Handler;
@@ -21,17 +6,16 @@ import androidx.annotation.Nullable;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /**
- * An interface through which system clocks can be read and {@link HandlerWrapper}s created. The
- * {@link #DEFAULT} implementation must be used for all non-test cases.
+ * 一个接口，用于读取系统时钟并创建 {@link HandlerWrapper}。所有非测试场景必须使用 {@link #DEFAULT} 实现。
  */
 @UnstableApi
 public interface Clock {
 
-  /** Default {@link Clock} to use for all non-test cases. */
+  /** 用于所有非测试场景的默认 {@link Clock}。 */
   Clock DEFAULT = new SystemClock();
 
   /**
-   * Returns the current time in milliseconds since the Unix Epoch.
+   * 返回自 Unix 纪元以来的当前时间（以毫秒为单位）。
    *
    * @see System#currentTimeMillis()
    */
@@ -47,12 +31,11 @@ public interface Clock {
    */
   long uptimeMillis();
 
-  /** See {@link java.lang.System#nanoTime()} */
+  /** @see java.lang.System#nanoTime() */
   long nanoTime();
 
   /**
-   * Creates a {@link HandlerWrapper} using a specified looper and a specified callback for handling
-   * messages.
+   * 使用指定的 Looper 和指定的回调创建 {@link HandlerWrapper}，用于处理消息。
    *
    * @see Handler#Handler(Looper, Handler.Callback)
    */
@@ -60,10 +43,9 @@ public interface Clock {
       Looper looper, @Nullable Handler.@UnknownInitialization Callback callback);
 
   /**
-   * Notifies the clock that the current thread is about to be blocked and won't return until a
-   * condition on another thread becomes true.
+   * 通知时钟当前线程即将被阻塞，直到另一个线程上的条件变为真。
    *
-   * <p>Should be a no-op for all non-test cases.
+   * <p>对于所有非测试场景，此方法应为空操作。
    */
   void onThreadBlocked();
 }

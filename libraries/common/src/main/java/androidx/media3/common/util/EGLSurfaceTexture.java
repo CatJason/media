@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -32,19 +17,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Generates a {@link SurfaceTexture} using EGL/GLES functions. */
+/** 使用 EGL/GLES 函数生成 {@link SurfaceTexture}。 */
 @UnstableApi
 public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableListener, Runnable {
 
-  /** Listener to be called when the texture image on {@link SurfaceTexture} has been updated. */
+  /** 当 {@link SurfaceTexture} 上的纹理图像更新时调用的监听器。 */
   public interface TextureImageListener {
-    /** Called when the {@link SurfaceTexture} receives a new frame from its image producer. */
+    /** 当 {@link SurfaceTexture} 从图像生产者接收到新帧时调用。 */
     void onFrameAvailable();
   }
 
   /**
-   * Secure mode to be used by the EGL surface and context. One of {@link #SECURE_MODE_NONE}, {@link
-   * #SECURE_MODE_SURFACELESS_CONTEXT} or {@link #SECURE_MODE_PROTECTED_PBUFFER}.
+   * EGL 表面和上下文使用的安全模式。可以是 {@link #SECURE_MODE_NONE}、{@link
+   * #SECURE_MODE_SURFACELESS_CONTEXT} 或 {@link #SECURE_MODE_PROTECTED_PBUFFER} 之一。
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
@@ -52,13 +37,13 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
   @IntDef({SECURE_MODE_NONE, SECURE_MODE_SURFACELESS_CONTEXT, SECURE_MODE_PROTECTED_PBUFFER})
   public @interface SecureMode {}
 
-  /** No secure EGL surface and context required. */
+  /** 不需要安全的 EGL 表面和上下文。 */
   public static final int SECURE_MODE_NONE = 0;
 
-  /** Creating a surfaceless, secured EGL context. */
+  /** 创建一个无表面的安全 EGL 上下文。 */
   public static final int SECURE_MODE_SURFACELESS_CONTEXT = 1;
 
-  /** Creating a secure surface backed by a pixel buffer. */
+  /** 创建一个由像素缓冲区支持的安全表面。 */
   public static final int SECURE_MODE_PROTECTED_PBUFFER = 2;
 
   private static final int EGL_SURFACE_WIDTH = 1;
@@ -66,15 +51,15 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
 
   private static final int[] EGL_CONFIG_ATTRIBUTES =
       new int[] {
-        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-        EGL14.EGL_RED_SIZE, 8,
-        EGL14.EGL_GREEN_SIZE, 8,
-        EGL14.EGL_BLUE_SIZE, 8,
-        EGL14.EGL_ALPHA_SIZE, 8,
-        EGL14.EGL_DEPTH_SIZE, 0,
-        EGL14.EGL_CONFIG_CAVEAT, EGL14.EGL_NONE,
-        EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT,
-        EGL14.EGL_NONE
+          EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+          EGL14.EGL_RED_SIZE, 8,
+          EGL14.EGL_GREEN_SIZE, 8,
+          EGL14.EGL_BLUE_SIZE, 8,
+          EGL14.EGL_ALPHA_SIZE, 8,
+          EGL14.EGL_DEPTH_SIZE, 0,
+          EGL14.EGL_CONFIG_CAVEAT, EGL14.EGL_NONE,
+          EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT,
+          EGL14.EGL_NONE
       };
 
   private static final int EGL_PROTECTED_CONTENT_EXT = 0x32C0;
@@ -89,23 +74,18 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
   @Nullable private SurfaceTexture texture;
 
   /**
-   * @param handler The {@link Handler} that will be used to call {@link
-   *     SurfaceTexture#updateTexImage()} to update images on the {@link SurfaceTexture}. Note that
-   *     {@link #init(int)} has to be called on the same looper thread as the {@link Handler}'s
-   *     looper.
+   * @param handler 用于调用 {@link SurfaceTexture#updateTexImage()} 更新 {@link SurfaceTexture} 上图像的 {@link Handler}。
+   *     注意，{@link #init(int)} 必须在与 {@link Handler} 的 Looper 相同的线程上调用。
    */
   public EGLSurfaceTexture(Handler handler) {
     this(handler, /* callback= */ null);
   }
 
   /**
-   * @param handler The {@link Handler} that will be used to call {@link
-   *     SurfaceTexture#updateTexImage()} to update images on the {@link SurfaceTexture}. Note that
-   *     {@link #init(int)} has to be called on the same looper thread as the looper of the {@link
-   *     Handler}.
-   * @param callback The {@link TextureImageListener} to be called when the texture image on {@link
-   *     SurfaceTexture} has been updated. This callback will be called on the same handler thread
-   *     as the {@code handler}.
+   * @param handler 用于调用 {@link SurfaceTexture#updateTexImage()} 更新 {@link SurfaceTexture} 上图像的 {@link Handler}。
+   *     注意，{@link #init(int)} 必须在与 {@link Handler} 的 Looper 相同的线程上调用。
+   * @param callback 当 {@link SurfaceTexture} 上的纹理图像更新时调用的 {@link TextureImageListener}。
+   *     此回调将在与 {@code handler} 相同的线程上调用。
    */
   public EGLSurfaceTexture(Handler handler, @Nullable TextureImageListener callback) {
     this.handler = handler;
@@ -114,9 +94,9 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
   }
 
   /**
-   * Initializes required EGL parameters and creates the {@link SurfaceTexture}.
+   * 初始化所需的 EGL 参数并创建 {@link SurfaceTexture}。
    *
-   * @param secureMode The {@link SecureMode} to be used for EGL surface.
+   * @param secureMode 用于 EGL 表面的 {@link SecureMode}。
    */
   public void init(@SecureMode int secureMode) throws GlUtil.GlException {
     display = getDefaultDisplay();
@@ -128,7 +108,7 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
     texture.setOnFrameAvailableListener(this);
   }
 
-  /** Releases all allocated resources. */
+  /** 释放所有分配的资源。 */
   @SuppressWarnings("nullness:argument")
   public void release() {
     handler.removeCallbacks(this);
@@ -150,8 +130,7 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
       }
       EGL14.eglReleaseThread();
       if (display != null && !display.equals(EGL14.EGL_NO_DISPLAY)) {
-        // Android is unusual in that it uses a reference-counted EGLDisplay.  So for
-        // every eglInitialize() we need an eglTerminate().
+        // Android 的特殊之处在于它使用引用计数的 EGLDisplay。因此，对于每次 eglInitialize()，我们都需要调用 eglTerminate()。
         EGL14.eglTerminate(display);
       }
       display = null;
@@ -162,7 +141,7 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
   }
 
   /**
-   * Returns the wrapped {@link SurfaceTexture}. This can only be called after {@link #init(int)}.
+   * 返回包装的 {@link SurfaceTexture}。只能在 {@link #init(int)} 之后调用。
    */
   public SurfaceTexture getSurfaceTexture() {
     return Assertions.checkNotNull(texture);
@@ -179,13 +158,13 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
 
   @Override
   public void run() {
-    // Run on the provided handler thread when a new image frame is available.
+    // 当有新的图像帧可用时，在提供的 handler 线程上运行。
     dispatchOnFrameAvailable();
     if (texture != null) {
       try {
         texture.updateTexImage();
       } catch (RuntimeException e) {
-        // Ignore
+        // 忽略
       }
     }
   }
@@ -198,12 +177,12 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
 
   private static EGLDisplay getDefaultDisplay() throws GlUtil.GlException {
     EGLDisplay display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
-    GlUtil.checkGlException(display != null, "eglGetDisplay failed");
+    GlUtil.checkGlException(display != null, "eglGetDisplay 失败");
 
     int[] version = new int[2];
     boolean eglInitialized =
         EGL14.eglInitialize(display, version, /* majorOffset= */ 0, version, /* minorOffset= */ 1);
-    GlUtil.checkGlException(eglInitialized, "eglInitialize failed");
+    GlUtil.checkGlException(eglInitialized, "eglInitialize 失败");
     return display;
   }
 
@@ -223,7 +202,7 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
     GlUtil.checkGlException(
         success && numConfigs[0] > 0 && configs[0] != null,
         Util.formatInvariant(
-            /* format= */ "eglChooseConfig failed: success=%b, numConfigs[0]=%d, configs[0]=%s",
+            /* format= */ "eglChooseConfig 失败: success=%b, numConfigs[0]=%d, configs[0]=%s",
             success, numConfigs[0], configs[0]));
 
     return configs[0];
@@ -237,17 +216,17 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
     } else {
       glAttributes =
           new int[] {
-            EGL14.EGL_CONTEXT_CLIENT_VERSION,
-            2,
-            EGL_PROTECTED_CONTENT_EXT,
-            EGL14.EGL_TRUE,
-            EGL14.EGL_NONE
+              EGL14.EGL_CONTEXT_CLIENT_VERSION,
+              2,
+              EGL_PROTECTED_CONTENT_EXT,
+              EGL14.EGL_TRUE,
+              EGL14.EGL_NONE
           };
     }
     EGLContext context =
         EGL14.eglCreateContext(
             display, config, android.opengl.EGL14.EGL_NO_CONTEXT, glAttributes, 0);
-    GlUtil.checkGlException(context != null, "eglCreateContext failed");
+    GlUtil.checkGlException(context != null, "eglCreateContext 失败");
     return context;
   }
 
@@ -262,31 +241,31 @@ public final class EGLSurfaceTexture implements SurfaceTexture.OnFrameAvailableL
       if (secureMode == SECURE_MODE_PROTECTED_PBUFFER) {
         pbufferAttributes =
             new int[] {
-              EGL14.EGL_WIDTH,
-              EGL_SURFACE_WIDTH,
-              EGL14.EGL_HEIGHT,
-              EGL_SURFACE_HEIGHT,
-              EGL_PROTECTED_CONTENT_EXT,
-              EGL14.EGL_TRUE,
-              EGL14.EGL_NONE
+                EGL14.EGL_WIDTH,
+                EGL_SURFACE_WIDTH,
+                EGL14.EGL_HEIGHT,
+                EGL_SURFACE_HEIGHT,
+                EGL_PROTECTED_CONTENT_EXT,
+                EGL14.EGL_TRUE,
+                EGL14.EGL_NONE
             };
       } else {
         pbufferAttributes =
             new int[] {
-              EGL14.EGL_WIDTH,
-              EGL_SURFACE_WIDTH,
-              EGL14.EGL_HEIGHT,
-              EGL_SURFACE_HEIGHT,
-              EGL14.EGL_NONE
+                EGL14.EGL_WIDTH,
+                EGL_SURFACE_WIDTH,
+                EGL14.EGL_HEIGHT,
+                EGL_SURFACE_HEIGHT,
+                EGL14.EGL_NONE
             };
       }
       surface = EGL14.eglCreatePbufferSurface(display, config, pbufferAttributes, /* offset= */ 0);
-      GlUtil.checkGlException(surface != null, "eglCreatePbufferSurface failed");
+      GlUtil.checkGlException(surface != null, "eglCreatePbufferSurface 失败");
     }
 
     boolean eglMadeCurrent =
         EGL14.eglMakeCurrent(display, /* draw= */ surface, /* read= */ surface, context);
-    GlUtil.checkGlException(eglMadeCurrent, "eglMakeCurrent failed");
+    GlUtil.checkGlException(eglMadeCurrent, "eglMakeCurrent 失败");
     return surface;
   }
 

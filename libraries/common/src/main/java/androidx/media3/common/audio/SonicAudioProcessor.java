@@ -12,20 +12,19 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 
 /**
- * An {@link AudioProcessor} that uses the Sonic library to modify audio speed/pitch/sample rate.
+ * 一个使用 Sonic 库来修改音频速度/音高/采样率的 {@link AudioProcessor}。
  */
 @UnstableApi
 public class SonicAudioProcessor implements AudioProcessor {
 
-  /** Indicates that the output sample rate should be the same as the input. */
+  /** 表示输出采样率应与输入采样率相同。 */
   public static final int SAMPLE_RATE_NO_CHANGE = -1;
 
-  /** The threshold below which the difference between two pitch/speed factors is negligible. */
+  /** 用于判断两个音高/速度因子之间差异是否可忽略的阈值。 */
   private static final float CLOSE_THRESHOLD = 0.0001f;
 
   /**
-   * The minimum number of output bytes required for duration scaling to be calculated using the
-   * input and output byte counts, rather than using the current playback speed.
+   * 用于计算时长缩放的最小输出字节数。如果输出字节数小于此值，则使用当前播放速度来计算时长缩放，而不是使用输入和输出字节数。
    */
   private static final int MIN_BYTES_FOR_DURATION_SCALING_CALCULATION = 1024;
 
@@ -47,7 +46,7 @@ public class SonicAudioProcessor implements AudioProcessor {
   private long outputBytes;
   private boolean inputEnded;
 
-  /** Creates a new Sonic audio processor. */
+  /** 创建一个新的 Sonic 音频处理器。 */
   public SonicAudioProcessor() {
     speed = 1f;
     pitch = 1f;
@@ -60,13 +59,11 @@ public class SonicAudioProcessor implements AudioProcessor {
     outputBuffer = EMPTY_BUFFER;
     pendingOutputSampleRate = SAMPLE_RATE_NO_CHANGE;
   }
-
   /**
-   * Sets the target playback speed. This method may only be called after draining data through the
-   * processor. The value returned by {@link #isActive()} may change, and the processor must be
-   * {@link #flush() flushed} before queueing more data.
+   * 设置目标播放速度。此方法只能在处理器中的数据被完全处理后调用。调用后，{@link #isActive()} 的返回值可能会发生变化，
+   * 并且在加入更多数据之前必须对处理器进行 {@link #flush() 刷新}。
    *
-   * @param speed The target factor by which playback should be sped up.
+   * @param speed 目标播放速度的加速因子。
    */
   public final void setSpeed(float speed) {
     if (this.speed != speed) {
@@ -76,11 +73,10 @@ public class SonicAudioProcessor implements AudioProcessor {
   }
 
   /**
-   * Sets the target playback pitch. This method may only be called after draining data through the
-   * processor. The value returned by {@link #isActive()} may change, and the processor must be
-   * {@link #flush() flushed} before queueing more data.
+   * 设置目标播放音高。此方法只能在处理器中的数据被完全处理后调用。调用后，{@link #isActive()} 的返回值可能会发生变化，
+   * 并且在加入更多数据之前必须对处理器进行 {@link #flush() 刷新}。
    *
-   * @param pitch The target pitch.
+   * @param pitch 目标音高。
    */
   public final void setPitch(float pitch) {
     if (this.pitch != pitch) {
@@ -88,13 +84,11 @@ public class SonicAudioProcessor implements AudioProcessor {
       pendingSonicRecreation = true;
     }
   }
-
   /**
-   * Sets the sample rate for output audio, in Hertz. Pass {@link #SAMPLE_RATE_NO_CHANGE} to output
-   * audio at the same sample rate as the input. After calling this method, call {@link
-   * #configure(AudioFormat)} to configure the processor with the new sample rate.
+   * 设置输出音频的采样率，单位为赫兹（Hz）。传递 {@link #SAMPLE_RATE_NO_CHANGE} 表示输出音频的采样率与输入相同。
+   * 调用此方法后，调用 {@link #configure(AudioFormat)} 以使用新的采样率配置处理器。
    *
-   * @param sampleRateHz The sample rate for output audio, in Hertz.
+   * @param sampleRateHz 输出音频的采样率，单位为赫兹（Hz）。
    * @see #configure(AudioFormat)
    */
   public final void setOutputSampleRateHz(int sampleRateHz) {
@@ -102,15 +96,12 @@ public class SonicAudioProcessor implements AudioProcessor {
   }
 
   /**
-   * Returns the media duration corresponding to the specified playout duration, taking speed
-   * adjustment into account.
+   * 返回与指定播放持续时间对应的媒体持续时间，考虑了速度调整。
    *
-   * <p>The scaling performed by this method will use the actual playback speed achieved by the
-   * audio processor, on average, since it was last flushed. This may differ very slightly from the
-   * target playback speed.
+   * <p>此方法执行的缩放将使用音频处理器自上次刷新以来实际实现的平均播放速度。这可能与目标播放速度略有不同。
    *
-   * @param playoutDuration The playout duration to scale.
-   * @return The corresponding media duration, in the same units as {@code duration}.
+   * @param playoutDuration 要缩放的播放持续时间。
+   * @return 对应的媒体持续时间，与 {@code duration} 使用相同的单位。
    */
   public final long getMediaDuration(long playoutDuration) {
     if (outputBytes >= MIN_BYTES_FOR_DURATION_SCALING_CALCULATION) {
@@ -125,17 +116,13 @@ public class SonicAudioProcessor implements AudioProcessor {
       return (long) ((double) speed * playoutDuration);
     }
   }
-
   /**
-   * Returns the playout duration corresponding to the specified media duration, taking speed
-   * adjustment into account.
+   * 返回与指定媒体持续时间对应的播放持续时间，考虑了速度调整。
    *
-   * <p>The scaling performed by this method will use the actual playback speed achieved by the
-   * audio processor, on average, since it was last flushed. This may differ very slightly from the
-   * target playback speed.
+   * <p>此方法执行的缩放将使用音频处理器自上次刷新以来实际实现的平均播放速度。这可能与目标播放速度略有不同。
    *
-   * @param mediaDuration The media duration to scale.
-   * @return The corresponding playout duration, in the same units as {@code mediaDuration}.
+   * @param mediaDuration 要缩放的媒体持续时间。
+   * @return 对应的播放持续时间，与 {@code mediaDuration} 使用相同的单位。
    */
   public final long getPlayoutDuration(long mediaDuration) {
     if (outputBytes >= MIN_BYTES_FOR_DURATION_SCALING_CALCULATION) {
@@ -151,7 +138,7 @@ public class SonicAudioProcessor implements AudioProcessor {
     }
   }
 
-  /** Returns the number of bytes processed since last flush or reset. */
+  /** 返回自上次刷新或重置以来已处理的字节数。 */
   public final long getProcessedInputBytes() {
     return inputBytes - checkNotNull(sonic).getPendingInputBytes();
   }
@@ -201,7 +188,7 @@ public class SonicAudioProcessor implements AudioProcessor {
 
   @Override
   public final void queueEndOfStream() {
-    // TODO(internal b/174554082): assert sonic is non-null here and in getOutput.
+    // TODO(内部 b/174554082)：在此处和 getOutput 中确保 sonic 不为 null。
     if (sonic != null) {
       sonic.queueEndOfStream();
     }

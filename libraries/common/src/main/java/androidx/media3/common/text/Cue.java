@@ -34,183 +34,153 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import org.checkerframework.dataflow.qual.Pure;
-
-/** Contains information about a specific cue, including textual content and formatting data. */
-// This class shouldn't be sub-classed. If a subtitle format needs additional fields, either they
-// should be generic enough to be added here, or the format-specific decoder should pass the
-// information around in a sidecar object.
+/** 包含特定字幕提示（Cue）的信息，包括文本内容和格式化数据。 */
+// 该类不应被继承。如果某个字幕格式需要额外的字段，这些字段应该足够通用以便添加到此，或者格式特定的解码器应通过辅助对象传递信息。
 public final class Cue {
 
   /**
-   * @deprecated There's no general need for a cue with an empty text string. If you need one,
-   *     create it yourself.
+   * @deprecated 通常不需要一个空文本字符串的字幕提示。如果需要，请自行创建。
    */
   @Deprecated public static final Cue EMPTY = new Cue.Builder().setText("").build();
 
-  /** An unset position, width or size. */
-  // Note: We deliberately don't use Float.MIN_VALUE because it's positive & very close to zero.
+  /** 未设置的位置、宽度或大小。 */
+  // 注意：我们故意不使用 Float.MIN_VALUE，因为它是正数且非常接近零。
   public static final float DIMEN_UNSET = -Float.MAX_VALUE;
 
   /**
-   * The type of anchor, which may be unset. One of {@link #TYPE_UNSET}, {@link #ANCHOR_TYPE_START},
-   * {@link #ANCHOR_TYPE_MIDDLE} or {@link #ANCHOR_TYPE_END}.
+   * 锚点类型，可能未设置。取值为 {@link #TYPE_UNSET}、{@link #ANCHOR_TYPE_START}、{@link #ANCHOR_TYPE_MIDDLE} 或 {@link #ANCHOR_TYPE_END} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+  // @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法向后兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({TYPE_UNSET, ANCHOR_TYPE_START, ANCHOR_TYPE_MIDDLE, ANCHOR_TYPE_END})
   public @interface AnchorType {}
 
-  /** An unset anchor, line, text size or vertical type value. */
+  /** 未设置的锚点、行、文本大小或垂直类型值。 */
   public static final int TYPE_UNSET = Integer.MIN_VALUE;
 
   /**
-   * Anchors the left (for horizontal positions) or top (for vertical positions) edge of the cue
-   * box.
+   * 将字幕框的左边缘（对于水平位置）或上边缘（对于垂直位置）锚定。
    */
   public static final int ANCHOR_TYPE_START = 0;
 
-  /** Anchors the middle of the cue box. */
+  /** 将字幕框的中间锚定。 */
   public static final int ANCHOR_TYPE_MIDDLE = 1;
 
   /**
-   * Anchors the right (for horizontal positions) or bottom (for vertical positions) edge of the cue
-   * box.
+   * 将字幕框的右边缘（对于水平位置）或下边缘（对于垂直位置）锚定。
    */
   public static final int ANCHOR_TYPE_END = 2;
 
   /**
-   * The type of line, which may be unset. One of {@link #TYPE_UNSET}, {@link #LINE_TYPE_FRACTION}
-   * or {@link #LINE_TYPE_NUMBER}.
+   * 行的类型，可能未设置。取值为 {@link #TYPE_UNSET}、{@link #LINE_TYPE_FRACTION} 或 {@link #LINE_TYPE_NUMBER} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+  // @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法向后兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({TYPE_UNSET, LINE_TYPE_FRACTION, LINE_TYPE_NUMBER})
   public @interface LineType {}
 
-  /** Value for {@link #lineType} when {@link #line} is a fractional position. */
+  /** 当 {@link #line} 为分数位置时，{@link #lineType} 的值。 */
   public static final int LINE_TYPE_FRACTION = 0;
 
-  /** Value for {@link #lineType} when {@link #line} is a line number. */
+  /** 当 {@link #line} 为行号时，{@link #lineType} 的值。 */
   public static final int LINE_TYPE_NUMBER = 1;
 
   /**
-   * The type of default text size for this cue, which may be unset. One of {@link #TYPE_UNSET},
-   * {@link #TEXT_SIZE_TYPE_FRACTIONAL}, {@link #TEXT_SIZE_TYPE_FRACTIONAL_IGNORE_PADDING} or {@link
-   * #TEXT_SIZE_TYPE_ABSOLUTE}.
+   * 此字幕提示的默认文本大小类型，可能未设置。取值为 {@link #TYPE_UNSET}、{@link #TEXT_SIZE_TYPE_FRACTIONAL}、{@link #TEXT_SIZE_TYPE_FRACTIONAL_IGNORE_PADDING} 或 {@link #TEXT_SIZE_TYPE_ABSOLUTE} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+  // @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法向后兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    TYPE_UNSET,
-    TEXT_SIZE_TYPE_FRACTIONAL,
-    TEXT_SIZE_TYPE_FRACTIONAL_IGNORE_PADDING,
-    TEXT_SIZE_TYPE_ABSOLUTE
+      TYPE_UNSET,
+      TEXT_SIZE_TYPE_FRACTIONAL,
+      TEXT_SIZE_TYPE_FRACTIONAL_IGNORE_PADDING,
+      TEXT_SIZE_TYPE_ABSOLUTE
   })
   public @interface TextSizeType {}
 
-  /** Text size is measured as a fraction of the viewport size minus the view padding. */
+  /** 文本大小以视口大小减去视口内边距的分数为单位。 */
   public static final int TEXT_SIZE_TYPE_FRACTIONAL = 0;
 
-  /** Text size is measured as a fraction of the viewport size, ignoring the view padding */
+  /** 文本大小以视口大小的分数为单位，忽略视口内边距。 */
   public static final int TEXT_SIZE_TYPE_FRACTIONAL_IGNORE_PADDING = 1;
 
-  /** Text size is measured in number of pixels. */
+  /** 文本大小以像素为单位。 */
   public static final int TEXT_SIZE_TYPE_ABSOLUTE = 2;
 
   /**
-   * The type of vertical layout for this cue, which may be unset (i.e. horizontal). One of {@link
-   * #TYPE_UNSET}, {@link #VERTICAL_TYPE_RL} or {@link #VERTICAL_TYPE_LR}.
+   * 此字幕提示的垂直布局类型，可能未设置（即水平）。取值为 {@link #TYPE_UNSET}、{@link #VERTICAL_TYPE_RL} 或 {@link #VERTICAL_TYPE_LR} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+  // @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法向后兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    TYPE_UNSET,
-    VERTICAL_TYPE_RL,
-    VERTICAL_TYPE_LR,
+      TYPE_UNSET,
+      VERTICAL_TYPE_RL,
+      VERTICAL_TYPE_LR,
   })
   public @interface VerticalType {}
-
-  /** Vertical right-to-left (e.g. for Japanese). */
+  /** 垂直从右到左（例如用于日语）。 */
   public static final int VERTICAL_TYPE_RL = 1;
 
-  /** Vertical left-to-right (e.g. for Mongolian). */
+  /** 垂直从左到右（例如用于蒙古语）。 */
   public static final int VERTICAL_TYPE_LR = 2;
 
   /**
-   * The cue text, or null if this is an image cue. Note the {@link CharSequence} may be decorated
-   * with styling spans.
+   * 字幕文本，如果这是图像字幕则为 null。注意，{@link CharSequence} 可能被样式 Span 装饰。
    */
   @Nullable public final CharSequence text;
 
-  /** The alignment of the cue text within the cue box, or null if the alignment is undefined. */
+  /** 字幕文本在字幕框内的对齐方式，如果未定义对齐方式则为 null。 */
   @Nullable public final Alignment textAlignment;
 
   /**
-   * The alignment of multiple lines of text relative to the longest line, or null if the alignment
-   * is undefined.
+   * 多行文本相对于最长行的对齐方式，如果未定义对齐方式则为 null。
    */
   @Nullable public final Alignment multiRowAlignment;
 
-  /** The cue image, or null if this is a text cue. */
+  /** 字幕图像，如果这是文本字幕则为 null。 */
   @Nullable public final Bitmap bitmap;
 
   /**
-   * The position of the cue box within the viewport in the direction orthogonal to the writing
-   * direction (determined by {@link #verticalType}), or {@link #DIMEN_UNSET}. When set, the
-   * interpretation of the value depends on the value of {@link #lineType}.
+   * 字幕框在视口中与书写方向正交的方向上的位置（由 {@link #verticalType} 决定），或 {@link #DIMEN_UNSET}。当设置时，值的解释取决于 {@link #lineType} 的值。
    *
-   * <p>The measurement direction depends on {@link #verticalType}:
+   * <p>测量方向取决于 {@link #verticalType}：
    *
    * <ul>
-   *   <li>For {@link #TYPE_UNSET} (i.e. horizontal), this is the vertical position relative to the
-   *       top of the viewport.
-   *   <li>For {@link #VERTICAL_TYPE_LR} this is the horizontal position relative to the left of the
-   *       viewport.
-   *   <li>For {@link #VERTICAL_TYPE_RL} this is the horizontal position relative to the right of
-   *       the viewport.
+   *   <li>对于 {@link #TYPE_UNSET}（即水平），这是相对于视口顶部的垂直位置。
+   *   <li>对于 {@link #VERTICAL_TYPE_LR}，这是相对于视口左侧的水平位置。
+   *   <li>对于 {@link #VERTICAL_TYPE_RL}，这是相对于视口右侧的水平位置。
    * </ul>
    */
   public final float line;
 
   /**
-   * The type of the {@link #line} value.
+   * {@link #line} 值的类型。
    *
    * <ul>
-   *   <li>{@link #LINE_TYPE_FRACTION} indicates that {@link #line} is a fractional position within
-   *       the viewport (measured to the part of the cue box determined by {@link #lineAnchor}).
-   *   <li>{@link #LINE_TYPE_NUMBER} indicates that {@link #line} is a viewport line number. The
-   *       viewport is divided into lines (each equal in size to the first line of the cue box). The
-   *       cue box is positioned to align with the viewport lines as follows:
+   *   <li>{@link #LINE_TYPE_FRACTION} 表示 {@link #line} 是视口中的分数位置（测量到由 {@link #lineAnchor} 决定的字幕框部分）。
+   *   <li>{@link #LINE_TYPE_NUMBER} 表示 {@link #line} 是视口行号。视口被划分为若干行（每行大小等于字幕框的第一行）。字幕框的位置按如下方式与视口行对齐：
    *       <ul>
-   *         <li>{@link #lineAnchor}) is ignored.
-   *         <li>When {@code line} is greater than or equal to 0 the first line in the cue box is
-   *             aligned with a viewport line, with 0 meaning the first line of the viewport.
-   *         <li>When {@code line} is negative the last line in the cue box is aligned with a
-   *             viewport line, with -1 meaning the last line of the viewport.
-   *         <li>For horizontal text the start and end of the viewport are the top and bottom
-   *             respectively.
+   *         <li>{@link #lineAnchor} 被忽略。
+   *         <li>当 {@code line} 大于或等于 0 时，字幕框的第一行与视口行对齐，0 表示视口的第一行。
+   *         <li>当 {@code line} 为负数时，字幕框的最后一行与视口行对齐，-1 表示视口的最后一行。
+   *         <li>对于水平文本，视口的开始和结束分别是顶部和底部。
    *       </ul>
    * </ul>
    */
   public final @LineType int lineType;
 
   /**
-   * The cue box anchor positioned by {@link #line} when {@link #lineType} is {@link
-   * #LINE_TYPE_FRACTION}.
+   * 当 {@link #lineType} 为 {@link #LINE_TYPE_FRACTION} 时，由 {@link #line} 定位的字幕框锚点。
    *
-   * <p>One of:
+   * <p>取值为：
    *
    * <ul>
    *   <li>{@link #ANCHOR_TYPE_START}
@@ -219,78 +189,61 @@ public final class Cue {
    *   <li>{@link #TYPE_UNSET}
    * </ul>
    *
-   * <p>For the normal case of horizontal text, {@link #ANCHOR_TYPE_START}, {@link
-   * #ANCHOR_TYPE_MIDDLE} and {@link #ANCHOR_TYPE_END} correspond to the top, middle and bottom of
-   * the cue box respectively.
+   * <p>对于正常的水平文本，{@link #ANCHOR_TYPE_START}、{@link #ANCHOR_TYPE_MIDDLE} 和 {@link #ANCHOR_TYPE_END} 分别对应于字幕框的顶部、中间和底部。
    */
   public final @AnchorType int lineAnchor;
-
   /**
-   * The fractional position of the {@link #positionAnchor} of the cue box within the viewport in
-   * the direction orthogonal to {@link #line}, or {@link #DIMEN_UNSET}.
+   * 字幕框的 {@link #positionAnchor} 在视口中与 {@link #line} 正交方向上的分数位置，或 {@link #DIMEN_UNSET}。
    *
-   * <p>The measurement direction depends on {@link #verticalType}.
+   * <p>测量方向取决于 {@link #verticalType}。
    *
    * <ul>
-   *   <li>For {@link #TYPE_UNSET} (i.e. horizontal), this is the horizontal position relative to
-   *       the left of the viewport. Note that positioning is relative to the left of the viewport
-   *       even in the case of right-to-left text.
-   *   <li>For {@link #VERTICAL_TYPE_LR} and {@link #VERTICAL_TYPE_RL} (i.e. vertical), this is the
-   *       vertical position relative to the top of the viewport.
+   *   <li>对于 {@link #TYPE_UNSET}（即水平），这是相对于视口左侧的水平位置。注意，即使对于从右到左的文本，定位也是相对于视口的左侧。
+   *   <li>对于 {@link #VERTICAL_TYPE_LR} 和 {@link #VERTICAL_TYPE_RL}（即垂直），这是相对于视口顶部的垂直位置。
    * </ul>
    */
   public final float position;
 
   /**
-   * The cue box anchor positioned by {@link #position}. One of {@link #ANCHOR_TYPE_START}, {@link
-   * #ANCHOR_TYPE_MIDDLE}, {@link #ANCHOR_TYPE_END} and {@link #TYPE_UNSET}.
+   * 由 {@link #position} 定位的字幕框锚点。取值为 {@link #ANCHOR_TYPE_START}、{@link #ANCHOR_TYPE_MIDDLE}、{@link #ANCHOR_TYPE_END} 或 {@link #TYPE_UNSET} 之一。
    *
-   * <p>For the normal case of horizontal text, {@link #ANCHOR_TYPE_START}, {@link
-   * #ANCHOR_TYPE_MIDDLE} and {@link #ANCHOR_TYPE_END} correspond to the left, middle and right of
-   * the cue box respectively.
+   * <p>对于正常的水平文本，{@link #ANCHOR_TYPE_START}、{@link #ANCHOR_TYPE_MIDDLE} 和 {@link #ANCHOR_TYPE_END} 分别对应于字幕框的左侧、中间和右侧。
    */
   public final @AnchorType int positionAnchor;
 
   /**
-   * The size of the cue box in the writing direction specified as a fraction of the viewport size
-   * in that direction, or {@link #DIMEN_UNSET}.
+   * 字幕框在书写方向上的大小，以视口在该方向上的大小的分数表示，或 {@link #DIMEN_UNSET}。
    */
   public final float size;
 
   /**
-   * The bitmap height as a fraction of the of the viewport size, or {@link #DIMEN_UNSET} if the
-   * bitmap should be displayed at its natural height given the bitmap dimensions and the specified
-   * {@link #size}.
+   * 位图高度作为视口大小的分数，或 {@link #DIMEN_UNSET}，如果位图应根据其自然高度显示（给定位图尺寸和指定的 {@link #size}）。
    */
   public final float bitmapHeight;
 
-  /** Specifies whether or not the {@link #windowColor} property is set. */
+  /** 指定 {@link #windowColor} 属性是否已设置。 */
   public final boolean windowColorSet;
 
-  /** The fill color of the window. */
+  /** 窗口的填充颜色。 */
   public final int windowColor;
 
   /**
-   * The default text size type for this cue's text, or {@link #TYPE_UNSET} if this cue has no
-   * default text size.
+   * 此字幕文本的默认文本大小类型，或 {@link #TYPE_UNSET}，如果此字幕没有默认文本大小。
    */
   public final @TextSizeType int textSizeType;
 
   /**
-   * The default text size for this cue's text, or {@link #DIMEN_UNSET} if this cue has no default
-   * text size.
+   * 此字幕文本的默认文本大小，或 {@link #DIMEN_UNSET}，如果此字幕没有默认文本大小。
    */
   public final float textSize;
 
   /**
-   * The vertical formatting of this Cue, or {@link #TYPE_UNSET} if the cue has no vertical setting
-   * (and so should be horizontal).
+   * 此字幕的垂直格式，或 {@link #TYPE_UNSET}，如果字幕没有垂直设置（因此应为水平）。
    */
   public final @VerticalType int verticalType;
 
   /**
-   * The shear angle in degrees to be applied to this Cue, expressed in graphics coordinates. This
-   * results in a skew transform for the block along the inline progression axis.
+   * 应用于此字幕的剪切角度（以度为单位），以图形坐标表示。这将导致沿内联进度轴对块进行倾斜变换。
    */
   public final float shearDegrees;
 
@@ -343,7 +296,7 @@ public final class Cue {
     this.shearDegrees = shearDegrees;
   }
 
-  /** Returns a new {@link Cue.Builder} initialized with the same values as this Cue. */
+  /** 返回一个新的 {@link Cue.Builder}，并使用此 Cue 的值进行初始化。 */
   @UnstableApi
   public Builder buildUpon() {
     return new Cue.Builder(this);
@@ -460,11 +413,10 @@ public final class Cue {
       verticalType = cue.verticalType;
       shearDegrees = cue.shearDegrees;
     }
-
     /**
-     * Sets the cue text.
+     * 设置字幕文本。
      *
-     * <p>Note that {@code text} may be decorated with styling spans.
+     * <p>注意，{@code text} 可能被样式 Span 装饰。
      *
      * @see Cue#text
      */
@@ -475,7 +427,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the cue text.
+     * 获取字幕文本。
      *
      * @see Cue#text
      */
@@ -486,7 +438,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the cue image.
+     * 设置字幕图像。
      *
      * @see Cue#bitmap
      */
@@ -497,7 +449,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the cue image.
+     * 获取字幕图像。
      *
      * @see Cue#bitmap
      */
@@ -508,9 +460,9 @@ public final class Cue {
     }
 
     /**
-     * Sets the alignment of the cue text within the cue box.
+     * 设置字幕文本在字幕框内的对齐方式。
      *
-     * <p>Passing null means the alignment is undefined.
+     * <p>传递 null 表示对齐方式未定义。
      *
      * @see Cue#textAlignment
      */
@@ -521,7 +473,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the alignment of the cue text within the cue box, or null if the alignment is undefined.
+     * 获取字幕文本在字幕框内的对齐方式，如果未定义对齐方式则返回 null。
      *
      * @see Cue#textAlignment
      */
@@ -532,9 +484,9 @@ public final class Cue {
     }
 
     /**
-     * Sets the multi-row alignment of the cue.
+     * 设置字幕的多行对齐方式。
      *
-     * <p>Passing null means the alignment is undefined.
+     * <p>传递 null 表示对齐方式未定义。
      *
      * @see Cue#multiRowAlignment
      */
@@ -545,8 +497,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the position of the cue box within the viewport in the direction orthogonal to the
-     * writing direction.
+     * 设置字幕框在视口中与书写方向正交的方向上的位置。
      *
      * @see Cue#line
      * @see Cue#lineType
@@ -559,8 +510,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the position of the {@code lineAnchor} of the cue box within the viewport in the
-     * direction orthogonal to the writing direction.
+     * 获取字幕框的 {@code lineAnchor} 在视口中与书写方向正交的方向上的位置。
      *
      * @see Cue#line
      */
@@ -570,7 +520,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the type of the value of {@link #getLine()}.
+     * 获取 {@link #getLine()} 值的类型。
      *
      * @see Cue#lineType
      */
@@ -580,7 +530,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the cue box anchor positioned by {@link #setLine(float, int) line}.
+     * 设置由 {@link #setLine(float, int) line} 定位的字幕框锚点。
      *
      * @see Cue#lineAnchor
      */
@@ -591,7 +541,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the cue box anchor positioned by {@link #setLine(float, int) line}.
+     * 获取由 {@link #setLine(float, int) line} 定位的字幕框锚点。
      *
      * @see Cue#lineAnchor
      */
@@ -601,8 +551,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the fractional position of the {@link #setPositionAnchor(int) positionAnchor} of the cue
-     * box within the viewport in the direction orthogonal to {@link #setLine(float, int) line}.
+     * 设置字幕框的 {@link #setPositionAnchor(int) positionAnchor} 在视口中与 {@link #setLine(float, int) line} 正交方向上的分数位置。
      *
      * @see Cue#position
      */
@@ -613,8 +562,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the fractional position of the {@link #setPositionAnchor(int) positionAnchor} of the cue
-     * box within the viewport in the direction orthogonal to {@link #setLine(float, int) line}.
+     * 获取字幕框的 {@link #setPositionAnchor(int) positionAnchor} 在视口中与 {@link #setLine(float, int) line} 正交方向上的分数位置。
      *
      * @see Cue#position
      */
@@ -624,7 +572,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the cue box anchor positioned by {@link #setPosition(float) position}.
+     * 设置由 {@link #setPosition(float) position} 定位的字幕框锚点。
      *
      * @see Cue#positionAnchor
      */
@@ -635,7 +583,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the cue box anchor positioned by {@link #setPosition(float) position}.
+     * 获取由 {@link #setPosition(float) position} 定位的字幕框锚点。
      *
      * @see Cue#positionAnchor
      */
@@ -645,7 +593,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the default text size and type for this cue's text.
+     * 设置此字幕文本的默认文本大小和类型。
      *
      * @see Cue#textSize
      * @see Cue#textSizeType
@@ -658,7 +606,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the default text size type for this cue's text.
+     * 获取此字幕文本的默认文本大小类型。
      *
      * @see Cue#textSizeType
      */
@@ -668,7 +616,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the default text size for this cue's text.
+     * 获取此字幕文本的默认文本大小。
      *
      * @see Cue#textSize
      */
@@ -676,10 +624,8 @@ public final class Cue {
     public float getTextSize() {
       return textSize;
     }
-
     /**
-     * Sets the size of the cue box in the writing direction specified as a fraction of the viewport
-     * size in that direction.
+     * 设置字幕框在书写方向上的大小，以视口在该方向上的大小的分数表示。
      *
      * @see Cue#size
      */
@@ -690,8 +636,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the size of the cue box in the writing direction specified as a fraction of the viewport
-     * size in that direction.
+     * 获取字幕框在书写方向上的大小，以视口在该方向上的大小的分数表示。
      *
      * @see Cue#size
      */
@@ -701,7 +646,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the bitmap height as a fraction of the viewport size.
+     * 设置位图高度作为视口大小的分数。
      *
      * @see Cue#bitmapHeight
      */
@@ -712,7 +657,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the bitmap height as a fraction of the viewport size.
+     * 获取位图高度作为视口大小的分数。
      *
      * @see Cue#bitmapHeight
      */
@@ -722,9 +667,9 @@ public final class Cue {
     }
 
     /**
-     * Sets the fill color of the window.
+     * 设置窗口的填充颜色。
      *
-     * <p>Also sets {@link Cue#windowColorSet} to true.
+     * <p>同时将 {@link Cue#windowColorSet} 设置为 true。
      *
      * @see Cue#windowColor
      * @see Cue#windowColorSet
@@ -736,7 +681,7 @@ public final class Cue {
       return this;
     }
 
-    /** Sets {@link Cue#windowColorSet} to false. */
+    /** 将 {@link Cue#windowColorSet} 设置为 false。 */
     @CanIgnoreReturnValue
     public Builder clearWindowColor() {
       this.windowColorSet = false;
@@ -744,7 +689,7 @@ public final class Cue {
     }
 
     /**
-     * Returns true if the fill color of the window is set.
+     * 返回窗口的填充颜色是否已设置。
      *
      * @see Cue#windowColorSet
      */
@@ -753,7 +698,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the fill color of the window.
+     * 获取窗口的填充颜色。
      *
      * @see Cue#windowColor
      */
@@ -764,7 +709,7 @@ public final class Cue {
     }
 
     /**
-     * Sets the vertical formatting for this Cue.
+     * 设置此字幕的垂直格式。
      *
      * @see Cue#verticalType
      */
@@ -774,7 +719,7 @@ public final class Cue {
       return this;
     }
 
-    /** Sets the shear angle for this Cue. */
+    /** 设置此字幕的剪切角度。 */
     @CanIgnoreReturnValue
     public Builder setShearDegrees(float shearDegrees) {
       this.shearDegrees = shearDegrees;
@@ -782,7 +727,7 @@ public final class Cue {
     }
 
     /**
-     * Gets the vertical formatting for this Cue.
+     * 获取此字幕的垂直格式。
      *
      * @see Cue#verticalType
      */
@@ -833,22 +778,19 @@ public final class Cue {
   private static final String FIELD_WINDOW_COLOR_SET = Util.intToStringMaxRadix(14);
   private static final String FIELD_VERTICAL_TYPE = Util.intToStringMaxRadix(15);
   private static final String FIELD_SHEAR_DEGREES = Util.intToStringMaxRadix(16);
-
   /**
-   * Returns a {@link Bundle} that can be serialized to bytes.
+   * 返回一个可以序列化为字节的 {@link Bundle}。
    *
-   * <p>Prefer the more efficient {@link #toBinderBasedBundle()} if the result doesn't need to be
-   * serialized.
+   * <p>如果结果不需要序列化，请优先使用更高效的 {@link #toBinderBasedBundle()}。
    *
-   * <p>The {@link Bundle} returned from this method must not be passed to other processes that
-   * might be using a different version of the media3 library.
+   * <p>从此方法返回的 {@link Bundle} 不得传递给可能使用不同版本 media3 库的其他进程。
    */
   @UnstableApi
   public Bundle toSerializableBundle() {
     Bundle bundle = toBundleWithoutBitmap();
     if (bitmap != null) {
       ByteArrayOutputStream output = new ByteArrayOutputStream();
-      // The PNG format is lossless, and the quality parameter is ignored.
+      // PNG 格式是无损的，质量参数被忽略。
       checkState(bitmap.compress(Bitmap.CompressFormat.PNG, /* quality= */ 0, output));
       bundle.putByteArray(FIELD_BITMAP_BYTES, output.toByteArray());
     }
@@ -856,13 +798,11 @@ public final class Cue {
   }
 
   /**
-   * Returns a {@link Bundle} that may contain {@link Binder} references, meaning it cannot be
-   * safely serialized to bytes.
+   * 返回一个可能包含 {@link Binder} 引用的 {@link Bundle}，这意味着它不能安全地序列化为字节。
    *
-   * <p>The {@link Bundle} returned from this method can be safely sent between processes and parsed
-   * by older versions of the media3 library.
+   * <p>从此方法返回的 {@link Bundle} 可以安全地在进程之间传递，并被旧版本的 media3 库解析。
    *
-   * <p>Use {@link #toSerializableBundle()} to get a {@link Bundle} that can be safely serialized.
+   * <p>如果需要获取可以安全序列化的 {@link Bundle}，请使用 {@link #toSerializableBundle()}。
    */
   @UnstableApi
   public Bundle toBinderBasedBundle() {
@@ -874,7 +814,7 @@ public final class Cue {
   }
 
   /**
-   * @deprecated Use {@link #toSerializableBundle()} or {@link #toBinderBasedBundle()} instead.
+   * @deprecated 请改用 {@link #toSerializableBundle()} 或 {@link #toBinderBasedBundle()}。
    */
   @UnstableApi
   @Deprecated

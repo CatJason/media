@@ -19,17 +19,16 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 
 /**
- * Provides serialization support for custom Media3 styling spans.
+ * 为自定义 Media3 样式 Span 提供序列化支持。
  *
- * <p>Custom Media3 spans are not serialized by {@link Bundle#putCharSequence}, unlike
- * platform-provided spans such as {@link StrikethroughSpan}, {@link UnderlineSpan}, {@link
- * BackgroundColorSpan} etc.
+ * <p>与平台提供的 Span（如 {@link StrikethroughSpan}、{@link UnderlineSpan}、{@link BackgroundColorSpan} 等）不同，
+ * 自定义 Media3 Span 无法通过 {@link Bundle#putCharSequence} 进行序列化。
  *
- * <p>{@link Cue#text} might contain custom spans, there is a need for serialization support.
+ * <p>由于 {@link Cue#text} 可能包含自定义 Span，因此需要提供序列化支持。
  */
 /* package */ final class CustomSpanBundler {
 
-  /** Media3 custom span implementations. */
+  /** Media3 自定义 Span 的实现。 */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({TYPE_USE})
@@ -52,7 +51,7 @@ import java.util.ArrayList;
   private static final String FIELD_TYPE = Util.intToStringMaxRadix(3);
   private static final String FIELD_PARAMS = Util.intToStringMaxRadix(4);
 
-  @SuppressWarnings("NonApiType") // Intentionally using ArrayList for putParcelableArrayList.
+  @SuppressWarnings("NonApiType") // 有意使用 ArrayList 作为 putParcelableArrayList 的参数。
   public static ArrayList<Bundle> bundleCustomSpans(Spanned text) {
     ArrayList<Bundle> bundledCustomSpans = new ArrayList<>();
     for (RubySpan span : text.getSpans(0, text.length(), RubySpan.class)) {

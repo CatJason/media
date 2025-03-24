@@ -6,17 +6,16 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Base class for audio processors that keep an output buffer and an internal buffer that is reused
- * whenever input is queued. Subclasses should override {@link #onConfigure(AudioFormat)} to return
- * the output audio format for the processor if it's active.
+ * 音频处理器的基类，该类维护一个输出缓冲区和一个内部缓冲区，每当输入被加入队列时都会重用该内部缓冲区。
+ * 子类应重写 {@link #onConfigure(AudioFormat)} 以返回处理器的输出音频格式（如果处理器处于激活状态）。
  */
 @UnstableApi
 public abstract class BaseAudioProcessor implements AudioProcessor {
 
-  /** The current input audio format. */
+  /** 当前的输入音频格式。 */
   protected AudioFormat inputAudioFormat;
 
-  /** The current output audio format. */
+  /** 当前的输出音频格式。 */
   protected AudioFormat outputAudioFormat;
 
   private AudioFormat pendingInputAudioFormat;
@@ -90,9 +89,8 @@ public abstract class BaseAudioProcessor implements AudioProcessor {
   }
 
   /**
-   * Replaces the current output buffer with a buffer of at least {@code size} bytes and returns it.
-   * Callers should write to the returned buffer then {@link ByteBuffer#flip()} it so it can be read
-   * via {@link #getOutput()}.
+   * 用至少 {@code size} 字节的缓冲区替换当前输出缓冲区并返回它。
+   * 调用者应写入返回的缓冲区，然后调用 {@link ByteBuffer#flip()}，以便可以通过 {@link #getOutput()} 读取。
    */
   protected final ByteBuffer replaceOutputBuffer(int size) {
     if (buffer.capacity() < size) {
@@ -104,29 +102,29 @@ public abstract class BaseAudioProcessor implements AudioProcessor {
     return buffer;
   }
 
-  /** Returns whether the current output buffer has any data remaining. */
+  /** 返回当前输出缓冲区是否还有剩余数据。 */
   protected final boolean hasPendingOutput() {
     return outputBuffer.hasRemaining();
   }
 
-  /** Called when the processor is configured for a new input format. */
+  /** 当处理器为新输入格式配置时调用。 */
   protected AudioFormat onConfigure(AudioFormat inputAudioFormat)
       throws UnhandledAudioFormatException {
     return AudioFormat.NOT_SET;
   }
 
-  /** Called when the end-of-stream is queued to the processor. */
+  /** 当流结束信号被加入处理器时调用。 */
   protected void onQueueEndOfStream() {
-    // Do nothing.
+    // 默认不执行任何操作。
   }
 
-  /** Called when the processor is flushed, directly or as part of resetting. */
+  /** 当处理器被刷新时调用，无论是直接刷新还是作为重置的一部分。 */
   protected void onFlush() {
-    // Do nothing.
+    // 默认不执行任何操作。
   }
 
-  /** Called when the processor is reset. */
+  /** 当处理器被重置时调用。 */
   protected void onReset() {
-    // Do nothing.
+    // 默认不执行任何操作。
   }
 }

@@ -7,9 +7,9 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 
 /**
- * Sonic audio stream processor for time/pitch stretching.
+ * Sonic 音频流处理器，用于时间/音高拉伸。
  *
- * <p>Based on https://github.com/waywardgeek/sonic.
+ * <p>基于 https://github.com/waywardgeek/sonic。
  */
 /* package */ final class Sonic {
 
@@ -38,13 +38,10 @@ import java.util.Arrays;
   private int newRatePosition;
 
   /**
-   * Number of frames pending to be copied from {@link #inputBuffer} directly to {@link
-   * #outputBuffer}.
+   * 等待从 {@link #inputBuffer} 直接复制到 {@link #outputBuffer} 的帧数。
    *
-   * <p>This field is only relevant to time-stretching or pitch-shifting in {@link
-   * #changeSpeed(double)}, particularly when more frames need to be copied to the {@link
-   * #outputBuffer} than are available in {@link #inputBuffer} and Sonic must wait until the next
-   * buffer (or EOS) is queued.
+   * <p>该字段仅与 {@link #changeSpeed(double)} 中的时间拉伸或音高变换相关，
+   * 特别是当需要复制到 {@link #outputBuffer} 的帧数超过 {@link #inputBuffer} 中可用帧数时，Sonic 必须等待直到下一个缓冲区（或 EOS）被加入队列。
    */
   private int remainingInputToCopyFrameCount;
 
@@ -55,13 +52,13 @@ import java.util.Arrays;
   private double accumulatedSpeedAdjustmentError;
 
   /**
-   * Creates a new Sonic audio stream processor.
+   * 创建一个新的 Sonic 音频流处理器。
    *
-   * @param inputSampleRateHz The sample rate of input audio, in hertz.
-   * @param channelCount The number of channels in the input audio.
-   * @param speed The speedup factor for output audio.
-   * @param pitch The pitch factor for output audio.
-   * @param outputSampleRateHz The sample rate for output audio, in hertz.
+   * @param inputSampleRateHz 输入音频的采样率，单位为赫兹（Hz）。
+   * @param channelCount 输入音频的通道数。
+   * @param speed 输出音频的加速因子。
+   * @param pitch 输出音频的音高因子。
+   * @param outputSampleRateHz 输出音频的采样率，单位为赫兹（Hz）。
    */
   public Sonic(
       int inputSampleRateHz, int channelCount, float speed, float pitch, int outputSampleRateHz) {
@@ -80,18 +77,16 @@ import java.util.Arrays;
   }
 
   /**
-   * Returns the number of bytes that have been input, but will not be processed until more input
-   * data is provided.
+   * 返回已输入但尚未处理的字节数，直到提供更多输入数据时才会处理。
    */
   public int getPendingInputBytes() {
     return inputFrameCount * channelCount * BYTES_PER_SAMPLE;
   }
 
   /**
-   * Queues remaining data from {@code buffer}, and advances its position by the number of bytes
-   * consumed.
+   * 将 {@code buffer} 中剩余的数据加入队列，并根据消耗的字节数推进其位置。
    *
-   * @param buffer A {@link ShortBuffer} containing input data between its position and limit.
+   * @param buffer 一个 {@link ShortBuffer}，包含其位置和限制之间的输入数据。
    */
   public void queueInput(ShortBuffer buffer) {
     int framesToWrite = buffer.remaining() / channelCount;
@@ -103,10 +98,9 @@ import java.util.Arrays;
   }
 
   /**
-   * Gets available output, outputting to the start of {@code buffer}. The buffer's position will be
-   * advanced by the number of bytes written.
+   * 获取可用的输出，并将其写入 {@code buffer} 的起始位置。缓冲区的位置将根据写入的字节数推进。
    *
-   * @param buffer A {@link ShortBuffer} into which output will be written.
+   * @param buffer 一个 {@link ShortBuffer}，用于写入输出。
    */
   public void getOutput(ShortBuffer buffer) {
     int framesToRead = min(buffer.remaining() / channelCount, outputFrameCount);
@@ -121,33 +115,30 @@ import java.util.Arrays;
   }
 
   /**
-   * Forces generating output using whatever data has been queued already. No extra delay will be
-   * added to the output, but flushing in the middle of words could introduce distortion.
+   * 强制使用已排队的任何数据生成输出。不会在输出中添加额外的延迟，但在单词中间刷新可能会引入失真。
    */
   public void queueEndOfStream() {
     int remainingFrameCount = inputFrameCount;
     double s = speed / pitch;
     double r = rate * pitch;
 
-    // If there are frames to be copied directly onto the output buffer, we should not count those
-    // as "input frames" because Sonic is not applying any processing on them.
+    // 如果有帧可以直接复制到输出缓冲区，则不应将其计为“输入帧”，因为 Sonic 不会对它们进行任何处理。
     int adjustedRemainingFrames = remainingFrameCount - remainingInputToCopyFrameCount;
 
-    // We add directly to the output the number of frames in remainingInputToCopyFrameCount.
-    // Otherwise, expectedOutputFrames will be off and will make Sonic output an incorrect number of
-    // frames.
+    // 我们将 remainingInputToCopyFrameCount 中的帧数直接添加到输出中。
+    // 否则，expectedOutputFrames 将不准确，并导致 Sonic 输出错误的帧数。
     int expectedOutputFrames =
         outputFrameCount
             + (int)
-                ((adjustedRemainingFrames / s
-                            + remainingInputToCopyFrameCount
-                            + accumulatedSpeedAdjustmentError
-                            + pitchFrameCount)
-                        / r
-                    + 0.5);
+            ((adjustedRemainingFrames / s
+                + remainingInputToCopyFrameCount
+                + accumulatedSpeedAdjustmentError
+                + pitchFrameCount)
+                / r
+                + 0.5);
     accumulatedSpeedAdjustmentError = 0;
 
-    // Add enough silence to flush both input and pitch buffers.
+    // 添加足够的静音以刷新输入和音高缓冲区。
     inputBuffer =
         ensureSpaceForAdditionalFrames(
             inputBuffer, inputFrameCount, remainingFrameCount + 2 * maxRequiredFrameCount);
@@ -156,17 +147,17 @@ import java.util.Arrays;
     }
     inputFrameCount += 2 * maxRequiredFrameCount;
     processStreamInput();
-    // Throw away any extra frames we generated due to the silence we added.
+    // 丢弃由于添加静音而生成的额外帧。
     if (outputFrameCount > expectedOutputFrames) {
       outputFrameCount = expectedOutputFrames;
     }
-    // Empty input and pitch buffers.
+    // 清空输入和音高缓冲区。
     inputFrameCount = 0;
     remainingInputToCopyFrameCount = 0;
     pitchFrameCount = 0;
   }
 
-  /** Clears state in preparation for receiving a new stream of input buffers. */
+  /** 清除状态，准备接收新的输入缓冲区流。 */
   public void flush() {
     inputFrameCount = 0;
     outputFrameCount = 0;
@@ -181,22 +172,20 @@ import java.util.Arrays;
     accumulatedSpeedAdjustmentError = 0;
   }
 
-  /** Returns the size of output that can be read with {@link #getOutput(ShortBuffer)}, in bytes. */
+  /** 返回可以通过 {@link #getOutput(ShortBuffer)} 读取的输出大小，单位为字节。 */
   public int getOutputSize() {
     return outputFrameCount * channelCount * BYTES_PER_SAMPLE;
   }
 
-  // Internal methods.
+// 内部方法。
 
   /**
-   * Returns {@code buffer} or a copy of it, such that there is enough space in the returned buffer
-   * to store {@code newFrameCount} additional frames.
+   * 返回 {@code buffer} 或其副本，确保返回的缓冲区中有足够的空间来存储 {@code newFrameCount} 个额外帧。
    *
-   * @param buffer The buffer.
-   * @param frameCount The number of frames already in the buffer.
-   * @param additionalFrameCount The number of additional frames that need to be stored in the
-   *     buffer.
-   * @return A buffer with enough space for the additional frames.
+   * @param buffer 缓冲区。
+   * @param frameCount 缓冲区中已有的帧数。
+   * @param additionalFrameCount 需要存储在缓冲区中的额外帧数。
+   * @return 具有足够空间存储额外帧的缓冲区。
    */
   private short[] ensureSpaceForAdditionalFrames(
       short[] buffer, int frameCount, int additionalFrameCount) {
@@ -235,8 +224,8 @@ import java.util.Arrays;
   }
 
   private void downSampleInput(short[] samples, int position, int skip) {
-    // If skip is greater than one, average skip samples together and write them to the down-sample
-    // buffer. If channelCount is greater than one, mix the channels together as we down sample.
+    // 如果 skip 大于 1，则将 skip 个样本取平均值并写入降采样缓冲区。
+    // 如果 channelCount 大于 1，则在降采样时混合通道。
     int frameCount = maxRequiredFrameCount / skip;
     int samplesPerValue = channelCount * skip;
     position *= channelCount;
@@ -251,8 +240,7 @@ import java.util.Arrays;
   }
 
   private int findPitchPeriodInRange(short[] samples, int position, int minPeriod, int maxPeriod) {
-    // Find the best frequency match in the range, and given a sample skip multiple. For now, just
-    // find the pitch of the first channel.
+    // 在给定范围内找到最佳频率匹配，并考虑样本跳过多重性。目前仅查找第一个通道的音高。
     int bestPeriod = 0;
     int worstPeriod = 255;
     int minDiff = 1;
@@ -265,9 +253,8 @@ import java.util.Arrays;
         short pVal = samples[position + period + i];
         diff += Math.abs(sVal - pVal);
       }
-      // Note that the highest number of samples we add into diff will be less than 256, since we
-      // skip samples. Thus, diff is a 24 bit number, and we can safely multiply by numSamples
-      // without overflow.
+      // 注意，由于我们跳过了样本，diff 的最大值将小于 256。因此，diff 是一个 24 位数，
+      // 我们可以安全地乘以 numSamples 而不会溢出。
       if (diff * bestPeriod < minDiff * period) {
         minDiff = diff;
         bestPeriod = period;
@@ -283,29 +270,27 @@ import java.util.Arrays;
   }
 
   /**
-   * Returns whether the previous pitch period estimate is a better approximation, which can occur
-   * at the abrupt end of voiced words.
+   * 返回先前的音高周期估计是否更优，这可能发生在有声词突然结束时。
    */
   private boolean previousPeriodBetter(int minDiff, int maxDiff) {
     if (minDiff == 0 || prevPeriod == 0) {
       return false;
     }
     if (maxDiff > minDiff * 3) {
-      // Got a reasonable match this period.
+      // 当前周期匹配合理。
       return false;
     }
     if (minDiff * 2 <= prevMinDiff * 3) {
-      // Mismatch is not that much greater this period.
+      // 当前周期的失配并不比之前大很多。
       return false;
     }
     return true;
   }
 
   private int findPitchPeriod(short[] samples, int position) {
-    // Find the pitch period. This is a critical step, and we may have to try multiple ways to get a
-    // good answer. This version uses AMDF. To improve speed, we down sample by an integer factor
-    // get in the 11 kHz range, and then do it again with a narrower frequency range without down
-    // sampling.
+    // 查找音高周期。这是一个关键步骤，我们可能需要尝试多种方法来获得一个好的结果。
+    // 此版本使用 AMDF（平均幅度差函数）。为了提高速度，我们首先通过整数因子降采样到 11 kHz 范围内，
+    // 然后在更窄的频率范围内再次查找，但不再降采样。
     int period;
     int retPeriod;
     int skip = inputSampleRateHz > AMDF_FREQUENCY ? inputSampleRateHz / AMDF_FREQUENCY : 1;
@@ -384,11 +369,10 @@ import java.util.Arrays;
       return;
     }
 
-    // Use long to avoid overflows int-int multiplications. The actual value of newSampleRate and
-    // oldSampleRate should always be comfortably within the int range.
+    // 使用 long 类型以避免 int 乘法溢出。newSampleRate 和 oldSampleRate 的实际值应始终在 int 范围内。
     long newSampleRate = (long) (inputSampleRateHz / rate);
     long oldSampleRate = inputSampleRateHz;
-    // Set these values to help with the integer math.
+    // 调整这些值以简化整数运算。
     while (newSampleRate != 0
         && oldSampleRate != 0
         && newSampleRate % 2 == 0
@@ -397,9 +381,9 @@ import java.util.Arrays;
       oldSampleRate /= 2;
     }
     moveNewSamplesToPitchBuffer(originalOutputFrameCount);
-    // Leave at least one pitch sample in the buffer.
+    // 在缓冲区中至少保留一个音高样本。
     for (int position = 0; position < pitchFrameCount - 1; position++) {
-      // Cast to long to avoid overflow.
+      // 转换为 long 以避免溢出。
       while ((oldRatePosition + 1) * newSampleRate > newRatePosition * oldSampleRate) {
         outputBuffer =
             ensureSpaceForAdditionalFrames(
@@ -422,7 +406,7 @@ import java.util.Arrays;
   }
 
   private int skipPitchPeriod(short[] samples, int position, double speed, int period) {
-    // Skip over a pitch period, and copy period/speed samples to the output.
+    // 跳过一个音高周期，并将 period/speed 个样本复制到输出中。
     int newFrameCount;
     if (speed >= 2.0f) {
       double expectedFrameCount = period / (speed - 1.0) + accumulatedSpeedAdjustmentError;
@@ -450,7 +434,7 @@ import java.util.Arrays;
   }
 
   private int insertPitchPeriod(short[] samples, int position, double speed, int period) {
-    // Insert a pitch period, and determine how much input to copy directly.
+    // 插入一个音高周期，并确定需要直接复制的输入数据量。
     int newFrameCount;
     if (speed < 0.5f) {
       double expectedFrameCount = period * speed / (1.0f - speed) + accumulatedSpeedAdjustmentError;
@@ -506,7 +490,7 @@ import java.util.Arrays;
   }
 
   private void processStreamInput() {
-    // Resample as many pitch periods as we have buffered on the input.
+    // 对输入缓冲区中已缓冲的尽可能多的音高周期进行重采样。
     int originalOutputFrameCount = outputFrameCount;
     double s = speed / pitch;
     float r = rate * pitch;

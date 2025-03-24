@@ -1,18 +1,15 @@
-/*
- * Copyright (C) 2020 The Android Open Source Project
+/**
+ * 版权所有 (C) 2020 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache 许可证 2.0 版本（“许可证”）授权；
+ * 除非符合许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * 除非适用法律要求或书面同意，否则依据许可证分发的软件按“原样”分发，
+ * 不提供任何形式的明示或暗示的担保或条件。
+ * 有关许可证的详细信息，请参阅许可证中的具体语言。
  */
 package androidx.media3.common.util;
 
@@ -28,20 +25,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * An unordered collection of elements that allows duplicates, but also allows access to a set of
- * unique elements.
+ * 一个允许重复元素的无序集合，同时也允许访问唯一元素集合。
  *
- * <p>This class is thread-safe using the same method as {@link
- * java.util.concurrent.CopyOnWriteArrayList}. Mutation methods cause the underlying data to be
- * copied. {@link #elementSet()} and {@link #iterator()} return snapshots that are unaffected by
- * subsequent mutations.
+ * <p>该类通过使用与 {@link java.util.concurrent.CopyOnWriteArrayList} 相同的方式实现线程安全。
+ * 修改方法会导致底层数据被复制。{@link #elementSet()} 和 {@link #iterator()} 返回的集合快照不受后续修改的影响。
  *
- * <p>Iterating directly on this class reveals duplicate elements. Unique elements can be accessed
- * via {@link #elementSet()}. Iteration order for both of these is not defined.
+ * <p>直接遍历该类会显示重复元素。唯一元素可以通过 {@link #elementSet()} 访问。这两种遍历的顺序未定义。
  *
- * @param <E> The type of element being stored.
+ * @param <E> 存储的元素类型。
  */
-// Intentionally extending @NonNull-by-default Object to disallow @Nullable E types.
+// 故意扩展 @NonNull-by-default Object 以禁止 @Nullable E 类型。
 @SuppressWarnings("TypeParameterExplicitlyExtendsObject")
 @UnstableApi
 public final class CopyOnWriteMultiset<E extends Object> implements Iterable<E> {
@@ -65,9 +58,9 @@ public final class CopyOnWriteMultiset<E extends Object> implements Iterable<E> 
   }
 
   /**
-   * Adds {@code element} to the multiset.
+   * 将 {@code element} 添加到多重集合中。
    *
-   * @param element The element to be added.
+   * @param element 要添加的元素。
    */
   public void add(E element) {
     synchronized (lock) {
@@ -86,9 +79,9 @@ public final class CopyOnWriteMultiset<E extends Object> implements Iterable<E> 
   }
 
   /**
-   * Removes {@code element} from the multiset.
+   * 从多重集合中移除 {@code element}。
    *
-   * @param element The element to be removed.
+   * @param element 要移除的元素。
    */
   public void remove(E element) {
     synchronized (lock) {
@@ -113,11 +106,11 @@ public final class CopyOnWriteMultiset<E extends Object> implements Iterable<E> 
   }
 
   /**
-   * Returns a snapshot of the unique elements currently in this multiset.
+   * 返回当前多重集合中唯一元素的快照。
    *
-   * <p>Changes to the underlying multiset are not reflected in the returned value.
+   * <p>对底层多重集合的修改不会反映在返回值中。
    *
-   * @return An unmodifiable set containing the unique elements in this multiset.
+   * @return 包含多重集合中唯一元素的不可修改集合。
    */
   public Set<E> elementSet() {
     synchronized (lock) {
@@ -126,12 +119,11 @@ public final class CopyOnWriteMultiset<E extends Object> implements Iterable<E> 
   }
 
   /**
-   * Returns an iterator over a snapshot of all the elements currently in this multiset (including
-   * duplicates).
+   * 返回一个遍历当前多重集合中所有元素（包括重复元素）快照的迭代器。
    *
-   * <p>Changes to the underlying multiset are not reflected in the returned value.
+   * <p>对底层多重集合的修改不会反映在返回值中。
    *
-   * @return An unmodifiable iterator over all the elements in this multiset (including duplicates).
+   * @return 遍历多重集合中所有元素（包括重复元素）的不可修改迭代器。
    */
   @Override
   public Iterator<E> iterator() {
@@ -140,7 +132,7 @@ public final class CopyOnWriteMultiset<E extends Object> implements Iterable<E> 
     }
   }
 
-  /** Returns the number of occurrences of an element in this multiset. */
+  /** 返回多重集合中某个元素出现的次数。 */
   public int count(E element) {
     synchronized (lock) {
       return elementCounts.containsKey(element) ? elementCounts.get(element) : 0;

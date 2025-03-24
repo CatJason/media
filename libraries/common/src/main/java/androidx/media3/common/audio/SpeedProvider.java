@@ -3,28 +3,26 @@ package androidx.media3.common.audio;
 import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
 
-/** A custom interface that determines the speed for media at specific timestamps. */
+/** 一个自定义接口，用于确定特定时间戳的媒体速度。 */
 @UnstableApi
 public interface SpeedProvider {
 
   /**
-   * Returns the media speed from the provided timestamp.
+   * 返回从提供的时间戳开始的媒体速度。
    *
-   * <p>The media speed will stay the same until {@linkplain #getNextSpeedChangeTimeUs the next
-   * specified speed change}.
+   * <p>媒体速度将保持不变，直到 {@linkplain #getNextSpeedChangeTimeUs 下一个指定的速度变化}。
    *
-   * @param timeUs The timestamp of the media.
-   * @return The speed that the media should be played at.
+   * @param timeUs 媒体的时间戳。
+   * @return 媒体应播放的速度。
    */
   float getSpeed(long timeUs);
 
   /**
-   * Returns the timestamp of the next speed change, if there is any.
+   * 返回下一个速度变化的时间戳（如果有）。
    *
-   * @param timeUs A timestamp, in microseconds.
-   * @return The timestamp of the next speed change, in microseconds, or {@link C#TIME_UNSET} if
-   *     there is no next speed change. If {@code timeUs} corresponds to a speed change, the
-   *     returned value corresponds to the following speed change.
+   * @param timeUs 一个时间戳，单位为微秒。
+   * @return 下一个速度变化的时间戳，单位为微秒，如果没有下一个速度变化，则返回 {@link C#TIME_UNSET}。
+   *     如果 {@code timeUs} 对应一个速度变化，则返回值对应下一个速度变化。
    */
   long getNextSpeedChangeTimeUs(long timeUs);
 }

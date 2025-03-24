@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import android.graphics.Color;
@@ -52,10 +37,10 @@ public final class ColorParser {
   private static final Map<String, Integer> COLOR_MAP;
 
   /**
-   * Parses a TTML color expression.
+   * 解析 TTML 颜色表达式。
    *
-   * @param colorExpression The color expression.
-   * @return The parsed ARGB color.
+   * @param colorExpression 颜色表达式。
+   * @return 解析后的 ARGB 颜色值。
    */
   @ColorInt
   public static int parseTtmlColor(String colorExpression) {
@@ -63,10 +48,10 @@ public final class ColorParser {
   }
 
   /**
-   * Parses a CSS color expression.
+   * 解析 CSS 颜色表达式。
    *
-   * @param colorExpression The color expression.
-   * @return The parsed ARGB color.
+   * @param colorExpression 颜色表达式。
+   * @return 解析后的 ARGB 颜色值。
    */
   @ColorInt
   public static int parseCssColor(String colorExpression) {
@@ -78,19 +63,19 @@ public final class ColorParser {
     Assertions.checkArgument(!TextUtils.isEmpty(colorExpression));
     colorExpression = colorExpression.replace(" ", "");
     if (colorExpression.charAt(0) == '#') {
-      // Parse using Long to avoid failure when colorExpression is greater than #7FFFFFFF.
+      // 使用 Long 解析，以避免当 colorExpression 大于 #7FFFFFFF 时解析失败。
       int color = (int) Long.parseLong(colorExpression.substring(1), 16);
       if (colorExpression.length() == 7) {
-        // Set the alpha value
+        // 设置 alpha 值
         color |= 0xFF000000;
       } else if (colorExpression.length() == 9) {
-        // We have #RRGGBBAA, but we need #AARRGGBB
+        // 我们有 #RRGGBBAA，但需要转换为 #AARRGGBB
         color = ((color & 0xFF) << 24) | (color >>> 8);
       } else {
         throw new IllegalArgumentException();
       }
       return color;
-    } else if (colorExpression.startsWith(RGBA)) {
+    }else if (colorExpression.startsWith(RGBA)) {
       Matcher matcher =
           (alphaHasFloatFormat ? RGBA_PATTERN_FLOAT_ALPHA : RGBA_PATTERN_INT_ALPHA)
               .matcher(colorExpression);

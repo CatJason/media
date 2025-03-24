@@ -7,26 +7,23 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
 /**
- * A styling span for ruby text.
+ * 用于注音文本的样式 Span。
  *
- * <p>The text covered by this span is known as the "base text", and the ruby text is stored in
- * {@link #rubyText}.
+ * <p>此 Span 覆盖的文本称为“基础文本”，而注音文本存储在 {@link #rubyText} 中。
  *
- * <p>More information on <a href="https://en.wikipedia.org/wiki/Ruby_character">ruby characters</a>
- * and <a href="https://developer.android.com/guide/topics/text/spans">span styling</a>.
+ * <p>更多信息请参考 <a href="https://en.wikipedia.org/wiki/Ruby_character">注音字符</a> 和
+ * <a href="https://developer.android.com/guide/topics/text/spans">Span 样式</a>。
  */
-// NOTE: There's no Android layout support for rubies, so this span currently doesn't extend any
-// styling superclasses (e.g. MetricAffectingSpan). The only way to render these rubies is to
-// extract the spans and do the layout manually.
-// TODO: Consider adding support for parenthetical text to be used when rendering doesn't support
-// rubies (e.g. HTML <rp> tag).
+// 注意：Android 布局不支持注音文本，因此此 Span 目前不继承任何样式超类（例如 MetricAffectingSpan）。
+// 渲染这些注音文本的唯一方法是提取 Span 并手动进行布局。
+// TODO: 考虑添加对括号文本的支持，以便在渲染不支持注音文本时使用（例如 HTML 的 <rp> 标签）。
 @UnstableApi
 public final class RubySpan implements LanguageFeatureSpan {
 
-  /** The ruby text, i.e. the smaller explanatory characters. */
+  /** 注音文本，即较小的解释性字符。 */
   public final String rubyText;
 
-  /** The position of the ruby text relative to the base text. */
+  /** 注音文本相对于基础文本的位置。 */
   public final @TextAnnotation.Position int position;
 
   private static final String FIELD_TEXT = Util.intToStringMaxRadix(0);

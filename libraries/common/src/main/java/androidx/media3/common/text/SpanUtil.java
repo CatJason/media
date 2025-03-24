@@ -6,25 +6,21 @@ import android.text.style.RelativeSizeSpan;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * Utility methods for Android <a href="https://developer.android.com/guide/topics/text/spans">span
- * styling</a>.
+ * 用于 Android <a href="https://developer.android.com/guide/topics/text/spans">Span 样式</a>的工具方法。
  */
 @UnstableApi
 public final class SpanUtil {
 
   /**
-   * Adds {@code span} to {@code spannable} between {@code start} and {@code end}, removing any
-   * existing spans of the same type and with the same indices and flags.
+   * 将 {@code span} 添加到 {@code spannable} 的 {@code start} 和 {@code end} 之间，移除任何具有相同类型、相同索引和相同标志的现有 Span。
    *
-   * <p>This is useful for types of spans that don't make sense to duplicate and where the
-   * evaluation order might have an unexpected impact on the final text, e.g. {@link
-   * ForegroundColorSpan}.
+   * <p>这对于某些 Span 类型非常有用，例如 {@link ForegroundColorSpan}，因为重复这些 Span 没有意义，且评估顺序可能会对最终文本产生意外影响。
    *
-   * @param spannable The {@link Spannable} to add {@code span} to.
-   * @param span The span object to be added.
-   * @param start The start index to add the new span at.
-   * @param end The end index to add the new span at.
-   * @param spanFlags The flags to pass to {@link Spannable#setSpan(Object, int, int, int)}.
+   * @param spannable 要添加 {@code span} 的 {@link Spannable}。
+   * @param span 要添加的 Span 对象。
+   * @param start 新 Span 的起始索引。
+   * @param end 新 Span 的结束索引。
+   * @param spanFlags 传递给 {@link Spannable#setSpan(Object, int, int, int)} 的标志。
    */
   public static void addOrReplaceSpan(
       Spannable spannable, Object span, int start, int end, int spanFlags) {
@@ -36,25 +32,19 @@ public final class SpanUtil {
   }
 
   /**
-   * Modifies the size of the text between {@code start} and {@code end} relative to any existing
-   * {@link RelativeSizeSpan} instances which cover <b>at least the same range</b>.
+   * 修改 {@code start} 和 {@code end} 之间文本的大小，相对于任何覆盖<b>至少相同范围</b>的现有 {@link RelativeSizeSpan} 实例。
    *
-   * <p>{@link RelativeSizeSpan} instances which only cover a part of the text between {@code start}
-   * and {@code end} are ignored.
+   * <p>仅覆盖 {@code start} 和 {@code end} 之间部分文本的 {@link RelativeSizeSpan} 实例将被忽略。
    *
-   * <p>A new {@link RelativeSizeSpan} instance is added between {@code start} and {@code end} with
-   * its {@code sizeChange} value computed by modifying the {@code size} parameter by the {@code
-   * sizeChange} of {@link RelativeSizeSpan} instances covering between {@code start} and {@code
-   * end}.
+   * <p>在 {@code start} 和 {@code end} 之间添加一个新的 {@link RelativeSizeSpan} 实例，其 {@code sizeChange} 值通过修改 {@code size} 参数与覆盖 {@code start} 和 {@code end} 之间的 {@link RelativeSizeSpan} 实例的 {@code sizeChange} 值计算得出。
    *
-   * <p>{@link RelativeSizeSpan} instances with the same {@code start}, {@code end}, and {@code
-   * spanFlags} are removed.
+   * <p>移除具有相同 {@code start}、{@code end} 和 {@code spanFlags} 的 {@link RelativeSizeSpan} 实例。
    *
-   * @param spannable The {@link Spannable} to add the {@link RelativeSizeSpan} to.
-   * @param size The fraction to modify the text size by.
-   * @param start The start index to add the new span at.
-   * @param end The end index to add the new span at.
-   * @param spanFlags The flags to pass to {@link Spannable#setSpan(Object, int, int, int)}.
+   * @param spannable 要添加 {@link RelativeSizeSpan} 的 {@link Spannable}。
+   * @param size 修改文本大小的比例。
+   * @param start 新 Span 的起始索引。
+   * @param end 新 Span 的结束索引。
+   * @param spanFlags 传递给 {@link Spannable#setSpan(Object, int, int, int)} 的标志。
    */
   public static void addInheritedRelativeSizeSpan(
       Spannable spannable, float size, int start, int end, int spanFlags) {

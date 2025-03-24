@@ -9,32 +9,32 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-/** Properties of a text annotation (i.e. ruby, text emphasis marks). */
+/** 文本注释的属性（例如注音、文本强调标记）。 */
 @UnstableApi
 public final class TextAnnotation {
-  /** The text annotation position is unknown. */
+  /** 文本注释的位置未知。 */
   public static final int POSITION_UNKNOWN = -1;
 
   /**
-   * For horizontal text, the text annotation should be positioned above the base text.
+   * 对于水平文本，文本注释应位于基础文本的上方。
    *
-   * <p>For vertical text it should be positioned to the right, same as CSS's <a
-   * href="https://developer.mozilla.org/en-US/docs/Web/CSS/ruby-position">ruby-position</a>.
+   * <p>对于垂直文本，它应位于右侧，与 CSS 的 <a
+   * href="https://developer.mozilla.org/en-US/docs/Web/CSS/ruby-position">ruby-position</a> 相同。
    */
   public static final int POSITION_BEFORE = 1;
 
   /**
-   * For horizontal text, the text annotation should be positioned below the base text.
+   * 对于水平文本，文本注释应位于基础文本的下方。
    *
-   * <p>For vertical text it should be positioned to the left, same as CSS's <a
-   * href="https://developer.mozilla.org/en-US/docs/Web/CSS/ruby-position">ruby-position</a>.
+   * <p>对于垂直文本，它应位于左侧，与 CSS 的 <a
+   * href="https://developer.mozilla.org/en-US/docs/Web/CSS/ruby-position">ruby-position</a> 相同。
    */
   public static final int POSITION_AFTER = 2;
 
   /**
-   * The possible positions of the annotation text relative to the base text.
+   * 注释文本相对于基础文本的可能位置。
    *
-   * <p>One of:
+   * <p>可能的值包括：
    *
    * <ul>
    *   <li>{@link #POSITION_UNKNOWN}

@@ -1,18 +1,3 @@
-/*
- * Copyright 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License
- */
 package androidx.media3.common.util;
 
 import android.graphics.Bitmap;
@@ -21,27 +6,23 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.MediaMetadata;
 import com.google.common.util.concurrent.ListenableFuture;
 
-/** Loads images. */
+/** 用于加载图像的接口。 */
 @UnstableApi
 public interface BitmapLoader {
 
-  /** Returns whether the given {@code mimeType} is supported. */
+  /** 返回是否支持给定的 {@code mimeType}。 */
   boolean supportsMimeType(String mimeType);
 
-  /** Decodes an image from compressed binary data. */
+  /** 从压缩的二进制数据中解码图像。 */
   ListenableFuture<Bitmap> decodeBitmap(byte[] data);
 
-  /** Loads an image from {@code uri}. */
+  /** 从 {@code uri} 加载图像。 */
   ListenableFuture<Bitmap> loadBitmap(Uri uri);
 
   /**
-   * Loads an image from {@link MediaMetadata}. Returns null if {@code metadata} doesn't contain
-   * bitmap information.
+   * 从 {@link MediaMetadata} 加载图像。如果 {@code metadata} 不包含位图信息，则返回 null。
    *
-   * <p>By default, the method will try to decode an image from {@link MediaMetadata#artworkData} if
-   * it is present. Otherwise, the method will try to load an image from {@link
-   * MediaMetadata#artworkUri} if it is present. The method will return null if neither {@link
-   * MediaMetadata#artworkData} nor {@link MediaMetadata#artworkUri} is present.
+   * <p>默认情况下，如果 {@link MediaMetadata#artworkData} 存在，该方法将尝试从中解码图像。否则，如果 {@link MediaMetadata#artworkUri} 存在，该方法将尝试从中加载图像。如果 {@link MediaMetadata#artworkData} 和 {@link MediaMetadata#artworkUri} 都不存在，则返回 null。
    */
   @Nullable
   default ListenableFuture<Bitmap> loadBitmapFromMetadata(MediaMetadata metadata) {

@@ -2,6 +2,6 @@ package androidx.media3.common.text;
 
 import androidx.media3.common.util.UnstableApi;
 
-/** Marker interface for span classes that carry language features rather than style information. */
+/** 用于标记携带语言特性而非样式信息的 Span 类的接口。 */
 @UnstableApi
 public interface LanguageFeatureSpan {}

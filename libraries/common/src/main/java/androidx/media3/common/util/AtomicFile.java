@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import java.io.File;
@@ -24,16 +9,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * A helper class for performing atomic operations on a file by creating a backup file until a write
- * has successfully completed.
+ * 一个辅助类，用于通过创建备份文件来执行原子文件操作，直到写入成功完成。
  *
- * <p>Atomic file guarantees file integrity by ensuring that a file has been completely written and
- * synced to disk before removing its backup. As long as the backup file exists, the original file
- * is considered to be invalid (left over from a previous attempt to write the file).
+ * <p>原子文件通过确保文件已完全写入并同步到磁盘后，再删除其备份来保证文件的完整性。只要备份文件存在，原始文件就被认为是无效的（是之前尝试写入文件时留下的）。
  *
- * <p>Atomic file does not confer any file locking semantics. Do not use this class when the file
- * may be accessed or modified concurrently by multiple threads or processes. The caller is
- * responsible for ensuring appropriate mutual exclusion invariants whenever it accesses the file.
+ * <p>原子文件不提供任何文件锁定语义。当文件可能被多个线程或进程并发访问或修改时，请勿使用此类。调用者负责在访问文件时确保适当的互斥不变量。
  */
 @UnstableApi
 public final class AtomicFile {
@@ -44,41 +24,37 @@ public final class AtomicFile {
   private final File backupName;
 
   /**
-   * Create a new AtomicFile for a file located at the given File path. The secondary backup file
-   * will be the same file path with ".bak" appended.
+   * 为指定路径的文件创建一个新的 AtomicFile。备份文件将在相同路径下附加 ".bak"。
    */
   public AtomicFile(File baseName) {
     this.baseName = baseName;
     backupName = new File(baseName.getPath() + ".bak");
   }
 
-  /** Returns whether the file or its backup exists. */
+  /** 返回文件或其备份是否存在。 */
   public boolean exists() {
     return baseName.exists() || backupName.exists();
   }
 
-  /** Delete the atomic file. This deletes both the base and backup files. */
+  /** 删除原子文件。这会同时删除基础文件和备份文件。 */
   public void delete() {
     baseName.delete();
     backupName.delete();
   }
 
   /**
-   * Start a new write operation on the file. This returns an {@link OutputStream} to which you can
-   * write the new file data. If the whole data is written successfully you <em>must</em> call
-   * {@link #endWrite(OutputStream)}. On failure you should call {@link OutputStream#close()} only
-   * to free up resources used by it.
+   * 开始对文件进行新的写入操作。此方法返回一个 {@link OutputStream}，您可以将新文件数据写入其中。如果数据成功写入，您<em>必须</em>调用 {@link #endWrite(OutputStream)}。在失败时，您应仅调用 {@link OutputStream#close()} 以释放其占用的资源。
    *
-   * <p>Example usage:
+   * <p>示例用法：
    *
    * <pre>
    *   DataOutputStream dataOutput = null;
    *   try {
    *     OutputStream outputStream = atomicFile.startWrite();
-   *     dataOutput = new DataOutputStream(outputStream); // Wrapper stream
+   *     dataOutput = new DataOutputStream(outputStream); // 包装流
    *     dataOutput.write(data1);
    *     dataOutput.write(data2);
-   *     atomicFile.endWrite(dataOutput); // Pass wrapper stream
+   *     atomicFile.endWrite(dataOutput); // 传递包装流
    *   } finally{
    *     if (dataOutput != null) {
    *       dataOutput.close();
@@ -86,17 +62,14 @@ public final class AtomicFile {
    *   }
    * </pre>
    *
-   * <p>Note that if another thread is currently performing a write, this will simply replace
-   * whatever that thread is writing with the new file being written by this thread, and when the
-   * other thread finishes the write the new write operation will no longer be safe (or will be
-   * lost). You must do your own threading protection for access to AtomicFile.
+   * <p>请注意，如果另一个线程当前正在执行写入操作，这将简单地用此线程正在写入的新文件替换该线程正在写入的内容，当另一个线程完成写入时，新的写入操作将不再安全（或将被丢失）。您必须自行对 AtomicFile 的访问进行线程保护。
    */
   public OutputStream startWrite() throws IOException {
-    // Rename the current file so it may be used as a backup during the next read
+    // 重命名当前文件，以便在下次读取时可用作备份
     if (baseName.exists()) {
       if (!backupName.exists()) {
         if (!baseName.renameTo(backupName)) {
-          Log.w(TAG, "Couldn't rename file " + baseName + " to backup file " + backupName);
+          Log.w(TAG, "无法将文件 " + baseName + " 重命名为备份文件 " + backupName);
         }
       } else {
         baseName.delete();
@@ -108,40 +81,34 @@ public final class AtomicFile {
     } catch (FileNotFoundException e) {
       File parent = baseName.getParentFile();
       if (parent == null || !parent.mkdirs()) {
-        throw new IOException("Couldn't create " + baseName, e);
+        throw new IOException("无法创建 " + baseName, e);
       }
-      // Try again now that we've created the parent directory.
+      // 现在已创建父目录，重试。
       try {
         str = new AtomicFileOutputStream(baseName);
       } catch (FileNotFoundException e2) {
-        throw new IOException("Couldn't create " + baseName, e2);
+        throw new IOException("无法创建 " + baseName, e2);
       }
     }
     return str;
   }
 
   /**
-   * Call when you have successfully finished writing to the stream returned by {@link
-   * #startWrite()}. This will close, sync, and commit the new data. The next attempt to read the
-   * atomic file will return the new file stream.
+   * 当您成功完成对 {@link #startWrite()} 返回的流的写入时调用此方法。这将关闭、同步并提交新数据。下次尝试读取原子文件时将返回新的文件流。
    *
-   * @param str Outer-most wrapper OutputStream used to write to the stream returned by {@link
-   *     #startWrite()}.
+   * @param str 用于写入 {@link #startWrite()} 返回的流的最外层包装 OutputStream。
    * @see #startWrite()
    */
   public void endWrite(OutputStream str) throws IOException {
     str.close();
-    // If close() throws exception, the next line is skipped.
+    // 如果 close() 抛出异常，则跳过下一行。
     backupName.delete();
   }
 
   /**
-   * Open the atomic file for reading. If there previously was an incomplete write, this will roll
-   * back to the last good data before opening for read.
+   * 打开原子文件进行读取。如果之前存在不完整的写入，这将回滚到最后一个有效数据，然后打开以供读取。
    *
-   * <p>Note that if another thread is currently performing a write, this will incorrectly consider
-   * it to be in the state of a bad write and roll back, causing the new data currently being
-   * written to be dropped. You must do your own threading protection for access to AtomicFile.
+   * <p>请注意，如果另一个线程当前正在执行写入操作，这将错误地认为它处于写入失败的状态并回滚，导致当前正在写入的新数据被丢弃。您必须自行对 AtomicFile 的访问进行线程保护。
    */
   public InputStream openRead() throws FileNotFoundException {
     restoreBackup();
@@ -174,7 +141,7 @@ public final class AtomicFile {
       try {
         fileOutputStream.getFD().sync();
       } catch (IOException e) {
-        Log.w(TAG, "Failed to sync file descriptor:", e);
+        Log.w(TAG, "同步文件描述符失败：", e);
       }
       fileOutputStream.close();
     }

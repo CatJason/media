@@ -5,22 +5,21 @@ import static androidx.media3.common.util.Assertions.checkArgument;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * An immutable matrix that describes the mapping of input channels to output channels.
+ * 一个不可变的矩阵，用于描述输入通道到输出通道的映射关系。
  *
- * <p>The matrix coefficients define the scaling factor to use when mixing samples from the input
- * channel (row) to the output channel (column).
+ * <p>矩阵系数定义了将输入通道（行）的样本混合到输出通道（列）时使用的缩放因子。
  *
- * <p>Examples:
+ * <p>示例：
  *
  * <ul>
- *   <li>Stereo to mono with each channel at half volume:
+ *   <li>立体声转单声道，每个通道的音量为一半：
  *       <pre>
  *         [0.5 0.5]</pre>
- *   <li>Stereo to stereo with no mixing or scaling:
+ *   <li>立体声转立体声，无混合或缩放：
  *       <pre>
  *         [1 0
  *          0 1]</pre>
- *   <li>Stereo to stereo with 0.7 volume:
+ *   <li>立体声转立体声，音量为 0.7：
  *       <pre>
  *         [0.7 0
  *          0 0.7]</pre>
@@ -36,18 +35,14 @@ public final class ChannelMixingMatrix {
   private final boolean isIdentity;
 
   /**
-   * Creates a standard channel mixing matrix that converts from {@code inputChannelCount} channels
-   * to {@code outputChannelCount} channels.
+   * 创建一个标准的通道混合矩阵，将 {@code inputChannelCount} 个通道转换为 {@code outputChannelCount} 个通道。
    *
-   * <p>If the input and output channel counts match then a simple identity matrix will be returned.
-   * Otherwise, default matrix coefficients will be used to best match channel locations and overall
-   * power level.
+   * <p>如果输入和输出通道数匹配，则返回一个简单的单位矩阵。否则，将使用默认的矩阵系数以最佳匹配通道位置和整体功率水平。
    *
-   * @param inputChannelCount Number of input channels.
-   * @param outputChannelCount Number of output channels.
-   * @return New channel mixing matrix.
-   * @throws UnsupportedOperationException If no default matrix coefficients are implemented for the
-   *     given input and output channel counts.
+   * @param inputChannelCount 输入通道数。
+   * @param outputChannelCount 输出通道数。
+   * @return 新的通道混合矩阵。
+   * @throws UnsupportedOperationException 如果尚未实现给定输入和输出通道数的默认矩阵系数。
    */
   public static ChannelMixingMatrix create(int inputChannelCount, int outputChannelCount) {
     return new ChannelMixingMatrix(
@@ -57,23 +52,23 @@ public final class ChannelMixingMatrix {
   }
 
   /**
-   * Creates a matrix with the given coefficients in row-major order.
+   * 使用给定的系数（按行优先顺序）创建一个矩阵。
    *
-   * @param inputChannelCount Number of input channels (rows in the matrix).
-   * @param outputChannelCount Number of output channels (columns in the matrix).
-   * @param coefficients Non-negative matrix coefficients in row-major order.
+   * @param inputChannelCount 输入通道数（矩阵的行数）。
+   * @param outputChannelCount 输出通道数（矩阵的列数）。
+   * @param coefficients 非负的矩阵系数（按行优先顺序）。
    */
   public ChannelMixingMatrix(int inputChannelCount, int outputChannelCount, float[] coefficients) {
-    checkArgument(inputChannelCount > 0, "Input channel count must be positive.");
-    checkArgument(outputChannelCount > 0, "Output channel count must be positive.");
+    checkArgument(inputChannelCount > 0, "输入通道数必须为正数。");
+    checkArgument(outputChannelCount > 0, "输出通道数必须为正数。");
     checkArgument(
         coefficients.length == inputChannelCount * outputChannelCount,
-        "Coefficient array length is invalid.");
+        "系数数组长度无效。");
     this.inputChannelCount = inputChannelCount;
     this.outputChannelCount = outputChannelCount;
     this.coefficients = checkCoefficientsValid(coefficients);
 
-    // Calculate matrix properties.
+    // 计算矩阵属性。
     boolean allDiagonalCoefficientsAreOne = true;
     boolean allCoefficientsAreZero = true;
     boolean allNonDiagonalCoefficientsAreZero = true;
@@ -106,32 +101,32 @@ public final class ChannelMixingMatrix {
     return outputChannelCount;
   }
 
-  /** Gets the scaling factor for the given input and output channel. */
+  /** 获取给定输入和输出通道的缩放因子。 */
   public float getMixingCoefficient(int inputChannel, int outputChannel) {
     return coefficients[inputChannel * outputChannelCount + outputChannel];
   }
 
-  /** Returns whether all mixing coefficients are zero. */
+  /** 返回所有混合系数是否为零。 */
   public boolean isZero() {
     return isZero;
   }
 
-  /** Returns whether the input and output channel count is the same. */
+  /** 返回输入和输出通道数是否相同。 */
   public boolean isSquare() {
     return inputChannelCount == outputChannelCount;
   }
 
-  /** Returns whether the matrix is square and all non-diagonal coefficients are zero. */
+  /** 返回矩阵是否为方阵且所有非对角线系数为零。 */
   public boolean isDiagonal() {
     return isDiagonal;
   }
 
-  /** Returns whether this is an identity matrix. */
+  /** 返回此矩阵是否为单位矩阵。 */
   public boolean isIdentity() {
     return isIdentity;
   }
 
-  /** Returns a new matrix with the given scaling factor applied to all coefficients. */
+  /** 返回一个新矩阵，其中所有系数都乘以给定的缩放因子。 */
   public ChannelMixingMatrix scaleBy(float scale) {
     float[] scaledCoefficients = new float[coefficients.length];
     for (int i = 0; i < coefficients.length; i++) {
@@ -145,19 +140,19 @@ public final class ChannelMixingMatrix {
       return initializeIdentityMatrix(outputChannelCount);
     }
     if (inputChannelCount == 1 && outputChannelCount == 2) {
-      // Mono -> stereo.
+      // 单声道 -> 立体声。
       return new float[] {1f, 1f};
     }
     if (inputChannelCount == 2 && outputChannelCount == 1) {
-      // Stereo -> mono.
+      // 立体声 -> 单声道。
       return new float[] {0.5f, 0.5f};
     }
     throw new UnsupportedOperationException(
-        "Default channel mixing coefficients for "
+        "尚未实现 "
             + inputChannelCount
             + "->"
             + outputChannelCount
-            + " are not yet implemented.");
+            + " 的默认通道混合系数。");
   }
 
   private static float[] initializeIdentityMatrix(int channelCount) {
@@ -171,7 +166,7 @@ public final class ChannelMixingMatrix {
   private static float[] checkCoefficientsValid(float[] coefficients) {
     for (int i = 0; i < coefficients.length; i++) {
       if (coefficients[i] < 0f) {
-        throw new IllegalArgumentException("Coefficient at index " + i + " is negative.");
+        throw new IllegalArgumentException("索引 " + i + " 处的系数为负数。");
       }
     }
     return coefficients;

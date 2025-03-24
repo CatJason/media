@@ -7,12 +7,11 @@ import androidx.media3.common.util.Util;
 import java.nio.ByteBuffer;
 
 /**
- * An {@link AudioProcessor} that converts different PCM audio encodings to 16-bit integer PCM. The
- * following encodings are supported as input:
+ * 一个 {@link AudioProcessor}，用于将不同的 PCM 音频编码转换为 16 位整数 PCM。支持以下输入编码：
  *
  * <ul>
  *   <li>{@link C#ENCODING_PCM_8BIT}
- *   <li>{@link C#ENCODING_PCM_16BIT} ({@link #isActive()} will return {@code false})
+ *   <li>{@link C#ENCODING_PCM_16BIT}（{@link #isActive()} 将返回 {@code false}）
  *   <li>{@link C#ENCODING_PCM_16BIT_BIG_ENDIAN}
  *   <li>{@link C#ENCODING_PCM_24BIT}
  *   <li>{@link C#ENCODING_PCM_24BIT_BIG_ENDIAN}
@@ -40,13 +39,13 @@ public final class ToInt16PcmAudioProcessor extends BaseAudioProcessor {
     }
     return encoding != C.ENCODING_PCM_16BIT
         ? new AudioFormat(
-            inputAudioFormat.sampleRate, inputAudioFormat.channelCount, C.ENCODING_PCM_16BIT)
+        inputAudioFormat.sampleRate, inputAudioFormat.channelCount, C.ENCODING_PCM_16BIT)
         : AudioFormat.NOT_SET;
   }
 
   @Override
   public void queueInput(ByteBuffer inputBuffer) {
-    // Prepare the output buffer.
+    // 准备输出缓冲区。
     int position = inputBuffer.position();
     int limit = inputBuffer.limit();
     int size = limit - position;
@@ -74,57 +73,55 @@ public final class ToInt16PcmAudioProcessor extends BaseAudioProcessor {
         throw new IllegalStateException();
     }
 
-    // Resample the little endian input and update the input/output buffers.
+    // 对输入进行重采样并更新输入/输出缓冲区。
     ByteBuffer buffer = replaceOutputBuffer(resampledSize);
     switch (inputAudioFormat.encoding) {
       case C.ENCODING_PCM_8BIT:
-        // 8 -> 16 bit resampling. Shift each byte from [0, 256) to [-128, 128) and scale up.
+        // 8 -> 16 位重采样。将每个字节从 [0, 256) 转换为 [-128, 128) 并放大。
         for (int i = position; i < limit; i++) {
           buffer.put((byte) 0);
           buffer.put((byte) ((inputBuffer.get(i) & 0xFF) - 128));
         }
         break;
       case C.ENCODING_PCM_16BIT_BIG_ENDIAN:
-        // Big endian to little endian resampling. Swap the byte order.
+        // 大端序到小端序重采样。交换字节顺序。
         for (int i = position; i < limit; i += 2) {
           buffer.put(inputBuffer.get(i + 1));
           buffer.put(inputBuffer.get(i));
         }
         break;
       case C.ENCODING_PCM_24BIT:
-        // 24 -> 16 bit resampling. Drop the least significant byte.
+        // 24 -> 16 位重采样。丢弃最低有效字节。
         for (int i = position; i < limit; i += 3) {
           buffer.put(inputBuffer.get(i + 1));
           buffer.put(inputBuffer.get(i + 2));
         }
         break;
       case C.ENCODING_PCM_24BIT_BIG_ENDIAN:
-        // 24 BE -> 16 bit resampling. Drop the least significant byte.
+        // 24 位大端序 -> 16 位重采样。丢弃最低有效字节。
         for (int i = position; i < limit; i += 3) {
           buffer.put(inputBuffer.get(i + 1));
           buffer.put(inputBuffer.get(i));
         }
         break;
       case C.ENCODING_PCM_32BIT:
-        // 32 -> 16 bit resampling. Drop the two least significant bytes.
+        // 32 -> 16 位重采样。丢弃两个最低有效字节。
         for (int i = position; i < limit; i += 4) {
           buffer.put(inputBuffer.get(i + 2));
           buffer.put(inputBuffer.get(i + 3));
         }
         break;
       case C.ENCODING_PCM_32BIT_BIG_ENDIAN:
-        // 32 BE -> 16 bit resampling. Drop the two least significant bytes.
+        // 32 位大端序 -> 16 位重采样。丢弃两个最低有效字节。
         for (int i = position; i < limit; i += 4) {
           buffer.put(inputBuffer.get(i + 1));
           buffer.put(inputBuffer.get(i));
         }
         break;
       case C.ENCODING_PCM_FLOAT:
-        // 32 bit floating point -> 16 bit resampling. Floating point values are in the range
-        // [-1.0, 1.0], so need to be scaled by Short.MAX_VALUE.
+        // 32 位浮点数 -> 16 位重采样。浮点数的范围为 [-1.0, 1.0]，因此需要乘以 Short.MAX_VALUE。
         for (int i = position; i < limit; i += 4) {
-          // Clamp to avoid integer overflow if the floating point values exceed their nominal range
-          // [Internal ref: b/161204847].
+          // 限制以避免浮点值超出其标称范围时的整数溢出 [内部参考：b/161204847]。
           float floatValue =
               Util.constrainValue(inputBuffer.getFloat(i), /* min= */ -1, /* max= */ 1);
           short shortValue = (short) (floatValue * Short.MAX_VALUE);
@@ -136,7 +133,7 @@ public final class ToInt16PcmAudioProcessor extends BaseAudioProcessor {
       case C.ENCODING_INVALID:
       case Format.NO_VALUE:
       default:
-        // Never happens.
+        // 永远不会发生。
         throw new IllegalStateException();
     }
     inputBuffer.position(inputBuffer.limit());

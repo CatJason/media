@@ -1,84 +1,68 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import androidx.annotation.Nullable;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-/** {@link XmlPullParser} utility methods. */
+/** {@link XmlPullParser} 工具方法。 */
 @UnstableApi
 public final class XmlPullParserUtil {
 
   private XmlPullParserUtil() {}
 
   /**
-   * Returns whether the current event is an end tag with the specified name.
+   * 返回当前事件是否为具有指定名称的结束标签。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @param name The specified name.
-   * @return Whether the current event is an end tag with the specified name.
-   * @throws XmlPullParserException If an error occurs querying the parser.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @param name 指定的名称。
+   * @return 当前事件是否为具有指定名称的结束标签。
+   * @throws XmlPullParserException 如果查询解析器时发生错误。
    */
   public static boolean isEndTag(XmlPullParser xpp, String name) throws XmlPullParserException {
     return isEndTag(xpp) && xpp.getName().equals(name);
   }
 
   /**
-   * Returns whether the current event is an end tag.
+   * 返回当前事件是否为结束标签。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @return Whether the current event is an end tag.
-   * @throws XmlPullParserException If an error occurs querying the parser.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @return 当前事件是否为结束标签。
+   * @throws XmlPullParserException 如果查询解析器时发生错误。
    */
   public static boolean isEndTag(XmlPullParser xpp) throws XmlPullParserException {
     return xpp.getEventType() == XmlPullParser.END_TAG;
   }
 
   /**
-   * Returns whether the current event is a start tag with the specified name.
+   * 返回当前事件是否为具有指定名称的开始标签。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @param name The specified name.
-   * @return Whether the current event is a start tag with the specified name.
-   * @throws XmlPullParserException If an error occurs querying the parser.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @param name 指定的名称。
+   * @return 当前事件是否为具有指定名称的开始标签。
+   * @throws XmlPullParserException 如果查询解析器时发生错误。
    */
   public static boolean isStartTag(XmlPullParser xpp, String name) throws XmlPullParserException {
     return isStartTag(xpp) && xpp.getName().equals(name);
   }
 
   /**
-   * Returns whether the current event is a start tag.
+   * 返回当前事件是否为开始标签。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @return Whether the current event is a start tag.
-   * @throws XmlPullParserException If an error occurs querying the parser.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @return 当前事件是否为开始标签。
+   * @throws XmlPullParserException 如果查询解析器时发生错误。
    */
   public static boolean isStartTag(XmlPullParser xpp) throws XmlPullParserException {
     return xpp.getEventType() == XmlPullParser.START_TAG;
   }
 
   /**
-   * Returns whether the current event is a start tag with the specified name. If the current event
-   * has a raw name then its prefix is stripped before matching.
+   * 返回当前事件是否为具有指定名称的开始标签。如果当前事件有原始名称，则在匹配之前会剥离其前缀。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @param name The specified name.
-   * @return Whether the current event is a start tag with the specified name.
-   * @throws XmlPullParserException If an error occurs querying the parser.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @param name 指定的名称。
+   * @return 当前事件是否为具有指定名称的开始标签。
+   * @throws XmlPullParserException 如果查询解析器时发生错误。
    */
   public static boolean isStartTagIgnorePrefix(XmlPullParser xpp, String name)
       throws XmlPullParserException {
@@ -86,12 +70,11 @@ public final class XmlPullParserUtil {
   }
 
   /**
-   * Returns the value of an attribute of the current start tag.
+   * 返回当前开始标签的某个属性的值。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @param attributeName The name of the attribute.
-   * @return The value of the attribute, or null if the current event is not a start tag or if no
-   *     such attribute was found.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @param attributeName 属性的名称。
+   * @return 属性的值，如果当前事件不是开始标签或未找到该属性，则返回 null。
    */
   @Nullable
   public static String getAttributeValue(XmlPullParser xpp, String attributeName) {
@@ -105,13 +88,11 @@ public final class XmlPullParserUtil {
   }
 
   /**
-   * Returns the value of an attribute of the current start tag. Any raw attribute names in the
-   * current start tag have their prefixes stripped before matching.
+   * 返回当前开始标签的某个属性的值。当前开始标签中的任何原始属性名称在匹配之前都会剥离其前缀。
    *
-   * @param xpp The {@link XmlPullParser} to query.
-   * @param attributeName The name of the attribute.
-   * @return The value of the attribute, or null if the current event is not a start tag or if no
-   *     such attribute was found.
+   * @param xpp 要查询的 {@link XmlPullParser}。
+   * @param attributeName 属性的名称。
+   * @return 属性的值，如果当前事件不是开始标签或未找到该属性，则返回 null。
    */
   @Nullable
   public static String getAttributeValueIgnorePrefix(XmlPullParser xpp, String attributeName) {

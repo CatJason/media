@@ -12,23 +12,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * A styling span for text emphasis marks.
+ * 用于文本强调标记的样式 Span。
  *
- * <p>These are pronunciation aids such as <a
- * href="https://www.w3.org/TR/jlreq/?lang=en#term.emphasis-dots">Japanese boutens</a> which can be
- * rendered using the <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/text-emphasis">
- * text-emphasis</a> CSS property.
+ * <p>这些是发音辅助工具，例如 <a
+ * href="https://www.w3.org/TR/jlreq/?lang=en#term.emphasis-dots">日语傍点</a>，可以使用 <a
+ * href="https://developer.mozilla.org/en-US/docs/Web/CSS/text-emphasis">text-emphasis</a> CSS 属性进行渲染。
  */
-// NOTE: There's no Android layout support for text emphasis, so this span currently doesn't extend
-// any styling superclasses (e.g. MetricAffectingSpan). The only way to render this emphasis is to
-// extract the spans and do the layout manually.
+// 注意：Android 布局不支持文本强调标记，因此此 Span 目前不继承任何样式超类（例如 MetricAffectingSpan）。
+// 渲染此强调标记的唯一方法是提取 Span 并手动进行布局。
 @UnstableApi
 public final class TextEmphasisSpan implements LanguageFeatureSpan {
 
   /**
-   * The possible mark shapes that can be used.
+   * 可以使用的标记形状。
    *
-   * <p>One of:
+   * <p>可能的值包括：
    *
    * <ul>
    *   <li>{@link #MARK_SHAPE_NONE}
@@ -49,9 +47,9 @@ public final class TextEmphasisSpan implements LanguageFeatureSpan {
   public static final int MARK_SHAPE_SESAME = 3;
 
   /**
-   * The possible mark fills that can be used.
+   * 可以使用的标记填充方式。
    *
-   * <p>One of:
+   * <p>可能的值包括：
    *
    * <ul>
    *   <li>{@link #MARK_FILL_UNKNOWN}
@@ -69,13 +67,13 @@ public final class TextEmphasisSpan implements LanguageFeatureSpan {
   public static final int MARK_FILL_FILLED = 1;
   public static final int MARK_FILL_OPEN = 2;
 
-  /** The mark shape used for text emphasis. */
+  /** 用于文本强调的标记形状。 */
   public @MarkShape int markShape;
 
-  /** The mark fill for the text emphasis mark. */
-  public @MarkShape int markFill;
+  /** 文本强调标记的填充方式。 */
+  public @MarkFill int markFill;
 
-  /** The position of the text emphasis relative to the base text. */
+  /** 文本强调标记相对于基础文本的位置。 */
   public final @TextAnnotation.Position int position;
 
   private static final String FIELD_MARK_SHAPE = Util.intToStringMaxRadix(0);

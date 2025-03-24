@@ -21,26 +21,24 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /**
- * An {@link AudioProcessor} that changes the speed of audio samples depending on their timestamp.
+ * 一个 {@link AudioProcessor}，根据时间戳改变音频样本的播放速度。
  */
-// TODO(b/288221200): Consider making the processor inactive and skipping it in the processor chain
-//  when speed is 1.
+// TODO(b/288221200): 考虑在速度为 1 时使处理器处于非活动状态，并在处理器链中跳过它。
 @UnstableApi
 public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
 
   private final Object lock;
 
-  /** The speed provider that provides the speed for each timestamp. */
+  /** 提供每个时间戳对应速度的速度提供器。 */
   private final SpeedProvider speedProvider;
 
   /**
-   * The {@link SonicAudioProcessor} used to change the speed, when needed. If there is no speed
-   * change required, the input buffer is copied to the output buffer and this processor is not
-   * used.
+   * 用于改变速度的 {@link SonicAudioProcessor}。如果不需要改变速度，则直接将输入缓冲区复制到输出缓冲区，
+   * 而不使用此处理器。
    */
   private final SynchronizedSonicAudioProcessor sonicAudioProcessor;
 
-  // Elements in the same positions in the queues are associated.
+  // 队列中相同位置的元素是相关联的。
 
   @GuardedBy("lock")
   private final LongArrayQueue pendingCallbackInputTimesUs;
@@ -48,7 +46,7 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
   @GuardedBy("lock")
   private final Queue<TimestampConsumer> pendingCallbacks;
 
-  // Elements in the same positions in the arrays are associated.
+  // 数组中相同位置的元素是相关联的。
 
   @GuardedBy("lock")
   private LongArray inputSegmentStartTimesUs;
@@ -108,9 +106,8 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
     long sampleRateAlignedNextSpeedChangeTimeUs =
         getSampleRateAlignedTimestamp(nextSpeedChangeTimeUs, inputAudioFormat.sampleRate);
 
-    // If next speed change falls between the current sample position and the next sample, then get
-    // the next speed and next speed change from the following sample. If needed, this will ignore
-    // one or more mid-sample speed changes.
+    // 如果下一个速度变化时间落在当前样本位置和下一个样本之间，则从下一个样本获取下一个速度和下一个速度变化时间。
+    // 如果需要，这将忽略一个或多个样本中间的速度变化。
     if (sampleRateAlignedNextSpeedChangeTimeUs == currentTimeUs) {
       long sampleDuration =
           Util.sampleCountToDurationUs(/* sampleCount= */ 1, inputAudioFormat.sampleRate);
@@ -136,7 +133,7 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
       if (bytesToNextFrame != inputAudioFormat.bytesPerFrame) {
         bytesToNextSpeedChange += bytesToNextFrame;
       }
-      // Update the input buffer limit to make sure that all samples processed have the same speed.
+      // 更新输入缓冲区限制，确保所有处理的样本具有相同的速度。
       inputBuffer.limit(min(inputBufferLimit, inputBuffer.position() + bytesToNextSpeedChange));
     } else {
       bytesToNextSpeedChange = C.LENGTH_UNSET;
@@ -195,22 +192,18 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
   }
 
   /**
-   * Calculates the time at which the {@code inputTimeUs} is outputted at after the speed changes
-   * has been applied.
+   * 计算在应用速度变化后，{@code inputTimeUs} 对应的输出时间。
    *
-   * <p>Calls {@linkplain LongConsumer#accept(long) the callback} with the output time as soon as
-   * enough audio has been processed to calculate it.
+   * <p>一旦处理了足够的音频数据以计算输出时间，将调用 {@linkplain LongConsumer#accept(long) 回调}。
    *
-   * <p>If the audio processor has ended, speeds will come out at the last processed speed of the
-   * audio processor.
+   * <p>如果音频处理器已结束，速度将以音频处理器最后处理的速度输出。
    *
-   * <p>Successive calls must have monotonically increasing {@code inputTimeUs}.
+   * <p>连续调用的 {@code inputTimeUs} 必须单调递增。
    *
-   * <p>Can be called from any thread.
+   * <p>可以从任何线程调用。
    *
-   * @param inputTimeUs The input time, in microseconds.
-   * @param callback The callback called with the output time. May be called on a different thread
-   *     from the caller of this method.
+   * @param inputTimeUs 输入时间，单位为微秒。
+   * @param callback 回调，用于传递输出时间。可能在调用此方法的线程之外的线程上调用。
    */
   public void getSpeedAdjustedTimeAsync(long inputTimeUs, TimestampConsumer callback) {
     synchronized (lock) {
@@ -227,15 +220,14 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
   }
 
   /**
-   * Returns the input media duration for the given playout duration.
+   * 返回给定播放持续时间对应的输入媒体持续时间。
    *
-   * <p>Both durations are counted from the last {@link #reset()} or {@link #flush()} of the audio
-   * processor.
+   * <p>两个持续时间均从音频处理器的最后一次 {@link #reset()} 或 {@link #flush()} 开始计算。
    *
-   * <p>The {@code playoutDurationUs} must be less than last processed buffer output time.
+   * <p>{@code playoutDurationUs} 必须小于最后处理的缓冲区输出时间。
    *
-   * @param playoutDurationUs The playout duration in microseconds.
-   * @return The corresponding input duration in microseconds.
+   * @param playoutDurationUs 播放持续时间，单位为微秒。
+   * @return 对应的输入持续时间，单位为微秒。
    */
   public long getMediaDurationUs(long playoutDurationUs) {
     synchronized (lock) {
@@ -254,20 +246,19 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
             round(
                 lastSegmentOutputDurationUs
                     * divide(
-                        inputSegmentStartTimesUs.get(floorIndex + 1)
-                            - inputSegmentStartTimesUs.get(floorIndex),
-                        outputSegmentStartTimesUs.get(floorIndex + 1)
-                            - outputSegmentStartTimesUs.get(floorIndex)));
+                    inputSegmentStartTimesUs.get(floorIndex + 1)
+                        - inputSegmentStartTimesUs.get(floorIndex),
+                    outputSegmentStartTimesUs.get(floorIndex + 1)
+                        - outputSegmentStartTimesUs.get(floorIndex)));
       }
       return inputSegmentStartTimesUs.get(floorIndex) + lastSegmentInputDurationUs;
     }
   }
 
   /**
-   * Assuming enough audio has been processed, calculates the time at which the {@code inputTimeUs}
-   * is outputted at after the speed changes has been applied.
+   * 假设已经处理了足够的音频数据，计算在应用速度变化后，{@code inputTimeUs} 对应的输出时间。
    */
-  @SuppressWarnings("GuardedBy") // All call sites are guarded.
+  @SuppressWarnings("GuardedBy") // 所有调用点都已加锁。
   private long calculateSpeedAdjustedTime(long inputTimeUs) {
     int floorIndex = inputSegmentStartTimesUs.size() - 1;
     while (floorIndex > 0 && inputSegmentStartTimesUs.get(floorIndex) > inputTimeUs) {
@@ -287,10 +278,10 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
           round(
               lastSegmentInputDurationUs
                   * divide(
-                      outputSegmentStartTimesUs.get(floorIndex + 1)
-                          - outputSegmentStartTimesUs.get(floorIndex),
-                      inputSegmentStartTimesUs.get(floorIndex + 1)
-                          - inputSegmentStartTimesUs.get(floorIndex)));
+                  outputSegmentStartTimesUs.get(floorIndex + 1)
+                      - outputSegmentStartTimesUs.get(floorIndex),
+                  inputSegmentStartTimesUs.get(floorIndex + 1)
+                      - inputSegmentStartTimesUs.get(floorIndex)));
     }
     lastSpeedAdjustedInputTimeUs = inputTimeUs;
     lastSpeedAdjustedOutputTimeUs += lastSegmentOutputDurationUs;
@@ -321,7 +312,7 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
           sonicAudioProcessor.setSpeed(newSpeed);
           sonicAudioProcessor.setPitch(newSpeed);
         }
-        // Invalidate any previously created buffers in SonicAudioProcessor and the base class.
+        // 使 SonicAudioProcessor 和基类中先前创建的缓冲区无效。
         sonicAudioProcessor.flush();
         endOfStreamQueuedToSonic = false;
         super.getOutput();
@@ -329,7 +320,7 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
     }
   }
 
-  @SuppressWarnings("GuardedBy") // All call sites are guarded.
+  @SuppressWarnings("GuardedBy") // 所有调用点都已加锁。
   private void updateSpeedChangeArrays(long currentSpeedChangeInputTimeUs) {
     long lastSpeedChangeOutputTimeUs =
         outputSegmentStartTimesUs.get(outputSegmentStartTimesUs.size() - 1);
@@ -358,8 +349,7 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
   private void updateLastProcessedInputTime() {
     synchronized (lock) {
       if (isUsingSonic()) {
-        // TODO - b/320242819: Investigate whether bytesRead can be used here rather than
-        //  sonicAudioProcessor.getProcessedInputBytes().
+        // TODO - b/320242819: 研究是否可以使用 bytesRead 而不是 sonicAudioProcessor.getProcessedInputBytes()。
         long currentProcessedInputDurationUs =
             Util.scaleLargeTimestamp(
                 /* timestamp= */ sonicAudioProcessor.getProcessedInputBytes(),
@@ -400,16 +390,14 @@ public final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
 
     bytesRead = 0;
     endOfStreamQueuedToSonic = false;
-    // TODO: b/339842724 - This should ideally also reset speedAdjustedTimeAsyncInputTimeUs and
-    //  clear pendingCallbacks and pendingCallbacksInputTimes. We can't do this at the moment
-    //  because some clients register callbacks with getSpeedAdjustedTimeAsync before this audio
-    //  processor is flushed.
+    // TODO: b/339842724 - 理想情况下，这里还应该重置 speedAdjustedTimeAsyncInputTimeUs 并
+    //  清除 pendingCallbacks 和 pendingCallbacksInputTimes。目前无法这样做，因为一些客户端在
+    //  此音频处理器刷新之前通过 getSpeedAdjustedTimeAsync 注册了回调。
   }
 
   /**
-   * Returns the timestamp in microseconds of the sample defined by {@code sampleRate} that is
-   * closest to {@code timestampUs}, using the rounding mode specified in {@link
-   * Util#scaleLargeTimestamp}.
+   * 返回与 {@code timestampUs} 最接近的、由 {@code sampleRate} 定义的样本的时间戳（微秒），
+   * 使用 {@link Util#scaleLargeTimestamp} 中指定的舍入模式。
    */
   private static long getSampleRateAlignedTimestamp(long timestampUs, int sampleRate) {
     long exactSamplePosition =

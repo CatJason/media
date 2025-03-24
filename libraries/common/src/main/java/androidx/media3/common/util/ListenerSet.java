@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.util;
 
 import static androidx.media3.common.util.Assertions.checkState;
@@ -29,47 +14,42 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
- * A set of listeners.
+ * 一组监听器。
  *
- * <p>Events are guaranteed to arrive in the order in which they happened even if a new event is
- * triggered recursively from another listener.
+ * <p>事件保证按照发生的顺序传递，即使新事件是从另一个监听器递归触发的。
  *
- * <p>Events are also guaranteed to be only sent to the listeners registered at the time the event
- * was enqueued and haven't been removed since.
+ * <p>事件也保证仅发送给在事件入队时注册且此后未被移除的监听器。
  *
- * <p>All methods must be called on the {@link Looper} passed to the constructor unless indicated
- * otherwise.
+ * <p>除非另有说明，否则所有方法都必须在传递给构造函数的 {@link Looper} 上调用。
  *
- * @param <T> The listener type.
+ * @param <T> 监听器类型。
  */
 @UnstableApi
 public final class ListenerSet<T extends @NonNull Object> {
 
   /**
-   * An event sent to a listener.
+   * 发送给监听器的事件。
    *
-   * @param <T> The listener type.
+   * @param <T> 监听器类型。
    */
   public interface Event<T> {
 
-    /** Invokes the event notification on the given listener. */
+    /** 在给定的监听器上调用事件通知。 */
     void invoke(T listener);
   }
 
   /**
-   * An event sent to a listener when all other events sent during one {@link Looper} message queue
-   * iteration were handled by the listener.
+   * 当所有其他事件在一次 {@link Looper} 消息队列迭代中被监听器处理时，发送给监听器的事件。
    *
-   * @param <T> The listener type.
+   * @param <T> 监听器类型。
    */
   public interface IterationFinishedEvent<T> {
 
     /**
-     * Invokes the iteration finished event.
+     * 调用迭代完成事件。
      *
-     * @param listener The listener to invoke the event on.
-     * @param eventFlags The combined event {@link FlagSet flags} of all events sent in this
-     *     iteration.
+     * @param listener 要调用事件的监听器。
+     * @param eventFlags 本次迭代中发送的所有事件的组合 {@link FlagSet 标志}。
      */
     void invoke(T listener, FlagSet eventFlags);
   }
@@ -90,13 +70,11 @@ public final class ListenerSet<T extends @NonNull Object> {
   private boolean throwsWhenUsingWrongThread;
 
   /**
-   * Creates a new listener set.
+   * 创建一个新的监听器集合。
    *
-   * @param looper A {@link Looper} used to call listeners on. The same {@link Looper} must be used
-   *     to call all other methods of this class unless indicated otherwise.
-   * @param clock A {@link Clock}.
-   * @param iterationFinishedEvent An {@link IterationFinishedEvent} sent when all other events sent
-   *     during one {@link Looper} message queue iteration were handled by the listeners.
+   * @param looper 用于调用监听器的 {@link Looper}。除非另有说明，否则必须使用相同的 {@link Looper} 调用此类的所有其他方法。
+   * @param clock 一个 {@link Clock}。
+   * @param iterationFinishedEvent 当所有其他事件在一次 {@link Looper} 消息队列迭代中被监听器处理时发送的 {@link IterationFinishedEvent}。
    */
   public ListenerSet(Looper looper, Clock clock, IterationFinishedEvent<T> iterationFinishedEvent) {
     this(
@@ -119,7 +97,7 @@ public final class ListenerSet<T extends @NonNull Object> {
     releasedLock = new Object();
     flushingEvents = new ArrayDeque<>();
     queuedEvents = new ArrayDeque<>();
-    // It's safe to use "this" because we don't send a message before exiting the constructor.
+    // 使用 "this" 是安全的，因为我们在退出构造函数之前不会发送消息。
     @SuppressWarnings("nullness:methodref.receiver.bound")
     HandlerWrapper handler = clock.createHandler(looper, this::handleMessage);
     this.handler = handler;
@@ -127,14 +105,13 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * Copies the listener set.
+   * 复制监听器集合。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    *
-   * @param looper The new {@link Looper} for the copied listener set.
-   * @param iterationFinishedEvent The new {@link IterationFinishedEvent} sent when all other events
-   *     sent during one {@link Looper} message queue iteration were handled by the listeners.
-   * @return The copied listener set.
+   * @param looper 新监听器集合的 {@link Looper}。
+   * @param iterationFinishedEvent 当所有其他事件在一次 {@link Looper} 消息队列迭代中被监听器处理时发送的新 {@link IterationFinishedEvent}。
+   * @return 复制的监听器集合。
    */
   @CheckResult
   public ListenerSet<T> copy(Looper looper, IterationFinishedEvent<T> iterationFinishedEvent) {
@@ -142,15 +119,14 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * Copies the listener set.
+   * 复制监听器集合。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    *
-   * @param looper The new {@link Looper} for the copied listener set.
-   * @param clock The new {@link Clock} for the copied listener set.
-   * @param iterationFinishedEvent The new {@link IterationFinishedEvent} sent when all other events
-   *     sent during one {@link Looper} message queue iteration were handled by the listeners.
-   * @return The copied listener set.
+   * @param looper 新监听器集合的 {@link Looper}。
+   * @param clock 新监听器集合的 {@link Clock}。
+   * @param iterationFinishedEvent 当所有其他事件在一次 {@link Looper} 消息队列迭代中被监听器处理时发送的新 {@link IterationFinishedEvent}。
+   * @return 复制的监听器集合。
    */
   @CheckResult
   public ListenerSet<T> copy(
@@ -160,13 +136,13 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * Adds a listener to the set.
+   * 向集合中添加一个监听器。
    *
-   * <p>If a listener is already present, it will not be added again.
+   * <p>如果监听器已经存在，则不会再次添加。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    *
-   * @param listener The listener to be added.
+   * @param listener 要添加的监听器。
    */
   public void add(T listener) {
     Assertions.checkNotNull(listener);
@@ -179,11 +155,11 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * Removes a listener from the set.
+   * 从集合中移除一个监听器。
    *
-   * <p>If the listener is not present, nothing happens.
+   * <p>如果监听器不存在，则什么都不做。
    *
-   * @param listener The listener to be removed.
+   * @param listener 要移除的监听器。
    */
   public void remove(T listener) {
     verifyCurrentThread();
@@ -195,7 +171,7 @@ public final class ListenerSet<T extends @NonNull Object> {
     }
   }
 
-  /** Removes all listeners from the set. */
+  /** 从集合中移除所有监听器。 */
   public void clear() {
     verifyCurrentThread();
     for (ListenerHolder<T> listenerHolder : listeners) {
@@ -204,18 +180,17 @@ public final class ListenerSet<T extends @NonNull Object> {
     listeners.clear();
   }
 
-  /** Returns the number of added listeners. */
+  /** 返回已添加的监听器数量。 */
   public int size() {
     verifyCurrentThread();
     return listeners.size();
   }
 
   /**
-   * Adds an event that is sent to the listeners when {@link #flushEvents} is called.
+   * 添加一个事件，该事件在调用 {@link #flushEvents} 时发送给监听器。
    *
-   * @param eventFlag An integer indicating the type of the event, or {@link C#INDEX_UNSET} to
-   *     report this event without flag.
-   * @param event The event.
+   * @param eventFlag 表示事件类型的整数，或 {@link C#INDEX_UNSET} 表示不带标志的事件。
+   * @param event 事件。
    */
   public void queueEvent(int eventFlag, Event<T> event) {
     verifyCurrentThread();
@@ -228,7 +203,7 @@ public final class ListenerSet<T extends @NonNull Object> {
         });
   }
 
-  /** Notifies listeners of events previously enqueued with {@link #queueEvent(int, Event)}. */
+  /** 通知监听器之前通过 {@link #queueEvent(int, Event)} 入队的事件。 */
   public void flushEvents() {
     verifyCurrentThread();
     if (queuedEvents.isEmpty()) {
@@ -241,7 +216,7 @@ public final class ListenerSet<T extends @NonNull Object> {
     flushingEvents.addAll(queuedEvents);
     queuedEvents.clear();
     if (recursiveFlushInProgress) {
-      // Recursive call to flush. Let the outer call handle the flush queue.
+      // 递归调用 flush。让外部调用处理 flush 队列。
       return;
     }
     while (!flushingEvents.isEmpty()) {
@@ -251,12 +226,10 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * {@link #queueEvent(int, Event) Queues} a single event and immediately {@link #flushEvents()
-   * flushes} the event queue to notify all listeners.
+   * {@link #queueEvent(int, Event) 入队} 单个事件并立即 {@link #flushEvents() 刷新} 事件队列以通知所有监听器。
    *
-   * @param eventFlag An integer flag indicating the type of the event, or {@link C#INDEX_UNSET} to
-   *     report this event without flag.
-   * @param event The event.
+   * @param eventFlag 表示事件类型的整数标志，或 {@link C#INDEX_UNSET} 表示不带标志的事件。
+   * @param event 事件。
    */
   public void sendEvent(int eventFlag, Event<T> event) {
     queueEvent(eventFlag, event);
@@ -264,9 +237,9 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * Releases the set of listeners immediately.
+   * 立即释放监听器集合。
    *
-   * <p>This will ensure no events are sent to any listener after this method has been called.
+   * <p>这将确保在此方法调用后不会向任何监听器发送事件。
    */
   public void release() {
     verifyCurrentThread();
@@ -280,12 +253,12 @@ public final class ListenerSet<T extends @NonNull Object> {
   }
 
   /**
-   * Sets whether methods throw when using the wrong thread.
+   * 设置在使用错误线程时是否抛出异常。
    *
-   * <p>Do not use this method unless to support legacy use cases.
+   * <p>除非支持遗留用例，否则不要使用此方法。
    *
-   * @param throwsWhenUsingWrongThread Whether to throw when using the wrong thread.
-   * @deprecated Do not use this method and ensure all calls are made from the correct thread.
+   * @param throwsWhenUsingWrongThread 是否在使用错误线程时抛出异常。
+   * @deprecated 不要使用此方法，并确保所有调用都从正确的线程进行。
    */
   @Deprecated
   public void setThrowsWhenUsingWrongThread(boolean throwsWhenUsingWrongThread) {
@@ -296,9 +269,8 @@ public final class ListenerSet<T extends @NonNull Object> {
     for (ListenerHolder<T> holder : listeners) {
       holder.iterationFinished(iterationFinishedEvent);
       if (handler.hasMessages(MSG_ITERATION_FINISHED)) {
-        // The invocation above triggered new events (and thus scheduled a new message). We need
-        // to stop here because this new message will take care of informing every listener about
-        // the new update (including the ones already called here).
+        // 上述调用触发了新事件（因此安排了新消息）。我们需要在此停止，
+        // 因为此新消息将负责通知每个监听器有关新更新（包括已在此处调用的监听器）。
         break;
       }
     }
@@ -345,8 +317,7 @@ public final class ListenerSet<T extends @NonNull Object> {
 
     public void iterationFinished(IterationFinishedEvent<T> event) {
       if (!released && needsIterationFinishedEvent) {
-        // Reset flags before invoking the listener to ensure we keep all new flags that are set by
-        // recursive events triggered from this callback.
+        // 在调用监听器之前重置标志，以确保我们保留由此回调触发的递归事件设置的所有新标志。
         FlagSet flagsToNotify = flagsBuilder.build();
         flagsBuilder = new FlagSet.Builder();
         needsIterationFinishedEvent = false;

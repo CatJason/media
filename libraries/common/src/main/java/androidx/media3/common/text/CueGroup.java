@@ -11,32 +11,31 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Class to represent the state of active {@link Cue Cues} at a particular time. */
+/** 用于表示特定时间点活动 {@link Cue} 状态的类。 */
 public final class CueGroup {
 
-  /** An empty group with no {@link Cue Cues} and presentation time of zero. */
+  /** 一个空组，没有 {@link Cue}，且展示时间为零。 */
   @UnstableApi
   public static final CueGroup EMPTY_TIME_ZERO =
       new CueGroup(ImmutableList.of(), /* presentationTimeUs= */ 0);
 
   /**
-   * The cues in this group.
+   * 该组中的 {@link Cue}。
    *
-   * <p>This list is in ascending order of priority. If any of the cue boxes overlap when displayed,
-   * the {@link Cue} nearer the end of the list should be shown on top.
+   * <p>此列表按优先级升序排列。如果显示的 {@link Cue} 框有重叠，则列表中靠后的 {@link Cue} 应显示在顶部。
    *
-   * <p>This list may be empty if the group represents a state with no cues.
+   * <p>如果该组表示没有 {@link Cue} 的状态，则此列表可能为空。
    */
   public final ImmutableList<Cue> cues;
 
   /**
-   * The presentation time of the {@link #cues}, in microseconds.
+   * {@link #cues} 的展示时间，单位为微秒。
    *
-   * <p>This time is an offset from the start of the current {@link Timeline.Period}.
+   * <p>此时间是相对于当前 {@link Timeline.Period} 开始时间的偏移量。
    */
   @UnstableApi public final long presentationTimeUs;
 
-  /** Creates a CueGroup. */
+  /** 创建一个 CueGroup。 */
   @UnstableApi
   public CueGroup(List<Cue> cues, long presentationTimeUs) {
     this.cues = ImmutableList.copyOf(cues);
@@ -57,7 +56,7 @@ public final class CueGroup {
     return bundle;
   }
 
-  /** Restores a {@code final CueGroup} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code final CueGroup}。 */
   @UnstableApi
   public static CueGroup fromBundle(Bundle bundle) {
     @Nullable ArrayList<Bundle> cueBundles = bundle.getParcelableArrayList(FIELD_CUES);
@@ -70,8 +69,7 @@ public final class CueGroup {
   }
 
   /**
-   * Filters out {@link Cue} objects containing {@link Bitmap}. It is used when transferring cues
-   * between processes to prevent transferring too much data.
+   * 过滤掉包含 {@link Bitmap} 的 {@link Cue} 对象。在进程间传输 {@link Cue} 时使用，以防止传输过多数据。
    */
   private static ImmutableList<Cue> filterOutBitmapCues(List<Cue> cues) {
     ImmutableList.Builder<Cue> builder = ImmutableList.builder();
