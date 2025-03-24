@@ -1,18 +1,3 @@
-/*
- * Copyright 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common;
 
 import android.os.Bundle;
@@ -22,7 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
-/** Represents the video size. */
+/** 表示视频尺寸。 */
 public final class VideoSize {
 
   private static final int DEFAULT_WIDTH = 0;
@@ -31,35 +16,34 @@ public final class VideoSize {
 
   public static final VideoSize UNKNOWN = new VideoSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-  /** The video width in pixels, 0 when unknown. */
+  /** 视频宽度，单位为像素，0 表示未知。 */
   @IntRange(from = 0)
   public final int width;
 
-  /** The video height in pixels, 0 when unknown. */
+  /** 视频高度，单位为像素，0 表示未知。 */
   @IntRange(from = 0)
   public final int height;
 
   /**
-   * @deprecated Rotation is handled internally by the player, so this is always zero.
+   * @deprecated 旋转由播放器内部处理，因此此值始终为零。
    */
   @IntRange(from = 0, to = 359)
   @Deprecated
   public final int unappliedRotationDegrees;
 
   /**
-   * The width to height ratio of each pixel, 1 if unknown.
+   * 每个像素的宽高比，1 表示未知。
    *
-   * <p>For the normal case of square pixels this will be equal to 1.0. Different values are
-   * indicative of anamorphic content.
+   * <p>对于正常的方形像素，此值为 1.0。不同的值表示变形内容。
    */
   @FloatRange(from = 0, fromInclusive = false)
   public final float pixelWidthHeightRatio;
 
   /**
-   * Creates a VideoSize without unapplied rotation or anamorphic content.
+   * 创建一个不包含未应用旋转或变形内容的 VideoSize。
    *
-   * @param width The video width in pixels.
-   * @param height The video height in pixels.
+   * @param width 视频宽度，单位为像素。
+   * @param height 视频高度，单位为像素。
    */
   @UnstableApi
   public VideoSize(@IntRange(from = 0) int width, @IntRange(from = 0) int height) {
@@ -67,15 +51,13 @@ public final class VideoSize {
   }
 
   /**
-   * Creates a new instance.
+   * 创建一个新实例。
    *
-   * @param width The video width in pixels.
-   * @param height The video height in pixels.
-   * @param pixelWidthHeightRatio The width to height ratio of each pixel. For the normal case of
-   *     square pixels this will be equal to 1.0. Different values are indicative of anamorphic
-   *     content.
+   * @param width 视频宽度，单位为像素。
+   * @param height 视频高度，单位为像素。
+   * @param pixelWidthHeightRatio 每个像素的宽高比。对于正常的方形像素，此值为 1.0。不同的值表示变形内容。
    */
-  @SuppressWarnings("deprecation") // Setting deprecated field
+  @SuppressWarnings("deprecation") // 设置已弃用的字段
   @UnstableApi
   public VideoSize(
       @IntRange(from = 0) int width,
@@ -88,8 +70,7 @@ public final class VideoSize {
   }
 
   /**
-   * @deprecated Use {@link VideoSize#VideoSize(int, int, float)} instead. {@code
-   *     unappliedRotationDegrees} is not needed on API 21+ and is always zero.
+   * @deprecated 请使用 {@link VideoSize#VideoSize(int, int, float)} 代替。在 API 21+ 上不需要 {@code unappliedRotationDegrees}，且始终为零。
    */
   @Deprecated
   @UnstableApi
@@ -126,7 +107,7 @@ public final class VideoSize {
 
   private static final String FIELD_WIDTH = Util.intToStringMaxRadix(0);
   private static final String FIELD_HEIGHT = Util.intToStringMaxRadix(1);
-  // 2 reserved for deprecated 'unappliedRotationDegrees'.
+  // 2 保留给已弃用的 'unappliedRotationDegrees'。
   private static final String FIELD_PIXEL_WIDTH_HEIGHT_RATIO = Util.intToStringMaxRadix(3);
 
   @UnstableApi
@@ -144,7 +125,7 @@ public final class VideoSize {
     return bundle;
   }
 
-  /** Restores a {@code VideoSize} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code VideoSize}。 */
   @UnstableApi
   public static VideoSize fromBundle(Bundle bundle) {
     int width = bundle.getInt(FIELD_WIDTH, DEFAULT_WIDTH);

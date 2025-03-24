@@ -1,18 +1,3 @@
-/*
- * Copyright 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -34,83 +19,71 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
- * Interface for a video frame processor that applies changes to individual video frames.
+ * 用于对单个视频帧进行处理的接口。
  *
- * <p>The changes are specified by {@link Effect} instances passed to {@link #registerInputStream}.
+ * <p>通过 {@link Effect} 实例传递给 {@link #registerInputStream} 来指定对帧的修改。
  *
- * <p>Manages its input {@link Surface}, which can be accessed via {@link #getInputSurface()}. The
- * output {@link Surface} must be set by the caller using {@link
- * #setOutputSurfaceInfo(SurfaceInfo)}.
+ * <p>管理其输入 {@link Surface}，可以通过 {@link #getInputSurface()} 访问。输出 {@link Surface} 必须由调用者使用 {@link
+ * #setOutputSurfaceInfo(SurfaceInfo)} 设置。
  *
- * <p>{@code VideoFrameProcessor} instances can be created from any thread, but instance methods for
- * each {@linkplain #registerInputStream stream} must be called from the same thread.
+ * <p>{@code VideoFrameProcessor} 实例可以从任何线程创建，但每个 {@linkplain #registerInputStream 流} 的实例方法必须从同一线程调用。
  */
 @UnstableApi
 public interface VideoFrameProcessor {
   /**
-   * Specifies how the input frames are made available to the {@link VideoFrameProcessor}. One of
-   * {@link #INPUT_TYPE_SURFACE}, {@link #INPUT_TYPE_BITMAP}, {@link #INPUT_TYPE_TEXTURE_ID} or
-   * {@link #INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION}.
+   * 指定输入帧如何提供给 {@link VideoFrameProcessor}。可以是 {@link #INPUT_TYPE_SURFACE}、{@link #INPUT_TYPE_BITMAP}、{@link #INPUT_TYPE_TEXTURE_ID} 或 {@link #INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION} 之一。
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    INPUT_TYPE_SURFACE,
-    INPUT_TYPE_BITMAP,
-    INPUT_TYPE_TEXTURE_ID,
-    INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION,
+      INPUT_TYPE_SURFACE,
+      INPUT_TYPE_BITMAP,
+      INPUT_TYPE_TEXTURE_ID,
+      INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION,
   })
   @interface InputType {}
 
   /**
-   * Input frames come from a {@link #getInputSurface surface}.
+   * 输入帧来自 {@link #getInputSurface Surface}。
    *
-   * <p>When receiving input from a Surface, the caller must {@linkplain #registerInputFrame()
-   * register} input frames before rendering them to the input {@link Surface}.
+   * <p>当从 Surface 接收输入时，调用者必须在将帧渲染到输入 {@link Surface} 之前 {@linkplain #registerInputFrame() 注册} 输入帧。
    */
   int INPUT_TYPE_SURFACE = 1;
 
-  /** Input frames come from a {@link Bitmap}. */
+  /** 输入帧来自 {@link Bitmap}。 */
   int INPUT_TYPE_BITMAP = 2;
 
   /**
-   * Input frames come from a {@linkplain android.opengl.GLES10#GL_TEXTURE_2D traditional GLES
-   * texture}.
+   * 输入帧来自 {@linkplain android.opengl.GLES10#GL_TEXTURE_2D 传统的 GLES 纹理}。
    */
   int INPUT_TYPE_TEXTURE_ID = 3;
 
   /**
-   * Input frames come from the {@linkplain #getInputSurface input surface} and don't need to be
-   * {@linkplain #registerInputFrame registered} (unlike with {@link #INPUT_TYPE_SURFACE}).
+   * 输入帧来自 {@linkplain #getInputSurface 输入 Surface}，并且不需要 {@linkplain #registerInputFrame 注册}（与 {@link #INPUT_TYPE_SURFACE} 不同）。
    *
-   * <p>Every frame must use the {@linkplain #registerInputStream(int, List, FrameInfo) input
-   * stream's registered} frame info. Also sets the surface's {@linkplain
-   * android.graphics.SurfaceTexture#setDefaultBufferSize(int, int) default buffer size}.
+   * <p>每个帧必须使用 {@linkplain #registerInputStream(int, List, FrameInfo) 输入流的注册} 帧信息。同时设置 Surface 的 {@linkplain
+   * android.graphics.SurfaceTexture#setDefaultBufferSize(int, int) 默认缓冲区大小}。
    */
   int INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION = 4;
 
-  /** A factory for {@link VideoFrameProcessor} instances. */
+  /** {@link VideoFrameProcessor} 实例的工厂接口。 */
   interface Factory {
 
-    // TODO(b/271433904): Turn parameters with default values into setters.
+    // TODO(b/271433904): 将带有默认值的参数转换为 setter 方法。
     /**
-     * Creates a new {@link VideoFrameProcessor} instance.
+     * 创建一个新的 {@link VideoFrameProcessor} 实例。
      *
-     * @param context A {@link Context}.
-     * @param debugViewProvider A {@link DebugViewProvider}. In production usage, pass {@link
-     *     DebugViewProvider#NONE}.
-     * @param outputColorInfo The {@link ColorInfo} for the output frames.
-     * @param renderFramesAutomatically If {@code true}, the instance will render output frames to
-     *     the {@linkplain #setOutputSurfaceInfo(SurfaceInfo) output surface} automatically as
-     *     {@link VideoFrameProcessor} is done processing them. If {@code false}, the {@link
-     *     VideoFrameProcessor} will block until {@link #renderOutputFrame(long)} is called, to
-     *     render or drop the frame.
-     * @param listenerExecutor The {@link Executor} on which the {@code listener} is invoked.
-     * @param listener A {@link Listener}.
-     * @return A new instance.
-     * @throws VideoFrameProcessingException If a problem occurs while creating the {@link
-     *     VideoFrameProcessor}.
+     * @param context 一个 {@link Context}。
+     * @param debugViewProvider 一个 {@link DebugViewProvider}。在生产环境中，传递 {@link
+     *     DebugViewProvider#NONE}。
+     * @param outputColorInfo 输出帧的 {@link ColorInfo}。
+     * @param renderFramesAutomatically 如果为 {@code true}，实例将在 {@link VideoFrameProcessor} 处理完帧后自动将输出帧渲染到 {@linkplain #setOutputSurfaceInfo(SurfaceInfo) 输出 Surface}。如果为 {@code false}，{@link
+     *     VideoFrameProcessor} 将阻塞，直到调用 {@link #renderOutputFrame(long)} 来渲染或丢弃帧。
+     * @param listenerExecutor 调用 {@code listener} 的 {@link Executor}。
+     * @param listener 一个 {@link Listener}。
+     * @return 一个新的实例。
+     * @throws VideoFrameProcessingException 如果在创建 {@link VideoFrameProcessor} 时发生问题。
      */
     VideoFrameProcessor create(
         Context context,
@@ -123,260 +96,199 @@ public interface VideoFrameProcessor {
   }
 
   /**
-   * Listener for asynchronous frame processing events.
+   * 异步帧处理事件的监听器。
    *
-   * <p>All listener methods must be called from the {@link Executor} passed in at {@linkplain
-   * Factory#create creation}.
+   * <p>所有监听器方法必须在 {@linkplain Factory#create 创建} 时传递的 {@link Executor} 上调用。
    */
   interface Listener {
 
     /**
-     * Called when the {@link VideoFrameProcessor} finishes {@linkplain #registerInputStream(int,
-     * List, FrameInfo) registering an input stream}.
+     * 当 {@link VideoFrameProcessor} 完成 {@linkplain #registerInputStream(int,
+     * List, FrameInfo) 注册输入流} 时调用。
      *
-     * <p>The {@link VideoFrameProcessor} is now ready to accept new input {@linkplain
-     * VideoFrameProcessor#registerInputFrame frames}, {@linkplain
-     * VideoFrameProcessor#queueInputBitmap(Bitmap, TimestampIterator) bitmaps} or {@linkplain
-     * VideoFrameProcessor#queueInputTexture(int, long) textures}.
+     * <p>{@link VideoFrameProcessor} 现在可以接受新的输入 {@linkplain
+     * VideoFrameProcessor#registerInputFrame 帧}、{@linkplain
+     * VideoFrameProcessor#queueInputBitmap(Bitmap, TimestampIterator) 位图} 或 {@linkplain
+     * VideoFrameProcessor#queueInputTexture(int, long) 纹理}。
      *
-     * @param inputType The {@link InputType} of the new input stream.
-     * @param effects The list of {@link Effect effects} to apply to the new input stream.
-     * @param frameInfo The {@link FrameInfo} of the new input stream.
+     * @param inputType 新输入流的 {@link InputType}。
+     * @param effects 应用于新输入流的 {@link Effect 效果} 列表。
+     * @param frameInfo 新输入流的 {@link FrameInfo}。
      */
     default void onInputStreamRegistered(
         @InputType int inputType, List<Effect> effects, FrameInfo frameInfo) {}
 
     /**
-     * Called when the output size changes.
+     * 当输出尺寸发生变化时调用。
      *
-     * <p>The output size is the frame size in pixels after applying all {@linkplain Effect
-     * effects}.
+     * <p>输出尺寸是应用所有 {@linkplain Effect 效果} 后的帧尺寸（以像素为单位）。
      *
-     * <p>The output size may differ from the size specified using {@link
-     * #setOutputSurfaceInfo(SurfaceInfo)}.
+     * <p>输出尺寸可能与使用 {@link #setOutputSurfaceInfo(SurfaceInfo)} 指定的尺寸不同。
      */
     default void onOutputSizeChanged(int width, int height) {}
 
     /**
-     * Called when an output frame with the given {@code presentationTimeUs} becomes available for
-     * rendering.
+     * 当具有给定 {@code presentationTimeUs} 的输出帧可用于渲染时调用。
      *
-     * @param presentationTimeUs The presentation time of the frame, in microseconds.
+     * @param presentationTimeUs 帧的呈现时间，单位为微秒。
      */
     default void onOutputFrameAvailableForRendering(long presentationTimeUs) {}
 
     /**
-     * Called when an exception occurs during asynchronous video frame processing.
+     * 当异步视频帧处理过程中发生异常时调用。
      *
-     * <p>If this is called, the calling {@link VideoFrameProcessor} must immediately be {@linkplain
-     * VideoFrameProcessor#release() released}.
+     * <p>如果调用此方法，调用者必须立即 {@linkplain VideoFrameProcessor#release() 释放} 相关的 {@link VideoFrameProcessor}。
      */
     default void onError(VideoFrameProcessingException exception) {}
 
-    /** Called after the {@link VideoFrameProcessor} has rendered its final output frame. */
+    /** 当 {@link VideoFrameProcessor} 渲染完其最后一个输出帧后调用。 */
     default void onEnded() {}
   }
 
   /**
-   * Indicates the frame should be rendered immediately after {@link #renderOutputFrame(long)} is
-   * invoked.
+   * 指示帧应在调用 {@link #renderOutputFrame(long)} 后立即渲染。
    */
   long RENDER_OUTPUT_FRAME_IMMEDIATELY = -1;
 
-  /** Indicates the frame should be dropped after {@link #renderOutputFrame(long)} is invoked. */
+  /** 指示帧应在调用 {@link #renderOutputFrame(long)} 后丢弃。 */
   long DROP_OUTPUT_FRAME = -2;
 
   /**
-   * Indicates the frame should preserve the input presentation time when {@link
-   * #renderOutputFrame(long)} is invoked.
+   * 指示帧在调用 {@link #renderOutputFrame(long)} 时应保留输入呈现时间。
    */
-  @SuppressWarnings("GoodTime-ApiWithNumericTimeUnit") // This is a named constant, not a time unit.
-  long RENDER_OUTPUT_FRAME_WITH_PRESENTATION_TIME = -3;
+  @SuppressWarnings("GoodTime-ApiWithNumericTimeUnit") // 这是一个命名常量，不是时间单位。
+      long RENDER_OUTPUT_FRAME_WITH_PRESENTATION_TIME = -3;
 
   /**
-   * Provides an input {@link Bitmap} to the {@link VideoFrameProcessor}.
+   * 向 {@link VideoFrameProcessor} 提供输入 {@link Bitmap}。
    *
-   * <p>Can be called many times after {@link #registerInputStream(int, List, FrameInfo) registering
-   * the input stream} to put multiple frames in the same input stream.
+   * <p>可以在 {@link #registerInputStream(int, List, FrameInfo) 注册输入流} 后多次调用，以将多个帧放入同一输入流中。
    *
-   * @param inputBitmap The {@link Bitmap} queued to the {@code VideoFrameProcessor}.
-   * @param timestampIterator A {@link TimestampIterator} generating the exact timestamps that the
-   *     bitmap should be shown at.
-   * @return Whether the {@link Bitmap} was successfully queued. A return value of {@code false}
-   *     indicates the {@code VideoFrameProcessor} is not ready to accept input.
-   * @throws UnsupportedOperationException If the {@code VideoFrameProcessor} does not accept
-   *     {@linkplain #INPUT_TYPE_BITMAP bitmap input}.
+   * @param inputBitmap 排队到 {@code VideoFrameProcessor} 的 {@link Bitmap}。
+   * @param timestampIterator 生成位图应显示的确切时间戳的 {@link TimestampIterator}。
+   * @return {@link Bitmap} 是否成功排队。返回 {@code false} 表示 {@code VideoFrameProcessor} 尚未准备好接受输入。
+   * @throws UnsupportedOperationException 如果 {@code VideoFrameProcessor} 不接受 {@linkplain #INPUT_TYPE_BITMAP 位图输入}。
    */
   boolean queueInputBitmap(Bitmap inputBitmap, TimestampIterator timestampIterator);
 
   /**
-   * Provides an input texture ID to the {@code VideoFrameProcessor}.
+   * 向 {@code VideoFrameProcessor} 提供输入纹理 ID。
    *
-   * <p>It must be only called after {@link #setOnInputFrameProcessedListener} and {@link
-   * #registerInputStream} have been called.
+   * <p>必须在调用 {@link #setOnInputFrameProcessedListener} 和 {@link #registerInputStream} 后调用。
    *
-   * @param textureId The ID of the texture queued to the {@code VideoFrameProcessor}.
-   * @param presentationTimeUs The presentation time of the queued texture, in microseconds.
-   * @return Whether the texture was successfully queued. A return value of {@code false} indicates
-   *     the {@code VideoFrameProcessor} is not ready to accept input.
+   * @param textureId 排队到 {@code VideoFrameProcessor} 的纹理 ID。
+   * @param presentationTimeUs 排队纹理的呈现时间，单位为微秒。
+   * @return 纹理是否成功排队。返回 {@code false} 表示 {@code VideoFrameProcessor} 尚未准备好接受输入。
    */
-  // TODO - b/294369303: Remove polling API.
+  // TODO - b/294369303: 移除轮询 API。
   boolean queueInputTexture(int textureId, long presentationTimeUs);
 
   /**
-   * Sets the {@link OnInputFrameProcessedListener}.
+   * 设置 {@link OnInputFrameProcessedListener}。
    *
-   * @param listener The {@link OnInputFrameProcessedListener}.
+   * @param listener {@link OnInputFrameProcessedListener}。
    */
   void setOnInputFrameProcessedListener(OnInputFrameProcessedListener listener);
 
   /**
-   * Sets a listener that's called when the {@linkplain #getInputSurface() input surface} is ready
-   * to use.
+   * 设置一个监听器，当 {@linkplain #getInputSurface() 输入 Surface} 准备就绪时调用。
    */
   void setOnInputSurfaceReadyListener(Runnable listener);
 
-  // TODO: b/351776002 - Call setDefaultBufferSize on the INPUT_TYPE_SURFACE path too and remove
-  //  mentions of the method (which leak an implementation detail) throughout this file.
+  // TODO: b/351776002 - 在 INPUT_TYPE_SURFACE 路径上也调用 setDefaultBufferSize，并移除
+  //  文件中对该方法的提及（该方法泄漏了实现细节）。
   /**
-   * Returns the input {@link Surface}, where {@link VideoFrameProcessor} consumes input frames
-   * from.
+   * 返回输入 {@link Surface}，{@link VideoFrameProcessor} 从中消费输入帧。
    *
-   * <p>The frames arriving on the {@link Surface} will not be consumed by the {@code
-   * VideoFrameProcessor} until {@link #registerInputStream} is called with {@link
-   * #INPUT_TYPE_SURFACE}.
+   * <p>在调用 {@link #registerInputStream} 并指定 {@link #INPUT_TYPE_SURFACE} 之前，到达 {@link Surface} 的帧不会被 {@code VideoFrameProcessor} 消费。
    *
-   * <p>For streams with {@link #INPUT_TYPE_SURFACE}, the returned surface is ready to use
-   * immediately and will not have a {@linkplain SurfaceTexture#setDefaultBufferSize(int, int)
-   * default buffer size} set on it. This is suitable for configuring a {@link
-   * android.media.MediaCodec} decoder.
+   * <p>对于 {@link #INPUT_TYPE_SURFACE} 流，返回的 Surface 立即准备就绪，并且不会设置 {@linkplain SurfaceTexture#setDefaultBufferSize(int, int) 默认缓冲区大小}。这适用于配置 {@link android.media.MediaCodec} 解码器。
    *
-   * <p>For streams with {@link #INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION}, set a listener
-   * for the surface becoming ready via {@link #setOnInputSurfaceReadyListener(Runnable)} and wait
-   * for the event before using the returned surface. This is suitable for use with non-decoder
-   * producers like media projection.
+   * <p>对于 {@link #INPUT_TYPE_SURFACE_AUTOMATIC_FRAME_REGISTRATION} 流，通过 {@link #setOnInputSurfaceReadyListener(Runnable)} 设置监听器以等待 Surface 准备就绪的事件。这适用于与非解码器生产者（如媒体投影）一起使用。
    *
-   * @throws UnsupportedOperationException If the {@code VideoFrameProcessor} does not accept
-   *     {@linkplain #INPUT_TYPE_SURFACE surface input}.
+   * @throws UnsupportedOperationException 如果 {@code VideoFrameProcessor} 不接受 {@linkplain #INPUT_TYPE_SURFACE Surface 输入}。
    */
   Surface getInputSurface();
 
   /**
-   * Informs the {@code VideoFrameProcessor} that a new input stream will be queued with the list of
-   * {@link Effect Effects} to apply to the new input stream.
+   * 通知 {@code VideoFrameProcessor} 将使用指定的 {@link Effect 效果} 列表排队新的输入流。
    *
-   * <p>After registering the first input stream, this method must only be called after the last
-   * frame of the already-registered input stream has been {@linkplain #registerInputFrame
-   * registered}, last bitmap {@link #queueInputBitmap queued} or last texture id {@linkplain
-   * #queueInputTexture queued}.
+   * <p>在注册第一个输入流后，此方法必须仅在已注册输入流的最后一帧 {@linkplain #registerInputFrame 注册}、最后一个位图 {@link #queueInputBitmap 排队} 或最后一个纹理 ID {@linkplain #queueInputTexture 排队} 后调用。
    *
-   * <p>This method blocks the calling thread until the previous calls to this method finish, that
-   * is when {@link Listener#onInputStreamRegistered(int, List, FrameInfo)} is called after the
-   * underlying processing pipeline has been adapted to the registered input stream.
+   * <p>此方法会阻塞调用线程，直到之前的调用完成，即当 {@link Listener#onInputStreamRegistered(int, List, FrameInfo)} 在底层处理管道适应注册的输入流后调用时。
    *
-   * @param inputType The {@link InputType} of the new input stream.
-   * @param effects The list of {@link Effect effects} to apply to the new input stream.
-   * @param frameInfo The {@link FrameInfo} of the new input stream.
+   * @param inputType 新输入流的 {@link InputType}。
+   * @param effects 应用于新输入流的 {@link Effect 效果} 列表。
+   * @param frameInfo 新输入流的 {@link FrameInfo}。
    */
   void registerInputStream(@InputType int inputType, List<Effect> effects, FrameInfo frameInfo);
 
   /**
-   * Informs the {@code VideoFrameProcessor} that a frame will be queued to its {@linkplain
-   * #getInputSurface() input surface}.
+   * 通知 {@code VideoFrameProcessor} 将向其 {@linkplain #getInputSurface() 输入 Surface} 排队一帧。
    *
-   * <p>Must be called before rendering a frame to the input surface. The caller must not render
-   * frames to the {@linkplain #getInputSurface input surface} when {@code false} is returned.
+   * <p>必须在将帧渲染到输入 Surface 之前调用。当返回 {@code false} 时，调用者不得将帧渲染到 {@linkplain #getInputSurface 输入 Surface}。
    *
-   * @return Whether the input frame was successfully registered. If {@link
-   *     #registerInputStream(int, List, FrameInfo)} is called, this method returns {@code false}
-   *     until {@link Listener#onInputStreamRegistered(int, List, FrameInfo)} is called. Otherwise,
-   *     a return value of {@code false} indicates the {@code VideoFrameProcessor} is not ready to
-   *     accept input.
-   * @throws UnsupportedOperationException If the {@code VideoFrameProcessor} does not accept
-   *     {@linkplain #INPUT_TYPE_SURFACE surface input}.
-   * @throws IllegalStateException If called after {@link #signalEndOfInput()} or before {@link
-   *     #registerInputStream}.
+   * @return 输入帧是否成功注册。如果调用 {@link #registerInputStream(int, List, FrameInfo)}，此方法在 {@link Listener#onInputStreamRegistered(int, List, FrameInfo)} 调用之前返回 {@code false}。否则，返回 {@code false} 表示 {@code VideoFrameProcessor} 尚未准备好接受输入。
+   * @throws UnsupportedOperationException 如果 {@code VideoFrameProcessor} 不接受 {@linkplain #INPUT_TYPE_SURFACE Surface 输入}。
+   * @throws IllegalStateException 如果在 {@link #signalEndOfInput()} 之后或 {@link #registerInputStream} 之前调用。
    */
   boolean registerInputFrame();
 
   /**
-   * Returns the number of input frames that have been made available to the {@code
-   * VideoFrameProcessor} but have not been processed yet.
+   * 返回已提供给 {@code VideoFrameProcessor} 但尚未处理的输入帧的数量。
    */
   int getPendingInputFrameCount();
 
   /**
-   * Sets the output surface and supporting information. When output frames are rendered and not
-   * dropped, they will be rendered to this output {@link SurfaceInfo}.
+   * 设置输出 Surface 及其支持信息。当输出帧被渲染且未被丢弃时，它们将被渲染到此输出 {@link SurfaceInfo}。
    *
-   * <p>The new output {@link SurfaceInfo} is applied from the next output frame rendered onwards.
-   * If the output {@link SurfaceInfo} is {@code null}, the {@code VideoFrameProcessor} will stop
-   * rendering pending frames and resume rendering once a non-null {@link SurfaceInfo} is set.
+   * <p>新的输出 {@link SurfaceInfo} 将从下一个渲染的输出帧开始应用。如果输出 {@link SurfaceInfo} 为 {@code null}，{@code VideoFrameProcessor} 将停止渲染挂起的帧，并在设置非空 {@link SurfaceInfo} 后恢复渲染。
    *
-   * <p>If the dimensions given in {@link SurfaceInfo} do not match the {@linkplain
-   * Listener#onOutputSizeChanged(int,int) output size after applying the final effect} the frames
-   * are resized before rendering to the surface and letter/pillar-boxing is applied.
+   * <p>如果 {@link SurfaceInfo} 中给定的尺寸与 {@linkplain Listener#onOutputSizeChanged(int,int) 应用最终效果后的输出尺寸} 不匹配，则在渲染到 Surface 之前会对帧进行缩放，并应用黑边/白边。
    *
-   * <p>The caller is responsible for tracking the lifecycle of the {@link SurfaceInfo#surface}
-   * including calling this method with a new surface if it is destroyed. When this method returns,
-   * the previous output surface is no longer being used and can safely be released by the caller.
+   * <p>调用者负责跟踪 {@link SurfaceInfo#surface} 的生命周期，包括在其销毁时调用此方法设置新的 Surface。当此方法返回时，之前的输出 Surface 不再被使用，调用者可以安全地释放它。
    */
   void setOutputSurfaceInfo(@Nullable SurfaceInfo outputSurfaceInfo);
 
   /**
-   * Renders the oldest unrendered output frame that has become {@linkplain
-   * Listener#onOutputFrameAvailableForRendering(long) available for rendering} at the given {@code
-   * renderTimeNs}.
+   * 渲染最旧的未渲染输出帧，该帧已 {@linkplain Listener#onOutputFrameAvailableForRendering(long) 可用于渲染}，并在给定的 {@code renderTimeNs} 时间渲染。
    *
-   * <p>This will either render the output frame to the {@linkplain #setOutputSurfaceInfo output
-   * surface}, or drop the frame, per {@code renderTimeNs}.
+   * <p>这将根据 {@code renderTimeNs} 将输出帧渲染到 {@linkplain #setOutputSurfaceInfo 输出 Surface} 或丢弃帧。
    *
-   * <p>This method must only be called if {@code renderFramesAutomatically} was set to {@code
-   * false} using the {@link Factory} and should be called exactly once for each frame that becomes
-   * {@linkplain Listener#onOutputFrameAvailableForRendering(long) available for rendering}.
+   * <p>仅当使用 {@link Factory} 时将 {@code renderFramesAutomatically} 设置为 {@code false} 时才应调用此方法，并且应为每个 {@linkplain Listener#onOutputFrameAvailableForRendering(long) 可用于渲染} 的帧调用一次。
    *
-   * <p>The {@code renderTimeNs} may be passed to {@link EGLExt#eglPresentationTimeANDROID}
-   * depending on the implementation.
+   * <p>根据实现，{@code renderTimeNs} 可能会传递给 {@link EGLExt#eglPresentationTimeANDROID}。
    *
-   * @param renderTimeNs The render time to use for the frame, in nanoseconds. The render time can
-   *     be before or after the current system time. Use {@link #DROP_OUTPUT_FRAME} to drop the
-   *     frame, or {@link #RENDER_OUTPUT_FRAME_IMMEDIATELY} to render the frame immediately, or
-   *     {@link #RENDER_OUTPUT_FRAME_WITH_PRESENTATION_TIME} to render the frame to the {@linkplain
-   *     #setOutputSurfaceInfo output surface} with the presentation timestamp seen in {@link
-   *     Listener#onOutputFrameAvailableForRendering(long)}.
+   * @param renderTimeNs 帧的渲染时间，单位为纳秒。渲染时间可以在当前系统时间之前或之后。使用 {@link #DROP_OUTPUT_FRAME} 丢弃帧，或使用 {@link #RENDER_OUTPUT_FRAME_IMMEDIATELY} 立即渲染帧，或使用 {@link #RENDER_OUTPUT_FRAME_WITH_PRESENTATION_TIME} 将帧渲染到 {@linkplain #setOutputSurfaceInfo 输出 Surface} 并使用 {@link Listener#onOutputFrameAvailableForRendering(long)} 中看到的呈现时间戳。
    */
   void renderOutputFrame(long renderTimeNs);
 
   /**
-   * Informs the {@code VideoFrameProcessor} that no further input frames should be accepted.
+   * 通知 {@code VideoFrameProcessor} 不再接受进一步的输入帧。
    *
-   * @throws IllegalStateException If called more than once.
+   * @throws IllegalStateException 如果多次调用。
    */
   void signalEndOfInput();
 
   /**
-   * Flushes the {@code VideoFrameProcessor}.
+   * 刷新 {@code VideoFrameProcessor}。
    *
-   * <p>All the frames that are {@linkplain #registerInputFrame() registered} prior to calling this
-   * method are no longer considered to be registered when this method returns.
+   * <p>在此方法返回时，所有在此方法调用之前 {@linkplain #registerInputFrame() 注册} 的帧不再被视为已注册。
    *
-   * <p>{@link Listener} methods invoked prior to calling this method should be ignored.
+   * <p>在此方法调用之前调用的 {@link Listener} 方法应被忽略。
    *
-   * @throws UnsupportedOperationException If the {@code VideoFrameProcessor} does not accept
-   *     {@linkplain #INPUT_TYPE_SURFACE surface input}.
+   * @throws UnsupportedOperationException 如果 {@code VideoFrameProcessor} 不接受 {@linkplain #INPUT_TYPE_SURFACE Surface 输入}。
    */
   void flush();
 
   /**
-   * Releases all resources.
+   * 释放所有资源。
    *
-   * <p>If the {@code VideoFrameProcessor} is released before it has {@linkplain Listener#onEnded()
-   * ended}, it will attempt to cancel processing any input frames that have already become
-   * available. Input frames that become available after release are ignored.
+   * <p>如果 {@code VideoFrameProcessor} 在 {@linkplain Listener#onEnded() 结束} 之前被释放，它将尝试取消处理已变为可用的所有输入帧。在释放后变为可用的输入帧将被忽略。
    *
-   * <p>This method blocks until all resources are released or releasing times out.
+   * <p>此方法会阻塞，直到所有资源被释放或释放超时。
    *
-   * <p>This {@link VideoFrameProcessor} instance must not be used after this method is called.
+   * <p>此 {@link VideoFrameProcessor} 实例在调用此方法后不得再使用。
    */
   void release();
 }

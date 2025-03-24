@@ -1,122 +1,93 @@
-/*
- * Copyright 2023 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package androidx.media3.common;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 
-/** Represents a graph for processing raw video frames. */
+/** 表示用于处理原始视频帧的图。 */
 @UnstableApi
 public interface VideoGraph {
 
-  /** Listener for video frame processing events. */
+  /** 视频帧处理事件的监听器。 */
   @UnstableApi
   interface Listener {
     /**
-     * Called when the output size changes.
+     * 当输出尺寸发生变化时调用。
      *
-     * @param width The new output width in pixels.
-     * @param height The new output width in pixels.
+     * @param width 新的输出宽度，单位为像素。
+     * @param height 新的输出高度，单位为像素。
      */
     default void onOutputSizeChanged(int width, int height) {}
 
     /**
-     * Called when an output frame with the given {@code framePresentationTimeUs} becomes available
-     * for rendering.
+     * 当具有给定 {@code framePresentationTimeUs} 的输出帧可用于渲染时调用。
      *
-     * @param framePresentationTimeUs The presentation time of the frame, in microseconds.
+     * @param framePresentationTimeUs 帧的呈现时间，单位为微秒。
      */
     default void onOutputFrameAvailableForRendering(long framePresentationTimeUs) {}
 
     /**
-     * Called after the {@link VideoGraph} has rendered its final output frame.
+     * 当 {@link VideoGraph} 渲染完其最后一个输出帧后调用。
      *
-     * @param finalFramePresentationTimeUs The timestamp of the last output frame, in microseconds.
+     * @param finalFramePresentationTimeUs 最后一个输出帧的时间戳，单位为微秒。
      */
     default void onEnded(long finalFramePresentationTimeUs) {}
 
     /**
-     * Called when an exception occurs during video frame processing.
+     * 当视频帧处理过程中发生异常时调用。
      *
-     * <p>If this is called, the calling {@link VideoGraph} must immediately be {@linkplain
-     * #release() released}.
+     * <p>如果调用此方法，调用者必须立即 {@linkplain #release() 释放} 相关的 {@link VideoGraph}。
      */
     default void onError(VideoFrameProcessingException exception) {}
   }
 
   /**
-   * Initialize the {@code VideoGraph}.
+   * 初始化 {@code VideoGraph}。
    *
-   * <p>This method must be called before calling other methods.
+   * <p>在调用其他方法之前必须调用此方法。
    *
-   * <p>If the method throws, the caller must call {@link #release}.
+   * <p>如果此方法抛出异常，调用者必须调用 {@link #release}。
    */
   void initialize() throws VideoFrameProcessingException;
 
   /**
-   * Registers a new input to the {@code VideoGraph}.
+   * 向 {@code VideoGraph} 注册一个新的输入。
    *
-   * <p>A underlying processing {@link VideoFrameProcessor} is created every time this method is
-   * called.
+   * <p>每次调用此方法时，都会创建一个底层的处理 {@link VideoFrameProcessor}。
    *
-   * <p>All inputs must be registered before rendering frames to the underlying {@link
-   * #getProcessor(int) VideoFrameProcessor}.
+   * <p>所有输入必须在向底层 {@link #getProcessor(int) VideoFrameProcessor} 渲染帧之前注册。
    *
-   * <p>If the method throws, the caller must call {@link #release}.
+   * <p>如果此方法抛出异常，调用者必须调用 {@link #release}。
    *
-   * @param inputIndex The index of the input which could be used to order the inputs. The index
-   *     must start from 0.
+   * @param inputIndex 输入的索引，用于对输入进行排序。索引必须从 0 开始。
    */
   void registerInput(@IntRange(from = 0) int inputIndex) throws VideoFrameProcessingException;
 
   /**
-   * Returns the {@link VideoFrameProcessor} that handles the processing for an input registered via
-   * {@link #registerInput(int)}. If the {@code inputIndex} is not {@linkplain #registerInput(int)
-   * registered} before, this method will throw an {@link IllegalStateException}.
+   * 返回处理通过 {@link #registerInput(int)} 注册的输入的 {@link VideoFrameProcessor}。如果 {@code inputIndex} 未 {@linkplain #registerInput(int) 注册}，此方法将抛出 {@link IllegalStateException}。
    */
   VideoFrameProcessor getProcessor(int inputIndex);
 
   /**
-   * Sets the output surface and supporting information.
+   * 设置输出 Surface 及其支持信息。
    *
-   * <p>The new output {@link SurfaceInfo} is applied from the next output frame rendered onwards.
-   * If the output {@link SurfaceInfo} is {@code null}, the {@code VideoGraph} will stop rendering
-   * pending frames and resume rendering once a non-null {@link SurfaceInfo} is set.
+   * <p>新的输出 {@link SurfaceInfo} 将从下一个渲染的输出帧开始应用。如果输出 {@link SurfaceInfo} 为 {@code null}，{@code VideoGraph} 将停止渲染挂起的帧，并在设置非空 {@link SurfaceInfo} 后恢复渲染。
    *
-   * <p>If the dimensions given in {@link SurfaceInfo} do not match the {@linkplain
-   * Listener#onOutputSizeChanged(int,int) output size after applying the final effect} the frames
-   * are resized before rendering to the surface and letter/pillar-boxing is applied.
+   * <p>如果 {@link SurfaceInfo} 中给定的尺寸与 {@linkplain Listener#onOutputSizeChanged(int,int) 应用最终效果后的输出尺寸} 不匹配，则在渲染到 Surface 之前会对帧进行缩放，并应用黑边/白边。
    *
-   * <p>The caller is responsible for tracking the lifecycle of the {@link SurfaceInfo#surface}
-   * including calling this method with a new surface if it is destroyed. When this method returns,
-   * the previous output surface is no longer being used and can safely be released by the caller.
+   * <p>调用者负责跟踪 {@link SurfaceInfo#surface} 的生命周期，包括在其销毁时调用此方法设置新的 Surface。当此方法返回时，之前的输出 Surface 不再被使用，调用者可以安全地释放它。
    */
   void setOutputSurfaceInfo(@Nullable SurfaceInfo outputSurfaceInfo);
 
   /**
-   * Returns whether the {@code VideoGraph} has produced a frame with zero presentation timestamp.
+   * 返回 {@code VideoGraph} 是否生成了具有零时间戳的帧。
    */
   boolean hasProducedFrameWithTimestampZero();
 
   /**
-   * Releases the associated resources.
+   * 释放相关资源。
    *
-   * <p>This {@code VideoGraph} instance must not be used after this method is called.
+   * <p>调用此方法后，不得再使用此 {@code VideoGraph} 实例。
    */
   void release();
 }

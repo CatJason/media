@@ -1,19 +1,3 @@
-/*
- * Copyright 2023 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package androidx.media3.common.audio;
 
 import static androidx.media3.common.util.Util.constrainValue;
@@ -24,14 +8,20 @@ import androidx.media3.common.audio.AudioProcessor.AudioFormat;
 import androidx.media3.common.util.UnstableApi;
 import java.nio.ByteBuffer;
 
-/** Utility for mixing audio buffers. */
+/** 用于混合音频缓冲区的工具类。 */
 @UnstableApi
 public final class AudioMixingUtil {
 
-  // Float PCM samples are zero-centred within the [-1.0, 1.0] range.
+  // Float PCM 样本在 [-1.0, 1.0] 范围内以零为中心。
   private static final float FLOAT_PCM_MIN_VALUE = -1.0f;
   private static final float FLOAT_PCM_MAX_VALUE = 1.0f;
 
+  /**
+   * 检查给定的音频格式是否可以被混合。
+   *
+   * @param audioFormat 要检查的音频格式。
+   * @return 如果音频格式可以被混合，则返回 {@code true}，否则返回 {@code false}。
+   */
   public static boolean canMix(AudioFormat audioFormat) {
     if (audioFormat.sampleRate == Format.NO_VALUE) {
       return false;
@@ -43,6 +33,13 @@ public final class AudioMixingUtil {
         || audioFormat.encoding == C.ENCODING_PCM_FLOAT;
   }
 
+  /**
+   * 检查输入音频格式和输出音频格式是否可以被混合。
+   *
+   * @param inputAudioFormat 输入音频格式。
+   * @param outputAudioFormat 输出音频格式。
+   * @return 如果两种音频格式可以被混合，则返回 {@code true}，否则返回 {@code false}。
+   */
   public static boolean canMix(AudioFormat inputAudioFormat, AudioFormat outputAudioFormat) {
     if (inputAudioFormat.sampleRate != outputAudioFormat.sampleRate) {
       return false;
@@ -57,22 +54,19 @@ public final class AudioMixingUtil {
   }
 
   /**
-   * Mixes audio from the input buffer into the mixing buffer.
+   * 将输入缓冲区中的音频混合到混合缓冲区中。
    *
-   * <p>{@link #canMix(AudioFormat, AudioFormat)} must return {@code true} for the formats.
+   * <p>{@link #canMix(AudioFormat, AudioFormat)} 必须对这两种格式返回 {@code true}。
    *
-   * @param inputBuffer Input audio {@link ByteBuffer}, the position is advanced by the amount of
-   *     bytes read and mixed.
-   * @param inputAudioFormat {@link AudioFormat} of the {@code inputBuffer}.
-   * @param mixingBuffer Mixing audio {@link ByteBuffer}, the position is advanced by the amount of
-   *     bytes written.
-   * @param mixingAudioFormat {@link AudioFormat} of the {@code mixingBuffer}.
-   * @param matrix Scaled channel mapping from input to output.
-   * @param framesToMix Number of audio frames to mix. Must be within the bounds of both buffers.
-   * @param accumulate Whether to accumulate with the existing samples in the mixing buffer.
-   * @param clipFloatOutput Whether to clip the output signal to be in the [-1.0, 1.0] range if the
-   *     output encoding is {@link C#ENCODING_PCM_FLOAT}.
-   * @return The {@code mixingBuffer}, for convenience.
+   * @param inputBuffer 输入音频 {@link ByteBuffer}，其位置会根据读取和混合的字节数前进。
+   * @param inputAudioFormat {@code inputBuffer} 的 {@link AudioFormat}。
+   * @param mixingBuffer 混合音频 {@link ByteBuffer}，其位置会根据写入的字节数前进。
+   * @param mixingAudioFormat {@code mixingBuffer} 的 {@link AudioFormat}。
+   * @param matrix 从输入到输出的缩放通道映射矩阵。
+   * @param framesToMix 要混合的音频帧数。必须在两个缓冲区的范围内。
+   * @param accumulate 是否与混合缓冲区中的现有样本进行累加。
+   * @param clipFloatOutput 如果输出编码是 {@link C#ENCODING_PCM_FLOAT}，是否将输出信号限制在 [-1.0, 1.0] 范围内。
+   * @return 返回 {@code mixingBuffer}，以便于链式调用。
    */
   public static ByteBuffer mix(
       ByteBuffer inputBuffer,
@@ -119,7 +113,7 @@ public final class AudioMixingUtil {
           mixingBuffer.putFloat(
               clipFloatOutput
                   ? constrainValue(
-                      outputFrame[outputChannel], FLOAT_PCM_MIN_VALUE, FLOAT_PCM_MAX_VALUE)
+                  outputFrame[outputChannel], FLOAT_PCM_MIN_VALUE, FLOAT_PCM_MAX_VALUE)
                   : outputFrame[outputChannel]);
         }
 
@@ -130,18 +124,16 @@ public final class AudioMixingUtil {
   }
 
   /**
-   * Gets the next sample from the {@link ByteBuffer} of raw audio.
+   * 从原始音频的 {@link ByteBuffer} 中获取下一个样本。
    *
-   * <p>Int16 PCM range of values: [{@link Short#MIN_VALUE}, {@link Short#MAX_VALUE}].
+   * <p>Int16 PCM 的值范围：[{@link Short#MIN_VALUE}, {@link Short#MAX_VALUE}]。
    *
-   * <p>Float PCM range of values: [-1.0, 1.0].
+   * <p>Float PCM 的值范围：[-1.0, 1.0]。
    *
-   * @param buffer The {@link ByteBuffer} containing raw audio.
-   * @param int16Buffer Whether the buffer contains {@link C#ENCODING_PCM_16BIT} audio. Use {@code
-   *     false} if buffer contains {@link C#ENCODING_PCM_FLOAT} audio.
-   * @param int16Output Whether the returned sample should be in the {@link C#ENCODING_PCM_16BIT}
-   *     range of values. If {@code false}, Float PCM range is used.
-   * @return The next sample from the buffer.
+   * @param buffer 包含原始音频的 {@link ByteBuffer}。
+   * @param int16Buffer 缓冲区是否包含 {@link C#ENCODING_PCM_16BIT} 音频。如果缓冲区包含 {@link C#ENCODING_PCM_FLOAT} 音频，则使用 {@code false}。
+   * @param int16Output 返回的样本是否应在 {@link C#ENCODING_PCM_16BIT} 的值范围内。如果为 {@code false}，则使用 Float PCM 范围。
+   * @return 从缓冲区中获取的下一个样本。
    */
   private static float getPcmSample(ByteBuffer buffer, boolean int16Buffer, boolean int16Output) {
     if (int16Output) {
@@ -159,7 +151,7 @@ public final class AudioMixingUtil {
   }
 
   private static float int16SampleToFloatPcm(short shortPcmValue) {
-    // Short.MIN_VALUE != -Short.MAX_VALUE, so use different conversion for positive and negative.
+    // Short.MIN_VALUE != -Short.MAX_VALUE，因此对正负值使用不同的转换。
     return shortPcmValue / (float) (shortPcmValue < 0 ? -Short.MIN_VALUE : Short.MAX_VALUE);
   }
 

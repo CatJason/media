@@ -1,41 +1,22 @@
-/*
- * Copyright 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common;
 
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * Thrown when an exception occurs while preparing an {@link Effect}, or applying an {@link Effect}
- * to video frames.
+ * 当准备 {@link Effect} 或对视频帧应用 {@link Effect} 时发生异常时抛出。
  */
 @UnstableApi
 public final class VideoFrameProcessingException extends Exception {
 
   /**
-   * Wraps the given exception in a {@code VideoFrameProcessingException} if it is not already a
-   * {@code VideoFrameProcessingException} and returns the exception otherwise.
+   * 如果给定的异常不是 {@code VideoFrameProcessingException}，则将其包装为 {@code VideoFrameProcessingException}，否则直接返回该异常。
    */
   public static VideoFrameProcessingException from(Exception exception) {
     return from(exception, /* presentationTimeUs= */ C.TIME_UNSET);
   }
 
   /**
-   * Wraps the given exception in a {@code VideoFrameProcessingException} with the given timestamp
-   * if it is not already a {@code VideoFrameProcessingException} and returns the exception
-   * otherwise.
+   * 如果给定的异常不是 {@code VideoFrameProcessingException}，则将其包装为 {@code VideoFrameProcessingException} 并附带给定的时间戳，否则直接返回该异常。
    */
   public static VideoFrameProcessingException from(Exception exception, long presentationTimeUs) {
     if (exception instanceof VideoFrameProcessingException) {
@@ -46,25 +27,24 @@ public final class VideoFrameProcessingException extends Exception {
   }
 
   /**
-   * The microsecond timestamp of the frame being processed while the exception occurred or {@link
-   * C#TIME_UNSET} if unknown.
+   * 发生异常时正在处理的帧的微秒时间戳，如果未知则为 {@link C#TIME_UNSET}。
    */
   public final long presentationTimeUs;
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param message The detail message for this exception.
+   * @param message 此异常的详细信息。
    */
   public VideoFrameProcessingException(String message) {
     this(message, /* presentationTimeUs= */ C.TIME_UNSET);
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param message The detail message for this exception.
-   * @param presentationTimeUs The timestamp of the frame for which the exception occurred.
+   * @param message 此异常的详细信息。
+   * @param presentationTimeUs 发生异常的帧的时间戳。
    */
   public VideoFrameProcessingException(String message, long presentationTimeUs) {
     super(message);
@@ -72,21 +52,21 @@ public final class VideoFrameProcessingException extends Exception {
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param message The detail message for this exception.
-   * @param cause The cause of this exception.
+   * @param message 此异常的详细信息。
+   * @param cause 此异常的原因。
    */
   public VideoFrameProcessingException(String message, Throwable cause) {
     this(message, cause, /* presentationTimeUs= */ C.TIME_UNSET);
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param message The detail message for this exception.
-   * @param cause The cause of this exception.
-   * @param presentationTimeUs The timestamp of the frame for which the exception occurred.
+   * @param message 此异常的详细信息。
+   * @param cause 此异常的原因。
+   * @param presentationTimeUs 发生异常的帧的时间戳。
    */
   public VideoFrameProcessingException(String message, Throwable cause, long presentationTimeUs) {
     super(message, cause);
@@ -94,19 +74,19 @@ public final class VideoFrameProcessingException extends Exception {
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param cause The cause of this exception.
+   * @param cause 此异常的原因。
    */
   public VideoFrameProcessingException(Throwable cause) {
     this(cause, /* presentationTimeUs= */ C.TIME_UNSET);
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param cause The cause of this exception.
-   * @param presentationTimeUs The timestamp of the frame for which the exception occurred.
+   * @param cause 此异常的原因。
+   * @param presentationTimeUs 发生异常的帧的时间戳。
    */
   public VideoFrameProcessingException(Throwable cause, long presentationTimeUs) {
     super(cause);

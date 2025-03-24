@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -28,48 +13,42 @@ import com.google.common.primitives.Ints;
 import java.util.List;
 
 /**
- * A track selection override, consisting of a {@link TrackGroup} and the indices of the tracks
- * within the group that should be selected.
+ * 表示一个轨道选择覆盖，包含一个 {@link TrackGroup} 以及应选择的该组轨道中的索引。
  *
- * <p>A track selection override is applied during playback if the media being played contains a
- * {@link TrackGroup} equal to the one in the override. If a {@link TrackSelectionParameters}
- * contains only one override of a given track type that applies to the media, this override will be
- * used to control the track selection for that type. If multiple overrides of a given track type
- * apply then the player will apply only one of them.
+ * <p>如果正在播放的媒体包含与覆盖中相同的 {@link TrackGroup}，则在播放期间会应用此轨道选择覆盖。
+ * 如果 {@link TrackSelectionParameters} 仅包含一个适用于媒体的给定轨道类型的覆盖，则该覆盖将用于控制该类型的轨道选择。
+ * 如果多个给定轨道类型的覆盖适用，则播放器将仅应用其中一个。
  *
- * <p>If {@link #trackIndices} is empty then the override specifies that no tracks should be
- * selected. Adding an empty override to a {@link TrackSelectionParameters} is similar to {@link
- * TrackSelectionParameters.Builder#setTrackTypeDisabled disabling a track type}, except that an
- * empty override will only be applied if the media being played contains a {@link TrackGroup} equal
- * to the one in the override. Conversely, disabling a track type will prevent selection of tracks
- * of that type for all media.
+ * <p>如果 {@link #trackIndices} 为空，则覆盖指定不应选择任何轨道。
+ * 将空覆盖添加到 {@link TrackSelectionParameters} 类似于 {@link TrackSelectionParameters.Builder#setTrackTypeDisabled 禁用轨道类型}，不同之处在于，空覆盖仅在正在播放的媒体包含与覆盖中相同的 {@link TrackGroup} 时才会应用。
+ * 相反，禁用轨道类型将阻止选择所有媒体中该类型的轨道。
  */
 public final class TrackSelectionOverride {
 
-  /** The media {@link TrackGroup} whose {@link #trackIndices} are forced to be selected. */
+  /** 媒体 {@link TrackGroup}，其 {@link #trackIndices} 被强制选择。 */
   public final TrackGroup mediaTrackGroup;
 
-  /** The indices of tracks in a {@link TrackGroup} to be selected. */
+  /** 应选择的 {@link TrackGroup} 中的轨道索引。 */
   public final ImmutableList<Integer> trackIndices;
 
   private static final String FIELD_TRACK_GROUP = Util.intToStringMaxRadix(0);
   private static final String FIELD_TRACKS = Util.intToStringMaxRadix(1);
 
   /**
-   * Constructs an instance to force {@code trackIndex} in {@code trackGroup} to be selected.
+   * 构造一个实例，强制选择 {@code trackGroup} 中的 {@code trackIndex}。
    *
-   * @param mediaTrackGroup The media {@link TrackGroup} for which to override the track selection.
-   * @param trackIndex The index of the track in the {@link TrackGroup} to select.
+   * @param mediaTrackGroup 要覆盖轨道选择的媒体 {@link TrackGroup}。
+   * @param trackIndex 要选择的轨道在 {@link TrackGroup} 中的索引。
    */
   public TrackSelectionOverride(TrackGroup mediaTrackGroup, int trackIndex) {
     this(mediaTrackGroup, ImmutableList.of(trackIndex));
   }
 
   /**
-   * Constructs an instance to force {@code trackIndices} in {@code trackGroup} to be selected.
+   * 构造一个实例，强制选择 {@code trackGroup} 中的 {@code trackIndices}。
    *
-   * @param mediaTrackGroup The media {@link TrackGroup} for which to override the track selection.
-   * @param trackIndices The indices of the tracks in the {@link TrackGroup} to select.
+   * @param mediaTrackGroup 要覆盖轨道选择的媒体 {@link TrackGroup}。
+   * @param trackIndices 要选择的轨道在 {@link TrackGroup} 中的索引列表。
    */
   public TrackSelectionOverride(TrackGroup mediaTrackGroup, List<Integer> trackIndices) {
     if (!trackIndices.isEmpty()) {
@@ -81,7 +60,7 @@ public final class TrackSelectionOverride {
     this.trackIndices = ImmutableList.copyOf(trackIndices);
   }
 
-  /** Returns the {@link C.TrackType} of the overridden track group. */
+  /** 返回覆盖的轨道组的 {@link C.TrackType}。 */
   public @C.TrackType int getType() {
     return mediaTrackGroup.type;
   }
@@ -111,7 +90,7 @@ public final class TrackSelectionOverride {
     return bundle;
   }
 
-  /** Restores a {@code TrackSelectionOverride} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code TrackSelectionOverride}。 */
   @UnstableApi
   public static TrackSelectionOverride fromBundle(Bundle bundle) {
     Bundle trackGroupBundle = checkNotNull(bundle.getBundle(FIELD_TRACK_GROUP));

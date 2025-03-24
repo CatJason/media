@@ -1,18 +1,3 @@
-/*
- * Copyright 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.audio;
 
 import static androidx.media3.common.audio.AudioProcessor.EMPTY_BUFFER;
@@ -28,75 +13,61 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles passing buffers through multiple {@link AudioProcessor} instances.
+ * 处理通过多个 {@link AudioProcessor} 实例传递的缓冲区。
  *
- * <p>Two instances of {@link AudioProcessingPipeline} are considered {@linkplain #equals(Object)
- * equal} if they have the same underlying {@link AudioProcessor} references, in the same order.
+ * <p>如果两个 {@link AudioProcessingPipeline} 实例具有相同的底层 {@link AudioProcessor} 引用，并且顺序相同，则认为它们是 {@linkplain #equals(Object) 相等的}。
  *
- * <p>To make use of this class, the caller must:
+ * <p>要使用此类，调用者必须：
  *
  * <ul>
- *   <li>Initialize an instance, passing in all audio processors that may be used for processing.
- *   <li>Call {@link #configure(AudioFormat)} with the {@link AudioFormat} of the input data. This
- *       method will give back the {@link AudioFormat} that will be output from the pipeline when
- *       this configuration is in use.
- *   <li>Call {@link #flush()} to apply the pending configuration.
- *   <li>Check if the pipeline {@link #isOperational()}. If not, then the pipeline can not be used
- *       to process buffers in the current configuration. This is because none of the underlying
- *       {@link AudioProcessor} instances are {@linkplain AudioProcessor#isActive active}.
- *   <li>If the pipeline {@link #isOperational()}, {@link #queueInput(ByteBuffer)} then {@link
- *       #getOutput()} to process buffers.
- *   <li>{@link #queueEndOfStream()} to inform the pipeline the current input stream is at an end.
- *   <li>Repeatedly call {@link #getOutput()} and handle those buffers until {@link #isEnded()}
- *       returns true.
- *   <li>When finished with the pipeline, call {@link #reset()} to release underlying resources.
+ *   <li>初始化一个实例，传入所有可能用于处理的音频处理器。
+ *   <li>调用 {@link #configure(AudioFormat)} 并传入输入数据的 {@link AudioFormat}。此方法将返回管道在当前配置下输出的 {@link AudioFormat}。
+ *   <li>调用 {@link #flush()} 以应用挂起的配置。
+ *   <li>检查管道是否 {@link #isOperational()}。如果否，则管道无法在当前配置下处理缓冲区。这是因为底层的 {@link AudioProcessor} 实例都未 {@linkplain AudioProcessor#isActive 激活}。
+ *   <li>如果管道 {@link #isOperational()}，则调用 {@link #queueInput(ByteBuffer)}，然后调用 {@link #getOutput()} 来处理缓冲区。
+ *   <li>调用 {@link #queueEndOfStream()} 以通知管道当前输入流已结束。
+ *   <li>重复调用 {@link #getOutput()} 并处理这些缓冲区，直到 {@link #isEnded()} 返回 true。
+ *   <li>当完成管道操作后，调用 {@link #reset()} 以释放底层资源。
  * </ul>
  *
- * <p>If underlying {@link AudioProcessor} instances have pending configuration changes, or the
- * {@link AudioFormat} of the input is changing:
+ * <p>如果底层的 {@link AudioProcessor} 实例有挂起的配置更改，或者输入数据的 {@link AudioFormat} 发生变化：
  *
  * <ul>
- *   <li>Call {@link #configure(AudioFormat)} to configure the pipeline for the new input stream.
- *       You can still {@link #queueInput(ByteBuffer)} and {@link #getOutput()} in the old setup at
- *       this time.
- *   <li>{@link #queueEndOfStream()} to inform the pipeline the current input stream is at an end.
- *   <li>Repeatedly call {@link #getOutput()} until {@link #isEnded()} returns true.
- *   <li>Call {@link #flush()} to apply the new configuration and flush the pipeline.
- *   <li>Begin {@linkplain #queueInput(ByteBuffer) queuing input} and handling the {@linkplain
- *       #getOutput() output} in the new configuration.
+ *   <li>调用 {@link #configure(AudioFormat)} 为新的输入流配置管道。此时仍可以在旧配置下调用 {@link #queueInput(ByteBuffer)} 和 {@link #getOutput()}。
+ *   <li>调用 {@link #queueEndOfStream()} 以通知管道当前输入流已结束。
+ *   <li>重复调用 {@link #getOutput()}，直到 {@link #isEnded()} 返回 true。
+ *   <li>调用 {@link #flush()} 以应用新配置并刷新管道。
+ *   <li>在新配置下开始 {@linkplain #queueInput(ByteBuffer) 输入队列} 并处理 {@linkplain #getOutput() 输出}。
  * </ul>
  */
 @UnstableApi
 public final class AudioProcessingPipeline {
-
-  /** The {@link AudioProcessor} instances passed to {@link AudioProcessingPipeline}. */
+  /** 传递给 {@link AudioProcessingPipeline} 的 {@link AudioProcessor} 实例。 */
   private final ImmutableList<AudioProcessor> audioProcessors;
 
   /**
-   * The processors that are {@linkplain AudioProcessor#isActive() active} based on the current
-   * configuration.
+   * 基于当前配置 {@linkplain AudioProcessor#isActive() 激活} 的处理器。
    */
   private final List<AudioProcessor> activeAudioProcessors;
 
   /**
-   * The buffers output by the {@link #activeAudioProcessors}. This has the same number of elements
-   * as {@link #activeAudioProcessors}.
+   * 由 {@link #activeAudioProcessors} 输出的缓冲区。此数组的元素数量与 {@link #activeAudioProcessors} 相同。
    */
   private ByteBuffer[] outputBuffers;
 
-  /** The {@link AudioFormat} currently being output by the pipeline. */
+  /** 管道当前输出的 {@link AudioFormat}。 */
   private AudioFormat outputAudioFormat;
 
-  /** The {@link AudioFormat} that will be output following a {@link #flush()}. */
+  /** 在调用 {@link #flush()} 后将输出的 {@link AudioFormat}。 */
   private AudioFormat pendingOutputAudioFormat;
 
-  /** Whether input has ended, either due to configuration change or end of stream. */
+  /** 输入是否已结束，无论是由于配置更改还是流结束。 */
   private boolean inputEnded;
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param audioProcessors The {@link AudioProcessor} instances to be used for processing buffers.
+   * @param audioProcessors 用于处理缓冲区的 {@link AudioProcessor} 实例。
    */
   public AudioProcessingPipeline(ImmutableList<AudioProcessor> audioProcessors) {
     this.audioProcessors = audioProcessors;
@@ -106,21 +77,14 @@ public final class AudioProcessingPipeline {
     pendingOutputAudioFormat = AudioFormat.NOT_SET;
     inputEnded = false;
   }
-
   /**
-   * Configures the pipeline to process input audio with the specified format. Returns the
-   * configured output audio format.
+   * 配置管道以处理具有指定格式的输入音频。返回配置后的输出音频格式。
    *
-   * <p>To apply the new configuration for use, the pipeline must be {@linkplain #flush() flushed}.
-   * Before applying the new configuration, it is safe to queue input and get output in the old
-   * input/output formats/configuration. Call {@link #queueEndOfStream()} when no more input will be
-   * supplied for processing in the old configuration.
+   * <p>要使新配置生效，必须调用 {@linkplain #flush() 刷新} 管道。在应用新配置之前，可以在旧的输入/输出格式/配置下安全地加入输入并获取输出。当不再为旧配置提供输入时，调用 {@link #queueEndOfStream()}。
    *
-   * @param inputAudioFormat The format of audio that will be queued after the next call to {@link
-   *     #flush()}.
-   * @return The configured output audio format.
-   * @throws AudioProcessor.UnhandledAudioFormatException If the specified format is not supported
-   *     by the pipeline.
+   * @param inputAudioFormat 在下次调用 {@link #flush()} 后将加入的音频格式。
+   * @return 配置后的输出音频格式。
+   * @throws AudioProcessor.UnhandledAudioFormatException 如果管道不支持指定的格式。
    */
   @CanIgnoreReturnValue
   public AudioFormat configure(AudioFormat inputAudioFormat)
@@ -144,12 +108,10 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Clears any buffered data and pending output. If any underlying audio processors are {@linkplain
-   * AudioProcessor#isActive() active}, this also prepares them to receive a new stream of input in
-   * the last {@linkplain #configure(AudioFormat) configured} (pending) format.
+   * 清除所有缓冲的数据和挂起的输出。如果任何底层的音频处理器处于 {@linkplain AudioProcessor#isActive() 激活} 状态，
+   * 此方法还会准备它们以接收新的输入流，使用最近一次 {@linkplain #configure(AudioFormat) 配置} 的（挂起）格式。
    *
-   * <p>{@link #configure(AudioFormat)} must have been called at least once since the last call to
-   * {@link #reset()} before calling this.
+   * <p>在调用此方法之前，必须在上一次调用 {@link #reset()} 后至少调用过一次 {@link #configure(AudioFormat)}。
    */
   public void flush() {
     activeAudioProcessors.clear();
@@ -171,35 +133,30 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Returns the {@link AudioFormat} of data being output through {@link #getOutput()}.
+   * 返回通过 {@link #getOutput()} 输出的数据的 {@link AudioFormat}。
    *
-   * @return The {@link AudioFormat} currently being output, or {@link AudioFormat#NOT_SET} if no
-   *     {@linkplain #configure(AudioFormat) configuration} has been {@linkplain #flush() applied}.
+   * @return 当前正在输出的 {@link AudioFormat}，如果尚未 {@linkplain #flush() 应用} 任何 {@linkplain #configure(AudioFormat) 配置}，则返回 {@link AudioFormat#NOT_SET}。
    */
   public AudioFormat getOutputAudioFormat() {
     return outputAudioFormat;
   }
 
   /**
-   * Whether the pipeline can be used for processing buffers.
+   * 管道是否可用于处理缓冲区。
    *
-   * <p>For this to happen the pipeline must be {@linkplain #configure(AudioFormat) configured},
-   * {@linkplain #flush() flushed} and have {@linkplain AudioProcessor#isActive() active}
-   * {@linkplain AudioProcessor underlying audio processors} that are ready to process buffers with
-   * the current configuration.
+   * <p>要满足此条件，管道必须已经 {@linkplain #configure(AudioFormat) 配置} 并 {@linkplain #flush() 刷新}，
+   * 同时具有 {@linkplain AudioProcessor#isActive() 激活} 的 {@linkplain AudioProcessor 底层音频处理器}，
+   * 这些处理器已准备好使用当前配置处理缓冲区。
    */
   public boolean isOperational() {
     return !activeAudioProcessors.isEmpty();
   }
 
   /**
-   * Queues audio data between the position and limit of the {@code inputBuffer} for processing.
-   * After calling this method, processed output may be available via {@link #getOutput()}.
+   * 将 {@code inputBuffer} 中从 position 到 limit 之间的音频数据加入队列以进行处理。调用此方法后，处理后的输出可能通过 {@link #getOutput()} 获取。
    *
-   * @param inputBuffer The input buffer to process. It must be a direct {@link ByteBuffer} with
-   *     native byte order. Its contents are treated as read-only. Its position will be advanced by
-   *     the number of bytes consumed (which may be zero). The caller retains ownership of the
-   *     provided buffer.
+   * @param inputBuffer 要处理的输入缓冲区。它必须是一个具有本地字节序的直接 {@link ByteBuffer}。
+   * 其内容被视为只读。其 position 将根据消耗的字节数（可能为零）前进。调用者保留对提供的缓冲区的所有权。
    */
   public void queueInput(ByteBuffer inputBuffer) {
     if (!isOperational() || inputEnded) {
@@ -209,13 +166,11 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Returns a {@link ByteBuffer} containing processed output data between its position and limit.
-   * The buffer will be empty if no output is available.
+   * 返回一个包含从 position 到 limit 之间的已处理输出数据的 {@link ByteBuffer}。如果没有可用的输出，缓冲区将为空。
    *
-   * <p>Buffers returned from this method are retained by pipeline, and it is necessary to consume
-   * the data (or copy it into another buffer) to allow the pipeline to progress.
+   * <p>从此方法返回的缓冲区由管道保留，必须消费数据（或将其复制到另一个缓冲区）以允许管道继续处理。
    *
-   * @return A buffer containing processed output data between its position and limit.
+   * @return 包含从 position 到 limit 之间的已处理输出数据的缓冲区。
    */
   public ByteBuffer getOutput() {
     if (!isOperational()) {
@@ -231,11 +186,9 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Queues an end of stream signal. After this method has been called, {@link
-   * #queueInput(ByteBuffer)} should not be called until after the next call to {@link #flush()}.
-   * Calling {@link #getOutput()} will return any remaining output data. Multiple calls may be
-   * required to read all of the remaining output data. {@link #isEnded()} will return {@code true}
-   * once all remaining output data has been read.
+   * 加入一个流结束信号。调用此方法后，在下次调用 {@link #flush()} 之前，不应再调用 {@link #queueInput(ByteBuffer)}。
+   * 调用 {@link #getOutput()} 将返回所有剩余的输出数据。可能需要多次调用以读取所有剩余的输出数据。
+   * 一旦所有剩余的输出数据被读取完毕，{@link #isEnded()} 将返回 {@code true}。
    */
   public void queueEndOfStream() {
     if (!isOperational() || inputEnded) {
@@ -246,14 +199,14 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Returns whether the pipeline has ended.
+   * 返回管道是否已结束。
    *
-   * <p>The pipeline is considered ended when:
+   * <p>管道在以下情况下被视为已结束：
    *
    * <ul>
-   *   <li>End of stream has been {@linkplain #queueEndOfStream() queued}.
-   *   <li>Every {@linkplain #queueInput(ByteBuffer) input buffer} has been processed.
-   *   <li>Every {@linkplain #getOutput() output buffer} has been fully consumed.
+   *   <li>已 {@linkplain #queueEndOfStream() 加入} 流结束信号。
+   *   <li>每个 {@linkplain #queueInput(ByteBuffer) 输入缓冲区} 都已被处理。
+   *   <li>每个 {@linkplain #getOutput() 输出缓冲区} 都已被完全消费。
    * </ul>
    */
   public boolean isEnded() {
@@ -263,8 +216,7 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Resets the pipeline and its underlying {@link AudioProcessor} instances to their unconfigured
-   * state, releasing any resources.
+   * 重置管道及其底层的 {@link AudioProcessor} 实例到未配置状态，并释放所有资源。
    */
   public void reset() {
     for (int i = 0; i < audioProcessors.size(); i++) {
@@ -279,10 +231,9 @@ public final class AudioProcessingPipeline {
   }
 
   /**
-   * Indicates whether some other object is "equal to" this one.
+   * 指示某个其他对象是否与此对象“相等”。
    *
-   * <p>Two instances of {@link AudioProcessingPipeline} are considered equal if they have the same
-   * underlying {@link AudioProcessor} references in the same order.
+   * <p>如果两个 {@link AudioProcessingPipeline} 实例具有相同的底层 {@link AudioProcessor} 引用，并且顺序相同，则认为它们是相等的。
    */
   @Override
   public boolean equals(@Nullable Object o) {
@@ -316,7 +267,7 @@ public final class AudioProcessingPipeline {
       progressMade = false;
       for (int index = 0; index <= getFinalOutputBufferIndex(); index++) {
         if (outputBuffers[index].hasRemaining()) {
-          // Processor at this index has output that has not been consumed. Do not queue input.
+          // 此索引处的处理器有尚未被消费的输出。不要加入输入。
           continue;
         }
 

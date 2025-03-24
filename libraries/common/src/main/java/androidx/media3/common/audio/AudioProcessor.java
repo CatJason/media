@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.common.audio;
 
 import androidx.annotation.Nullable;
@@ -25,23 +10,19 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Interface for audio processors, which take audio data as input and transform it, potentially
- * modifying its channel count, encoding and/or sample rate.
+ * 音频处理器的接口，用于接收音频数据并对其进行转换，可能会修改其声道数、编码和/或采样率。
  *
- * <p>In addition to being able to modify the format of audio, implementations may allow parameters
- * to be set that affect the output audio and whether the processor is active/inactive.
+ * <p>除了能够修改音频格式外，实现类还可以设置参数以影响输出音频以及处理器是否处于激活/非激活状态。
  */
 @UnstableApi
 public interface AudioProcessor {
 
-  /** PCM audio format that may be handled by an audio processor. */
+  /** 音频处理器可能处理的 PCM 音频格式。 */
   final class AudioFormat {
     /**
-     * An {@link AudioFormat} instance to represent an unset {@link AudioFormat}. This should not be
-     * returned by {@link #configure(AudioFormat)} if the processor {@link #isActive()}.
+     * 用于表示未设置的 {@link AudioFormat} 的实例。如果处理器 {@link #isActive()}，则不应由 {@link #configure(AudioFormat)} 返回。
      *
-     * <p>Typically used to represent an inactive {@link AudioProcessor} {@linkplain
-     * #configure(AudioFormat) output format}.
+     * <p>通常用于表示非激活的 {@link AudioProcessor} 的 {@linkplain #configure(AudioFormat) 输出格式}。
      */
     public static final AudioFormat NOT_SET =
         new AudioFormat(
@@ -49,21 +30,20 @@ public interface AudioProcessor {
             /* channelCount= */ Format.NO_VALUE,
             /* encoding= */ Format.NO_VALUE);
 
-    /** The sample rate in Hertz. */
+    /** 采样率，单位为赫兹。 */
     public final int sampleRate;
 
-    /** The number of interleaved channels. */
+    /** 交错的声道数。 */
     public final int channelCount;
 
-    /** The type of linear PCM encoding. */
+    /** 线性 PCM 编码类型。 */
     public final @C.PcmEncoding int encoding;
 
-    /** The number of bytes used to represent one audio frame. */
+    /** 表示一个音频帧的字节数。 */
     public final int bytesPerFrame;
 
     /**
-     * Creates an instance using the {@link Format#sampleRate}, {@link Format#channelCount} and
-     * {@link Format#pcmEncoding}.
+     * 使用 {@link Format#sampleRate}、{@link Format#channelCount} 和 {@link Format#pcmEncoding} 创建实例。
      */
     public AudioFormat(Format format) {
       this(format.sampleRate, format.channelCount, format.pcmEncoding);
@@ -111,12 +91,12 @@ public interface AudioProcessor {
     }
   }
 
-  /** Exception thrown when the given {@link AudioFormat} can not be handled. */
+  /** 当给定的 {@link AudioFormat} 无法处理时抛出的异常。 */
   final class UnhandledAudioFormatException extends Exception {
     public final AudioFormat inputAudioFormat;
 
     public UnhandledAudioFormatException(AudioFormat inputAudioFormat) {
-      this("Unhandled input format:", inputAudioFormat);
+      this("无法处理的输入格式:", inputAudioFormat);
     }
 
     public UnhandledAudioFormatException(String message, AudioFormat audioFormat) {
@@ -125,79 +105,59 @@ public interface AudioProcessor {
     }
   }
 
-  /** An empty, direct {@link ByteBuffer}. */
+  /** 一个空的直接 {@link ByteBuffer}。 */
   ByteBuffer EMPTY_BUFFER = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder());
 
   /**
-   * Returns the expected duration of the output stream when the processor is applied given a input
-   * {@code durationUs}.
+   * 返回处理器应用后输出流的预期持续时间，给定输入 {@code durationUs}。
    */
   default long getDurationAfterProcessorApplied(long durationUs) {
     return durationUs;
   }
 
   /**
-   * Configures the processor to process input audio with the specified format. After calling this
-   * method, call {@link #isActive()} to determine whether the audio processor is active. Returns
-   * the configured output audio format if this instance is active.
+   * 配置处理器以处理具有指定格式的输入音频。调用此方法后，调用 {@link #isActive()} 以确定音频处理器是否处于激活状态。如果此实例处于激活状态，则返回配置后的输出音频格式。
    *
-   * <p>After calling this method, it is necessary to {@link #flush()} the processor to apply the
-   * new configuration. Before applying the new configuration, it is safe to queue input and get
-   * output in the old input/output formats. Call {@link #queueEndOfStream()} when no more input
-   * will be supplied in the old input format.
+   * <p>调用此方法后，必须调用 {@link #flush()} 以应用新配置。在应用新配置之前，可以在旧的输入/输出格式下安全地加入输入并获取输出。当不再为旧输入格式提供输入时，调用 {@link #queueEndOfStream()}。
    *
-   * @param inputAudioFormat The format of audio that will be queued after the next call to {@link
-   *     #flush()}.
-   * @return The configured output audio format if this instance is {@link #isActive() active}.
-   * @throws UnhandledAudioFormatException Thrown if the specified format can't be handled as input.
+   * @param inputAudioFormat 在下次调用 {@link #flush()} 后将加入的音频格式。
+   * @return 如果此实例 {@link #isActive()} 处于激活状态，则返回配置后的输出音频格式。
+   * @throws UnhandledAudioFormatException 如果无法处理指定的格式作为输入，则抛出此异常。
    */
   AudioFormat configure(AudioFormat inputAudioFormat) throws UnhandledAudioFormatException;
 
-  /** Returns whether the processor is configured and will process input buffers. */
+  /** 返回处理器是否已配置并将处理输入缓冲区。 */
   boolean isActive();
 
   /**
-   * Queues audio data between the position and limit of the {@code inputBuffer} for processing.
-   * After calling this method, processed output may be available via {@link #getOutput()}. Calling
-   * {@code queueInput(ByteBuffer)} again invalidates any pending output.
+   * 将 {@code inputBuffer} 中从 position 到 limit 之间的音频数据加入队列以进行处理。调用此方法后，处理后的输出可能通过 {@link #getOutput()} 获取。再次调用 {@code queueInput(ByteBuffer)} 会使任何挂起的输出失效。
    *
-   * @param inputBuffer The input buffer to process. It must be a direct byte buffer with native
-   *     byte order. Its contents are treated as read-only. Its position will be advanced by the
-   *     number of bytes consumed (which may be zero). The caller retains ownership of the provided
-   *     buffer.
+   * @param inputBuffer 要处理的输入缓冲区。它必须是一个具有本地字节序的直接字节缓冲区。其内容被视为只读。其 position 将根据消耗的字节数（可能为零）前进。调用者保留对提供的缓冲区的所有权。
    */
   void queueInput(ByteBuffer inputBuffer);
 
   /**
-   * Queues an end of stream signal. After this method has been called, {@link
-   * #queueInput(ByteBuffer)} may not be called until after the next call to {@link #flush()}.
-   * Calling {@link #getOutput()} will return any remaining output data. Multiple calls may be
-   * required to read all of the remaining output data. {@link #isEnded()} will return {@code true}
-   * once all remaining output data has been read.
+   * 加入一个流结束信号。调用此方法后，在下次调用 {@link #flush()} 之前，不应再调用 {@link #queueInput(ByteBuffer)}。调用 {@link #getOutput()} 将返回所有剩余的输出数据。可能需要多次调用以读取所有剩余的输出数据。一旦所有剩余的输出数据被读取完毕，{@link #isEnded()} 将返回 {@code true}。
    */
   void queueEndOfStream();
 
   /**
-   * Returns a buffer containing processed output data between its position and limit. The buffer
-   * will always be a direct byte buffer with native byte order. Calling this method invalidates any
-   * previously returned buffer. The buffer will be empty if no output is available.
+   * 返回一个包含从 position 到 limit 之间的已处理输出数据的缓冲区。缓冲区将始终是一个具有本地字节序的直接字节缓冲区。调用此方法会使任何先前返回的缓冲区失效。如果没有可用的输出，缓冲区将为空。
    *
-   * @return A buffer containing processed output data between its position and limit.
+   * @return 包含从 position 到 limit 之间的已处理输出数据的缓冲区。
    */
   ByteBuffer getOutput();
 
   /**
-   * Returns whether this processor will return no more output from {@link #getOutput()} until
-   * {@link #flush()} has been called and more input has been queued.
+   * 返回此处理器是否不会再从 {@link #getOutput()} 返回输出，直到调用 {@link #flush()} 并加入更多输入。
    */
   boolean isEnded();
 
   /**
-   * Clears any buffered data and pending output. If the audio processor is active, also prepares
-   * the audio processor to receive a new stream of input in the last configured (pending) format.
+   * 清除所有缓冲的数据和挂起的输出。如果音频处理器处于激活状态，还会准备音频处理器以接收新的输入流，使用最近一次配置的（挂起）格式。
    */
   void flush();
 
-  /** Resets the processor to its unconfigured state, releasing any resources. */
+  /** 重置处理器到未配置状态，释放所有资源。 */
   void reset();
 }
