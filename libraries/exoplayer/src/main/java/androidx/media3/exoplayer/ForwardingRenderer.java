@@ -1,17 +1,15 @@
 /*
  * Copyright 2024 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非遵守许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发软件，
+ * 没有任何明示或暗示的担保或条件。
+ * 有关特定语言的管理权限和限制，请参阅许可证。
  */
 package androidx.media3.exoplayer;
 
@@ -26,13 +24,13 @@ import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.SampleStream;
 import java.io.IOException;
 
-/** An overridable {@link Renderer} implementation forwarding all methods to another renderer. */
+/** 一个可覆盖的 {@link Renderer} 实现，将所有方法转发给另一个渲染器。 */
 @UnstableApi
 public class ForwardingRenderer implements Renderer {
 
   private final Renderer renderer;
 
-  /** Creates a new instance that forwards all operations to {@code renderer}. */
+  /** 创建一个新实例，将所有操作转发给 {@code renderer}。 */
   public ForwardingRenderer(Renderer renderer) {
     this.renderer = renderer;
   }

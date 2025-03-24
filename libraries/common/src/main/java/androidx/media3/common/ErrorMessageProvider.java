@@ -2,15 +2,14 @@ package androidx.media3.common;
 
 import android.util.Pair;
 
-/** Converts throwables into error codes and user readable error messages. */
+/** 将异常转换为错误代码和用户可读的错误消息。 */
 public interface ErrorMessageProvider<T extends Throwable> {
 
   /**
-   * Returns a pair consisting of an error code and a user readable error message for the given
-   * throwable.
+   * 返回一个由错误代码和用户可读的错误消息组成的键值对，用于给定的异常。
    *
-   * @param throwable The throwable for which an error code and message should be generated.
-   * @return A pair consisting of an error code and a user readable error message.
+   * @param throwable 需要生成错误代码和消息的异常。
+   * @return 一个由错误代码和用户可读的错误消息组成的键值对。
    */
   Pair<Integer, String> getErrorMessage(T throwable);
 }

@@ -12,33 +12,30 @@ import java.util.List;
 
 // LINT.IfChange(javadoc)
 /**
- * A {@link SimpleBasePlayer} that forwards all calls to another {@link Player} instance.
+ * 一个 {@link SimpleBasePlayer}，它将所有调用转发给另一个 {@link Player} 实例。
  *
- * <p>The class can be used to selectively override {@link #getState()} or {@code handle{Action}}
- * methods:
+ * <p>该类可用于选择性地重写 {@link #getState()} 或 {@code handle{Action}} 方法：
  *
  * <pre>{@code
  * new ForwardingSimpleBasePlayer(player) {
  *   @Override
  *   protected State getState() {
  *     State state = super.getState();
- *     // Modify current state as required:
+ *     // 根据需要修改当前状态：
  *     return state.buildUpon().setAvailableCommands(filteredCommands).build();
  *   }
  *
  *   @Override
  *   protected ListenableFuture<?> handleSetRepeatMode(int repeatMode) {
- *     // Modify actions by directly calling the underlying player as needed:
+ *     // 根据需要直接调用底层播放器来修改操作：
  *     getPlayer().setShuffleModeEnabled(true);
- *     // ..or forward to the default handling with modified parameters:
+ *     // ..或者使用修改后的参数转发给默认处理：
  *     return super.handleSetRepeatMode(Player.REPEAT_MODE_ALL);
  *   }
  * }
  * }</pre>
  *
- * This base class handles many aspect of the player implementation to simplify the subclass, for
- * example listener handling. See the documentation of {@link SimpleBasePlayer} for a more detailed
- * description.
+ * 该基类处理了播放器实现的许多方面以简化子类，例如监听器处理。有关更详细的说明，请参阅 {@link SimpleBasePlayer} 的文档。
  */
 @UnstableApi
 public class ForwardingSimpleBasePlayer extends SimpleBasePlayer {

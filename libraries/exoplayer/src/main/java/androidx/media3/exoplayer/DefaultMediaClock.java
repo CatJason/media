@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer;
 
 import static androidx.media3.exoplayer.Renderer.STATE_STARTED;
@@ -24,37 +9,34 @@ import androidx.media3.common.util.Assertions;
 import androidx.media3.common.util.Clock;
 
 /**
- * Default {@link MediaClock} which uses a renderer media clock and falls back to a {@link
- * StandaloneMediaClock} if necessary.
+ * 默认的 {@link MediaClock} 实现，使用渲染器的媒体时钟，并在必要时回退到 {@link StandaloneMediaClock}。
  */
 /* package */ final class DefaultMediaClock implements MediaClock {
 
-  /** Listener interface to be notified of changes to the active playback parameters. */
+  /** 监听器接口，用于监听播放参数的变化。 */
   public interface PlaybackParametersListener {
 
     /**
-     * Called when the active playback parameters changed. Will not be called for {@link
-     * #setPlaybackParameters(PlaybackParameters)}.
+     * 当活动的播放参数发生变化时调用。不会为 {@link #setPlaybackParameters(PlaybackParameters)} 调用。
      *
-     * @param newPlaybackParameters The newly active playback parameters.
+     * @param newPlaybackParameters 新的活动播放参数。
      */
     void onPlaybackParametersChanged(PlaybackParameters newPlaybackParameters);
   }
 
-  private final StandaloneMediaClock standaloneClock;
-  private final PlaybackParametersListener listener;
+  private final StandaloneMediaClock standaloneClock; // 独立的媒体时钟
+  private final PlaybackParametersListener listener; // 播放参数监听器
 
-  @Nullable private Renderer rendererClockSource;
-  @Nullable private MediaClock rendererClock;
-  private boolean isUsingStandaloneClock;
-  private boolean standaloneClockIsStarted;
+  @Nullable private Renderer rendererClockSource; // 提供媒体时钟的渲染器
+  @Nullable private MediaClock rendererClock; // 渲染器的媒体时钟
+  private boolean isUsingStandaloneClock; // 是否正在使用独立时钟
+  private boolean standaloneClockIsStarted; // 独立时钟是否已启动
 
   /**
-   * Creates a new instance with a listener for playback parameters changes and a {@link Clock} to
-   * use for the standalone clock implementation.
+   * 创建一个新实例，带有播放参数变化的监听器和用于独立时钟实现的 {@link Clock}。
    *
-   * @param listener A {@link PlaybackParametersListener} to listen for playback parameters changes.
-   * @param clock A {@link Clock}.
+   * @param listener 监听播放参数变化的 {@link PlaybackParametersListener}。
+   * @param clock 用于独立时钟的 {@link Clock}。
    */
   public DefaultMediaClock(PlaybackParametersListener listener, Clock clock) {
     this.listener = listener;
@@ -62,41 +44,39 @@ import androidx.media3.common.util.Clock;
     isUsingStandaloneClock = true;
   }
 
-  /** Starts the standalone fallback clock. */
+  /** 启动独立的回退时钟。 */
   public void start() {
     standaloneClockIsStarted = true;
     standaloneClock.start();
   }
 
-  /** Stops the standalone fallback clock. */
+  /** 停止独立的回退时钟。 */
   public void stop() {
     standaloneClockIsStarted = false;
     standaloneClock.stop();
   }
 
   /**
-   * Resets the position of the standalone fallback clock.
+   * 重置独立回退时钟的位置。
    *
-   * @param positionUs The position to set in microseconds.
+   * @param positionUs 要设置的位置，单位为微秒。
    */
   public void resetPosition(long positionUs) {
     standaloneClock.resetPosition(positionUs);
   }
 
   /**
-   * Notifies the media clock that a renderer has been enabled. Starts using the media clock of the
-   * provided renderer if available.
+   * 通知媒体时钟某个渲染器已启用。如果可用，则开始使用该渲染器的媒体时钟。
    *
-   * @param renderer The renderer which has been enabled.
-   * @throws ExoPlaybackException If the renderer provides a media clock and another renderer media
-   *     clock is already provided.
+   * @param renderer 已启用的渲染器。
+   * @throws ExoPlaybackException 如果该渲染器提供了媒体时钟，但另一个渲染器已经提供了媒体时钟。
    */
   public void onRendererEnabled(Renderer renderer) throws ExoPlaybackException {
     @Nullable MediaClock rendererMediaClock = renderer.getMediaClock();
     if (rendererMediaClock != null && rendererMediaClock != rendererClock) {
       if (rendererClock != null) {
         throw ExoPlaybackException.createForUnexpected(
-            new IllegalStateException("Multiple renderer media clocks enabled."),
+            new IllegalStateException("多个渲染器媒体时钟已启用。"),
             PlaybackException.ERROR_CODE_UNSPECIFIED);
       }
       this.rendererClock = rendererMediaClock;
@@ -106,10 +86,9 @@ import androidx.media3.common.util.Clock;
   }
 
   /**
-   * Notifies the media clock that a renderer has been disabled. Stops using the media clock of this
-   * renderer if used.
+   * 通知媒体时钟某个渲染器已禁用。如果正在使用该渲染器的媒体时钟，则停止使用。
    *
-   * @param renderer The renderer which has been disabled.
+   * @param renderer 已禁用的渲染器。
    */
   public void onRendererDisabled(Renderer renderer) {
     if (renderer == rendererClockSource) {
@@ -120,16 +99,16 @@ import androidx.media3.common.util.Clock;
   }
 
   /**
-   * Syncs internal clock if needed and returns current clock position in microseconds.
+   * 如果需要，同步内部时钟并返回当前时钟位置，单位为微秒。
    *
-   * @param isReadingAhead Whether the renderers are reading ahead.
+   * @param isReadingAhead 渲染器是否正在预读。
    */
   public long syncAndGetPositionUs(boolean isReadingAhead) {
     syncClocks(isReadingAhead);
     return getPositionUs();
   }
 
-  // MediaClock implementation.
+  // MediaClock 实现。
 
   @Override
   public long getPositionUs() {
@@ -169,12 +148,11 @@ import androidx.media3.common.util.Clock;
       }
       return;
     }
-    // We are either already using the renderer clock or switching from the standalone to the
-    // renderer clock, so it must be non-null.
+    // 我们已经在使用渲染器时钟，或者正在从独立时钟切换到渲染器时钟，因此它必须为非空。
     MediaClock rendererClock = Assertions.checkNotNull(this.rendererClock);
     long rendererClockPositionUs = rendererClock.getPositionUs();
     if (isUsingStandaloneClock) {
-      // Ensure enabling the renderer clock doesn't jump backwards in time.
+      // 确保启用渲染器时钟不会使时间跳回。
       if (rendererClockPositionUs < standaloneClock.getPositionUs()) {
         standaloneClock.stop();
         return;
@@ -184,7 +162,7 @@ import androidx.media3.common.util.Clock;
         standaloneClock.start();
       }
     }
-    // Continuously sync stand-alone clock to renderer clock so that it can take over if needed.
+    // 持续将独立时钟同步到渲染器时钟，以便在需要时可以接管。
     standaloneClock.resetPosition(rendererClockPositionUs);
     PlaybackParameters playbackParameters = rendererClock.getPlaybackParameters();
     if (!playbackParameters.equals(standaloneClock.getPlaybackParameters())) {
@@ -194,15 +172,13 @@ import androidx.media3.common.util.Clock;
   }
 
   private boolean shouldUseStandaloneClock(boolean isReadingAhead) {
-    // Use the standalone clock if the clock providing renderer is not set or has ended. Use the
-    // standalone clock if reading ahead and the renderer is not in a started state. Also use
-    // the standalone clock if the renderer is not ready and we have finished reading the stream or
-    // are reading ahead to avoid getting stuck if tracks in the current period have uneven
-    // durations. See: https://github.com/google/ExoPlayer/issues/1874.
+    // 如果提供时钟的渲染器未设置或已结束，则使用独立时钟。如果正在预读且渲染器未处于启动状态，则使用独立时钟。
+    // 如果渲染器未准备好且我们已经读取完流或正在预读，则使用独立时钟，以避免在当前周期的轨道持续时间不均匀时卡住。
+    // 参见：https://github.com/google/ExoPlayer/issues/1874。
     return rendererClockSource == null
         || rendererClockSource.isEnded()
         || (isReadingAhead && rendererClockSource.getState() != STATE_STARTED)
         || (!rendererClockSource.isReady()
-            && (isReadingAhead || rendererClockSource.hasReadStreamToEnd()));
+        && (isReadingAhead || rendererClockSource.hasReadStreamToEnd()));
   }
 }

@@ -24,118 +24,82 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
- * A flexible representation of the structure of media. A timeline is able to represent the
- * structure of a wide variety of media, from simple cases like a single media file through to
- * complex compositions of media such as playlists and streams with inserted ads. Instances are
- * immutable. For cases where media is changing dynamically (e.g. live streams), a timeline provides
- * a snapshot of the current state.
+ * 媒体结构的灵活表示。Timeline 能够表示各种媒体的结构，从简单的单个媒体文件到复杂的媒体组合（如播放列表和插入广告的流媒体）。实例是不可变的。对于动态变化的媒体（例如直播流），Timeline 提供了当前状态的快照。
  *
- * <p>A timeline consists of {@link Window Windows} and {@link Period Periods}.
+ * <p>Timeline 由 {@link Window 窗口} 和 {@link Period 时间段} 组成。
  *
  * <ul>
- *   <li>A {@link Window} usually corresponds to one playlist item. It may span one or more periods
- *       and it defines the region within those periods that's currently available for playback. The
- *       window also provides additional information such as whether seeking is supported within the
- *       window and the default position, which is the position from which playback will start when
- *       the player starts playing the window.
- *   <li>A {@link Period} defines a single logical piece of media, for example a media file. It may
- *       also define groups of ads inserted into the media, along with information about whether
- *       those ads have been loaded and played.
+ *   <li>{@link Window} 通常对应于一个播放列表项。它可以跨越一个或多个时间段，并定义这些时间段中当前可用于播放的区域。窗口还提供其他信息，例如是否支持在窗口内进行搜索，以及默认位置（即播放器开始播放窗口时的起始位置）。
+ *   <li>{@link Period} 定义一个单独的媒体逻辑片段，例如一个媒体文件。它还可以定义插入到媒体中的广告组，以及这些广告是否已加载和播放的信息。
  * </ul>
  *
- * <p>The following examples illustrate timelines for various use cases.
+ * <p>以下示例说明了各种用例的 Timeline。
  *
- * <h2 id="single-file">Single media file or on-demand stream</h2>
+ * <h2 id="single-file">单个媒体文件或点播流</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-single-file.svg"
- * alt="Example timeline for a single file">
+ * alt="单个文件的示例 Timeline">
  *
- * <p>A timeline for a single media file or on-demand stream consists of a single period and window.
- * The window spans the whole period, indicating that all parts of the media are available for
- * playback. The window's default position is typically at the start of the period (indicated by the
- * black dot in the figure above).
+ * <p>单个媒体文件或点播流的 Timeline 由单个时间段和窗口组成。窗口跨越整个时间段，表示媒体的所有部分都可用于播放。窗口的默认位置通常位于时间段的开头（如上图中的黑点所示）。
  *
- * <h2>Playlist of media files or on-demand streams</h2>
+ * <h2>媒体文件或点播流的播放列表</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-playlist.svg"
- * alt="Example timeline for a playlist of files">
+ * alt="播放列表文件的示例 Timeline">
  *
- * <p>A timeline for a playlist of media files or on-demand streams consists of multiple periods,
- * each with its own window. Each window spans the whole of the corresponding period, and typically
- * has a default position at the start of the period. The properties of the periods and windows
- * (e.g. their durations and whether the window is seekable) will often only become known when the
- * player starts buffering the corresponding file or stream.
+ * <p>媒体文件或点播流的播放列表的 Timeline 由多个时间段组成，每个时间段都有自己的窗口。每个窗口跨越相应时间段的全部区域，默认位置通常位于时间段的开头。时间段和窗口的属性（例如它们的持续时间以及窗口是否可搜索）通常只有在播放器开始缓冲相应的文件或流时才会被知晓。
  *
- * <h2 id="live-limited">Live stream with limited availability</h2>
+ * <h2 id="live-limited">有限可用性的直播流</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-live-limited.svg"
- * alt="Example timeline for a live stream with limited availability">
+ * alt="有限可用性直播流的示例 Timeline">
  *
- * <p>A timeline for a live stream consists of a period whose duration is unknown, since it's
- * continually extending as more content is broadcast. If content only remains available for a
- * limited period of time then the window may start at a non-zero position, defining the region of
- * content that can still be played. The window will return true from {@link Window#isLive()} to
- * indicate it's a live stream and {@link Window#isDynamic} will be set to true as long as we expect
- * changes to the live window. Its default position is typically near to the live edge (indicated by
- * the black dot in the figure above).
+ * <p>直播流的 Timeline 由一个持续时间未知的时间段组成，因为随着更多内容的广播，它会不断扩展。如果内容仅在有限的时间内可用，则窗口可能从非零位置开始，定义仍可播放的内容区域。窗口将从 {@link Window#isLive()} 返回 true 以指示它是直播流，并且只要预期直播窗口会发生变化，{@link Window#isDynamic} 将设置为 true。其默认位置通常靠近直播边缘（如上图中的黑点所示）。
  *
- * <h2>Live stream with indefinite availability</h2>
+ * <h2>无限可用性的直播流</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-live-indefinite.svg"
- * alt="Example timeline for a live stream with indefinite availability">
+ * alt="无限可用性直播流的示例 Timeline">
  *
- * <p>A timeline for a live stream with indefinite availability is similar to the <a
- * href="#live-limited">Live stream with limited availability</a> case, except that the window
- * starts at the beginning of the period to indicate that all of the previously broadcast content
- * can still be played.
+ * <p>无限可用性的直播流的 Timeline 类似于 <a href="#live-limited">有限可用性的直播流</a> 的情况，不同之处在于窗口从时间段的开头开始，以指示所有之前广播的内容仍可播放。
  *
- * <h2 id="live-multi-period">Live stream with multiple periods</h2>
+ * <h2 id="live-multi-period">多时间段的直播流</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-live-multi-period.svg"
- * alt="Example timeline for a live stream with multiple periods">
+ * alt="多时间段直播流的示例 Timeline">
  *
- * <p>This case arises when a live stream is explicitly divided into separate periods, for example
- * at content boundaries. This case is similar to the <a href="#live-limited">Live stream with
- * limited availability</a> case, except that the window may span more than one period. Multiple
- * periods are also possible in the indefinite availability case.
+ * <p>当直播流被明确划分为多个时间段时（例如在内容边界处），会出现这种情况。这种情况类似于 <a href="#live-limited">有限可用性的直播流</a> 的情况，不同之处在于窗口可能跨越多个时间段。在无限可用性的情况下，也可能存在多个时间段。
  *
- * <h2>On-demand stream followed by live stream</h2>
+ * <h2>点播流后接直播流</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-advanced.svg"
- * alt="Example timeline for an on-demand stream followed by a live stream">
+ * alt="点播流后接直播流的示例 Timeline">
  *
- * <p>This case is the concatenation of the <a href="#single-file">Single media file or on-demand
- * stream</a> and <a href="#multi-period">Live stream with multiple periods</a> cases. When playback
- * of the on-demand stream ends, playback of the live stream will start from its default position
- * near the live edge.
+ * <p>这种情况是 <a href="#single-file">单个媒体文件或点播流</a> 和 <a href="#multi-period">多时间段的直播流</a> 情况的结合。当点播流播放结束时，将从直播流的默认位置（靠近直播边缘）开始播放。
  *
- * <h2 id="single-file-midrolls">On-demand stream with mid-roll ads</h2>
+ * <h2 id="single-file-midrolls">带有中插广告的点播流</h2>
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-single-file-midrolls.svg"
- * alt="Example timeline for an on-demand stream with mid-roll ad groups">
+ * alt="带有中插广告组的点播流的示例 Timeline">
  *
- * <p>This case includes mid-roll ad groups, which are defined as part of the timeline's single
- * period. The period can be queried for information about the ad groups and the ads they contain.
+ * <p>这种情况包括中插广告组，它们被定义为 Timeline 的单个时间段的一部分。可以查询时间段以获取有关广告组及其包含的广告的信息。
  */
 public abstract class Timeline {
 
   /**
-   * Holds information about a window in a {@link Timeline}. A window usually corresponds to one
-   * playlist item and defines a region of media currently available for playback along with
-   * additional information such as whether seeking is supported within the window. The figure below
-   * shows some of the information defined by a window, as well as how this information relates to
-   * corresponding {@link Period Periods} in the timeline.
+   * 保存 {@link Timeline} 中窗口的信息。窗口通常对应于一个播放列表项，并定义当前可用于播放的媒体区域以及附加信息（例如是否支持在窗口内进行搜索）。
+   *下图显示了窗口定义的一些信息，以及这些信息如何与时间线中对应的 {@link Period 时间段} 相关联。
    *
    * <p style="align:center"><img
    * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-window.svg"
-   * alt="Information defined by a timeline window">
+   * alt="时间线窗口定义的信息">
    */
   public static final class Window {
 
@@ -153,88 +117,73 @@ public abstract class Timeline {
             .build();
 
     /**
-     * A unique identifier for the window. Single-window {@link Timeline Timelines} must use {@link
-     * #SINGLE_WINDOW_UID}.
+     * 窗口的唯一标识符。单窗口的 {@link Timeline} 必须使用 {@link #SINGLE_WINDOW_UID}。
      */
     public Object uid;
 
     /**
-     * @deprecated Use {@link #mediaItem} instead.
+     * @deprecated 请改用 {@link #mediaItem}。
      */
     @UnstableApi @Deprecated @Nullable public Object tag;
 
-    /** The {@link MediaItem} associated to the window. Not necessarily unique. */
+    /** 与窗口关联的 {@link MediaItem}。不一定是唯一的。 */
     public MediaItem mediaItem;
 
-    /** The manifest of the window. May be {@code null}. */
+    /** 窗口的清单。可能为 {@code null}。 */
     @Nullable public Object manifest;
 
     /**
-     * The start time of the presentation to which this window belongs in milliseconds since the
-     * Unix epoch, or {@link C#TIME_UNSET} if unknown or not applicable. For informational purposes
-     * only.
+     * 此窗口所属的演示的开始时间，以 Unix 纪元以来的毫秒数表示，如果未知或不适用，则为 {@link C#TIME_UNSET}。仅用于信息目的。
      */
     public long presentationStartTimeMs;
 
     /**
-     * The window's start time in milliseconds since the Unix epoch, or {@link C#TIME_UNSET} if
-     * unknown or not applicable.
+     * 窗口的开始时间，以 Unix 纪元以来的毫秒数表示，如果未知或不适用，则为 {@link C#TIME_UNSET}。
      */
     public long windowStartTimeMs;
 
     /**
-     * The offset between {@link SystemClock#elapsedRealtime()} and the time since the Unix epoch
-     * according to the clock of the media origin server, or {@link C#TIME_UNSET} if unknown or not
-     * applicable.
+     * {@link SystemClock#elapsedRealtime()} 与媒体源服务器时钟的 Unix 纪元时间之间的偏移量，如果未知或不适用，则为 {@link C#TIME_UNSET}。
      *
-     * <p>Note that the current Unix time can be retrieved using {@link #getCurrentUnixTimeMs()} and
-     * is calculated as {@code SystemClock.elapsedRealtime() + elapsedRealtimeEpochOffsetMs}.
+     * <p>注意，可以使用 {@link #getCurrentUnixTimeMs()} 获取当前的 Unix 时间，其计算公式为 {@code SystemClock.elapsedRealtime() + elapsedRealtimeEpochOffsetMs}。
      */
     public long elapsedRealtimeEpochOffsetMs;
 
     /** Whether it's possible to seek within this window. */
     public boolean isSeekable;
 
-    // TODO: Split this to better describe which parts of the window might change. For example it
-    // should be possible to individually determine whether the start and end positions of the
-    // window may change relative to the underlying periods. For an example of where it's useful to
-    // know that the end position is fixed whilst the start position may still change, see:
-    // https://github.com/google/ExoPlayer/issues/4780.
-    /** Whether this window may change when the timeline is updated. */
+// TODO: 将此拆分为更详细地描述窗口的哪些部分可能会发生变化。
+//  例如，应该可以单独确定窗口的开始位置和结束位置是否可能相对于底层的时间段发生变化。
+//  关于了解结束位置是固定的而开始位置可能仍然变化的有用示例，请参见：
+//  https://github.com/google/ExoPlayer/issues/4780。
+    /** 此窗口在时间线更新时是否可能发生变化。 */
     public boolean isDynamic;
-
     /**
-     * The {@link MediaItem.LiveConfiguration} that is used or null if {@link #isLive()} returns
-     * false.
+     * 使用的 {@link MediaItem.LiveConfiguration}，如果 {@link #isLive()} 返回 false，则为 null。
      */
     @Nullable public MediaItem.LiveConfiguration liveConfiguration;
 
     /**
-     * Whether this window contains placeholder information because the real information has yet to
-     * be loaded.
+     * 此窗口是否包含占位符信息，因为实际信息尚未加载。
      */
     public boolean isPlaceholder;
 
     /**
-     * The default position relative to the start of the window at which to begin playback, in
-     * microseconds. May be {@link C#TIME_UNSET} if and only if the window was populated with a
-     * non-zero default position projection, and if the specified projection cannot be performed
-     * whilst remaining within the bounds of the window.
+     * 相对于窗口开始位置的默认播放位置，以微秒为单位。如果且仅当窗口填充了非零的默认位置投影，并且指定的投影在窗口范围内无法执行时，则可能为 {@link C#TIME_UNSET}。
      */
     @UnstableApi public long defaultPositionUs;
 
-    /** The duration of this window in microseconds, or {@link C#TIME_UNSET} if unknown. */
+    /** 此窗口的持续时间，以微秒为单位，如果未知则为 {@link C#TIME_UNSET}。 */
     @UnstableApi public long durationUs;
 
-    /** The index of the first period that belongs to this window. */
+    /** 属于此窗口的第一个时间段的索引。 */
     public int firstPeriodIndex;
 
-    /** The index of the last period that belongs to this window. */
+    /** 属于此窗口的最后一个时间段的索引。 */
     public int lastPeriodIndex;
 
     /**
-     * The position of the start of this window relative to the start of the first period belonging
-     * to it, in microseconds.
+     * 此窗口的开始位置相对于属于它的第一个时间段的开始位置的偏移量，以微秒为单位。
      */
     @UnstableApi public long positionInFirstPeriodUs;
 
@@ -284,64 +233,54 @@ public abstract class Timeline {
       this.isPlaceholder = false;
       return this;
     }
-
     /**
-     * Returns the default position relative to the start of the window at which to begin playback,
-     * in milliseconds. May be {@link C#TIME_UNSET} if and only if the window was populated with a
-     * non-zero default position projection, and if the specified projection cannot be performed
-     * whilst remaining within the bounds of the window.
+     * 返回相对于窗口开始位置的默认播放位置，以毫秒为单位。如果且仅当窗口填充了非零的默认位置投影，并且指定的投影在窗口范围内无法执行时，则可能为 {@link C#TIME_UNSET}。
      */
     public long getDefaultPositionMs() {
       return Util.usToMs(defaultPositionUs);
     }
 
     /**
-     * Returns the default position relative to the start of the window at which to begin playback,
-     * in microseconds. May be {@link C#TIME_UNSET} if and only if the window was populated with a
-     * non-zero default position projection, and if the specified projection cannot be performed
-     * whilst remaining within the bounds of the window.
+     * 返回相对于窗口开始位置的默认播放位置，以微秒为单位。如果且仅当窗口填充了非零的默认位置投影，并且指定的投影在窗口范围内无法执行时，则可能为 {@link C#TIME_UNSET}。
      */
     public long getDefaultPositionUs() {
       return defaultPositionUs;
     }
 
-    /** Returns the duration of the window in milliseconds, or {@link C#TIME_UNSET} if unknown. */
+    /** 返回窗口的持续时间，以毫秒为单位，如果未知则为 {@link C#TIME_UNSET}。 */
     public long getDurationMs() {
       return Util.usToMs(durationUs);
     }
 
-    /** Returns the duration of this window in microseconds, or {@link C#TIME_UNSET} if unknown. */
+    /** 返回窗口的持续时间，以微秒为单位，如果未知则为 {@link C#TIME_UNSET}。 */
     public long getDurationUs() {
       return durationUs;
     }
 
     /**
-     * Returns the position of the start of this window relative to the start of the first period
-     * belonging to it, in milliseconds.
+     * 返回此窗口的开始位置相对于属于它的第一个时间段的开始位置的偏移量，以毫秒为单位。
      */
     public long getPositionInFirstPeriodMs() {
       return Util.usToMs(positionInFirstPeriodUs);
     }
 
     /**
-     * Returns the position of the start of this window relative to the start of the first period
-     * belonging to it, in microseconds.
+     * 返回此窗口的开始位置相对于属于它的第一个时间段的开始位置的偏移量，以微秒为单位。
      */
     public long getPositionInFirstPeriodUs() {
       return positionInFirstPeriodUs;
     }
 
     /**
-     * Returns the current time in milliseconds since the Unix epoch.
+     * 返回当前时间，以 Unix 纪元以来的毫秒数表示。
      *
-     * <p>This method applies {@link #elapsedRealtimeEpochOffsetMs known corrections} made available
-     * by the media such that this time corresponds to the clock of the media origin server.
+     * <p>此方法应用了媒体提供的 {@link #elapsedRealtimeEpochOffsetMs 已知修正}，使得该时间与媒体源服务器的时钟一致。
      */
     public long getCurrentUnixTimeMs() {
       return Util.getNowUnixTimeMs(elapsedRealtimeEpochOffsetMs);
     }
 
-    /** Returns whether this is a live stream. */
+    /** 返回此窗口是否为直播流。 */
     public boolean isLive() {
       return liveConfiguration != null;
     }
@@ -413,11 +352,11 @@ public abstract class Timeline {
     private static final String FIELD_POSITION_IN_FIRST_PERIOD_US = Util.intToStringMaxRadix(13);
 
     /**
-     * Returns a {@link Bundle} representing the information stored in this object.
+     * 返回表示此对象中存储信息的 {@link Bundle}。
      *
-     * <p>It omits the {@link #uid} and {@link #manifest} fields. The {@link #uid} of an instance
-     * restored by {@link #fromBundle} will be a fake {@link Object} and the {@link #manifest} of
-     * the instance will be {@code null}.
+     * <p>它省略了 {@link #uid} 和 {@link #manifest} 字段。
+     * 通过 {@link #fromBundle} 恢复的实例的 {@link #uid} 将是一个假的 {@link Object}，
+     * 而实例的 {@link #manifest} 将为 {@code null}。
      */
     @UnstableApi
     public Bundle toBundle() {
@@ -515,73 +454,60 @@ public abstract class Timeline {
       return window;
     }
   }
-
   /**
-   * Holds information about a period in a {@link Timeline}. A period defines a single logical piece
-   * of media, for example a media file. It may also define groups of ads inserted into the media,
-   * along with information about whether those ads have been loaded and played.
+   * 保存 {@link Timeline} 中时间段的信息。时间段定义了一个单独的媒体逻辑片段，例如一个媒体文件。它还可以定义插入到媒体中的广告组，以及这些广告是否已加载和播放的信息。
    *
-   * <p>The figure below shows some of the information defined by a period, as well as how this
-   * information relates to a corresponding {@link Window} in the timeline.
+   * <p>下图展示了时间段定义的一些信息，以及这些信息如何与时间线中对应的 {@link Window} 相关联。
    *
    * <p style="align:center"><img
    * src="https://developer.android.com/static/images/reference/androidx/media3/common/timeline-period.svg"
-   * alt="Information defined by a period">
+   * alt="时间段定义的信息">
    */
   public static final class Period {
 
     /**
-     * An identifier for the period. Not necessarily unique. May be null if the ids of the period
-     * are not required.
+     * 时间段的标识符。不一定是唯一的。如果不需要时间段的标识符，则可以为 null。
      */
     @Nullable public Object id;
 
     /**
-     * A unique identifier for the period. May be null if the ids of the period are not required.
+     * 时间段的唯一标识符。如果不需要时间段的标识符，则可以为 null。
      */
     @Nullable public Object uid;
 
-    /** The index of the window to which this period belongs. */
+    /** 此时间段所属窗口的索引。 */
     public int windowIndex;
 
-    /** The duration of this period in microseconds, or {@link C#TIME_UNSET} if unknown. */
+    /** 此时间段的持续时间，以微秒为单位，如果未知则为 {@link C#TIME_UNSET}。 */
     @UnstableApi public long durationUs;
 
     /**
-     * The position of the start of this period relative to the start of the window to which it
-     * belongs, in microseconds. May be negative if the start of the period is not within the
-     * window.
+     * 此时间段的开始位置相对于所属窗口开始位置的偏移量，以微秒为单位。如果时间段的开始位置不在窗口内，则可能为负数。
      */
     @UnstableApi public long positionInWindowUs;
 
     /**
-     * Whether this period contains placeholder information because the real information has yet to
-     * be loaded.
+     * 此时间段是否包含占位符信息，因为实际信息尚未加载。
      */
     public boolean isPlaceholder;
 
-    /** The {@link AdPlaybackState} for all ads in this period. */
+    /** 此时间段中所有广告的 {@link AdPlaybackState}。 */
     @UnstableApi public AdPlaybackState adPlaybackState;
 
-    /** Creates a new instance with no ad playback state. */
+    /** 创建一个没有广告播放状态的新实例。 */
     public Period() {
       adPlaybackState = AdPlaybackState.NONE;
     }
 
     /**
-     * Sets the data held by this period.
+     * 设置此时间段持有的数据。
      *
-     * @param id An identifier for the period. Not necessarily unique. May be null if the ids of the
-     *     period are not required.
-     * @param uid A unique identifier for the period. May be null if the ids of the period are not
-     *     required.
-     * @param windowIndex The index of the window to which this period belongs.
-     * @param durationUs The duration of this period in microseconds, or {@link C#TIME_UNSET} if
-     *     unknown.
-     * @param positionInWindowUs The position of the start of this period relative to the start of
-     *     the window to which it belongs, in milliseconds. May be negative if the start of the
-     *     period is not within the window.
-     * @return This period, for convenience.
+     * @param id 时间段的标识符。不一定是唯一的。如果不需要时间段的标识符，则可以为 null。
+     * @param uid 时间段的唯一标识符。如果不需要时间段的标识符，则可以为 null。
+     * @param windowIndex 此时间段所属窗口的索引。
+     * @param durationUs 此时间段的持续时间，以微秒为单位，如果未知则为 {@link C#TIME_UNSET}。
+     * @param positionInWindowUs 此时间段的开始位置相对于所属窗口开始位置的偏移量，以毫秒为单位。如果时间段的开始位置不在窗口内，则可能为负数。
+     * @return 此时间段，方便链式调用。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -602,23 +528,16 @@ public abstract class Timeline {
     }
 
     /**
-     * Sets the data held by this period.
+     * 设置此时间段持有的数据。
      *
-     * @param id An identifier for the period. Not necessarily unique. May be null if the ids of the
-     *     period are not required.
-     * @param uid A unique identifier for the period. May be null if the ids of the period are not
-     *     required.
-     * @param windowIndex The index of the window to which this period belongs.
-     * @param durationUs The duration of this period in microseconds, or {@link C#TIME_UNSET} if
-     *     unknown.
-     * @param positionInWindowUs The position of the start of this period relative to the start of
-     *     the window to which it belongs, in milliseconds. May be negative if the start of the
-     *     period is not within the window.
-     * @param adPlaybackState The state of the period's ads, or {@link AdPlaybackState#NONE} if
-     *     there are no ads.
-     * @param isPlaceholder Whether this period contains placeholder information because the real
-     *     information has yet to be loaded.
-     * @return This period, for convenience.
+     * @param id 时间段的标识符。不一定是唯一的。如果不需要时间段的标识符，则可以为 null。
+     * @param uid 时间段的唯一标识符。如果不需要时间段的标识符，则可以为 null。
+     * @param windowIndex 此时间段所属窗口的索引。
+     * @param durationUs 此时间段的持续时间，以微秒为单位，如果未知则为 {@link C#TIME_UNSET}。
+     * @param positionInWindowUs 此时间段的开始位置相对于所属窗口开始位置的偏移量，以毫秒为单位。如果时间段的开始位置不在窗口内，则可能为负数。
+     * @param adPlaybackState 时间段中广告的播放状态，如果没有广告则为 {@link AdPlaybackState#NONE}。
+     * @param isPlaceholder 此时间段是否包含占位符信息，因为实际信息尚未加载。
+     * @return 此时间段，方便链式调用。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -639,147 +558,124 @@ public abstract class Timeline {
       this.isPlaceholder = isPlaceholder;
       return this;
     }
-
-    /** Returns the duration of the period in milliseconds, or {@link C#TIME_UNSET} if unknown. */
+    /** 返回时间段的持续时间，以毫秒为单位，如果未知则为 {@link C#TIME_UNSET}。 */
     public long getDurationMs() {
       return Util.usToMs(durationUs);
     }
 
-    /** Returns the duration of this period in microseconds, or {@link C#TIME_UNSET} if unknown. */
+    /** 返回时间段的持续时间，以微秒为单位，如果未知则为 {@link C#TIME_UNSET}。 */
     public long getDurationUs() {
       return durationUs;
     }
 
     /**
-     * Returns the position of the start of this period relative to the start of the window to which
-     * it belongs, in milliseconds. May be negative if the start of the period is not within the
-     * window.
+     * 返回此时间段的开始位置相对于所属窗口开始位置的偏移量，以毫秒为单位。如果时间段的开始位置不在窗口内，则可能为负数。
      */
     public long getPositionInWindowMs() {
       return Util.usToMs(positionInWindowUs);
     }
 
     /**
-     * Returns the position of the start of this period relative to the start of the window to which
-     * it belongs, in microseconds. May be negative if the start of the period is not within the
-     * window.
+     * 返回此时间段的开始位置相对于所属窗口开始位置的偏移量，以微秒为单位。如果时间段的开始位置不在窗口内，则可能为负数。
      */
     public long getPositionInWindowUs() {
       return positionInWindowUs;
     }
 
-    /** Returns the opaque identifier for ads played with this period, or {@code null} if unset. */
+    /** 返回与此时间段关联的广告的不透明标识符，如果未设置则返回 {@code null}。 */
     @Nullable
     public Object getAdsId() {
       return adPlaybackState.adsId;
     }
 
-    /** Returns the number of ad groups in the period. */
+    /** 返回时间段中广告组的数量。 */
     public int getAdGroupCount() {
       return adPlaybackState.adGroupCount;
     }
 
     /**
-     * Returns the number of removed ad groups in the period. Ad groups with indices between {@code
-     * 0} (inclusive) and {@code removedAdGroupCount} (exclusive) will be empty.
+     * 返回时间段中已移除的广告组的数量。索引在 {@code 0}（包含）和 {@code removedAdGroupCount}（不包含）之间的广告组将为空。
      */
     public int getRemovedAdGroupCount() {
       return adPlaybackState.removedAdGroupCount;
     }
 
     /**
-     * Returns the time of the ad group at index {@code adGroupIndex} in the period, in
-     * microseconds.
+     * 返回时间段中指定索引 {@code adGroupIndex} 的广告组的时间，以微秒为单位。
      *
-     * @param adGroupIndex The ad group index.
-     * @return The time of the ad group at the index relative to the start of the enclosing {@link
-     *     Period}, in microseconds, or {@link C#TIME_END_OF_SOURCE} for a post-roll ad group.
+     * @param adGroupIndex 广告组索引。
+     * @return 指定广告组的时间，相对于所属 {@link Period} 的开始时间，以微秒为单位，如果是后置广告组则返回 {@link C#TIME_END_OF_SOURCE}。
      */
     public long getAdGroupTimeUs(int adGroupIndex) {
       return adPlaybackState.getAdGroup(adGroupIndex).timeUs;
     }
 
     /**
-     * Returns the index of the first ad in the specified ad group that should be played, or the
-     * number of ads in the ad group if no ads should be played.
+     * 返回指定广告组中应播放的第一个广告的索引，如果不应播放任何广告，则返回广告组中的广告数量。
      *
-     * @param adGroupIndex The ad group index.
-     * @return The index of the first ad that should be played, or the number of ads in the ad group
-     *     if no ads should be played.
+     * @param adGroupIndex 广告组索引。
+     * @return 应播放的第一个广告的索引，如果不应播放任何广告，则返回广告组中的广告数量。
      */
     public int getFirstAdIndexToPlay(int adGroupIndex) {
       return adPlaybackState.getAdGroup(adGroupIndex).getFirstAdIndexToPlay();
     }
-
     /**
-     * Returns the index of the next ad in the specified ad group that should be played after
-     * playing {@code adIndexInAdGroup}, or the number of ads in the ad group if no later ads should
-     * be played.
+     * 返回指定广告组中在播放 {@code adIndexInAdGroup} 之后应播放的下一个广告的索引，如果不应播放任何后续广告，则返回广告组中的广告数量。
      *
-     * @param adGroupIndex The ad group index.
-     * @param lastPlayedAdIndex The last played ad index in the ad group.
-     * @return The index of the next ad that should be played, or the number of ads in the ad group
-     *     if the ad group does not have any ads remaining to play.
+     * @param adGroupIndex 广告组索引。
+     * @param lastPlayedAdIndex 广告组中最后播放的广告索引。
+     * @return 应播放的下一个广告的索引，如果广告组中没有剩余的广告可播放，则返回广告组中的广告数量。
      */
     public int getNextAdIndexToPlay(int adGroupIndex, int lastPlayedAdIndex) {
       return adPlaybackState.getAdGroup(adGroupIndex).getNextAdIndexToPlay(lastPlayedAdIndex);
     }
 
     /**
-     * Returns whether all ads in the ad group at index {@code adGroupIndex} have been played,
-     * skipped or failed.
+     * 返回指定广告组中的所有广告是否已被播放、跳过或失败。
      *
-     * @param adGroupIndex The ad group index.
-     * @return Whether all ads in the ad group at index {@code adGroupIndex} have been played,
-     *     skipped or failed.
+     * @param adGroupIndex 广告组索引。
+     * @return 指定广告组中的所有广告是否已被播放、跳过或失败。
      */
     public boolean hasPlayedAdGroup(int adGroupIndex) {
       return !adPlaybackState.getAdGroup(adGroupIndex).hasUnplayedAds();
     }
 
     /**
-     * Returns the index of the ad group at or before {@code positionUs} in the period that should
-     * be played before the content at {@code positionUs}. Returns {@link C#INDEX_UNSET} if the ad
-     * group at or before {@code positionUs} has no ads remaining to be played, or if there is no
-     * such ad group.
+     * 返回在时间段中位于或早于 {@code positionUs} 的广告组中应在 {@code positionUs} 内容之前播放的广告组的索引。如果位于或早于 {@code positionUs} 的广告组没有剩余的广告可播放，或者不存在这样的广告组，则返回 {@link C#INDEX_UNSET}。
      *
-     * @param positionUs The period position at or before which to find an ad group, in
-     *     microseconds.
-     * @return The index of the ad group, or {@link C#INDEX_UNSET}.
+     * @param positionUs 时间段中用于查找广告组的位置，以微秒为单位。
+     * @return 广告组的索引，或 {@link C#INDEX_UNSET}。
      */
     public int getAdGroupIndexForPositionUs(long positionUs) {
       return adPlaybackState.getAdGroupIndexForPositionUs(positionUs, durationUs);
     }
 
     /**
-     * Returns the index of the next ad group after {@code positionUs} in the period that has ads
-     * that should be played. Returns {@link C#INDEX_UNSET} if there is no such ad group.
+     * 返回时间段中位于 {@code positionUs} 之后的广告组中应播放的下一个广告组的索引。如果不存在这样的广告组，则返回 {@link C#INDEX_UNSET}。
      *
-     * @param positionUs The period position after which to find an ad group, in microseconds.
-     * @return The index of the ad group, or {@link C#INDEX_UNSET}.
+     * @param positionUs 时间段中用于查找广告组的位置，以微秒为单位。
+     * @return 广告组的索引，或 {@link C#INDEX_UNSET}。
      */
     public int getAdGroupIndexAfterPositionUs(long positionUs) {
       return adPlaybackState.getAdGroupIndexAfterPositionUs(positionUs, durationUs);
     }
 
     /**
-     * Returns the number of ads in the ad group at index {@code adGroupIndex}, or {@link
-     * C#LENGTH_UNSET} if not yet known.
+     * 返回指定广告组中的广告数量，如果尚未知晓，则返回 {@link C#LENGTH_UNSET}。
      *
-     * @param adGroupIndex The ad group index.
-     * @return The number of ads in the ad group, or {@link C#LENGTH_UNSET} if not yet known.
+     * @param adGroupIndex 广告组索引。
+     * @return 广告组中的广告数量，如果尚未知晓，则返回 {@link C#LENGTH_UNSET}。
      */
     public int getAdCountInAdGroup(int adGroupIndex) {
       return adPlaybackState.getAdGroup(adGroupIndex).count;
     }
 
     /**
-     * Returns the duration of the ad at index {@code adIndexInAdGroup} in the ad group at {@code
-     * adGroupIndex}, in microseconds, or {@link C#TIME_UNSET} if not yet known.
+     * 返回指定广告组中指定索引 {@code adIndexInAdGroup} 的广告的持续时间，以微秒为单位，如果尚未知晓，则返回 {@link C#TIME_UNSET}。
      *
-     * @param adGroupIndex The ad group index.
-     * @param adIndexInAdGroup The ad index in the ad group.
-     * @return The duration of the ad, or {@link C#TIME_UNSET} if not yet known.
+     * @param adGroupIndex 广告组索引。
+     * @param adIndexInAdGroup 广告组中的广告索引。
+     * @return 广告的持续时间，如果尚未知晓，则返回 {@link C#TIME_UNSET}。
      */
     public long getAdDurationUs(int adGroupIndex, int adIndexInAdGroup) {
       AdPlaybackState.AdGroup adGroup = adPlaybackState.getAdGroup(adGroupIndex);
@@ -787,13 +683,11 @@ public abstract class Timeline {
     }
 
     /**
-     * Returns the state of the ad at index {@code adIndexInAdGroup} in the ad group at {@code
-     * adGroupIndex}, or {@link AdPlaybackState#AD_STATE_UNAVAILABLE} if not yet known.
+     * 返回指定广告组中指定索引 {@code adIndexInAdGroup} 的广告的状态，如果尚未知晓，则返回 {@link AdPlaybackState#AD_STATE_UNAVAILABLE}。
      *
-     * @param adGroupIndex The ad group index.
-     * @param adIndexInAdGroup The index of the ad in the ad group.
-     * @return The state of the ad, or {@link AdPlaybackState#AD_STATE_UNAVAILABLE} if not yet
-     *     known.
+     * @param adGroupIndex 广告组索引。
+     * @param adIndexInAdGroup 广告组中的广告索引。
+     * @return 广告的状态，如果尚未知晓，则返回 {@link AdPlaybackState#AD_STATE_UNAVAILABLE}。
      */
     @UnstableApi
     public int getAdState(int adGroupIndex, int adIndexInAdGroup) {
@@ -802,12 +696,11 @@ public abstract class Timeline {
           ? adGroup.states[adIndexInAdGroup]
           : AD_STATE_UNAVAILABLE;
     }
-
     /**
-     * Returns whether the ad group at the given ad group index is a live postroll placeholder.
+     * 返回指定广告组索引处的广告组是否为直播后置广告占位符。
      *
-     * @param adGroupIndex The ad group index.
-     * @return True if the ad group at the given index is a live postroll placeholder.
+     * @param adGroupIndex 广告组索引。
+     * @return 如果指定索引处的广告组是直播后置广告占位符，则返回 true。
      */
     @UnstableApi
     public boolean isLivePostrollPlaceholder(int adGroupIndex) {
@@ -816,19 +709,17 @@ public abstract class Timeline {
     }
 
     /**
-     * Returns the position offset in the first unplayed ad at which to begin playback, in
-     * microseconds.
+     * 返回在第一个未播放的广告中开始播放的位置偏移量，以微秒为单位。
      */
     public long getAdResumePositionUs() {
       return adPlaybackState.adResumePositionUs;
     }
 
     /**
-     * Returns whether the ad group at index {@code adGroupIndex} is server-side inserted and part
-     * of the content stream.
+     * 返回指定广告组索引处的广告组是否为服务器端插入并属于内容流的一部分。
      *
-     * @param adGroupIndex The ad group index.
-     * @return Whether this ad group is server-side inserted and part of the content stream.
+     * @param adGroupIndex 广告组索引。
+     * @return 如果该广告组是服务器端插入并属于内容流的一部分，则返回 true。
      */
     @UnstableApi
     public boolean isServerSideInsertedAdGroup(int adGroupIndex) {
@@ -836,11 +727,10 @@ public abstract class Timeline {
     }
 
     /**
-     * Returns the offset in microseconds which should be added to the content stream when resuming
-     * playback after the specified ad group.
+     * 返回在指定广告组之后恢复播放时应添加到内容流的偏移量，以微秒为单位。
      *
-     * @param adGroupIndex The ad group index.
-     * @return The offset that should be added to the content stream, in microseconds.
+     * @param adGroupIndex 广告组索引。
+     * @return 应添加到内容流的偏移量，以微秒为单位。
      */
     @UnstableApi
     public long getContentResumeOffsetUs(int adGroupIndex) {
@@ -885,10 +775,9 @@ public abstract class Timeline {
     private static final String FIELD_AD_PLAYBACK_STATE = Util.intToStringMaxRadix(4);
 
     /**
-     * Returns a {@link Bundle} representing the information stored in this object.
+     * 返回表示此对象中存储信息的 {@link Bundle}。
      *
-     * <p>It omits the {@link #id} and {@link #uid} fields so these fields of an instance restored
-     * by {@link #fromBundle} will always be {@code null}.
+     * <p>它省略了 {@link #id} 和 {@link #uid} 字段，因此通过 {@link #fromBundle} 恢复的实例的这些字段将始终为 {@code null}。
      */
     @UnstableApi
     public Bundle toBundle() {
@@ -984,13 +873,12 @@ public abstract class Timeline {
   public abstract int getWindowCount();
 
   /**
-   * Returns the index of the window after the window at index {@code windowIndex} depending on the
-   * {@code repeatMode} and whether shuffling is enabled.
+   * 根据 {@code repeatMode} 和是否启用了随机播放，返回位于索引 {@code windowIndex} 的窗口之后的下一个窗口的索引。
    *
-   * @param windowIndex Index of a window in the timeline.
-   * @param repeatMode A repeat mode.
-   * @param shuffleModeEnabled Whether shuffling is enabled.
-   * @return The index of the next window, or {@link C#INDEX_UNSET} if this is the last window.
+   * @param windowIndex 时间线中某个窗口的索引。
+   * @param repeatMode 重复模式。
+   * @param shuffleModeEnabled 是否启用了随机播放。
+   * @return 下一个窗口的索引，如果这是最后一个窗口，则返回 {@link C#INDEX_UNSET}。
    */
   public int getNextWindowIndex(
       int windowIndex, @Player.RepeatMode int repeatMode, boolean shuffleModeEnabled) {
@@ -1011,13 +899,12 @@ public abstract class Timeline {
   }
 
   /**
-   * Returns the index of the window before the window at index {@code windowIndex} depending on the
-   * {@code repeatMode} and whether shuffling is enabled.
+   * 根据 {@code repeatMode} 和是否启用了随机播放，返回位于索引 {@code windowIndex} 的窗口之前的上一个窗口的索引。
    *
-   * @param windowIndex Index of a window in the timeline.
-   * @param repeatMode A repeat mode.
-   * @param shuffleModeEnabled Whether shuffling is enabled.
-   * @return The index of the previous window, or {@link C#INDEX_UNSET} if this is the first window.
+   * @param windowIndex 时间线中某个窗口的索引。
+   * @param repeatMode 重复模式。
+   * @param shuffleModeEnabled 是否启用了随机播放。
+   * @return 上一个窗口的索引，如果这是第一个窗口，则返回 {@link C#INDEX_UNSET}。
    */
   public int getPreviousWindowIndex(
       int windowIndex, @Player.RepeatMode int repeatMode, boolean shuffleModeEnabled) {
@@ -1179,20 +1066,14 @@ public abstract class Timeline {
   }
 
   /**
-   * Converts {@code (windowIndex, windowPositionUs)} to the corresponding {@code (periodUid,
-   * periodPositionUs)}. The returned {@code periodPositionUs} is constrained to be non-negative,
-   * and to be less than the containing period's duration if it is known.
+   * 将 {@code (windowIndex, windowPositionUs)} 转换为对应的 {@code (periodUid, periodPositionUs)}。返回的 {@code periodPositionUs} 被限制为非负数，并且如果已知包含时间段（Period）的持续时间，则小于该持续时间。
    *
-   * @param window A {@link Window} that may be overwritten.
-   * @param period A {@link Period} that may be overwritten.
-   * @param windowIndex The window index.
-   * @param windowPositionUs The window time, or {@link C#TIME_UNSET} to use the window's default
-   *     start position.
-   * @param defaultPositionProjectionUs If {@code windowPositionUs} is {@link C#TIME_UNSET}, the
-   *     duration into the future by which the window's position should be projected.
-   * @return The corresponding (periodUid, periodPositionUs), or null if {@code #windowPositionUs}
-   *     is {@link C#TIME_UNSET}, {@code defaultPositionProjectionUs} is non-zero, and the window's
-   *     position could not be projected by {@code defaultPositionProjectionUs}.
+   * @param window 一个可能被覆盖的 {@link Window}。
+   * @param period 一个可能被覆盖的 {@link Period}。
+   * @param windowIndex 窗口索引。
+   * @param windowPositionUs 窗口时间，或 {@link C#TIME_UNSET} 以使用窗口的默认起始位置。
+   * @param defaultPositionProjectionUs 如果 {@code windowPositionUs} 是 {@link C#TIME_UNSET}，则表示窗口位置应投影到未来的时间长度。
+   * @return 对应的 (periodUid, periodPositionUs)，如果 {@code windowPositionUs} 是 {@link C#TIME_UNSET}，{@code defaultPositionProjectionUs} 非零，且窗口位置无法按 {@code defaultPositionProjectionUs} 投影，则返回 null。
    */
   @Nullable
   public final Pair<Object, Long> getPeriodPositionUs(
@@ -1226,56 +1107,51 @@ public abstract class Timeline {
     periodPositionUs = max(0, periodPositionUs);
     return Pair.create(Assertions.checkNotNull(period.uid), periodPositionUs);
   }
-
   /**
-   * Populates a {@link Period} with data for the period with the specified unique identifier.
+   * 使用指定唯一标识符的时间段数据填充 {@link Period}。
    *
-   * @param periodUid The unique identifier of the period.
-   * @param period The {@link Period} to populate. Must not be null.
-   * @return The populated {@link Period}, for convenience.
+   * @param periodUid 时间段的唯一标识符。
+   * @param period 要填充的 {@link Period}。不能为 null。
+   * @return 填充后的 {@link Period}，方便链式调用。
    */
   public Period getPeriodByUid(Object periodUid, Period period) {
     return getPeriod(getIndexOfPeriod(periodUid), period, /* setIds= */ true);
   }
 
   /**
-   * Populates a {@link Period} with data for the period at the specified index. {@link Period#id}
-   * and {@link Period#uid} will be set to null.
+   * 使用指定索引的时间段数据填充 {@link Period}。{@link Period#id} 和 {@link Period#uid} 将被设置为 null。
    *
-   * @param periodIndex The index of the period.
-   * @param period The {@link Period} to populate. Must not be null.
-   * @return The populated {@link Period}, for convenience.
+   * @param periodIndex 时间段的索引。
+   * @param period 要填充的 {@link Period}。不能为 null。
+   * @return 填充后的 {@link Period}，方便链式调用。
    */
   public final Period getPeriod(int periodIndex, Period period) {
     return getPeriod(periodIndex, period, false);
   }
 
   /**
-   * Populates a {@link Period} with data for the period at the specified index.
+   * 使用指定索引的时间段数据填充 {@link Period}。
    *
-   * @param periodIndex The index of the period.
-   * @param period The {@link Period} to populate. Must not be null.
-   * @param setIds Whether {@link Period#id} and {@link Period#uid} should be populated. If false,
-   *     the fields will be set to null. The caller should pass false for efficiency reasons unless
-   *     the fields are required.
-   * @return The populated {@link Period}, for convenience.
+   * @param periodIndex 时间段的索引。
+   * @param period 要填充的 {@link Period}。不能为 null。
+   * @param setIds 是否填充 {@link Period#id} 和 {@link Period#uid}。如果为 false，这些字段将被设置为 null。除非需要这些字段，否则调用者应传递 false 以提高效率。
+   * @return 填充后的 {@link Period}，方便链式调用。
    */
   public abstract Period getPeriod(int periodIndex, Period period, boolean setIds);
 
   /**
-   * Returns the index of the period identified by its unique {@link Period#uid}, or {@link
-   * C#INDEX_UNSET} if the period is not in the timeline.
+   * 返回由唯一 {@link Period#uid} 标识的时间段的索引，如果时间段不在时间线中，则返回 {@link C#INDEX_UNSET}。
    *
-   * @param uid A unique identifier for a period.
-   * @return The index of the period, or {@link C#INDEX_UNSET} if the period was not found.
+   * @param uid 时间段的唯一标识符。
+   * @return 时间段的索引，如果未找到时间段，则返回 {@link C#INDEX_UNSET}。
    */
   public abstract int getIndexOfPeriod(Object uid);
 
   /**
-   * Returns the unique id of the period identified by its index in the timeline.
+   * 返回由其在时间线中的索引标识的时间段的唯一 id。
    *
-   * @param periodIndex The index of the period.
-   * @return The unique id of the period.
+   * @param periodIndex 时间段的索引。
+   * @return 时间段的唯一 id。
    */
   public abstract Object getUidOfPeriod(int periodIndex);
 
@@ -1398,12 +1274,12 @@ public abstract class Timeline {
   }
 
   /**
-   * Returns a copy of this timeline containing just the single specified {@link Window}.
+   * 返回一个仅包含指定 {@link Window} 的此时间线的副本。
    *
-   * <p>The method returns the same instance if there is only one window.
+   * <p>如果时间线中只有一个窗口，则返回相同的实例。
    *
-   * @param windowIndex The index of the {@link Window} to include in the copy.
-   * @return A {@link Timeline} with just the single specified {@link Window}.
+   * @param windowIndex 要包含在副本中的 {@link Window} 的索引。
+   * @return 一个仅包含指定 {@link Window} 的 {@link Timeline}。
    */
   @UnstableApi
   public final Timeline copyWithSingleWindow(int windowIndex) {

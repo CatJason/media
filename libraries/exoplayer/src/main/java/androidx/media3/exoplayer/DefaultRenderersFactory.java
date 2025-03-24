@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -51,19 +36,18 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
-/** Default {@link RenderersFactory} implementation. */
+/** 默认的 {@link RenderersFactory} 实现。 */
 @UnstableApi
 public class DefaultRenderersFactory implements RenderersFactory {
 
   /**
-   * The default maximum duration for which a video renderer can attempt to seamlessly join an
-   * ongoing playback.
+   * 视频渲染器可以尝试无缝加入正在进行的播放的默认最大持续时间。
    */
   public static final long DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS = 5000;
 
   /**
-   * Modes for using extension renderers. One of {@link #EXTENSION_RENDERER_MODE_OFF}, {@link
-   * #EXTENSION_RENDERER_MODE_ON} or {@link #EXTENSION_RENDERER_MODE_PREFER}.
+   * 使用扩展渲染器的模式。可以是 {@link #EXTENSION_RENDERER_MODE_OFF}、{@link
+   * #EXTENSION_RENDERER_MODE_ON} 或 {@link #EXTENSION_RENDERER_MODE_PREFER} 之一。
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
@@ -71,28 +55,23 @@ public class DefaultRenderersFactory implements RenderersFactory {
   @IntDef({EXTENSION_RENDERER_MODE_OFF, EXTENSION_RENDERER_MODE_ON, EXTENSION_RENDERER_MODE_PREFER})
   public @interface ExtensionRendererMode {}
 
-  /** Do not allow use of extension renderers. */
+  /** 不允许使用扩展渲染器。 */
   public static final int EXTENSION_RENDERER_MODE_OFF = 0;
 
   /**
-   * Allow use of extension renderers. Extension renderers are indexed after core renderers of the
-   * same type. A {@link TrackSelector} that prefers the first suitable renderer will therefore
-   * prefer to use a core renderer to an extension renderer in the case that both are able to play a
-   * given track.
+   * 允许使用扩展渲染器。扩展渲染器在相同类型的核心渲染器之后索引。因此，如果 {@link TrackSelector} 更喜欢第一个合适的渲染器，
+   * 那么在两者都能播放给定轨道的情况下，它将优先使用核心渲染器而不是扩展渲染器。
    */
   public static final int EXTENSION_RENDERER_MODE_ON = 1;
 
   /**
-   * Allow use of extension renderers. Extension renderers are indexed before core renderers of the
-   * same type. A {@link TrackSelector} that prefers the first suitable renderer will therefore
-   * prefer to use an extension renderer to a core renderer in the case that both are able to play a
-   * given track.
+   * 允许使用扩展渲染器。扩展渲染器在相同类型的核心渲染器之前索引。因此，如果 {@link TrackSelector} 更喜欢第一个合适的渲染器，
+   * 那么在两者都能播放给定轨道的情况下，它将优先使用扩展渲染器而不是核心渲染器。
    */
   public static final int EXTENSION_RENDERER_MODE_PREFER = 2;
 
   /**
-   * The maximum number of frames that can be dropped between invocations of {@link
-   * VideoRendererEventListener#onDroppedFrames(int, long)}.
+   * {@link VideoRendererEventListener#onDroppedFrames(int, long)} 调用之间可以丢弃的最大帧数。
    */
   public static final int MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY = 50;
 
@@ -108,7 +87,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
   private boolean enableAudioTrackPlaybackParams;
 
   /**
-   * @param context A {@link Context}.
+   * @param context 一个 {@link Context}。
    */
   public DefaultRenderersFactory(Context context) {
     this.context = context;
@@ -119,14 +98,12 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets the extension renderer mode, which determines if and how available extension renderers are
-   * used. Note that extensions must be included in the application build for them to be considered
-   * available.
+   * 设置扩展渲染器模式，该模式决定是否以及如何使用可用的扩展渲染器。请注意，扩展必须包含在应用程序构建中才能被视为可用。
    *
-   * <p>The default value is {@link #EXTENSION_RENDERER_MODE_OFF}.
+   * <p>默认值为 {@link #EXTENSION_RENDERER_MODE_OFF}。
    *
-   * @param extensionRendererMode The extension renderer mode.
-   * @return This factory, for convenience.
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory setExtensionRendererMode(
@@ -136,13 +113,11 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Enables {@link androidx.media3.exoplayer.mediacodec.MediaCodecRenderer} instances to operate
-   * their {@link MediaCodec} in asynchronous mode and perform asynchronous queueing.
+   * 启用 {@link androidx.media3.exoplayer.mediacodec.MediaCodecRenderer} 实例以异步模式操作其 {@link MediaCodec} 并执行异步队列。
    *
-   * <p>This feature can be enabled only on devices with API versions &gt;= 23. For devices with
-   * older API versions, this method is a no-op.
+   * <p>此功能只能在 API 版本 >= 23 的设备上启用。对于 API 版本较旧的设备，此方法无效。
    *
-   * @return This factory, for convenience.
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory forceEnableMediaCodecAsynchronousQueueing() {
@@ -151,11 +126,10 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Disables {@link androidx.media3.exoplayer.mediacodec.MediaCodecRenderer} instances from
-   * operating their {@link MediaCodec} in asynchronous mode and perform asynchronous queueing.
-   * {@link MediaCodec} instances will be operated synchronous mode.
+   * 禁用 {@link androidx.media3.exoplayer.mediacodec.MediaCodecRenderer} 实例以异步模式操作其 {@link MediaCodec} 并执行异步队列。
+   * {@link MediaCodec} 实例将以同步模式操作。
    *
-   * @return This factory, for convenience.
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory forceDisableMediaCodecAsynchronousQueueing() {
@@ -164,11 +138,9 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets whether to enable {@link MediaCodec#CONFIGURE_FLAG_USE_CRYPTO_ASYNC} on API 34 and above
-   * when operating the codec in asynchronous mode.
+   * 设置是否在 API 34 及以上版本中启用 {@link MediaCodec#CONFIGURE_FLAG_USE_CRYPTO_ASYNC}，当以异步模式操作编解码器时。
    *
-   * <p>This method is experimental. Its default value may change, or it may be renamed or removed
-   * in a future release.
+   * <p>此方法是实验性的。其默认值可能会更改，或者它可能会在未来的版本中重命名或移除。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory experimentalSetMediaCodecAsyncCryptoFlagEnabled(
@@ -178,12 +150,10 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets whether to enable fallback to lower-priority decoders if decoder initialization fails.
-   * This may result in using a decoder that is less efficient or slower than the primary decoder.
+   * 设置是否在解码器初始化失败时启用回退到较低优先级的解码器。这可能会导致使用效率较低或较慢的解码器。
    *
-   * @param enableDecoderFallback Whether to enable fallback to lower-priority decoders if decoder
-   *     initialization fails.
-   * @return This factory, for convenience.
+   * @param enableDecoderFallback 是否在解码器初始化失败时启用回退到较低优先级的解码器。
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory setEnableDecoderFallback(boolean enableDecoderFallback) {
@@ -192,12 +162,12 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets a {@link MediaCodecSelector} for use by {@link MediaCodec} based renderers.
+   * 设置 {@link MediaCodec} 基于渲染器使用的 {@link MediaCodecSelector}。
    *
-   * <p>The default value is {@link MediaCodecSelector#DEFAULT}.
+   * <p>默认值为 {@link MediaCodecSelector#DEFAULT}。
    *
-   * @param mediaCodecSelector The {@link MediaCodecSelector}.
-   * @return This factory, for convenience.
+   * @param mediaCodecSelector {@link MediaCodecSelector}。
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory setMediaCodecSelector(
@@ -207,15 +177,14 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets whether floating point audio should be output when possible.
+   * 设置是否在可能的情况下输出浮点音频。
    *
-   * <p>Enabling floating point output disables audio processing, but may allow for higher quality
-   * audio output.
+   * <p>启用浮点输出会禁用音频处理，但可能允许更高质量的音频输出。
    *
-   * <p>The default value is {@code false}.
+   * <p>默认值为 {@code false}。
    *
-   * @param enableFloatOutput Whether to enable use of floating point audio output, if available.
-   * @return This factory, for convenience.
+   * @param enableFloatOutput 是否启用浮点音频输出（如果可用）。
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory setEnableAudioFloatOutput(boolean enableFloatOutput) {
@@ -224,22 +193,16 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets whether to enable setting playback speed using {@link
-   * android.media.AudioTrack#setPlaybackParams(PlaybackParams)}, which is supported from API level
-   * 23, rather than using application-level audio speed adjustment. This setting has no effect on
-   * builds before API level 23 (application-level speed adjustment will be used in all cases).
+   * 设置是否启用使用 {@link android.media.AudioTrack#setPlaybackParams(PlaybackParams)} 设置播放速度，
+   * 该功能从 API 级别 23 开始支持，而不是使用应用级的音频速度调整。此设置在 API 级别 23 之前的构建中无效（在所有情况下都将使用应用级的速度调整）。
    *
-   * <p>If enabled and supported, new playback speed settings will take effect more quickly because
-   * they are applied at the audio mixer, rather than at the point of writing data to the track.
+   * <p>如果启用并支持，新的播放速度设置将更快生效，因为它们是在音频混音器中应用的，而不是在将数据写入轨道时应用的。
    *
-   * <p>When using this mode, the maximum supported playback speed is limited by the size of the
-   * audio track's buffer. If the requested speed is not supported the player's event listener will
-   * be notified twice on setting playback speed, once with the requested speed, then again with the
-   * old playback speed reflecting the fact that the requested speed was not supported.
+   * <p>在使用此模式时，最大支持的播放速度受音频轨道缓冲区大小的限制。如果请求的速度不受支持，播放器的事件监听器将在设置播放速度时被通知两次，
+   * 第一次是请求的速度，然后是旧的播放速度，反映请求的速度不受支持的事实。
    *
-   * @param enableAudioTrackPlaybackParams Whether to enable setting playback speed using {@link
-   *     android.media.AudioTrack#setPlaybackParams(PlaybackParams)}.
-   * @return This factory, for convenience.
+   * @param enableAudioTrackPlaybackParams 是否启用使用 {@link android.media.AudioTrack#setPlaybackParams(PlaybackParams)} 设置播放速度。
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory setEnableAudioTrackPlaybackParams(
@@ -249,14 +212,12 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Sets the maximum duration for which video renderers can attempt to seamlessly join an ongoing
-   * playback.
+   * 设置视频渲染器可以尝试无缝加入正在进行的播放的最大持续时间。
    *
-   * <p>The default value is {@link #DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS}.
+   * <p>默认值为 {@link #DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS}。
    *
-   * @param allowedVideoJoiningTimeMs The maximum duration for which video renderers can attempt to
-   *     seamlessly join an ongoing playback, in milliseconds.
-   * @return This factory, for convenience.
+   * @param allowedVideoJoiningTimeMs 视频渲染器可以尝试无缝加入正在进行的播放的最大持续时间，以毫秒为单位。
+   * @return 此工厂，方便链式调用。
    */
   @CanIgnoreReturnValue
   public final DefaultRenderersFactory setAllowedVideoJoiningTimeMs(
@@ -313,21 +274,18 @@ public class DefaultRenderersFactory implements RenderersFactory {
     buildMiscellaneousRenderers(context, eventHandler, extensionRendererMode, renderersList);
     return renderersList.toArray(new Renderer[0]);
   }
-
   /**
-   * Builds video renderers for use by the player.
+   * 构建供播放器使用的视频渲染器。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param extensionRendererMode The extension renderer mode.
-   * @param mediaCodecSelector A decoder selector.
-   * @param enableDecoderFallback Whether to enable fallback to lower-priority decoders if decoder
-   *     initialization fails. This may result in using a decoder that is slower/less efficient than
-   *     the primary decoder.
-   * @param eventHandler A handler associated with the main thread's looper.
-   * @param eventListener An event listener.
-   * @param allowedVideoJoiningTimeMs The maximum duration for which video renderers can attempt to
-   *     seamlessly join an ongoing playback, in milliseconds.
-   * @param out An array to which the built renderers should be appended.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @param mediaCodecSelector 解码器选择器。
+   * @param enableDecoderFallback 是否在解码器初始化失败时启用回退到较低优先级的解码器。
+   *     这可能会导致使用比主解码器更慢/效率更低的解码器。
+   * @param eventHandler 与主线程的 Looper 关联的处理程序。
+   * @param eventListener 事件监听器。
+   * @param allowedVideoJoiningTimeMs 视频渲染器可以尝试无缝加入正在进行的播放的最大持续时间（以毫秒为单位）。
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildVideoRenderers(
       Context context,
@@ -359,7 +317,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.vp9.LibvpxVideoRenderer");
       Constructor<?> constructor =
           clazz.getConstructor(
@@ -375,16 +333,16 @@ public class DefaultRenderersFactory implements RenderersFactory {
                   eventListener,
                   MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded LibvpxVideoRenderer.");
+      Log.i(TAG, "已加载 LibvpxVideoRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating VP9 extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 VP9 扩展时出错", e);
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.av1.Libgav1VideoRenderer");
       Constructor<?> constructor =
           clazz.getConstructor(
@@ -400,16 +358,16 @@ public class DefaultRenderersFactory implements RenderersFactory {
                   eventListener,
                   MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded Libgav1VideoRenderer.");
+      Log.i(TAG, "已加载 Libgav1VideoRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating AV1 extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 AV1 扩展时出错", e);
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz =
           Class.forName("androidx.media3.decoder.ffmpeg.ExperimentalFfmpegVideoRenderer");
       Constructor<?> constructor =
@@ -426,28 +384,27 @@ public class DefaultRenderersFactory implements RenderersFactory {
                   eventListener,
                   MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded FfmpegVideoRenderer.");
+      Log.i(TAG, "已加载 FfmpegVideoRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating FFmpeg extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 FFmpeg 扩展时出错", e);
     }
   }
 
   /**
-   * Builds audio renderers for use by the player.
+   * 构建供播放器使用的音频渲染器。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param extensionRendererMode The extension renderer mode.
-   * @param mediaCodecSelector A decoder selector.
-   * @param enableDecoderFallback Whether to enable fallback to lower-priority decoders if decoder
-   *     initialization fails. This may result in using a decoder that is slower/less efficient than
-   *     the primary decoder.
-   * @param audioSink A sink to which the renderers will output.
-   * @param eventHandler A handler to use when invoking event listeners and outputs.
-   * @param eventListener An event listener.
-   * @param out An array to which the built renderers should be appended.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @param mediaCodecSelector 解码器选择器。
+   * @param enableDecoderFallback 是否在解码器初始化失败时启用回退到较低优先级的解码器。
+   *     这可能会导致使用比主解码器更慢/效率更低的解码器。
+   * @param audioSink 渲染器将输出到的音频接收器。
+   * @param eventHandler 用于调用事件监听器和输出的处理程序。
+   * @param eventListener 事件监听器。
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildAudioRenderers(
       Context context,
@@ -478,21 +435,21 @@ public class DefaultRenderersFactory implements RenderersFactory {
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.midi.MidiRenderer");
       Constructor<?> constructor = clazz.getConstructor(Context.class);
       Renderer renderer = (Renderer) constructor.newInstance(context);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded MidiRenderer.");
+      Log.i(TAG, "已加载 MidiRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating MIDI extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 MIDI 扩展时出错", e);
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.opus.LibopusAudioRenderer");
       Constructor<?> constructor =
           clazz.getConstructor(
@@ -502,16 +459,16 @@ public class DefaultRenderersFactory implements RenderersFactory {
       Renderer renderer =
           (Renderer) constructor.newInstance(eventHandler, eventListener, audioSink);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded LibopusAudioRenderer.");
+      Log.i(TAG, "已加载 LibopusAudioRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating Opus extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 Opus 扩展时出错", e);
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.flac.LibflacAudioRenderer");
       Constructor<?> constructor =
           clazz.getConstructor(
@@ -521,16 +478,16 @@ public class DefaultRenderersFactory implements RenderersFactory {
       Renderer renderer =
           (Renderer) constructor.newInstance(eventHandler, eventListener, audioSink);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded LibflacAudioRenderer.");
+      Log.i(TAG, "已加载 LibflacAudioRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating FLAC extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 FLAC 扩展时出错", e);
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.ffmpeg.FfmpegAudioRenderer");
       Constructor<?> constructor =
           clazz.getConstructor(
@@ -540,16 +497,16 @@ public class DefaultRenderersFactory implements RenderersFactory {
       Renderer renderer =
           (Renderer) constructor.newInstance(eventHandler, eventListener, audioSink);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded FfmpegAudioRenderer.");
+      Log.i(TAG, "已加载 FfmpegAudioRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating FFmpeg extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 FFmpeg 扩展时出错", e);
     }
 
     try {
-      // Full class names used for constructor args so the LINT rule triggers if any of them move.
+      // 使用完整的类名作为构造函数参数，以便在它们移动时触发 LINT 规则。
       Class<?> clazz = Class.forName("androidx.media3.decoder.iamf.LibiamfAudioRenderer");
       Constructor<?> constructor =
           clazz.getConstructor(
@@ -560,23 +517,22 @@ public class DefaultRenderersFactory implements RenderersFactory {
       Renderer renderer =
           (Renderer) constructor.newInstance(context, eventHandler, eventListener, audioSink);
       out.add(extensionRendererIndex++, renderer);
-      Log.i(TAG, "Loaded LibiamfAudioRenderer.");
+      Log.i(TAG, "已加载 LibiamfAudioRenderer。");
     } catch (ClassNotFoundException e) {
-      // Expected if the app was built without the extension.
+      // 如果应用程序构建时未包含扩展，则为预期情况。
     } catch (Exception e) {
-      // The extension is present, but instantiation failed.
-      throw new IllegalStateException("Error instantiating IAMF extension", e);
+      // 扩展存在，但实例化失败。
+      throw new IllegalStateException("实例化 IAMF 扩展时出错", e);
     }
   }
-
   /**
-   * Builds text renderers for use by the player.
+   * 构建供播放器使用的文本渲染器。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param output An output for the renderers.
-   * @param outputLooper The looper associated with the thread on which the output should be called.
-   * @param extensionRendererMode The extension renderer mode.
-   * @param out An array to which the built renderers should be appended.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param output 渲染器的输出。
+   * @param outputLooper 与调用输出的线程关联的 Looper。
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildTextRenderers(
       Context context,
@@ -588,13 +544,13 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Builds metadata renderers for use by the player.
+   * 构建供播放器使用的元数据渲染器。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param output An output for the renderers.
-   * @param outputLooper The looper associated with the thread on which the output should be called.
-   * @param extensionRendererMode The extension renderer mode.
-   * @param out An array to which the built renderers should be appended.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param output 渲染器的输出。
+   * @param outputLooper 与调用输出的线程关联的 Looper。
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildMetadataRenderers(
       Context context,
@@ -606,11 +562,11 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Builds camera motion renderers for use by the player.
+   * 构建供播放器使用的相机运动渲染器。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param extensionRendererMode The extension renderer mode.
-   * @param out An array to which the built renderers should be appended.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildCameraMotionRenderers(
       Context context, @ExtensionRendererMode int extensionRendererMode, ArrayList<Renderer> out) {
@@ -618,43 +574,42 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Builds image renderers for use by the player.
+   * 构建供播放器使用的图像渲染器。
    *
-   * <p>The {@link ImageRenderer} is built with {@code ImageOutput} set to null and {@link
-   * ImageDecoder.Factory} set to {@code ImageDecoder.Factory.DEFAULT} by default.
+   * <p>默认情况下，{@link ImageRenderer} 的 {@code ImageOutput} 设置为 null，{@link
+   * ImageDecoder.Factory} 设置为 {@code ImageDecoder.Factory.DEFAULT}。
    *
-   * @param out An array to which the built renderers should be appended.
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildImageRenderers(ArrayList<Renderer> out) {
     out.add(new ImageRenderer(getImageDecoderFactory(), /* imageOutput= */ null));
   }
 
   /**
-   * Builds any miscellaneous renderers used by the player.
+   * 构建供播放器使用的任何其他渲染器。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param eventHandler A handler to use when invoking event listeners and outputs.
-   * @param extensionRendererMode The extension renderer mode.
-   * @param out An array to which the built renderers should be appended.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param eventHandler 用于调用事件监听器和输出的处理程序。
+   * @param extensionRendererMode 扩展渲染器模式。
+   * @param out 用于追加构建的渲染器的数组。
    */
   protected void buildMiscellaneousRenderers(
       Context context,
       Handler eventHandler,
       @ExtensionRendererMode int extensionRendererMode,
       ArrayList<Renderer> out) {
-    // Do nothing.
+    // 默认不执行任何操作。
   }
 
   /**
-   * Builds an {@link AudioSink} to which the audio renderers will output.
+   * 构建音频渲染器将输出到的 {@link AudioSink}。
    *
-   * @param context The {@link Context} associated with the player.
-   * @param enableFloatOutput Whether to enable use of floating point audio output, if available.
-   * @param enableAudioTrackPlaybackParams Whether to enable setting playback speed using {@link
-   *     android.media.AudioTrack#setPlaybackParams(PlaybackParams)}, if supported.
-   * @return The {@link AudioSink} to which the audio renderers will output. May be {@code null} if
-   *     no audio renderers are required. If {@code null} is returned then {@link
-   *     #buildAudioRenderers} will not be called.
+   * @param context 与播放器关联的 {@link Context}。
+   * @param enableFloatOutput 是否启用浮点音频输出（如果可用）。
+   * @param enableAudioTrackPlaybackParams 是否启用使用 {@link
+   *     android.media.AudioTrack#setPlaybackParams(PlaybackParams)} 设置播放速度（如果支持）。
+   * @return 音频渲染器将输出到的 {@link AudioSink}。如果不需要音频渲染器，则可能为 {@code null}。
+   *     如果返回 {@code null}，则不会调用 {@link #buildAudioRenderers}。
    */
   @Nullable
   protected AudioSink buildAudioSink(
@@ -666,14 +621,13 @@ public class DefaultRenderersFactory implements RenderersFactory {
   }
 
   /**
-   * Returns the {@link MediaCodecAdapter.Factory} that will be used when creating {@link
-   * androidx.media3.exoplayer.mediacodec.MediaCodecRenderer} instances.
+   * 返回在创建 {@link androidx.media3.exoplayer.mediacodec.MediaCodecRenderer} 实例时将使用的 {@link MediaCodecAdapter.Factory}。
    */
   protected MediaCodecAdapter.Factory getCodecAdapterFactory() {
     return codecAdapterFactory;
   }
 
-  /** Returns the {@link ImageDecoder.Factory} used to build the image renderer. */
+  /** 返回用于构建图像渲染器的 {@link ImageDecoder.Factory}。 */
   protected ImageDecoder.Factory getImageDecoderFactory() {
     return ImageDecoder.Factory.DEFAULT;
   }

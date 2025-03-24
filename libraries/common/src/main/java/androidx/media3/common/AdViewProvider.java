@@ -5,27 +5,24 @@ import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 
-/** Provides information about views for the ad playback UI. */
+/** 提供广告播放 UI 的视图信息。 */
 public interface AdViewProvider {
 
   /**
-   * Returns the {@link ViewGroup} on top of the player that will show any ad UI, or {@code null} if
-   * playing audio-only ads. Any views on top of the returned view group must be described by {@link
-   * AdOverlayInfo AdOverlayInfos} returned by {@link #getAdOverlayInfos()}, for accurate
-   * viewability measurement.
+   * 返回位于播放器顶部的 {@link ViewGroup}，用于显示任何广告 UI，如果播放的是纯音频广告，
+   * 则返回 {@code null}。返回的视图组上的任何视图必须由 {@link #getAdOverlayInfos()} 返回的 {@link AdOverlayInfo AdOverlayInfos} 描述，
+   * 以确保准确的可见性测量。
    */
   @Nullable
   ViewGroup getAdViewGroup();
 
   /**
-   * Returns a list of {@link AdOverlayInfo} instances describing views that are on top of the ad
-   * view group, but that are essential for controlling playback and should be excluded from ad
-   * viewability measurements.
+   * 返回描述位于广告视图组顶部的视图的 {@link AdOverlayInfo} 实例列表，
+   * 但这些视图是控制播放所必需的，应从广告可见性测量中排除。
    *
-   * <p>Each view must be either a fully transparent overlay (for capturing touch events), or a
-   * small piece of transient UI that is essential to the user experience of playback (such as a
-   * button to pause/resume playback or a transient full-screen or cast button). For more
-   * information see the documentation for your ads loader.
+   * <p>每个视图必须是一个完全透明的覆盖层（用于捕获触摸事件），
+   * 或者是播放用户体验中必需的一小部分瞬态 UI（例如暂停/恢复播放的按钮或瞬态的全屏或投屏按钮）。
+   * 有关更多信息，请参阅您的广告加载器的文档。
    */
   default List<AdOverlayInfo> getAdOverlayInfos() {
     return ImmutableList.of();

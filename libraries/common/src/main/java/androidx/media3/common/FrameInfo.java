@@ -5,11 +5,11 @@ import static androidx.media3.common.util.Assertions.checkArgument;
 import androidx.media3.common.util.UnstableApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
-/** Value class specifying information about a decoded video frame. */
+/** 用于指定解码视频帧信息的值类。 */
 @UnstableApi
 public class FrameInfo {
 
-  /** A builder for {@link FrameInfo} instances. */
+  /** {@link FrameInfo} 实例的构建器。 */
   public static final class Builder {
 
     private ColorInfo colorInfo;
@@ -19,11 +19,11 @@ public class FrameInfo {
     private long offsetToAddUs;
 
     /**
-     * Creates an instance with default values.
+     * 使用默认值创建实例。
      *
-     * @param colorInfo The {@link ColorInfo}.
-     * @param width The frame width, in pixels.
-     * @param height The frame height, in pixels.
+     * @param colorInfo {@link ColorInfo}。
+     * @param width 帧的宽度，以像素为单位。
+     * @param height 帧的高度，以像素为单位。
      */
     public Builder(ColorInfo colorInfo, int width, int height) {
       this.colorInfo = colorInfo;
@@ -32,7 +32,7 @@ public class FrameInfo {
       pixelWidthHeightRatio = 1;
     }
 
-    /** Creates an instance with the values of the provided {@link FrameInfo}. */
+    /** 使用提供的 {@link FrameInfo} 的值创建实例。 */
     public Builder(FrameInfo frameInfo) {
       colorInfo = frameInfo.colorInfo;
       width = frameInfo.width;
@@ -41,21 +41,21 @@ public class FrameInfo {
       offsetToAddUs = frameInfo.offsetToAddUs;
     }
 
-    /** Sets the {@link ColorInfo}. */
+    /** 设置 {@link ColorInfo}。 */
     @CanIgnoreReturnValue
     public Builder setColorInfo(ColorInfo colorInfo) {
       this.colorInfo = colorInfo;
       return this;
     }
 
-    /** Sets the frame width, in pixels. */
+    /** 设置帧的宽度，以像素为单位。 */
     @CanIgnoreReturnValue
     public Builder setWidth(int width) {
       this.width = width;
       return this;
     }
 
-    /** Sets the frame height, in pixels. */
+    /** 设置帧的高度，以像素为单位。 */
     @CanIgnoreReturnValue
     public Builder setHeight(int height) {
       this.height = height;
@@ -63,9 +63,9 @@ public class FrameInfo {
     }
 
     /**
-     * Sets the ratio of width over height for each pixel.
+     * 设置每个像素的宽高比。
      *
-     * <p>The default value is {@code 1}.
+     * <p>默认值为 {@code 1}。
      */
     @CanIgnoreReturnValue
     public Builder setPixelWidthHeightRatio(float pixelWidthHeightRatio) {
@@ -74,10 +74,9 @@ public class FrameInfo {
     }
 
     /**
-     * Sets the {@linkplain FrameInfo#offsetToAddUs offset to add} to the frame presentation
-     * timestamp, in microseconds.
+     * 设置要添加到帧呈现时间戳的偏移量，以微秒为单位。
      *
-     * <p>The default value is {@code 0}.
+     * <p>默认值为 {@code 0}。
      */
     @CanIgnoreReturnValue
     public Builder setOffsetToAddUs(long offsetToAddUs) {
@@ -85,36 +84,35 @@ public class FrameInfo {
       return this;
     }
 
-    /** Builds a {@link FrameInfo} instance. */
+    /** 构建 {@link FrameInfo} 实例。 */
     public FrameInfo build() {
       return new FrameInfo(colorInfo, width, height, pixelWidthHeightRatio, offsetToAddUs);
     }
   }
 
-  /** The {@link ColorInfo} of the frame. */
+  /** 帧的 {@link ColorInfo}。 */
   public final ColorInfo colorInfo;
 
-  /** The width of the frame, in pixels. */
+  /** 帧的宽度，以像素为单位。 */
   public final int width;
 
-  /** The height of the frame, in pixels. */
+  /** 帧的高度，以像素为单位。 */
   public final int height;
 
-  /** The ratio of width over height for each pixel. */
+  /** 每个像素的宽高比。 */
   public final float pixelWidthHeightRatio;
 
   /**
-   * The offset that must be added to the frame presentation timestamp, in microseconds.
+   * 必须添加到帧呈现时间戳的偏移量，以微秒为单位。
    *
-   * <p>This offset is not part of the input timestamps. It is added to the frame timestamps before
-   * processing, and is retained in the output timestamps.
+   * <p>此偏移量不属于输入时间戳。它在处理前被添加到帧时间戳中，并保留在输出时间戳中。
    */
   public final long offsetToAddUs;
 
   private FrameInfo(
       ColorInfo colorInfo, int width, int height, float pixelWidthHeightRatio, long offsetToAddUs) {
-    checkArgument(width > 0, "width must be positive, but is: " + width);
-    checkArgument(height > 0, "height must be positive, but is: " + height);
+    checkArgument(width > 0, "宽度必须为正数，但为: " + width);
+    checkArgument(height > 0, "高度必须为正数，但为: " + height);
 
     this.colorInfo = colorInfo;
     this.width = width;

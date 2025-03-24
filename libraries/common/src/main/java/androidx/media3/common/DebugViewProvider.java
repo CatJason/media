@@ -5,21 +5,20 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * Provider for views to show diagnostic information during an export, for debugging.
+ * 用于在导出过程中显示诊断信息的视图提供者，用于调试。
  *
- * <p>This is not intended for production use-cases.
+ * <p>这不适用于生产环境。
  */
 @UnstableApi
 public interface DebugViewProvider {
 
-  /** Debug view provider that doesn't show any debug info. */
+  /** 不显示任何调试信息的调试视图提供者。 */
   DebugViewProvider NONE = (int width, int height) -> null;
 
   /**
-   * Returns a new surface view to show a preview of transformer output with the given width/height
-   * in pixels, or {@code null} if no debug information should be shown.
+   * 返回一个新的 SurfaceView，用于显示具有指定宽度/高度（以像素为单位）的 Transformer 输出预览，如果不应显示调试信息，则返回 {@code null}。
    *
-   * <p>This method may be called on an arbitrary thread.
+   * <p>此方法可能会在任意线程上调用。
    */
   @Nullable
   SurfaceView getDebugPreviewSurfaceView(int width, int height);

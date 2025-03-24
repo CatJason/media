@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer;
 
 import static androidx.media3.common.util.Assertions.checkNotNull;
@@ -39,77 +24,72 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.InlineMe;
 import java.util.HashMap;
 
-/** The default {@link LoadControl} implementation. */
+/** 默认的 {@link LoadControl} 实现。 */
 @UnstableApi
 public class DefaultLoadControl implements LoadControl {
 
   /**
-   * The default minimum duration of media that the player will attempt to ensure is buffered at all
-   * times, in milliseconds.
+   * 默认情况下，播放器将尝试始终缓冲的最小媒体时长，单位为毫秒。
    */
   public static final int DEFAULT_MIN_BUFFER_MS = 50_000;
 
   /**
-   * The default maximum duration of media that the player will attempt to buffer, in milliseconds.
+   * 默认情况下，播放器将尝试缓冲的最大媒体时长，单位为毫秒。
    */
   public static final int DEFAULT_MAX_BUFFER_MS = 50_000;
 
   /**
-   * The default duration of media that must be buffered for playback to start or resume following a
-   * user action such as a seek, in milliseconds.
+   * 默认情况下，在用户操作（如跳转）后，播放开始或恢复所需缓冲的媒体时长，单位为毫秒。
    */
   public static final int DEFAULT_BUFFER_FOR_PLAYBACK_MS = 2500;
 
   /**
-   * The default duration of media that must be buffered for playback to resume after a rebuffer, in
-   * milliseconds. A rebuffer is defined to be caused by buffer depletion rather than a user action.
+   * 默认情况下，在重新缓冲后，播放恢复所需缓冲的媒体时长，单位为毫秒。重新缓冲定义为由缓冲区耗尽引起，而非用户操作。
    */
   public static final int DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 5000;
 
   /**
-   * The default target buffer size in bytes. The value ({@link C#LENGTH_UNSET}) means that the load
-   * control will calculate the target buffer size based on the selected tracks.
+   * 默认的目标缓冲区大小，单位为字节。值为 {@link C#LENGTH_UNSET} 时，表示加载控制将根据选定的轨道计算目标缓冲区大小。
    */
   public static final int DEFAULT_TARGET_BUFFER_BYTES = C.LENGTH_UNSET;
 
-  /** The default prioritization of buffer time constraints over size constraints. */
+  /** 默认情况下，是否优先考虑缓冲区时间限制而非大小限制。 */
   public static final boolean DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS = false;
 
-  /** The default back buffer duration in milliseconds. */
+  /** 默认的后备缓冲区时长，单位为毫秒。 */
   public static final int DEFAULT_BACK_BUFFER_DURATION_MS = 0;
 
-  /** The default for whether the back buffer is retained from the previous keyframe. */
+  /** 默认情况下，是否从上一关键帧保留后备缓冲区。 */
   public static final boolean DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME = false;
 
-  /** A default size in bytes for a video buffer. */
+  /** 视频缓冲区的默认大小，单位为字节。 */
   public static final int DEFAULT_VIDEO_BUFFER_SIZE = 2000 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** A default size in bytes for an audio buffer. */
+  /** 音频缓冲区的默认大小，单位为字节。 */
   public static final int DEFAULT_AUDIO_BUFFER_SIZE = 200 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** A default size in bytes for a text buffer. */
+  /** 文本缓冲区的默认大小，单位为字节。 */
   public static final int DEFAULT_TEXT_BUFFER_SIZE = 2 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** A default size in bytes for a metadata buffer. */
+  /** 元数据缓冲区的默认大小，单位为字节。 */
   public static final int DEFAULT_METADATA_BUFFER_SIZE = 2 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** A default size in bytes for a camera motion buffer. */
+  /** 相机运动缓冲区的默认大小，单位为字节。 */
   public static final int DEFAULT_CAMERA_MOTION_BUFFER_SIZE = 2 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** A default size in bytes for an image buffer. */
+  /** 图像缓冲区的默认大小，单位为字节。 */
   public static final int DEFAULT_IMAGE_BUFFER_SIZE = 2 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** A default size in bytes for a muxed buffer (e.g. containing video, audio and text). */
+  /** 多路复用缓冲区（例如包含视频、音频和文本）的默认大小，单位为字节。 */
   public static final int DEFAULT_MUXED_BUFFER_SIZE =
       DEFAULT_VIDEO_BUFFER_SIZE + DEFAULT_AUDIO_BUFFER_SIZE + DEFAULT_TEXT_BUFFER_SIZE;
 
   /**
-   * The buffer size in bytes that will be used as a minimum target buffer in all cases. This is
-   * also the default target buffer before tracks are selected.
+   * 在所有情况下使用的最小目标缓冲区大小，单位为字节。这也是在选定轨道之前的默认目标缓冲区大小。
    */
   public static final int DEFAULT_MIN_BUFFER_SIZE = 200 * C.DEFAULT_BUFFER_SEGMENT_SIZE;
 
-  /** Builder for {@link DefaultLoadControl}. */
+  /** {@link DefaultLoadControl} 的构建器。 */
   public static final class Builder {
 
     @Nullable private DefaultAllocator allocator;
@@ -123,7 +103,7 @@ public class DefaultLoadControl implements LoadControl {
     private boolean retainBackBufferFromKeyframe;
     private boolean buildCalled;
 
-    /** Constructs a new instance. */
+    /** 构造一个新的实例。 */
     public Builder() {
       minBufferMs = DEFAULT_MIN_BUFFER_MS;
       maxBufferMs = DEFAULT_MAX_BUFFER_MS;
@@ -136,11 +116,11 @@ public class DefaultLoadControl implements LoadControl {
     }
 
     /**
-     * Sets the {@link DefaultAllocator} used by the loader.
+     * 设置加载器使用的 {@link DefaultAllocator}。
      *
-     * @param allocator The {@link DefaultAllocator}.
-     * @return This builder, for convenience.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param allocator {@link DefaultAllocator}。
+     * @return 此构建器，方便链式调用。
+     * @throws IllegalStateException 如果已调用 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setAllocator(DefaultAllocator allocator) {
@@ -150,19 +130,14 @@ public class DefaultLoadControl implements LoadControl {
     }
 
     /**
-     * Sets the buffer duration parameters.
+     * 设置缓冲区时长参数。
      *
-     * @param minBufferMs The minimum duration of media that the player will attempt to ensure is
-     *     buffered at all times, in milliseconds.
-     * @param maxBufferMs The maximum duration of media that the player will attempt to buffer, in
-     *     milliseconds.
-     * @param bufferForPlaybackMs The duration of media that must be buffered for playback to start
-     *     or resume following a user action such as a seek, in milliseconds.
-     * @param bufferForPlaybackAfterRebufferMs The default duration of media that must be buffered
-     *     for playback to resume after a rebuffer, in milliseconds. A rebuffer is defined to be
-     *     caused by buffer depletion rather than a user action.
-     * @return This builder, for convenience.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param minBufferMs 播放器将尝试始终缓冲的最小媒体时长，单位为毫秒。
+     * @param maxBufferMs 播放器将尝试缓冲的最大媒体时长，单位为毫秒。
+     * @param bufferForPlaybackMs 在用户操作（如跳转）后，播放开始或恢复所需缓冲的媒体时长，单位为毫秒。
+     * @param bufferForPlaybackAfterRebufferMs 在重新缓冲后，播放恢复所需缓冲的媒体时长，单位为毫秒。重新缓冲定义为由缓冲区耗尽引起，而非用户操作。
+     * @return 此构建器，方便链式调用。
+     * @throws IllegalStateException 如果已调用 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setBufferDurationsMs(
@@ -189,14 +164,12 @@ public class DefaultLoadControl implements LoadControl {
     }
 
     /**
-     * Sets the target buffer size in bytes for each player. The actual overall target buffer size
-     * is this value multiplied by the number of players that use the load control simultaneously.
-     * If set to {@link C#LENGTH_UNSET}, the target buffer size of a player will be calculated based
-     * on the selected tracks of the player.
+     * 设置每个播放器的目标缓冲区大小，单位为字节。实际的总目标缓冲区大小为此值乘以同时使用加载控制的播放器数量。
+     * 如果设置为 {@link C#LENGTH_UNSET}，播放器的目标缓冲区大小将根据其选定的轨道计算。
      *
-     * @param targetBufferBytes The target buffer size in bytes.
-     * @return This builder, for convenience.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param targetBufferBytes 目标缓冲区大小，单位为字节。
+     * @return 此构建器，方便链式调用。
+     * @throws IllegalStateException 如果已调用 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setTargetBufferBytes(int targetBufferBytes) {
@@ -206,13 +179,11 @@ public class DefaultLoadControl implements LoadControl {
     }
 
     /**
-     * Sets whether the load control prioritizes buffer time constraints over buffer size
-     * constraints.
+     * 设置加载控制是否优先考虑缓冲区时间限制而非大小限制。
      *
-     * @param prioritizeTimeOverSizeThresholds Whether the load control prioritizes buffer time
-     *     constraints over buffer size constraints.
-     * @return This builder, for convenience.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param prioritizeTimeOverSizeThresholds 是否优先考虑缓冲区时间限制而非大小限制。
+     * @return 此构建器，方便链式调用。
+     * @throws IllegalStateException 如果已调用 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setPrioritizeTimeOverSizeThresholds(boolean prioritizeTimeOverSizeThresholds) {
@@ -222,14 +193,12 @@ public class DefaultLoadControl implements LoadControl {
     }
 
     /**
-     * Sets the back buffer duration, and whether the back buffer is retained from the previous
-     * keyframe.
+     * 设置后备缓冲区时长，以及是否从上一关键帧保留后备缓冲区。
      *
-     * @param backBufferDurationMs The back buffer duration in milliseconds.
-     * @param retainBackBufferFromKeyframe Whether the back buffer is retained from the previous
-     *     keyframe.
-     * @return This builder, for convenience.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param backBufferDurationMs 后备缓冲区时长，单位为毫秒。
+     * @param retainBackBufferFromKeyframe 是否从上一关键帧保留后备缓冲区。
+     * @return 此构建器，方便链式调用。
+     * @throws IllegalStateException 如果已调用 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setBackBuffer(int backBufferDurationMs, boolean retainBackBufferFromKeyframe) {
@@ -240,7 +209,7 @@ public class DefaultLoadControl implements LoadControl {
       return this;
     }
 
-    /** Creates a {@link DefaultLoadControl}. */
+    /** 创建 {@link DefaultLoadControl}。 */
     public DefaultLoadControl build() {
       checkState(!buildCalled);
       buildCalled = true;
@@ -274,7 +243,7 @@ public class DefaultLoadControl implements LoadControl {
 
   private long threadId;
 
-  /** Constructs a new instance, using the {@code DEFAULT_*} constants defined in this class. */
+  /** 构造一个新的实例，使用此类中定义的 {@code DEFAULT_*} 常量。 */
   public DefaultLoadControl() {
     this(
         new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
@@ -328,8 +297,8 @@ public class DefaultLoadControl implements LoadControl {
     long currentThreadId = Thread.currentThread().getId();
     checkState(
         threadId == C.INDEX_UNSET || threadId == currentThreadId,
-        "Players that share the same LoadControl must share the same playback thread. See"
-            + " ExoPlayer.Builder.setPlaybackLooper(Looper).");
+        "共享相同 LoadControl 的播放器必须共享相同的播放线程。请参阅"
+            + " ExoPlayer.Builder.setPlaybackLooper(Looper)。");
     threadId = currentThreadId;
     if (!loadingStates.containsKey(playerId)) {
       loadingStates.put(playerId, new PlayerLoadingState());
@@ -384,24 +353,23 @@ public class DefaultLoadControl implements LoadControl {
         allocator.getTotalBytesAllocated() >= calculateTotalTargetBufferBytes();
     long minBufferUs = this.minBufferUs;
     if (parameters.playbackSpeed > 1) {
-      // The playback speed is faster than real time, so scale up the minimum required media
-      // duration to keep enough media buffered for a playout duration of minBufferUs.
+      // 播放速度比实时快，因此按比例增加所需的最小媒体时长，以保持足够的缓冲媒体。
       long mediaDurationMinBufferUs =
           Util.getMediaDurationForPlayoutDuration(minBufferUs, parameters.playbackSpeed);
       minBufferUs = min(mediaDurationMinBufferUs, maxBufferUs);
     }
-    // Prevent playback from getting stuck if minBufferUs is too small.
+    // 如果 minBufferUs 太小，防止播放卡住。
     minBufferUs = max(minBufferUs, 500_000);
     if (parameters.bufferedDurationUs < minBufferUs) {
       playerLoadingState.isLoading = prioritizeTimeOverSizeThresholds || !targetBufferSizeReached;
       if (!playerLoadingState.isLoading && parameters.bufferedDurationUs < 500_000) {
         Log.w(
             "DefaultLoadControl",
-            "Target buffer size reached with less than 500ms of buffered media data.");
+            "目标缓冲区大小已达到，但缓冲的媒体数据少于 500ms。");
       }
     } else if (parameters.bufferedDurationUs >= maxBufferUs || targetBufferSizeReached) {
       playerLoadingState.isLoading = false;
-    } // Else don't change the loading state.
+    } // 否则不改变加载状态。
     return playerLoadingState.isLoading;
   }
 
@@ -418,7 +386,7 @@ public class DefaultLoadControl implements LoadControl {
     return minBufferDurationUs <= 0
         || bufferedDurationUs >= minBufferDurationUs
         || (!prioritizeTimeOverSizeThresholds
-            && allocator.getTotalBytesAllocated() >= calculateTotalTargetBufferBytes());
+        && allocator.getTotalBytesAllocated() >= calculateTotalTargetBufferBytes());
   }
 
   @Override
@@ -433,29 +401,31 @@ public class DefaultLoadControl implements LoadControl {
   }
 
   /**
-   * Calculate target buffer size in bytes based on the selected tracks. The player will try not to
-   * exceed this target buffer. Only used when {@code targetBufferBytes} is {@link C#LENGTH_UNSET}.
+   * 根据选定的轨道计算目标缓冲区大小，单位为字节。播放器将尝试不超过此目标缓冲区。仅在 {@code targetBufferBytes} 为 {@link C#LENGTH_UNSET} 时使用。
    *
-   * @param trackSelectionArray The selected tracks.
-   * @return The target buffer size in bytes.
+   * @param trackSelectionArray 选定的轨道。
+   * @return 目标缓冲区大小，单位为字节。
    */
   protected int calculateTargetBufferBytes(@NullableType ExoTrackSelection[] trackSelectionArray) {
     int targetBufferSize = 0;
     for (ExoTrackSelection exoTrackSelection : trackSelectionArray) {
       if (exoTrackSelection != null) {
+        // 根据轨道类型获取默认缓冲区大小并累加
         targetBufferSize += getDefaultBufferSize(exoTrackSelection.getTrackGroup().type);
       }
     }
+    // 返回目标缓冲区大小，确保不小于默认的最小缓冲区大小
     return max(DEFAULT_MIN_BUFFER_SIZE, targetBufferSize);
   }
 
   /**
-   * @deprecated Use {@link #calculateTargetBufferBytes(ExoTrackSelection[])} instead.
+   * @deprecated 请改用 {@link #calculateTargetBufferBytes(ExoTrackSelection[])}。
    */
   @InlineMe(replacement = "this.calculateTargetBufferBytes(trackSelectionArray)")
   @Deprecated
   protected final int calculateTargetBufferBytes(
       Renderer[] renderers, ExoTrackSelection[] trackSelectionArray) {
+    // 调用新方法计算目标缓冲区大小
     return calculateTargetBufferBytes(trackSelectionArray);
   }
 

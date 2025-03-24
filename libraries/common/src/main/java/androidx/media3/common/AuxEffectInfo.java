@@ -6,44 +6,37 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * Represents auxiliary effect information, which can be used to attach an auxiliary effect to an
- * underlying {@link AudioTrack}.
+ * 表示辅助效果信息，可用于将辅助效果附加到底层的 {@link AudioTrack}。
  *
- * <p>Auxiliary effects can only be applied if the application has the {@code
- * android.permission.MODIFY_AUDIO_SETTINGS} permission. Apps are responsible for retaining the
- * associated audio effect instance and releasing it when it's no longer needed. See the
- * documentation of {@link AudioEffect} for more information.
+ * <p>只有在应用程序具有 {@code android.permission.MODIFY_AUDIO_SETTINGS} 权限时，才能应用辅助效果。应用负责保留相关的音频效果实例，并在不再需要时释放它。有关更多信息，请参阅 {@link AudioEffect} 的文档。
  */
 @UnstableApi
 public final class AuxEffectInfo {
 
-  /** Value for {@link #effectId} representing no auxiliary effect. */
+  /** 表示无辅助效果的 {@link #effectId} 的值。 */
   public static final int NO_AUX_EFFECT_ID = 0;
 
   /**
-   * The identifier of the effect, or {@link #NO_AUX_EFFECT_ID} if there is no effect.
+   * 效果的标识符，如果没有效果则为 {@link #NO_AUX_EFFECT_ID}。
    *
    * @see android.media.AudioTrack#attachAuxEffect(int)
    */
   public final int effectId;
 
   /**
-   * The send level for the effect.
+   * 效果的发送级别。
    *
    * @see android.media.AudioTrack#setAuxEffectSendLevel(float)
    */
   public final float sendLevel;
 
   /**
-   * Creates an instance with the given effect identifier and send level.
+   * 使用给定的效果标识符和发送级别创建实例。
    *
-   * @param effectId The effect identifier. This is the value returned by {@link
-   *     AudioEffect#getId()} on the effect, or {@link #NO_AUX_EFFECT_ID} which represents no
-   *     effect. This value is passed to {@link AudioTrack#attachAuxEffect(int)} on the underlying
-   *     audio track.
-   * @param sendLevel The send level for the effect, where 0 represents no effect and a value of 1
-   *     is full send. If {@code effectId} is not {@link #NO_AUX_EFFECT_ID}, this value is passed to
-   *     {@link AudioTrack#setAuxEffectSendLevel(float)} on the underlying audio track.
+   * @param effectId 效果标识符。这是效果上 {@link AudioEffect#getId()} 返回的值，或 {@link #NO_AUX_EFFECT_ID} 表示无效果。
+   *                 此值将传递到底层音频轨道的 {@link AudioTrack#attachAuxEffect(int)} 方法。
+   * @param sendLevel 效果的发送级别，其中 0 表示无效果，1 表示完全发送。如果 {@code effectId} 不是 {@link #NO_AUX_EFFECT_ID}，
+   *                  则此值将传递到底层音频轨道的 {@link AudioTrack#setAuxEffectSendLevel(float)} 方法。
    */
   public AuxEffectInfo(int effectId, float sendLevel) {
     this.effectId = effectId;

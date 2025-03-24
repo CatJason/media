@@ -15,17 +15,17 @@ import com.google.common.primitives.Booleans;
 import java.util.Arrays;
 import java.util.List;
 
-/** Information about groups of tracks. */
+/**
+ * 关于轨道组的信息。
+ */
 public final class Tracks {
 
   /**
-   * Information about a single group of tracks, including the underlying {@link TrackGroup}, the
-   * level to which each track is supported by the player, and whether any of the tracks are
-   * selected.
+   * 关于单个轨道组的信息，包括底层的 {@link TrackGroup}、每个轨道的播放支持级别以及是否有任何轨道被选中。
    */
   public static final class Group {
 
-    /** The number of tracks in the group. */
+    /** 组中轨道的数量。 */
     public final int length;
 
     private final TrackGroup mediaTrackGroup;
@@ -34,13 +34,12 @@ public final class Tracks {
     private final boolean[] trackSelected;
 
     /**
-     * Constructs an instance.
+     * 构造实例。
      *
-     * @param mediaTrackGroup The underlying {@link TrackGroup} defined by the media.
-     * @param adaptiveSupported Whether the player supports adaptive selections containing more than
-     *     one track in the group.
-     * @param trackSupport The {@link C.FormatSupport} of each track in the group.
-     * @param trackSelected Whether each track in the {@code trackGroup} is selected.
+     * @param mediaTrackGroup 由媒体定义的底层 {@link TrackGroup}。
+     * @param adaptiveSupported 播放器是否支持包含多个轨道的自适应选择。
+     * @param trackSupport 组中每个轨道的 {@link C.FormatSupport}。
+     * @param trackSelected 组中每个轨道是否被选中。
      */
     @UnstableApi
     public Group(
@@ -57,32 +56,29 @@ public final class Tracks {
     }
 
     /**
-     * Returns the underlying {@link TrackGroup} defined by the media.
+     * 返回由媒体定义的底层 {@link TrackGroup}。
      *
-     * <p>Unlike this class, {@link TrackGroup} only contains information defined by the media
-     * itself, and does not contain runtime information such as which tracks are supported and
-     * currently selected. This makes it suitable for use as a {@code key} in certain {@code (key,
-     * value)} data structures.
+     * <p>与当前类不同，{@link TrackGroup} 仅包含由媒体本身定义的信息，不包含运行时信息（例如哪些轨道受支持以及当前被选中）。这使得它适合在某些 {@code (key, value)} 数据结构中作为 {@code key} 使用。
      */
     public TrackGroup getMediaTrackGroup() {
       return mediaTrackGroup;
     }
 
     /**
-     * Returns the {@link Format} for a specified track.
+     * 返回指定轨道的 {@link Format}。
      *
-     * @param trackIndex The index of the track in the group.
-     * @return The {@link Format} of the track.
+     * @param trackIndex 组中轨道的索引。
+     * @return 轨道的 {@link Format}。
      */
     public Format getTrackFormat(int trackIndex) {
       return mediaTrackGroup.getFormat(trackIndex);
     }
 
     /**
-     * Returns the level of support for a specified track.
+     * 返回指定轨道的支持级别。
      *
-     * @param trackIndex The index of the track in the group.
-     * @return The {@link C.FormatSupport} of the track.
+     * @param trackIndex 组中轨道的索引。
+     * @return 轨道的 {@link C.FormatSupport}。
      */
     @UnstableApi
     public @C.FormatSupport int getTrackSupport(int trackIndex) {
@@ -90,59 +86,49 @@ public final class Tracks {
     }
 
     /**
-     * Returns whether a specified track is supported for playback, without exceeding the advertised
-     * capabilities of the device. Equivalent to {@code isTrackSupported(trackIndex, false)}.
+     * 返回指定轨道是否支持播放，而不超出设备的广告能力。等效于 {@code isTrackSupported(trackIndex, false)}。
      *
-     * @param trackIndex The index of the track in the group.
-     * @return True if the track's format can be played, false otherwise.
+     * @param trackIndex 组中轨道的索引。
+     * @return 如果轨道的格式可以播放，则返回 true，否则返回 false。
      */
     public boolean isTrackSupported(int trackIndex) {
       return isTrackSupported(trackIndex, /* allowExceedsCapabilities= */ false);
     }
 
     /**
-     * Returns whether a specified track is supported for playback.
+     * 返回指定轨道是否支持播放。
      *
-     * @param trackIndex The index of the track in the group.
-     * @param allowExceedsCapabilities Whether to consider the track as supported if it has a
-     *     supported {@link Format#sampleMimeType MIME type}, but otherwise exceeds the advertised
-     *     capabilities of the device. For example, a video track for which there's a corresponding
-     *     decoder whose maximum advertised resolution is exceeded by the resolution of the track.
-     *     Such tracks may be playable in some cases.
-     * @return True if the track's format can be played, false otherwise.
+     * @param trackIndex 组中轨道的索引。
+     * @param allowExceedsCapabilities 如果轨道具有支持的 {@link Format#sampleMimeType MIME 类型}，但其他方面超出设备的广告能力，是否将其视为支持。例如，视频轨道具有相应的解码器，但轨道的分辨率超出了解码器的最大广告分辨率。在某些情况下，此类轨道可能是可播放的。
+     * @return 如果轨道的格式可以播放，则返回 true，否则返回 false。
      */
     public boolean isTrackSupported(int trackIndex, boolean allowExceedsCapabilities) {
       return trackSupport[trackIndex] == C.FORMAT_HANDLED
           || (allowExceedsCapabilities
-              && trackSupport[trackIndex] == C.FORMAT_EXCEEDS_CAPABILITIES);
+          && trackSupport[trackIndex] == C.FORMAT_EXCEEDS_CAPABILITIES);
     }
 
-    /** Returns whether at least one track in the group is selected for playback. */
+    /** 返回组中是否至少有一个轨道被选中用于播放。 */
     public boolean isSelected() {
       return Booleans.contains(trackSelected, true);
     }
 
-    /** Returns whether adaptive selections containing more than one track are supported. */
+    /** 返回是否支持包含多个轨道的自适应选择。 */
     public boolean isAdaptiveSupported() {
       return adaptiveSupported;
     }
 
     /**
-     * Returns whether at least one track in the group is supported for playback, without exceeding
-     * the advertised capabilities of the device. Equivalent to {@code isSupported(false)}.
+     * 返回组中是否至少有一个轨道支持播放，而不超出设备的广告能力。等效于 {@code isSupported(false)}。
      */
     public boolean isSupported() {
       return isSupported(/* allowExceedsCapabilities= */ false);
     }
 
     /**
-     * Returns whether at least one track in the group is supported for playback.
+     * 返回组中是否至少有一个轨道支持播放。
      *
-     * @param allowExceedsCapabilities Whether to consider a track as supported if it has a
-     *     supported {@link Format#sampleMimeType MIME type}, but otherwise exceeds the advertised
-     *     capabilities of the device. For example, a video track for which there's a corresponding
-     *     decoder whose maximum advertised resolution is exceeded by the resolution of the track.
-     *     Such tracks may be playable in some cases.
+     * @param allowExceedsCapabilities 如果轨道具有支持的 {@link Format#sampleMimeType MIME 类型}，但其他方面超出设备的广告能力，是否将其视为支持。例如，视频轨道具有相应的解码器，但轨道的分辨率超出了解码器的最大广告分辨率。在某些情况下，此类轨道可能是可播放的。
      */
     public boolean isSupported(boolean allowExceedsCapabilities) {
       for (int i = 0; i < trackSupport.length; i++) {
@@ -154,33 +140,29 @@ public final class Tracks {
     }
 
     /**
-     * Returns whether a specified track is selected for playback.
+     * 返回指定轨道是否被选中用于播放。
      *
-     * <p>Note that multiple tracks in the group may be selected. This is common in adaptive
-     * streaming, where tracks of different qualities are selected and the player switches between
-     * them during playback (e.g., based on the available network bandwidth).
+     * <p>请注意，组中可能有多个轨道被选中。这在自适应流媒体中很常见，其中不同质量的轨道被选中，播放器在播放期间在它们之间切换（例如，基于可用网络带宽）。
      *
-     * <p>This class doesn't provide a way to determine which of the selected tracks is currently
-     * playing, however some player implementations have ways of getting such information. For
-     * example, ExoPlayer provides this information via {@code ExoTrackSelection.getSelectedFormat}.
+     * <p>此类不提供确定当前正在播放的选中轨道的方法，但某些播放器实现提供了获取此类信息的方式。例如，ExoPlayer 通过 {@code ExoTrackSelection.getSelectedFormat} 提供此信息。
      *
-     * @param trackIndex The index of the track in the group.
-     * @return True if the track is selected, false otherwise.
+     * @param trackIndex 组中轨道的索引。
+     * @return 如果轨道被选中，则返回 true，否则返回 false。
      */
     public boolean isTrackSelected(int trackIndex) {
       return trackSelected[trackIndex];
     }
 
-    /** Returns the {@link C.TrackType} of the group. */
+    /** 返回组的 {@link C.TrackType}。 */
     public @C.TrackType int getType() {
       return mediaTrackGroup.type;
     }
 
     /**
-     * Copies the {@code Group} with a new {@link TrackGroup#id}.
+     * 使用新的 {@link TrackGroup#id} 复制 {@code Group}。
      *
-     * @param groupId The new {@link TrackGroup#id}
-     * @return The copied {@code Group}.
+     * @param groupId 新的 {@link TrackGroup#id}。
+     * @return 复制的 {@code Group}。
      */
     @UnstableApi
     public Group copyWithId(String groupId) {
@@ -279,23 +261,17 @@ public final class Tracks {
   }
 
   /**
-   * Returns true if at least one track of type {@code trackType} is {@link
-   * Group#isTrackSupported(int) supported}.
+   * 如果至少有一个类型为 {@code trackType} 的轨道是 {@link Group#isTrackSupported(int) 支持的}，则返回 true。
    */
   public boolean isTypeSupported(@C.TrackType int trackType) {
     return isTypeSupported(trackType, /* allowExceedsCapabilities= */ false);
   }
 
   /**
-   * Returns true if at least one track of type {@code trackType} is {@link
-   * Group#isTrackSupported(int, boolean) supported}.
+   * 如果至少有一个类型为 {@code trackType} 的轨道是 {@link Group#isTrackSupported(int, boolean) 支持的}，则返回 true。
    *
-   * @param trackType The track type to query support for.
-   * @param allowExceedsCapabilities Whether to consider the track as supported if it has a
-   *     supported {@link Format#sampleMimeType MIME type}, but otherwise exceeds the advertised
-   *     capabilities of the device. For example, a video track for which there's a corresponding
-   *     decoder whose maximum advertised resolution is exceeded by the resolution of the track.
-   *     Such tracks may be playable in some cases.
+   * @param trackType 要查询支持的轨道类型。
+   * @param allowExceedsCapabilities 如果轨道具有支持的 {@link Format#sampleMimeType MIME 类型}，但其他方面超出设备的广告能力，是否将其视为支持。例如，视频轨道具有相应的解码器，但轨道的分辨率超出了解码器的最大广告分辨率。在某些情况下，此类轨道可能是可播放的。
    */
   public boolean isTypeSupported(@C.TrackType int trackType, boolean allowExceedsCapabilities) {
     for (int i = 0; i < groups.size(); i++) {

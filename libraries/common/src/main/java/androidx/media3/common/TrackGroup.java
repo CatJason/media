@@ -15,46 +15,36 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An immutable group of tracks available within a media stream. All tracks in a group present the
- * same content, but their formats may differ.
+ * 表示媒体流中可用的一组不可变的轨道。组中的所有轨道呈现相同的内容，但它们的格式可能不同。
  *
- * <p>As an example of how tracks can be grouped, consider an adaptive playback where a main video
- * feed is provided in five resolutions, and an alternative video feed (e.g., a different camera
- * angle in a sports match) is provided in two resolutions. In this case there will be two video
- * track groups, one corresponding to the main video feed containing five tracks, and a second for
- * the alternative video feed containing two tracks.
+ * <p>作为轨道如何分组的示例，考虑一个自适应播放场景，其中主视频流提供了五种分辨率，而替代视频流（例如，体育比赛中的不同摄像机角度）提供了两种分辨率。在这种情况下，将有两个视频轨道组，一个对应于主视频流，包含五个轨道，另一个对应于替代视频流，包含两个轨道。
  *
- * <p>Note that audio tracks whose languages differ are not grouped, because content in different
- * languages is not considered to be the same. Conversely, audio tracks in the same language that
- * only differ in properties such as bitrate, sampling rate, channel count and so on can be grouped.
- * This also applies to text tracks.
+ * <p>请注意，语言不同的音频轨道不会被分组，因为不同语言的内容不被认为是相同的。相反，语言相同但仅在比特率、采样率、声道数等属性上不同的音频轨道可以被分组。这也适用于文本轨道。
  *
- * <p>Note also that this class only contains information derived from the media itself. Unlike
- * {@link Tracks.Group}, it does not include runtime information such as the extent to which
- * playback of each track is supported by the device, or which tracks are currently selected.
+ * <p>还要注意，此类仅包含从媒体本身派生的信息。与 {@link Tracks.Group} 不同，它不包含运行时信息，例如设备对每个轨道的播放支持程度，或当前选择了哪些轨道。
  */
 public final class TrackGroup {
 
   private static final String TAG = "TrackGroup";
 
-  /** The number of tracks in the group. */
+  /** 组中轨道的数量。 */
   @UnstableApi public final int length;
 
-  /** An identifier for the track group. */
+  /** 轨道组的标识符。 */
   @UnstableApi public final String id;
 
-  /** The type of tracks in the group. */
+  /** 组中轨道的类型。 */
   @UnstableApi public final @C.TrackType int type;
 
   private final Format[] formats;
 
-  // Lazily initialized hashcode.
+  // 延迟初始化的哈希码。
   private int hashCode;
 
   /**
-   * Constructs a track group containing the provided {@code formats}.
+   * 构造一个包含提供的 {@code formats} 的轨道组。
    *
-   * @param formats The list of {@link Format Formats}. Must not be empty.
+   * @param formats {@link Format} 的列表。不能为空。
    */
   @UnstableApi
   public TrackGroup(Format... formats) {
@@ -62,10 +52,10 @@ public final class TrackGroup {
   }
 
   /**
-   * Constructs a track group with the provided {@code id} and {@code formats}.
+   * 使用提供的 {@code id} 和 {@code formats} 构造一个轨道组。
    *
-   * @param id The identifier of the track group. May be an empty string.
-   * @param formats The list of {@link Format Formats}. Must not be empty.
+   * @param id 轨道组的标识符。可以是空字符串。
+   * @param formats {@link Format} 的列表。不能为空。
    */
   @UnstableApi
   public TrackGroup(String id, Format... formats) {
@@ -82,10 +72,10 @@ public final class TrackGroup {
   }
 
   /**
-   * Returns a copy of this track group with the specified {@code id}.
+   * 返回一个具有指定 {@code id} 的此轨道组的副本。
    *
-   * @param id The identifier for the copy of the track group.
-   * @return The copied track group.
+   * @param id 轨道组副本的标识符。
+   * @return 复制的轨道组。
    */
   @UnstableApi
   @CheckResult
@@ -94,10 +84,10 @@ public final class TrackGroup {
   }
 
   /**
-   * Returns the format of the track at a given index.
+   * 返回给定索引处轨道的格式。
    *
-   * @param index The index of the track.
-   * @return The track's format.
+   * @param index 轨道的索引。
+   * @return 轨道的格式。
    */
   @UnstableApi
   public Format getFormat(int index) {
@@ -105,12 +95,10 @@ public final class TrackGroup {
   }
 
   /**
-   * Returns the index of the track with the given format in the group. The format is located by
-   * identity so, for example, {@code group.indexOf(group.getFormat(index)) == index} even if
-   * multiple tracks have formats that contain the same values.
+   * 返回具有给定格式的轨道在组中的索引。格式通过身份定位，因此，例如，即使多个轨道具有包含相同值的格式，{@code group.indexOf(group.getFormat(index)) == index} 也成立。
    *
-   * @param format The format.
-   * @return The index of the track, or {@link C#INDEX_UNSET} if no such track exists.
+   * @param format 格式。
+   * @return 轨道的索引，如果不存在这样的轨道，则返回 {@link C#INDEX_UNSET}。
    */
   @SuppressWarnings("ReferenceEquality")
   @UnstableApi
@@ -161,7 +149,7 @@ public final class TrackGroup {
     return bundle;
   }
 
-  /** Restores a {@code TrackGroup} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code TrackGroup}。 */
   @UnstableApi
   public static TrackGroup fromBundle(Bundle bundle) {
     @Nullable List<Bundle> formatBundles = bundle.getParcelableArrayList(FIELD_FORMATS);
@@ -174,10 +162,7 @@ public final class TrackGroup {
   }
 
   private void verifyCorrectness() {
-    // TrackGroups should only contain tracks with exactly the same content (but in different
-    // qualities). We only log an error instead of throwing to not break backwards-compatibility for
-    // cases where malformed TrackGroups happen to work by chance (e.g. because adaptive selections
-    // are always disabled).
+    // TrackGroups 应仅包含内容完全相同但质量不同的轨道。我们只记录错误而不抛出异常，以避免破坏那些由于偶然情况（例如，自适应选择始终被禁用）而工作的情况的向后兼容性。
     String language = normalizeLanguage(formats[0].language);
     @C.RoleFlags int roleFlags = normalizeRoleFlags(formats[0].roleFlags);
     for (int i = 1; i < formats.length; i++) {
@@ -201,12 +186,12 @@ public final class TrackGroup {
   }
 
   private static String normalizeLanguage(@Nullable String language) {
-    // Treat all variants of undetermined or unknown languages as compatible.
+    // 将所有未确定或未知语言的变体视为兼容。
     return language == null || language.equals(C.LANGUAGE_UNDETERMINED) ? "" : language;
   }
 
   private static @C.RoleFlags int normalizeRoleFlags(@C.RoleFlags int roleFlags) {
-    // Treat trick-play and non-trick-play formats as compatible.
+    // 将 trick-play 和非 trick-play 格式视为兼容。
     return roleFlags | C.ROLE_FLAG_TRICK_PLAY;
   }
 
@@ -219,13 +204,13 @@ public final class TrackGroup {
         TAG,
         "",
         new IllegalStateException(
-            "Different "
+            "不同的 "
                 + mismatchField
-                + " combined in one TrackGroup: '"
+                + " 组合在一个 TrackGroup 中：'"
                 + valueIndex0
-                + "' (track 0) and '"
+                + "'（轨道 0）和 '"
                 + otherValue
-                + "' (track "
+                + "'（轨道 "
                 + otherIndex
                 + ")"));
   }

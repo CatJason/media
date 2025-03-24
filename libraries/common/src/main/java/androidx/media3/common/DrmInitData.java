@@ -14,29 +14,24 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-
-/** Initialization data for one or more DRM schemes. */
+/** 用于一个或多个 DRM 方案的初始化数据。 */
 @UnstableApi
 public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
 
   /**
-   * Merges {@link DrmInitData} obtained from a media manifest and a media stream.
+   * 合并从媒体清单和媒体流中获取的 {@link DrmInitData}。
    *
-   * <p>The result is generated as follows.
+   * <p>结果按以下方式生成：
    *
    * <ol>
-   *   <li>Include all {@link SchemeData}s from {@code manifestData} where {@link
-   *       SchemeData#hasData()} is true.
-   *   <li>Include all {@link SchemeData}s in {@code mediaData} where {@link SchemeData#hasData()}
-   *       is true and for which we did not include an entry from the manifest targeting the same
-   *       UUID.
-   *   <li>If available, the scheme type from the manifest is used. If not, the scheme type from the
-   *       media is used.
+   *   <li>包含来自 {@code manifestData} 的所有 {@link SchemeData}，其中 {@link SchemeData#hasData()} 为 true。
+   *   <li>包含来自 {@code mediaData} 的所有 {@link SchemeData}，其中 {@link SchemeData#hasData()} 为 true，并且我们没有从清单中包含针对相同 UUID 的条目。
+   *   <li>如果可用，则使用清单中的方案类型。如果不可用，则使用媒体中的方案类型。
    * </ol>
    *
-   * @param manifestData DRM session acquisition data obtained from the manifest.
-   * @param mediaData DRM session acquisition data obtained from the media.
-   * @return A {@link DrmInitData} obtained from merging a media manifest and a media stream.
+   * @param manifestData 从清单中获取的 DRM 会话获取数据。
+   * @param mediaData 从媒体中获取的 DRM 会话获取数据。
+   * @return 通过合并媒体清单和媒体流获取的 {@link DrmInitData}。
    */
   @Nullable
   public static DrmInitData createSessionCreationData(
@@ -71,38 +66,37 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
 
   // Lazily initialized hashcode.
   private int hashCode;
-
-  /** The protection scheme type, or null if not applicable or unknown. */
+  /** 保护方案类型，如果不适用或未知则为 null。 */
   @Nullable public final String schemeType;
 
-  /** Number of {@link SchemeData}s. */
+  /** {@link SchemeData} 的数量。 */
   public final int schemeDataCount;
 
   /**
-   * @param schemeDatas Scheme initialization data for possibly multiple DRM schemes.
+   * @param schemeDatas 可能用于多个 DRM 方案的初始化数据。
    */
   public DrmInitData(List<SchemeData> schemeDatas) {
     this(null, false, schemeDatas.toArray(new SchemeData[0]));
   }
 
   /**
-   * @param schemeType See {@link #schemeType}.
-   * @param schemeDatas Scheme initialization data for possibly multiple DRM schemes.
+   * @param schemeType 参见 {@link #schemeType}。
+   * @param schemeDatas 可能用于多个 DRM 方案的初始化数据。
    */
   public DrmInitData(@Nullable String schemeType, List<SchemeData> schemeDatas) {
     this(schemeType, false, schemeDatas.toArray(new SchemeData[0]));
   }
 
   /**
-   * @param schemeDatas Scheme initialization data for possibly multiple DRM schemes.
+   * @param schemeDatas 可能用于多个 DRM 方案的初始化数据。
    */
   public DrmInitData(SchemeData... schemeDatas) {
     this(null, schemeDatas);
   }
 
   /**
-   * @param schemeType See {@link #schemeType}.
-   * @param schemeDatas Scheme initialization data for possibly multiple DRM schemes.
+   * @param schemeType 参见 {@link #schemeType}。
+   * @param schemeDatas 可能用于多个 DRM 方案的初始化数据。
    */
   public DrmInitData(@Nullable String schemeType, SchemeData... schemeDatas) {
     this(schemeType, true, schemeDatas);
@@ -128,20 +122,20 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
   }
 
   /**
-   * Retrieves the {@link SchemeData} at a given index.
+   * 检索给定索引处的 {@link SchemeData}。
    *
-   * @param index The index of the scheme to return. Must not exceed {@link #schemeDataCount}.
-   * @return The {@link SchemeData} at the specified index.
+   * @param index 要返回的方案索引。不能超过 {@link #schemeDataCount}。
+   * @return 指定索引处的 {@link SchemeData}。
    */
   public SchemeData get(int index) {
     return schemeDatas[index];
   }
 
   /**
-   * Returns a copy with the specified protection scheme type.
+   * 返回具有指定保护方案类型的副本。
    *
-   * @param schemeType A protection scheme type. May be null.
-   * @return A copy with the specified protection scheme type.
+   * @param schemeType 保护方案类型。可以为 null。
+   * @return 具有指定保护方案类型的副本。
    */
   @CheckResult
   public DrmInitData copyWithSchemeType(@Nullable String schemeType) {
@@ -152,12 +146,10 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
   }
 
   /**
-   * Returns an instance containing the {@link #schemeDatas} from both this and {@code other}. The
-   * {@link #schemeType} of the instances being merged must either match, or at least one scheme
-   * type must be {@code null}.
+   * 返回一个包含来自当前实例和 {@code other} 的 {@link #schemeDatas} 的实例。被合并的实例的 {@link #schemeType} 必须匹配，或者至少一个方案类型为 {@code null}。
    *
-   * @param drmInitData The instance to merge.
-   * @return The merged result.
+   * @param drmInitData 要合并的实例。
+   * @return 合并后的结果。
    */
   public DrmInitData merge(DrmInitData drmInitData) {
     Assertions.checkState(
@@ -238,44 +230,40 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
     }
     return false;
   }
-
-  /** Scheme initialization data. */
+  /** 方案初始化数据。 */
   public static final class SchemeData implements Parcelable {
 
-    // Lazily initialized hashcode.
+    // 延迟初始化的哈希码。
     private int hashCode;
 
     /**
-     * The {@link UUID} of the DRM scheme, or {@link C#UUID_NIL} if the data is universal (i.e.
-     * applies to all schemes).
+     * DRM 方案的 {@link UUID}，如果数据是通用的（即适用于所有方案），则为 {@link C#UUID_NIL}。
      */
     public final UUID uuid;
 
-    /** The URL of the server to which license requests should be made. May be null if unknown. */
+    /** 许可证请求应发送到的服务器 URL。如果未知，则可能为 null。 */
     @Nullable public final String licenseServerUrl;
 
-    /** The mimeType of {@link #data}. */
+    /** {@link #data} 的 MIME 类型。 */
     public final String mimeType;
 
-    /** The initialization data. May be null for scheme support checks only. */
+    /** 初始化数据。如果仅用于方案支持检查，则可能为 null。 */
     @Nullable public final byte[] data;
 
     /**
-     * @param uuid The {@link UUID} of the DRM scheme, or {@link C#UUID_NIL} if the data is
-     *     universal (i.e. applies to all schemes).
-     * @param mimeType See {@link #mimeType}.
-     * @param data See {@link #data}.
+     * @param uuid DRM 方案的 {@link UUID}，如果数据是通用的（即适用于所有方案），则为 {@link C#UUID_NIL}。
+     * @param mimeType 参见 {@link #mimeType}。
+     * @param data 参见 {@link #data}。
      */
     public SchemeData(UUID uuid, String mimeType, @Nullable byte[] data) {
       this(uuid, /* licenseServerUrl= */ null, mimeType, data);
     }
 
     /**
-     * @param uuid The {@link UUID} of the DRM scheme, or {@link C#UUID_NIL} if the data is
-     *     universal (i.e. applies to all schemes).
-     * @param licenseServerUrl See {@link #licenseServerUrl}.
-     * @param mimeType See {@link #mimeType}.
-     * @param data See {@link #data}.
+     * @param uuid DRM 方案的 {@link UUID}，如果数据是通用的（即适用于所有方案），则为 {@link C#UUID_NIL}。
+     * @param licenseServerUrl 参见 {@link #licenseServerUrl}。
+     * @param mimeType 参见 {@link #mimeType}。
+     * @param data 参见 {@link #data}。
      */
     public SchemeData(
         UUID uuid, @Nullable String licenseServerUrl, String mimeType, @Nullable byte[] data) {
@@ -293,35 +281,35 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
     }
 
     /**
-     * Returns whether this initialization data applies to the specified scheme.
+     * 返回此初始化数据是否适用于指定的方案。
      *
-     * @param schemeUuid The scheme {@link UUID}.
-     * @return Whether this initialization data applies to the specified scheme.
+     * @param schemeUuid 方案的 {@link UUID}。
+     * @return 此初始化数据是否适用于指定的方案。
      */
     public boolean matches(UUID schemeUuid) {
       return C.UUID_NIL.equals(uuid) || schemeUuid.equals(uuid);
     }
 
     /**
-     * Returns whether this {@link SchemeData} can be used to replace {@code other}.
+     * 返回此 {@link SchemeData} 是否可以用于替换 {@code other}。
      *
-     * @param other A {@link SchemeData}.
-     * @return Whether this {@link SchemeData} can be used to replace {@code other}.
+     * @param other 一个 {@link SchemeData}。
+     * @return 此 {@link SchemeData} 是否可以用于替换 {@code other}。
      */
     public boolean canReplace(SchemeData other) {
       return hasData() && !other.hasData() && matches(other.uuid);
     }
 
-    /** Returns whether {@link #data} is non-null. */
+    /** 返回 {@link #data} 是否为非 null。 */
     public boolean hasData() {
       return data != null;
     }
 
     /**
-     * Returns a copy of this instance with the specified data.
+     * 返回具有指定数据的此实例的副本。
      *
-     * @param data The data to include in the copy.
-     * @return The new instance.
+     * @param data 要包含在副本中的数据。
+     * @return 新实例。
      */
     @CheckResult
     public SchemeData copyWithData(@Nullable byte[] data) {

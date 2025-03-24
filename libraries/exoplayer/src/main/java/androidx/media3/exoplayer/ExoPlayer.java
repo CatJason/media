@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer;
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
@@ -83,86 +68,60 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.List;
 
 /**
- * An extensible media player that plays {@link MediaSource}s. Instances can be obtained from {@link
- * Builder}.
+ * 一个可扩展的媒体播放器，用于播放 {@link MediaSource}。实例可以通过 {@link Builder} 获取。
  *
- * <h2>Player components</h2>
+ * <h2>播放器组件</h2>
  *
- * <p>ExoPlayer is designed to make few assumptions about (and hence impose few restrictions on) the
- * type of the media being played, how and where it is stored, and how it is rendered. Rather than
- * implementing the loading and rendering of media directly, ExoPlayer implementations delegate this
- * work to components that are injected when a player is created or when it's prepared for playback.
- * Components common to all ExoPlayer implementations are:
+ * <p>ExoPlayer 的设计使其对播放的媒体类型、存储方式和位置以及渲染方式做出很少的假设（因此施加很少的限制）。
+ * ExoPlayer 的实现并不直接负责媒体的加载和渲染，而是将这些工作委托给在创建播放器或准备播放时注入的组件。
+ * 所有 ExoPlayer 实现共有的组件包括：
  *
  * <ul>
- *   <li><b>{@link MediaSource MediaSources}</b> that define the media to be played, load the media,
- *       and from which the loaded media can be read. MediaSources are created from {@link MediaItem
- *       MediaItems} by the {@link MediaSource.Factory} injected into the player {@link
- *       Builder#setMediaSourceFactory Builder}, or can be added directly by methods like {@link
- *       #setMediaSource(MediaSource)}. The library provides a {@link DefaultMediaSourceFactory} for
- *       progressive media files, DASH, SmoothStreaming and HLS, which also includes functionality
- *       for side-loading subtitle files and clipping media.
- *   <li><b>{@link Renderer}</b>s that render individual components of the media. The library
- *       provides default implementations for common media types ({@link MediaCodecVideoRenderer},
- *       {@link MediaCodecAudioRenderer}, {@link TextRenderer} and {@link MetadataRenderer}). A
- *       Renderer consumes media from the MediaSource being played. Renderers are injected when the
- *       player is created. The number of renderers and their respective track types can be obtained
- *       by calling {@link #getRendererCount()} and {@link #getRendererType(int)}.
- *   <li>A <b>{@link TrackSelector}</b> that selects tracks provided by the MediaSource to be
- *       consumed by each of the available Renderers. The library provides a default implementation
- *       ({@link DefaultTrackSelector}) suitable for most use cases. A TrackSelector is injected
- *       when the player is created.
- *   <li>A <b>{@link LoadControl}</b> that controls when the MediaSource buffers more media, and how
- *       much media is buffered. The library provides a default implementation ({@link
- *       DefaultLoadControl}) suitable for most use cases. A LoadControl is injected when the player
- *       is created.
+ *   <li><b>{@link MediaSource MediaSources}</b>：定义要播放的媒体，加载媒体，并从中读取加载的媒体。
+ *   MediaSources 由 {@link MediaItem MediaItems} 通过注入到播放器 {@link Builder#setMediaSourceFactory Builder} 的 {@link MediaSource.Factory} 创建，也可以通过 {@link #setMediaSource(MediaSource)} 等方法直接添加。
+ *   库提供了用于渐进式媒体文件、DASH、SmoothStreaming 和 HLS 的 {@link DefaultMediaSourceFactory}，还包括旁加载字幕文件和剪辑媒体的功能。
+ *   <li><b>{@link Renderer}</b>：渲染媒体的各个组件。库为常见媒体类型提供了默认实现（{@link MediaCodecVideoRenderer}、{@link MediaCodecAudioRenderer}、{@link TextRenderer} 和 {@link MetadataRenderer}）。
+ *   Renderer 从正在播放的 MediaSource 中消费媒体。
+ *   Renderer 在创建播放器时注入。可以通过调用 {@link #getRendererCount()} 和 {@link #getRendererType(int)} 获取 Renderer 的数量及其各自的轨道类型。
+ *   <li><b>{@link TrackSelector}</b>：选择由 MediaSource 提供的轨道，以供每个可用的 Renderer 消费。库提供了适用于大多数用例的默认实现（{@link DefaultTrackSelector}）。
+ *   TrackSelector 在创建播放器时注入。
+ *   <li><b>{@link LoadControl}</b>：控制 MediaSource 何时缓冲更多媒体，以及缓冲多少媒体。
+ *   库提供了适用于大多数用例的默认实现（{@link DefaultLoadControl}）。
+ *   LoadControl 在创建播放器时注入。
  * </ul>
  *
- * <p>An ExoPlayer can be built using the default components provided by the library, but may also
- * be built using custom implementations if non-standard behaviors are required. For example a
- * custom LoadControl could be injected to change the player's buffering strategy, or a custom
- * Renderer could be injected to add support for a video codec not supported natively by Android.
+ * <p>ExoPlayer 可以使用库提供的默认组件构建，但如果需要非标准行为，也可以使用自定义实现构建。
+ * 例如，可以注入自定义的 LoadControl 以更改播放器的缓冲策略，或者注入自定义的 Renderer 以添加对 Android 不原生支持的视频编解码器的支持。
  *
- * <p>The concept of injecting components that implement pieces of player functionality is present
- * throughout the library. The default component implementations listed above delegate work to
- * further injected components. This allows many sub-components to be individually replaced with
- * custom implementations. For example the default MediaSource implementations require one or more
- * {@link DataSource} factories to be injected via their constructors. By providing a custom factory
- * it's possible to load data from a non-standard source, or through a different network stack.
+ * <p>注入实现播放器功能组件的概念贯穿整个库。上面列出的默认组件实现将工作委托给进一步注入的组件。
+ * 这允许许多子组件可以单独替换为自定义实现。
+ * 例如，默认的 MediaSource 实现需要通过其构造函数注入一个或多个 {@link DataSource} 工厂。
+ * 通过提供自定义工厂，可以从非标准源或通过不同的网络堆栈加载数据。
  *
- * <h2>Threading model</h2>
+ * <h2>线程模型</h2>
  *
- * <p>The figure below shows ExoPlayer's threading model.
+ * <p>下图展示了 ExoPlayer 的线程模型。
  *
  * <p style="align:center"><img
  * src="https://developer.android.com/static/images/reference/androidx/media3/exoplayer/exoplayer-threading-model.svg"
- * alt="ExoPlayer's threading model">
+ * alt="ExoPlayer 的线程模型">
  *
  * <ul>
- *   <li>ExoPlayer instances must be accessed from a single application thread unless indicated
- *       otherwise. For the vast majority of cases this should be the application's main thread.
- *       Using the application's main thread is also a requirement when using ExoPlayer's UI
- *       components or the IMA extension. The thread on which an ExoPlayer instance must be accessed
- *       can be explicitly specified by passing a {@link Looper} when creating the player. If no
- *       {@code Looper} is specified, then the {@code Looper} of the thread that the player is
- *       created on is used, or if that thread does not have a {@code Looper}, the {@code Looper} of
- *       the application's main thread is used. In all cases the {@code Looper} of the thread from
- *       which the player must be accessed can be queried using {@link #getApplicationLooper()}.
- *   <li>Registered listeners are called on the thread associated with {@link
- *       #getApplicationLooper()}. Note that this means registered listeners are called on the same
- *       thread which must be used to access the player.
- *   <li>An internal playback thread is responsible for playback. Injected player components such as
- *       Renderers, MediaSources, TrackSelectors and LoadControls are called by the player on this
- *       thread.
- *   <li>When the application performs an operation on the player, for example a seek, a message is
- *       delivered to the internal playback thread via a message queue. The internal playback thread
- *       consumes messages from the queue and performs the corresponding operations. Similarly, when
- *       a playback event occurs on the internal playback thread, a message is delivered to the
- *       application thread via a second message queue. The application thread consumes messages
- *       from the queue, updating the application visible state and calling corresponding listener
- *       methods.
- *   <li>Injected player components may use additional background threads. For example a MediaSource
- *       may use background threads to load data. These are implementation specific.
+ *   <li>除非另有说明，否则必须在单个应用程序线程上访问 ExoPlayer 实例。
+ *   在绝大多数情况下，这应该是应用程序的主线程。
+ *   使用应用程序的主线程也是使用 ExoPlayer 的 UI 组件或 IMA 扩展的要求。
+ *   可以通过在创建播放器时传递 {@link Looper} 来明确指定必须访问 ExoPlayer 实例的线程。如果未指定 {@code Looper}，则使用创建播放器的线程的 {@code Looper}，或者如果该线程没有 {@code Looper}，则使用应用程序主线程的 {@code Looper}。
+ *   在所有情况下，可以使用 {@link #getApplicationLooper()} 查询必须访问播放器的线程的 {@code Looper}。
+ *   <li>注册的监听器在与 {@link #getApplicationLooper()} 关联的线程上调用。
+ *   请注意，这意味着注册的监听器在与必须用于访问播放器的同一线程上调用。
+ *   <li>内部播放线程负责播放。
+ *   注入的播放器组件（如 Renderer、MediaSource、TrackSelector 和 LoadControl）由播放器在此线程上调用。
+ *   <li>当应用程序在播放器上执行操作（例如搜索）时，消息通过消息队列传递到内部播放线程。
+ *   内部播放线程从队列中消费消息并执行相应的操作。
+ *   类似地，当在内部播放线程上发生播放事件时，消息通过第二个消息队列传递到应用程序线程。
+ *   应用程序线程从队列中消费消息，更新应用程序可见状态并调用相应的监听器方法。
+ *   <li>注入的播放器组件可能会使用额外的后台线程。
+ *   例如，MediaSource 可能会使用后台线程加载数据。这些是特定于实现的。
  * </ul>
  */
 public interface ExoPlayer extends Player {
@@ -420,45 +379,40 @@ public interface ExoPlayer extends Player {
     void setDeviceMuted(boolean muted);
   }
 
-  /** A listener for audio offload events. */
+  /** 用于监听音频卸载事件的监听器。 */
   @UnstableApi
   interface AudioOffloadListener {
     /**
-     * Called when the value of {@link #isSleepingForOffload} changes.
+     * 当 {@link #isSleepingForOffload} 的值发生变化时调用。
      *
-     * <p>When {@code isSleepingForOffload} is {@code true} then, the player has paused its main
-     * loop to save power in offload scheduling mode.
+     * <p>当 {@code isSleepingForOffload} 为 {@code true} 时，表示播放器已暂停其主循环以节省功耗，处于卸载调度模式。
      */
     default void onSleepingForOffloadChanged(boolean isSleepingForOffload) {}
 
     /**
-     * Called when the value of {@link AudioTrack#isOffloadedPlayback} changes.
+     * 当 {@link AudioTrack#isOffloadedPlayback} 的值发生变化时调用。
      *
-     * <p>This should not be generally required to be acted upon. But when offload is critical for
-     * efficiency, or audio features (gapless, playback speed), this will let the app know.
+     * <p>通常不需要对此采取行动。但当卸载对效率或音频功能（如无缝播放、播放速度）至关重要时，此方法将通知应用程序。
      */
     default void onOffloadedPlayback(boolean isOffloadedPlayback) {}
   }
-
-  /** Configuration options for preloading playlist items. */
+  /** 用于预加载播放列表项的配置选项。 */
   @UnstableApi
   class PreloadConfiguration {
 
-    /** Default preload configuration that disables playlist preloading. */
+    /** 默认的预加载配置，禁用播放列表预加载。 */
     public static final PreloadConfiguration DEFAULT =
         new PreloadConfiguration(/* targetPreloadDurationUs= */ C.TIME_UNSET);
 
     /**
-     * The target duration to buffer when preloading, in microseconds or {@link C#TIME_UNSET} to
-     * disable preloading.
+     * 预加载时的目标缓冲时长，单位为微秒，或 {@link C#TIME_UNSET} 表示禁用预加载。
      */
     public final long targetPreloadDurationUs;
 
     /**
-     * Creates an instance.
+     * 创建一个实例。
      *
-     * @param targetPreloadDurationUs The target duration to preload, in microseconds or {@link
-     *     C#TIME_UNSET} to disable preloading.
+     * @param targetPreloadDurationUs 预加载的目标时长，单位为微秒，或 {@link C#TIME_UNSET} 表示禁用预加载。
      */
     public PreloadConfiguration(long targetPreloadDurationUs) {
       this.targetPreloadDurationUs = targetPreloadDurationUs;
@@ -466,98 +420,94 @@ public interface ExoPlayer extends Player {
   }
 
   /**
-   * A builder for {@link ExoPlayer} instances.
+   * 用于构建 {@link ExoPlayer} 实例的构建器。
    *
-   * <p>See {@link #Builder(Context)} for the list of default values.
+   * <p>有关默认值的列表，请参阅 {@link #Builder(Context)}。
    */
   @SuppressWarnings("deprecation")
   final class Builder {
 
-    /* package */ final Context context;
+    /* package */ final Context context; // 上下文对象，用于初始化播放器。
 
-    /* package */ Clock clock;
-    /* package */ long foregroundModeTimeoutMs;
-    /* package */ Supplier<RenderersFactory> renderersFactorySupplier;
-    /* package */ Supplier<MediaSource.Factory> mediaSourceFactorySupplier;
-    /* package */ Supplier<TrackSelector> trackSelectorSupplier;
-    /* package */ Supplier<LoadControl> loadControlSupplier;
-    /* package */ Supplier<BandwidthMeter> bandwidthMeterSupplier;
-    /* package */ Function<Clock, AnalyticsCollector> analyticsCollectorFunction;
-    /* package */ Looper looper;
-    /* package */ @C.Priority int priority;
-    @Nullable /* package */ PriorityTaskManager priorityTaskManager;
-    /* package */ AudioAttributes audioAttributes;
-    /* package */ boolean handleAudioFocus;
-    @C.WakeMode /* package */ int wakeMode;
-    /* package */ boolean handleAudioBecomingNoisy;
-    /* package */ boolean skipSilenceEnabled;
-    /* package */ boolean deviceVolumeControlEnabled;
-    @C.VideoScalingMode /* package */ int videoScalingMode;
-    @C.VideoChangeFrameRateStrategy /* package */ int videoChangeFrameRateStrategy;
-    /* package */ boolean useLazyPreparation;
-    /* package */ SeekParameters seekParameters;
-    /* package */ long seekBackIncrementMs;
-    /* package */ long seekForwardIncrementMs;
-    /* package */ long maxSeekToPreviousPositionMs;
-    /* package */ LivePlaybackSpeedControl livePlaybackSpeedControl;
-    /* package */ long releaseTimeoutMs;
-    /* package */ long detachSurfaceTimeoutMs;
-    /* package */ boolean pauseAtEndOfMediaItems;
-    /* package */ boolean usePlatformDiagnostics;
-    @Nullable /* package */ PlaybackLooperProvider playbackLooperProvider;
-    /* package */ boolean buildCalled;
-    /* package */ boolean suppressPlaybackOnUnsuitableOutput;
-    /* package */ String playerName;
-    /* package */ boolean dynamicSchedulingEnabled;
-    @Nullable /* package */ SuitableOutputChecker suitableOutputChecker;
+    /* package */ Clock clock; // 时钟对象，用于控制时间相关操作。
+    /* package */ long foregroundModeTimeoutMs; // 前台模式超时时间（毫秒）。
+    /* package */ Supplier<RenderersFactory> renderersFactorySupplier; // 提供 RenderersFactory 的 Supplier，用于创建渲染器。
+    /* package */ Supplier<MediaSource.Factory> mediaSourceFactorySupplier; // 提供 MediaSource.Factory 的 Supplier，用于创建媒体源。
+    /* package */ Supplier<TrackSelector> trackSelectorSupplier; // 提供 TrackSelector 的 Supplier，用于选择轨道。
+    /* package */ Supplier<LoadControl> loadControlSupplier; // 提供 LoadControl 的 Supplier，用于控制加载行为。
+    /* package */ Supplier<BandwidthMeter> bandwidthMeterSupplier; // 提供 BandwidthMeter 的 Supplier，用于测量带宽。
+    /* package */ Function<Clock, AnalyticsCollector> analyticsCollectorFunction; // 根据 Clock 创建 AnalyticsCollector 的 Function，用于收集分析数据。
+    /* package */ Looper looper; // 用于处理播放器事件的 Looper。
+    /* package */ @C.Priority int priority; // 播放器的优先级。
+    @Nullable /* package */ PriorityTaskManager priorityTaskManager; // 优先级任务管理器，可能为 null。
+    /* package */ AudioAttributes audioAttributes; // 音频属性，用于配置音频播放行为。
+    /* package */ boolean handleAudioFocus; // 是否处理音频焦点。
+    @C.WakeMode /* package */ int wakeMode; // 唤醒模式，用于控制设备唤醒行为。
+    /* package */ boolean handleAudioBecomingNoisy; // 是否处理音频变得嘈杂的情况（例如耳机断开）。
+    /* package */ boolean skipSilenceEnabled; // 是否跳过静音部分。
+    /* package */ boolean deviceVolumeControlEnabled; // 是否启用设备音量控制。
+    @C.VideoScalingMode /* package */ int videoScalingMode; // 视频缩放模式。
+    @C.VideoChangeFrameRateStrategy /* package */ int videoChangeFrameRateStrategy; // 视频帧率变化策略。
+    /* package */ boolean useLazyPreparation; // 是否使用延迟准备。
+    /* package */ SeekParameters seekParameters; // 搜索参数，用于控制搜索行为。
+    /* package */ long seekBackIncrementMs; // 向后搜索的增量时间（毫秒）。
+    /* package */ long seekForwardIncrementMs; // 向前搜索的增量时间（毫秒）。
+    /* package */ long maxSeekToPreviousPositionMs; // 最大回到上一位置的时间（毫秒）。
+    /* package */ LivePlaybackSpeedControl livePlaybackSpeedControl; // 直播播放速度控制。
+    /* package */ long releaseTimeoutMs; // 释放超时时间（毫秒）。
+    /* package */ long detachSurfaceTimeoutMs; // 分离 Surface 的超时时间（毫秒）。
+    /* package */ boolean pauseAtEndOfMediaItems; // 是否在媒体项结束时暂停。
+    /* package */ boolean usePlatformDiagnostics; // 是否使用平台诊断功能。
+    @Nullable /* package */ PlaybackLooperProvider playbackLooperProvider; // 提供播放循环的 Provider，可能为 null。
+    /* package */ boolean buildCalled; // 是否已调用 build 方法。
+    /* package */ boolean suppressPlaybackOnUnsuitableOutput; // 是否在不合适的输出设备上抑制播放。
+    /* package */ String playerName; // 播放器名称。
+    /* package */ boolean dynamicSchedulingEnabled; // 是否启用动态调度。
+    @Nullable /* package */ SuitableOutputChecker suitableOutputChecker; // 检查输出设备是否合适的工具，可能为 null。
 
     /**
-     * Creates a builder.
+     * 创建一个构建器。
      *
-     * <p>Use {@link #Builder(Context, RenderersFactory)}, {@link #Builder(Context,
-     * MediaSource.Factory)} or {@link #Builder(Context, RenderersFactory, MediaSource.Factory)}
-     * instead, if you intend to provide a custom {@link RenderersFactory}, {@link
-     * ExtractorsFactory} or {@link DefaultMediaSourceFactory}. This is to ensure that ProGuard or
-     * R8 can remove ExoPlayer's {@link DefaultRenderersFactory}, {@link DefaultExtractorsFactory}
-     * and {@link DefaultMediaSourceFactory} from the APK.
+     * <p>如果您打算提供自定义的 {@link RenderersFactory}、{@link ExtractorsFactory} 或 {@link DefaultMediaSourceFactory}，
+     * 请改用 {@link #Builder(Context, RenderersFactory)}、{@link #Builder(Context, MediaSource.Factory)}
+     * 或 {@link #Builder(Context, RenderersFactory, MediaSource.Factory)}。这是为了确保 ProGuard 或 R8
+     * 可以从 APK 中移除 ExoPlayer 的 {@link DefaultRenderersFactory}、{@link DefaultExtractorsFactory}
+     * 和 {@link DefaultMediaSourceFactory}。
      *
-     * <p>The builder uses the following default values:
+     * <p>构建器使用以下默认值：
      *
      * <ul>
-     *   <li>{@link RenderersFactory}: {@link DefaultRenderersFactory}
-     *   <li>{@link TrackSelector}: {@link DefaultTrackSelector}
-     *   <li>{@link MediaSource.Factory}: {@link DefaultMediaSourceFactory}
-     *   <li>{@link LoadControl}: {@link DefaultLoadControl}
-     *   <li>{@link BandwidthMeter}: {@link DefaultBandwidthMeter#getSingletonInstance(Context)}
-     *   <li>{@link LivePlaybackSpeedControl}: {@link DefaultLivePlaybackSpeedControl}
-     *   <li>{@link Looper}: The {@link Looper} associated with the current thread, or the {@link
-     *       Looper} of the application's main thread if the current thread doesn't have a {@link
-     *       Looper}
-     *   <li>{@link AnalyticsCollector}: {@link AnalyticsCollector} with {@link Clock#DEFAULT}
-     *   <li>{@link C.Priority}: {@link C#PRIORITY_PLAYBACK}
-     *   <li>{@link PriorityTaskManager}: {@code null} (not used)
-     *   <li>{@link AudioAttributes}: {@link AudioAttributes#DEFAULT}, not handling audio focus
-     *   <li>{@link C.WakeMode}: {@link C#WAKE_MODE_NONE}
-     *   <li>{@code handleAudioBecomingNoisy}: {@code false}
-     *   <li>{@code skipSilenceEnabled}: {@code false}
-     *   <li>{@link C.VideoScalingMode}: {@link C#VIDEO_SCALING_MODE_DEFAULT}
-     *   <li>{@link C.VideoChangeFrameRateStrategy}: {@link
-     *       C#VIDEO_CHANGE_FRAME_RATE_STRATEGY_ONLY_IF_SEAMLESS}
-     *   <li>{@code useLazyPreparation}: {@code true}
-     *   <li>{@link SeekParameters}: {@link SeekParameters#DEFAULT}
-     *   <li>{@code seekBackIncrementMs}: {@link C#DEFAULT_SEEK_BACK_INCREMENT_MS}
-     *   <li>{@code seekForwardIncrementMs}: {@link C#DEFAULT_SEEK_FORWARD_INCREMENT_MS}
-     *   <li>{@code maxSeekToPreviousPositionMs}: {@link C#DEFAULT_MAX_SEEK_TO_PREVIOUS_POSITION_MS}
-     *   <li>{@code releaseTimeoutMs}: {@link #DEFAULT_RELEASE_TIMEOUT_MS}
-     *   <li>{@code detachSurfaceTimeoutMs}: {@link #DEFAULT_DETACH_SURFACE_TIMEOUT_MS}
-     *   <li>{@code pauseAtEndOfMediaItems}: {@code false}
-     *   <li>{@code usePlatformDiagnostics}: {@code true}
-     *   <li>{@link Clock}: {@link Clock#DEFAULT}
-     *   <li>{@code playbackLooper}: {@code null} (create new thread)
-     *   <li>{@code dynamicSchedulingEnabled}: {@code false}
+     *   <li>{@link RenderersFactory}：{@link DefaultRenderersFactory}
+     *   <li>{@link TrackSelector}：{@link DefaultTrackSelector}
+     *   <li>{@link MediaSource.Factory}：{@link DefaultMediaSourceFactory}
+     *   <li>{@link LoadControl}：{@link DefaultLoadControl}
+     *   <li>{@link BandwidthMeter}：{@link DefaultBandwidthMeter#getSingletonInstance(Context)}
+     *   <li>{@link LivePlaybackSpeedControl}：{@link DefaultLivePlaybackSpeedControl}
+     *   <li>{@link Looper}：与当前线程关联的 {@link Looper}，如果当前线程没有 {@link Looper}，则使用应用程序主线程的 {@link Looper}
+     *   <li>{@link AnalyticsCollector}：使用 {@link Clock#DEFAULT} 的 {@link AnalyticsCollector}
+     *   <li>{@link C.Priority}：{@link C#PRIORITY_PLAYBACK}
+     *   <li>{@link PriorityTaskManager}：{@code null}（未使用）
+     *   <li>{@link AudioAttributes}：{@link AudioAttributes#DEFAULT}，不处理音频焦点
+     *   <li>{@link C.WakeMode}：{@link C#WAKE_MODE_NONE}
+     *   <li>{@code handleAudioBecomingNoisy}：{@code false}
+     *   <li>{@code skipSilenceEnabled}：{@code false}
+     *   <li>{@link C.VideoScalingMode}：{@link C#VIDEO_SCALING_MODE_DEFAULT}
+     *   <li>{@link C.VideoChangeFrameRateStrategy}：{@link C#VIDEO_CHANGE_FRAME_RATE_STRATEGY_ONLY_IF_SEAMLESS}
+     *   <li>{@code useLazyPreparation}：{@code true}
+     *   <li>{@link SeekParameters}：{@link SeekParameters#DEFAULT}
+     *   <li>{@code seekBackIncrementMs}：{@link C#DEFAULT_SEEK_BACK_INCREMENT_MS}
+     *   <li>{@code seekForwardIncrementMs}：{@link C#DEFAULT_SEEK_FORWARD_INCREMENT_MS}
+     *   <li>{@code maxSeekToPreviousPositionMs}：{@link C#DEFAULT_MAX_SEEK_TO_PREVIOUS_POSITION_MS}
+     *   <li>{@code releaseTimeoutMs}：{@link #DEFAULT_RELEASE_TIMEOUT_MS}
+     *   <li>{@code detachSurfaceTimeoutMs}：{@link #DEFAULT_DETACH_SURFACE_TIMEOUT_MS}
+     *   <li>{@code pauseAtEndOfMediaItems}：{@code false}
+     *   <li>{@code usePlatformDiagnostics}：{@code true}
+     *   <li>{@link Clock}：{@link Clock#DEFAULT}
+     *   <li>{@code playbackLooper}：{@code null}（创建新线程）
+     *   <li>{@code dynamicSchedulingEnabled}：{@code false}
      * </ul>
      *
-     * @param context A {@link Context}.
+     * @param context 一个 {@link Context}。
      */
     public Builder(Context context) {
       this(
@@ -567,16 +517,14 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Creates a builder with a custom {@link RenderersFactory}.
+     * 使用自定义的 {@link RenderersFactory} 创建一个构建器。
      *
-     * <p>See {@link #Builder(Context)} for a list of default values.
+     * <p>有关默认值的列表，请参阅 {@link #Builder(Context)}。
      *
-     * <p>Note that this constructor is only useful to try and ensure that ExoPlayer's {@link
-     * DefaultRenderersFactory} can be removed by ProGuard or R8.
+     * <p>请注意，此构造函数仅用于尝试确保 ProGuard 或 R8 可以移除 ExoPlayer 的 {@link DefaultRenderersFactory}。
      *
-     * @param context A {@link Context}.
-     * @param renderersFactory A factory for creating {@link Renderer Renderers} to be used by the
-     *     player.
+     * @param context 一个 {@link Context}。
+     * @param renderersFactory 用于创建播放器使用的 {@link Renderer Renderers} 的工厂。
      */
     @UnstableApi
     public Builder(Context context, RenderersFactory renderersFactory) {
@@ -588,17 +536,14 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Creates a builder with a custom {@link MediaSource.Factory}.
+     * 使用自定义的 {@link MediaSource.Factory} 创建一个构建器。
      *
-     * <p>See {@link #Builder(Context)} for a list of default values.
+     * <p>有关默认值的列表，请参阅 {@link #Builder(Context)}。
      *
-     * <p>Note that this constructor is only useful to try and ensure that ExoPlayer's {@link
-     * DefaultMediaSourceFactory} (and therefore {@link DefaultExtractorsFactory}) can be removed by
-     * ProGuard or R8.
+     * <p>请注意，此构造函数仅用于尝试确保 ProGuard 或 R8 可以移除 ExoPlayer 的 {@link DefaultMediaSourceFactory}（以及 {@link DefaultExtractorsFactory}）。
      *
-     * @param context A {@link Context}.
-     * @param mediaSourceFactory A factory for creating a {@link MediaSource} from a {@link
-     *     MediaItem}.
+     * @param context 一个 {@link Context}。
+     * @param mediaSourceFactory 用于从 {@link MediaItem} 创建 {@link MediaSource} 的工厂。
      */
     @UnstableApi
     public Builder(Context context, MediaSource.Factory mediaSourceFactory) {
@@ -607,19 +552,15 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Creates a builder with a custom {@link RenderersFactory} and {@link MediaSource.Factory}.
+     * 使用自定义的 {@link RenderersFactory} 和 {@link MediaSource.Factory} 创建一个构建器。
      *
-     * <p>See {@link #Builder(Context)} for a list of default values.
+     * <p>有关默认值的列表，请参阅 {@link #Builder(Context)}。
      *
-     * <p>Note that this constructor is only useful to try and ensure that ExoPlayer's {@link
-     * DefaultRenderersFactory}, {@link DefaultMediaSourceFactory} (and therefore {@link
-     * DefaultExtractorsFactory}) can be removed by ProGuard or R8.
+     * <p>请注意，此构造函数仅用于尝试确保 ProGuard 或 R8 可以移除 ExoPlayer 的 {@link DefaultRenderersFactory}、{@link DefaultMediaSourceFactory}（以及 {@link DefaultExtractorsFactory}）。
      *
-     * @param context A {@link Context}.
-     * @param renderersFactory A factory for creating {@link Renderer Renderers} to be used by the
-     *     player.
-     * @param mediaSourceFactory A factory for creating a {@link MediaSource} from a {@link
-     *     MediaItem}.
+     * @param context 一个 {@link Context}。
+     * @param renderersFactory 用于创建播放器使用的 {@link Renderer Renderers} 的工厂。
+     * @param mediaSourceFactory 用于从 {@link MediaItem} 创建 {@link MediaSource} 的工厂。
      */
     @UnstableApi
     public Builder(
@@ -632,19 +573,17 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Creates a builder with the specified custom components.
+     * 使用指定的自定义组件创建一个构建器。
      *
-     * <p>Note that this constructor is only useful to try and ensure that ExoPlayer's default
-     * components can be removed by ProGuard or R8.
+     * <p>请注意，此构造函数仅用于尝试确保 ProGuard 或 R8 可以移除 ExoPlayer 的默认组件。
      *
-     * @param context A {@link Context}.
-     * @param renderersFactory A factory for creating {@link Renderer Renderers} to be used by the
-     *     player.
-     * @param mediaSourceFactory A {@link MediaSource.Factory}.
-     * @param trackSelector A {@link TrackSelector}.
-     * @param loadControl A {@link LoadControl}.
-     * @param bandwidthMeter A {@link BandwidthMeter}.
-     * @param analyticsCollector An {@link AnalyticsCollector}.
+     * @param context 一个 {@link Context}。
+     * @param renderersFactory 用于创建播放器使用的 {@link Renderer Renderers} 的工厂。
+     * @param mediaSourceFactory 一个 {@link MediaSource.Factory}。
+     * @param trackSelector 一个 {@link TrackSelector}。
+     * @param loadControl 一个 {@link LoadControl}。
+     * @param bandwidthMeter 一个 {@link BandwidthMeter}。
+     * @param analyticsCollector 一个 {@link AnalyticsCollector}。
      */
     @UnstableApi
     public Builder(
@@ -719,13 +658,12 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Sets a limit on the time a call to {@link #setForegroundMode} can spend. If a call to {@link
-     * #setForegroundMode} takes more than {@code timeoutMs} milliseconds to complete, the player
-     * will raise an error via {@link Player.Listener#onPlayerError}.
+     * 设置对 {@link #setForegroundMode} 调用所花费时间的限制。如果 {@link #setForegroundMode} 的调用耗时超过 {@code timeoutMs} 毫秒，
+     * 播放器将通过 {@link Player.Listener#onPlayerError} 抛出一个错误。
      *
-     * <p>This method is experimental, and will be renamed or removed in a future release.
+     * <p>此方法是实验性的，在未来的版本中可能会重命名或移除。
      *
-     * @param timeoutMs The time limit in milliseconds.
+     * @param timeoutMs 时间限制，单位为毫秒。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -736,14 +674,13 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Sets whether dynamic scheduling is enabled.
+     * 设置是否启用动态调度。
      *
-     * <p>If enabled, ExoPlayer's playback loop will run as rarely as possible by scheduling work
-     * for when {@link Renderer} progress can be made.
+     * <p>如果启用，ExoPlayer 的播放循环将尽可能少地运行，仅在 {@link Renderer} 可以取得进展时调度工作。
      *
-     * <p>This method is experimental, and will be renamed or removed in a future release.
+     * <p>此方法是实验性的，在未来的版本中可能会重命名或移除。
      *
-     * @param dynamicSchedulingEnabled Whether to enable dynamic scheduling.
+     * @param dynamicSchedulingEnabled 是否启用动态调度。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -754,22 +691,17 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Sets whether the player should suppress playback that is attempted on an unsuitable output.
-     * An example of an unsuitable audio output is the built-in speaker on a Wear OS device (unless
-     * it is explicitly selected by the user).
+     * 设置播放器是否应抑制在不合适的输出设备上尝试播放的行为。一个不合适的音频输出设备的例子是 Wear OS 设备的内置扬声器（除非用户明确选择它）。
      *
-     * <p>If called with {@code suppressPlaybackOnUnsuitableOutput = true}, then a playback attempt
-     * on an unsuitable audio output will result in calls to {@link
-     * Player.Listener#onPlaybackSuppressionReasonChanged(int)} with the value {@link
-     * Player#PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT}.
+     * <p>如果调用时传入 {@code suppressPlaybackOnUnsuitableOutput = true}，则在不合适的音频输出设备上尝试播放将导致调用 {@link
+     * Player.Listener#onPlaybackSuppressionReasonChanged(int)}，并传入值 {@link
+     * Player#PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT}。
      *
-     * <p>Callers of this may also want to enable {@link #setHandleAudioBecomingNoisy(boolean)} to
-     * prevent playback from continuing on the built-in speaker when a headset is disconnected.
+     * <p>调用此方法的开发者可能还需要启用 {@link #setHandleAudioBecomingNoisy(boolean)}，以防止在耳机断开连接时继续通过内置扬声器播放。
      *
-     * @param suppressPlaybackOnUnsuitableOutput Whether the player should suppress the playback
-     *     when it is attempted on an unsuitable output.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param suppressPlaybackOnUnsuitableOutput 播放器是否应抑制在不合适的输出设备上尝试播放的行为。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -781,11 +713,11 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Sets the {@link RenderersFactory} that will be used by the player.
+     * 设置播放器将使用的 {@link RenderersFactory}。
      *
-     * @param renderersFactory A {@link RenderersFactory}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param renderersFactory 一个 {@link RenderersFactory}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -797,11 +729,11 @@ public interface ExoPlayer extends Player {
     }
 
     /**
-     * Sets the {@link MediaSource.Factory} that will be used by the player.
+     * 设置播放器将使用的 {@link MediaSource.Factory}。
      *
-     * @param mediaSourceFactory A {@link MediaSource.Factory}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param mediaSourceFactory 一个 {@link MediaSource.Factory}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setMediaSourceFactory(MediaSource.Factory mediaSourceFactory) {
@@ -810,469 +742,426 @@ public interface ExoPlayer extends Player {
       this.mediaSourceFactorySupplier = () -> mediaSourceFactory;
       return this;
     }
-
     /**
-     * Sets the {@link TrackSelector} that will be used by the player.
+     * 设置播放器将使用的 {@link TrackSelector}。
      *
-     * @param trackSelector A {@link TrackSelector}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param trackSelector 一个 {@link TrackSelector}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setTrackSelector(TrackSelector trackSelector) {
-      checkState(!buildCalled);
-      checkNotNull(trackSelector);
-      this.trackSelectorSupplier = () -> trackSelector;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      checkNotNull(trackSelector); // 检查 trackSelector 是否为 null
+      this.trackSelectorSupplier = () -> trackSelector; // 将 trackSelector 封装为 Supplier
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link LoadControl} that will be used by the player.
+     * 设置播放器将使用的 {@link LoadControl}。
      *
-     * @param loadControl A {@link LoadControl}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param loadControl 一个 {@link LoadControl}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setLoadControl(LoadControl loadControl) {
-      checkState(!buildCalled);
-      checkNotNull(loadControl);
-      this.loadControlSupplier = () -> loadControl;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      checkNotNull(loadControl); // 检查 loadControl 是否为 null
+      this.loadControlSupplier = () -> loadControl; // 将 loadControl 封装为 Supplier
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link BandwidthMeter} that will be used by the player.
+     * 设置播放器将使用的 {@link BandwidthMeter}。
      *
-     * @param bandwidthMeter A {@link BandwidthMeter}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param bandwidthMeter 一个 {@link BandwidthMeter}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setBandwidthMeter(BandwidthMeter bandwidthMeter) {
-      checkState(!buildCalled);
-      checkNotNull(bandwidthMeter);
-      this.bandwidthMeterSupplier = () -> bandwidthMeter;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      checkNotNull(bandwidthMeter); // 检查 bandwidthMeter 是否为 null
+      this.bandwidthMeterSupplier = () -> bandwidthMeter; // 将 bandwidthMeter 封装为 Supplier
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link Looper} that must be used for all calls to the player and that is used to
-     * call listeners on.
+     * 设置用于所有播放器调用以及调用监听器的 {@link Looper}。
      *
-     * @param looper A {@link Looper}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param looper 一个 {@link Looper}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setLooper(Looper looper) {
-      checkState(!buildCalled);
-      checkNotNull(looper);
-      this.looper = looper;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      checkNotNull(looper); // 检查 looper 是否为 null
+      this.looper = looper; // 设置 looper
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link AnalyticsCollector} that will collect and forward all player events.
+     * 设置用于收集和转发所有播放器事件的 {@link AnalyticsCollector}。
      *
-     * @param analyticsCollector An {@link AnalyticsCollector}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param analyticsCollector 一个 {@link AnalyticsCollector}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setAnalyticsCollector(AnalyticsCollector analyticsCollector) {
-      checkState(!buildCalled);
-      checkNotNull(analyticsCollector);
-      this.analyticsCollectorFunction = (clock) -> analyticsCollector;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      checkNotNull(analyticsCollector); // 检查 analyticsCollector 是否为 null
+      this.analyticsCollectorFunction = (clock) -> analyticsCollector; // 将 analyticsCollector 封装为 Function
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link C.Priority} for this player.
+     * 设置此播放器的 {@link C.Priority}。
      *
-     * <p>The priority may influence resource allocation between multiple players or other
-     * components running in the same app.
+     * <p>优先级可能影响同一应用程序中运行的多个播放器或其他组件之间的资源分配。
      *
-     * <p>This priority is used for the {@link PriorityTaskManager}, if {@linkplain
-     * #setPriorityTaskManager set}.
+     * <p>如果设置了 {@linkplain #setPriorityTaskManager PriorityTaskManager}，则此优先级将用于 {@link PriorityTaskManager}。
      *
-     * @param priority The {@link C.Priority}.
+     * @param priority 一个 {@link C.Priority}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setPriority(@C.Priority int priority) {
-      checkState(!buildCalled);
-      this.priority = priority;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.priority = priority; // 设置优先级
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets an {@link PriorityTaskManager} that will be used by the player.
+     * 设置播放器将使用的 {@link PriorityTaskManager}。
      *
-     * <p>The priority set via {@link #setPriority} (or {@link C#PRIORITY_PLAYBACK by default)} will
-     * be set while the player is loading.
+     * <p>通过 {@link #setPriority} 设置的优先级（或默认的 {@link C#PRIORITY_PLAYBACK}）将在播放器加载时使用。
      *
-     * @param priorityTaskManager A {@link PriorityTaskManager}, or null to not use one.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param priorityTaskManager 一个 {@link PriorityTaskManager}，或 null 表示不使用。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setPriorityTaskManager(@Nullable PriorityTaskManager priorityTaskManager) {
-      checkState(!buildCalled);
-      this.priorityTaskManager = priorityTaskManager;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.priorityTaskManager = priorityTaskManager; // 设置 PriorityTaskManager
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets {@link AudioAttributes} that will be used by the player and whether to handle audio
-     * focus.
+     * 设置播放器将使用的 {@link AudioAttributes} 以及是否处理音频焦点。
      *
-     * <p>If audio focus should be handled, the {@link AudioAttributes#usage} must be {@link
-     * C#USAGE_MEDIA} or {@link C#USAGE_GAME}. Other usages will throw an {@link
-     * IllegalArgumentException}.
+     * <p>如果需要处理音频焦点，则 {@link AudioAttributes#usage} 必须为 {@link C#USAGE_MEDIA} 或 {@link C#USAGE_GAME}。其他用途将抛出 {@link IllegalArgumentException}。
      *
-     * @param audioAttributes {@link AudioAttributes}.
-     * @param handleAudioFocus Whether the player should handle audio focus.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param audioAttributes {@link AudioAttributes}。
+     * @param handleAudioFocus 播放器是否应处理音频焦点。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setAudioAttributes(AudioAttributes audioAttributes, boolean handleAudioFocus) {
-      checkState(!buildCalled);
-      this.audioAttributes = checkNotNull(audioAttributes);
-      this.handleAudioFocus = handleAudioFocus;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.audioAttributes = checkNotNull(audioAttributes); // 检查 audioAttributes 是否为 null 并设置
+      this.handleAudioFocus = handleAudioFocus; // 设置是否处理音频焦点
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link C.WakeMode} that will be used by the player.
+     * 设置播放器将使用的 {@link C.WakeMode}。
      *
-     * <p>Enabling this feature requires the {@link android.Manifest.permission#WAKE_LOCK}
-     * permission. It should be used together with a foreground {@link android.app.Service} for use
-     * cases where playback occurs and the screen is off (e.g. background audio playback). It is not
-     * useful when the screen will be kept on during playback (e.g. foreground video playback).
+     * <p>启用此功能需要 {@link android.Manifest.permission#WAKE_LOCK} 权限。它应与前台 {@link android.app.Service} 一起使用，用于屏幕关闭时的播放场景（例如后台音频播放）。对于屏幕保持开启的播放场景（例如前台视频播放），此功能无意义。
      *
-     * <p>When enabled, the locks ({@link android.os.PowerManager.WakeLock} / {@link
-     * android.net.wifi.WifiManager.WifiLock}) will be held whenever the player is in the {@link
-     * #STATE_READY} or {@link #STATE_BUFFERING} states with {@code playWhenReady = true}. The locks
-     * held depend on the specified {@link C.WakeMode}.
+     * <p>启用后，当播放器处于 {@link #STATE_READY} 或 {@link #STATE_BUFFERING} 状态且 {@code playWhenReady = true} 时，将持有锁（{@link android.os.PowerManager.WakeLock} / {@link android.net.wifi.WifiManager.WifiLock}）。持有的锁取决于指定的 {@link C.WakeMode}。
      *
-     * @param wakeMode A {@link C.WakeMode}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param wakeMode 一个 {@link C.WakeMode}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setWakeMode(@C.WakeMode int wakeMode) {
-      checkState(!buildCalled);
-      this.wakeMode = wakeMode;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.wakeMode = wakeMode; // 设置唤醒模式
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets whether the player should pause automatically when audio is rerouted from a headset to
-     * device speakers. See the <a
-     * href="https://developer.android.com/media/platform/output#becoming-noisy">audio becoming
-     * noisy</a> documentation for more information.
+     * 设置当音频从耳机切换到设备扬声器时，播放器是否应自动暂停。有关更多信息，请参阅 <a href="https://developer.android.com/media/platform/output#becoming-noisy">音频变得嘈杂</a> 文档。
      *
-     * @param handleAudioBecomingNoisy Whether the player should pause automatically when audio is
-     *     rerouted from a headset to device speakers.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param handleAudioBecomingNoisy 当音频从耳机切换到设备扬声器时，播放器是否应自动暂停。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     public Builder setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisy) {
-      checkState(!buildCalled);
-      this.handleAudioBecomingNoisy = handleAudioBecomingNoisy;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.handleAudioBecomingNoisy = handleAudioBecomingNoisy; // 设置是否处理音频变得嘈杂的情况
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets whether silences silences in the audio stream is enabled.
+     * 设置是否启用跳过音频流中的静音部分。
      *
-     * @param skipSilenceEnabled Whether skipping silences is enabled.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param skipSilenceEnabled 是否启用跳过静音。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setSkipSilenceEnabled(boolean skipSilenceEnabled) {
-      checkState(!buildCalled);
-      this.skipSilenceEnabled = skipSilenceEnabled;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.skipSilenceEnabled = skipSilenceEnabled; // 设置是否跳过静音
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets whether the player is allowed to set, increase, decrease or mute device volume.
+     * 设置播放器是否允许设置、增加、减少或静音设备音量。
      *
-     * @param deviceVolumeControlEnabled Whether controlling device volume is enabled.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param deviceVolumeControlEnabled 是否启用设备音量控制。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setDeviceVolumeControlEnabled(boolean deviceVolumeControlEnabled) {
-      checkState(!buildCalled);
-      this.deviceVolumeControlEnabled = deviceVolumeControlEnabled;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.deviceVolumeControlEnabled = deviceVolumeControlEnabled; // 设置是否启用设备音量控制
+      return this; // 返回此构建器，支持链式调用
     }
-
     /**
-     * Sets the {@link C.VideoScalingMode} that will be used by the player.
+     * 设置播放器将使用的 {@link C.VideoScalingMode}。
      *
-     * <p>The scaling mode only applies if a {@link MediaCodec}-based video {@link Renderer} is
-     * enabled and if the output surface is owned by a {@link SurfaceView}.
+     * <p>缩放模式仅在使用基于 {@link MediaCodec} 的视频 {@link Renderer} 且输出 Surface 由 {@link SurfaceView} 拥有时生效。
      *
-     * @param videoScalingMode A {@link C.VideoScalingMode}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param videoScalingMode 一个 {@link C.VideoScalingMode}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setVideoScalingMode(@C.VideoScalingMode int videoScalingMode) {
-      checkState(!buildCalled);
-      this.videoScalingMode = videoScalingMode;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.videoScalingMode = videoScalingMode; // 设置视频缩放模式
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets a {@link C.VideoChangeFrameRateStrategy} that will be used by the player when provided
-     * with a video output {@link Surface}.
+     * 设置播放器在提供视频输出 {@link Surface} 时将使用的 {@link C.VideoChangeFrameRateStrategy}。
      *
-     * <p>The strategy only applies if a {@link MediaCodec}-based video {@link Renderer} is enabled.
-     * Applications wishing to use {@link Surface#CHANGE_FRAME_RATE_ALWAYS} should set the mode to
-     * {@link C#VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF} to disable calls to {@link
-     * Surface#setFrameRate} from ExoPlayer, and should then call {@link Surface#setFrameRate}
-     * directly from application code.
+     * <p>该策略仅在使用基于 {@link MediaCodec} 的视频 {@link Renderer} 时生效。如果应用程序希望使用 {@link Surface#CHANGE_FRAME_RATE_ALWAYS}，
+     * 应将模式设置为 {@link C#VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF} 以禁用 ExoPlayer 对 {@link Surface#setFrameRate} 的调用，
+     * 然后从应用程序代码中直接调用 {@link Surface#setFrameRate}。
      *
-     * @param videoChangeFrameRateStrategy A {@link C.VideoChangeFrameRateStrategy}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param videoChangeFrameRateStrategy 一个 {@link C.VideoChangeFrameRateStrategy}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setVideoChangeFrameRateStrategy(
         @C.VideoChangeFrameRateStrategy int videoChangeFrameRateStrategy) {
-      checkState(!buildCalled);
-      this.videoChangeFrameRateStrategy = videoChangeFrameRateStrategy;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.videoChangeFrameRateStrategy = videoChangeFrameRateStrategy; // 设置视频帧率变化策略
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets whether media sources should be initialized lazily.
+     * 设置是否应延迟初始化媒体源。
      *
-     * <p>If false, all initial preparation steps (e.g., manifest loads) happen immediately. If
-     * true, these initial preparations are triggered only when the player starts buffering the
-     * media.
+     * <p>如果为 false，所有初始准备步骤（例如，清单加载）会立即执行。如果为 true，这些初始准备仅在播放器开始缓冲媒体时触发。
      *
-     * @param useLazyPreparation Whether to use lazy preparation.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param useLazyPreparation 是否使用延迟准备。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setUseLazyPreparation(boolean useLazyPreparation) {
-      checkState(!buildCalled);
-      this.useLazyPreparation = useLazyPreparation;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.useLazyPreparation = useLazyPreparation; // 设置是否使用延迟准备
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the parameters that control how seek operations are performed.
+     * 设置控制搜索操作执行方式的参数。
      *
-     * @param seekParameters The {@link SeekParameters}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param seekParameters {@link SeekParameters}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setSeekParameters(SeekParameters seekParameters) {
-      checkState(!buildCalled);
-      this.seekParameters = checkNotNull(seekParameters);
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.seekParameters = checkNotNull(seekParameters); // 检查 seekParameters 是否为 null 并设置
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link #seekBack()} increment.
+     * 设置 {@link #seekBack()} 的增量。
      *
-     * @param seekBackIncrementMs The seek back increment, in milliseconds.
-     * @return This builder.
-     * @throws IllegalArgumentException If {@code seekBackIncrementMs} is non-positive.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param seekBackIncrementMs 向后搜索的增量，单位为毫秒。
+     * @return 此构建器。
+     * @throws IllegalArgumentException 如果 {@code seekBackIncrementMs} 非正数。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setSeekBackIncrementMs(@IntRange(from = 1) long seekBackIncrementMs) {
-      checkArgument(seekBackIncrementMs > 0);
-      checkState(!buildCalled);
-      this.seekBackIncrementMs = seekBackIncrementMs;
-      return this;
+      checkArgument(seekBackIncrementMs > 0); // 检查 seekBackIncrementMs 是否为正数
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.seekBackIncrementMs = seekBackIncrementMs; // 设置向后搜索的增量
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link #seekForward()} increment.
+     * 设置 {@link #seekForward()} 的增量。
      *
-     * @param seekForwardIncrementMs The seek forward increment, in milliseconds.
-     * @return This builder.
-     * @throws IllegalArgumentException If {@code seekForwardIncrementMs} is non-positive.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param seekForwardIncrementMs 向前搜索的增量，单位为毫秒。
+     * @return 此构建器。
+     * @throws IllegalArgumentException 如果 {@code seekForwardIncrementMs} 非正数。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setSeekForwardIncrementMs(@IntRange(from = 1) long seekForwardIncrementMs) {
-      checkArgument(seekForwardIncrementMs > 0);
-      checkState(!buildCalled);
-      this.seekForwardIncrementMs = seekForwardIncrementMs;
-      return this;
+      checkArgument(seekForwardIncrementMs > 0); // 检查 seekForwardIncrementMs 是否为正数
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.seekForwardIncrementMs = seekForwardIncrementMs; // 设置向前搜索的增量
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the maximum position for which {@link #seekToPrevious()} seeks to the previous {@link
-     * MediaItem}.
+     * 设置 {@link #seekToPrevious()} 跳转到上一个 {@link MediaItem} 的最大位置。
      *
-     * @param maxSeekToPreviousPositionMs The maximum position, in milliseconds.
-     * @return This builder.
-     * @throws IllegalArgumentException If {@code maxSeekToPreviousPositionMs} is negative.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param maxSeekToPreviousPositionMs 最大位置，单位为毫秒。
+     * @return 此构建器。
+     * @throws IllegalArgumentException 如果 {@code maxSeekToPreviousPositionMs} 为负数。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setMaxSeekToPreviousPositionMs(
         @IntRange(from = 0) long maxSeekToPreviousPositionMs) {
-      checkArgument(maxSeekToPreviousPositionMs >= 0L);
-      checkState(!buildCalled);
-      this.maxSeekToPreviousPositionMs = maxSeekToPreviousPositionMs;
-      return this;
+      checkArgument(maxSeekToPreviousPositionMs >= 0L); // 检查 maxSeekToPreviousPositionMs 是否为非负数
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.maxSeekToPreviousPositionMs = maxSeekToPreviousPositionMs; // 设置最大跳转位置
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets a timeout for calls to {@link #release} and {@link #setForegroundMode}.
+     * 设置 {@link #release} 和 {@link #setForegroundMode} 调用的超时时间。
      *
-     * <p>If a call to {@link #release} or {@link #setForegroundMode} takes more than {@code
-     * timeoutMs} to complete, the player will report an error via {@link
-     * Player.Listener#onPlayerError}.
+     * <p>如果 {@link #release} 或 {@link #setForegroundMode} 调用耗时超过 {@code timeoutMs}，
+     * 播放器将通过 {@link Player.Listener#onPlayerError} 报告错误。
      *
-     * @param releaseTimeoutMs The release timeout, in milliseconds.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param releaseTimeoutMs 释放超时时间，单位为毫秒。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setReleaseTimeoutMs(long releaseTimeoutMs) {
-      checkState(!buildCalled);
-      this.releaseTimeoutMs = releaseTimeoutMs;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.releaseTimeoutMs = releaseTimeoutMs; // 设置释放超时时间
+      return this; // 返回此构建器，支持链式调用
     }
-
     /**
-     * Sets a timeout for detaching a surface from the player.
+     * 设置从播放器分离 Surface 的超时时间。
      *
-     * <p>If detaching a surface or replacing a surface takes more than {@code
-     * detachSurfaceTimeoutMs} to complete, the player will report an error via {@link
-     * Player.Listener#onPlayerError}.
+     * <p>如果分离 Surface 或替换 Surface 耗时超过 {@code detachSurfaceTimeoutMs}，播放器将通过 {@link Player.Listener#onPlayerError} 报告错误。
      *
-     * @param detachSurfaceTimeoutMs The timeout for detaching a surface, in milliseconds.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param detachSurfaceTimeoutMs 分离 Surface 的超时时间，单位为毫秒。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setDetachSurfaceTimeoutMs(long detachSurfaceTimeoutMs) {
-      checkState(!buildCalled);
-      this.detachSurfaceTimeoutMs = detachSurfaceTimeoutMs;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.detachSurfaceTimeoutMs = detachSurfaceTimeoutMs; // 设置分离 Surface 的超时时间
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets whether to pause playback at the end of each media item.
+     * 设置是否在每个媒体项结束时暂停播放。
      *
-     * <p>This means the player will pause at the end of each window in the current {@link
-     * #getCurrentTimeline() timeline}. Listeners will be informed by a call to {@link
-     * Player.Listener#onPlayWhenReadyChanged(boolean, int)} with the reason {@link
-     * Player#PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM} when this happens.
+     * <p>这意味着播放器将在当前 {@link #getCurrentTimeline() 时间轴} 的每个窗口结束时暂停。当这种情况发生时，监听器将通过 {@link Player.Listener#onPlayWhenReadyChanged(boolean, int)} 被通知，原因值为 {@link Player#PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM}。
      *
-     * @param pauseAtEndOfMediaItems Whether to pause playback at the end of each media item.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param pauseAtEndOfMediaItems 是否在每个媒体项结束时暂停播放。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setPauseAtEndOfMediaItems(boolean pauseAtEndOfMediaItems) {
-      checkState(!buildCalled);
-      this.pauseAtEndOfMediaItems = pauseAtEndOfMediaItems;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.pauseAtEndOfMediaItems = pauseAtEndOfMediaItems; // 设置是否在每个媒体项结束时暂停播放
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link LivePlaybackSpeedControl} that will control the playback speed when playing
-     * live streams, in order to maintain a steady target offset from the live stream edge.
+     * 设置控制直播流播放速度的 {@link LivePlaybackSpeedControl}，以保持与直播流边缘的稳定目标偏移。
      *
-     * @param livePlaybackSpeedControl The {@link LivePlaybackSpeedControl}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param livePlaybackSpeedControl {@link LivePlaybackSpeedControl}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setLivePlaybackSpeedControl(LivePlaybackSpeedControl livePlaybackSpeedControl) {
-      checkState(!buildCalled);
-      this.livePlaybackSpeedControl = checkNotNull(livePlaybackSpeedControl);
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.livePlaybackSpeedControl = checkNotNull(livePlaybackSpeedControl); // 检查 livePlaybackSpeedControl 是否为 null 并设置
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets whether the player reports diagnostics data to the Android platform.
+     * 设置播放器是否向 Android 平台报告诊断数据。
      *
-     * <p>If enabled, the player will use the {@link android.media.metrics.MediaMetricsManager} to
-     * create a {@link android.media.metrics.PlaybackSession} and forward playback events and
-     * performance data to this session. This helps to provide system performance and debugging
-     * information for media playback on the device. This data may also be collected by Google <a
-     * href="https://support.google.com/accounts/answer/6078260">if sharing usage and diagnostics
-     * data is enabled</a> by the user of the device.
+     * <p>如果启用，播放器将使用 {@link android.media.metrics.MediaMetricsManager} 创建一个 {@link android.media.metrics.PlaybackSession}，并将播放事件和性能数据转发到该会话。这有助于提供设备上媒体播放的系统性能和调试信息。如果用户启用了<a href="https://support.google.com/accounts/answer/6078260">共享使用和诊断数据</a>，这些数据也可能被 Google 收集。
      *
-     * @param usePlatformDiagnostics Whether the player reports diagnostics data to the Android
-     *     platform.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param usePlatformDiagnostics 播放器是否向 Android 平台报告诊断数据。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setUsePlatformDiagnostics(boolean usePlatformDiagnostics) {
-      checkState(!buildCalled);
-      this.usePlatformDiagnostics = usePlatformDiagnostics;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.usePlatformDiagnostics = usePlatformDiagnostics; // 设置是否使用平台诊断
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link Clock} that will be used by the player. Should only be set for testing
-     * purposes.
+     * 设置播放器将使用的 {@link Clock}。仅应用于测试目的。
      *
-     * @param clock A {@link Clock}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param clock {@link Clock}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     @VisibleForTesting
     public Builder setClock(Clock clock) {
-      checkState(!buildCalled);
-      this.clock = clock;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.clock = clock; // 设置时钟
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link SuitableOutputChecker} to check the suitability of the selected outputs for
-     * playback.
+     * 设置用于检查所选输出设备是否适合播放的 {@link SuitableOutputChecker}。
      *
-     * <p>If this method is not called, the library uses a default implementation based on framework
-     * APIs.
+     * <p>如果未调用此方法，库将使用基于框架 API 的默认实现。
      *
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
@@ -1280,83 +1169,81 @@ public interface ExoPlayer extends Player {
     @VisibleForTesting
     @RequiresApi(35)
     public Builder setSuitableOutputChecker(SuitableOutputChecker suitableOutputChecker) {
-      checkState(!buildCalled);
-      this.suitableOutputChecker = suitableOutputChecker;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.suitableOutputChecker = suitableOutputChecker; // 设置 SuitableOutputChecker
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link Looper} that will be used for playback.
+     * 设置用于播放的 {@link Looper}。
      *
-     * <p>The backing thread should run with priority {@link Process#THREAD_PRIORITY_AUDIO} and
-     * should handle messages within 10ms.
+     * <p>后台线程应以 {@link Process#THREAD_PRIORITY_AUDIO} 优先级运行，并应在 10 毫秒内处理消息。
      *
-     * @param playbackLooper A {@link Looper}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param playbackLooper {@link Looper}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setPlaybackLooper(Looper playbackLooper) {
-      checkState(!buildCalled);
-      this.playbackLooperProvider = new PlaybackLooperProvider(playbackLooper);
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.playbackLooperProvider = new PlaybackLooperProvider(playbackLooper); // 设置 PlaybackLooperProvider
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the {@link PlaybackLooperProvider} that will be used for playback.
+     * 设置用于播放的 {@link PlaybackLooperProvider}。
      *
-     * @param playbackLooperProvider A {@link PlaybackLooperProvider}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param playbackLooperProvider {@link PlaybackLooperProvider}。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     @RestrictTo(LIBRARY_GROUP)
     public Builder setPlaybackLooperProvider(PlaybackLooperProvider playbackLooperProvider) {
-      checkState(!buildCalled);
-      this.playbackLooperProvider = playbackLooperProvider;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.playbackLooperProvider = playbackLooperProvider; // 设置 PlaybackLooperProvider
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Sets the player name that is included in the {@link PlayerId} for informational purpose to
-     * recognize the player by its {@link PlayerId}.
+     * 设置包含在 {@link PlayerId} 中的播放器名称，用于通过 {@link PlayerId} 识别播放器。
      *
-     * <p>The default is an empty string.
+     * <p>默认值为空字符串。
      *
-     * @param playerName A name for the player in the {@link PlayerId}.
-     * @return This builder.
-     * @throws IllegalStateException If {@link #build()} has already been called.
+     * @param playerName {@link PlayerId} 中的播放器名称。
+     * @return 此构建器。
+     * @throws IllegalStateException 如果已经调用了 {@link #build()}。
      */
     @CanIgnoreReturnValue
     @UnstableApi
     public Builder setName(String playerName) {
-      checkState(!buildCalled);
-      this.playerName = playerName;
-      return this;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      this.playerName = playerName; // 设置播放器名称
+      return this; // 返回此构建器，支持链式调用
     }
 
     /**
-     * Builds an {@link ExoPlayer} instance.
+     * 构建一个 {@link ExoPlayer} 实例。
      *
-     * @throws IllegalStateException If this method has already been called.
+     * @throws IllegalStateException 如果此方法已被调用。
      */
     public ExoPlayer build() {
-      checkState(!buildCalled);
-      buildCalled = true;
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      buildCalled = true; // 标记 build 方法已调用
       if (suitableOutputChecker == null
           && Util.SDK_INT >= 35
           && suppressPlaybackOnUnsuitableOutput) {
-        suitableOutputChecker = new DefaultSuitableOutputChecker(context, new Handler(looper));
+        suitableOutputChecker = new DefaultSuitableOutputChecker(context, new Handler(looper)); // 设置默认的 SuitableOutputChecker
       }
-      return new ExoPlayerImpl(/* builder= */ this, /* wrappingPlayer= */ null);
+      return new ExoPlayerImpl(/* builder= */ this, /* wrappingPlayer= */ null); // 返回 ExoPlayer 实例
     }
 
     /* package */ SimpleExoPlayer buildSimpleExoPlayer() {
-      checkState(!buildCalled);
-      buildCalled = true;
-      return new SimpleExoPlayer(/* builder= */ this);
+      checkState(!buildCalled); // 检查是否已调用 build 方法
+      buildCalled = true; // 标记 build 方法已调用
+      return new SimpleExoPlayer(/* builder= */ this); // 返回 SimpleExoPlayer 实例
     }
   }
 
@@ -1418,256 +1305,239 @@ public interface ExoPlayer extends Player {
   DeviceComponent getDeviceComponent();
 
   /**
-   * Adds a listener to receive audio offload events.
+   * 添加一个监听器以接收音频卸载事件。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    *
-   * @param listener The listener to register.
+   * @param listener 要注册的监听器。
    */
   @UnstableApi
   void addAudioOffloadListener(AudioOffloadListener listener);
 
   /**
-   * Removes a listener of audio offload events.
+   * 移除音频卸载事件的监听器。
    *
-   * @param listener The listener to unregister.
+   * @param listener 要注销的监听器。
    */
   @UnstableApi
   void removeAudioOffloadListener(AudioOffloadListener listener);
 
-  /** Returns the {@link AnalyticsCollector} used for collecting analytics events. */
+  /** 返回用于收集分析事件的 {@link AnalyticsCollector}。 */
   @UnstableApi
   AnalyticsCollector getAnalyticsCollector();
 
   /**
-   * Adds an {@link AnalyticsListener} to receive analytics events.
+   * 添加一个 {@link AnalyticsListener} 以接收分析事件。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    *
-   * @param listener The listener to be added.
+   * @param listener 要添加的监听器。
    */
   void addAnalyticsListener(AnalyticsListener listener);
 
   /**
-   * Removes an {@link AnalyticsListener}.
+   * 移除一个 {@link AnalyticsListener}。
    *
-   * @param listener The listener to be removed.
+   * @param listener 要移除的监听器。
    */
   void removeAnalyticsListener(AnalyticsListener listener);
 
-  /** Returns the number of renderers. */
+  /** 返回渲染器的数量。 */
   @UnstableApi
   int getRendererCount();
 
   /**
-   * Returns the track type that the renderer at a given index handles.
+   * 返回给定索引处渲染器处理的轨道类型。
    *
-   * <p>For example, a video renderer will return {@link C#TRACK_TYPE_VIDEO}, an audio renderer will
-   * return {@link C#TRACK_TYPE_AUDIO} and a text renderer will return {@link C#TRACK_TYPE_TEXT}.
+   * <p>例如，视频渲染器将返回 {@link C#TRACK_TYPE_VIDEO}，音频渲染器将返回 {@link C#TRACK_TYPE_AUDIO}，文本渲染器将返回 {@link C#TRACK_TYPE_TEXT}。
    *
-   * @param index The index of the renderer.
-   * @return The {@link C.TrackType track type} that the renderer handles.
+   * @param index 渲染器的索引。
+   * @return 渲染器处理的 {@link C.TrackType 轨道类型}。
    */
   @UnstableApi
   @C.TrackType
   int getRendererType(int index);
 
   /**
-   * Returns the renderer at the given index.
+   * 返回给定索引处的渲染器。
    *
-   * @param index The index of the renderer.
-   * @return The renderer at this index.
+   * @param index 渲染器的索引。
+   * @return 该索引处的渲染器。
    */
   @UnstableApi
   Renderer getRenderer(int index);
 
   /**
-   * Returns the track selector that this player uses, or null if track selection is not supported.
+   * 返回此播放器使用的轨道选择器，如果轨道选择不受支持则返回 null。
    */
   @UnstableApi
   @Nullable
   TrackSelector getTrackSelector();
 
   /**
-   * Returns the available track groups.
+   * 返回可用的轨道组。
    *
    * @see Listener#onTracksChanged(Tracks)
-   * @deprecated Use {@link #getCurrentTracks()}.
+   * @deprecated 使用 {@link #getCurrentTracks()}。
    */
   @UnstableApi
   @Deprecated
   TrackGroupArray getCurrentTrackGroups();
 
   /**
-   * Returns the current track selections for each renderer, which may include {@code null} elements
-   * if some renderers do not have any selected tracks.
+   * 返回每个渲染器的当前轨道选择，可能包含 {@code null} 元素，如果某些渲染器没有选择任何轨道。
    *
    * @see Listener#onTracksChanged(Tracks)
-   * @deprecated Use {@link #getCurrentTracks()}.
+   * @deprecated 使用 {@link #getCurrentTracks()}。
    */
   @UnstableApi
   @Deprecated
   TrackSelectionArray getCurrentTrackSelections();
 
   /**
-   * Returns the {@link Looper} associated with the playback thread.
+   * 返回与播放线程关联的 {@link Looper}。
    *
-   * <p>This method may be called from any thread.
+   * <p>此方法可以从任何线程调用。
    */
   @UnstableApi
   Looper getPlaybackLooper();
 
   /**
-   * Returns the {@link Clock} used for playback.
+   * 返回用于播放的 {@link Clock}。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    */
   @UnstableApi
   Clock getClock();
 
   /**
-   * @deprecated Use {@link #setMediaSource(MediaSource)} and {@link #prepare()} instead.
+   * @deprecated 使用 {@link #setMediaSource(MediaSource)} 和 {@link #prepare()}。
    */
   @UnstableApi
   @Deprecated
   void prepare(MediaSource mediaSource);
 
   /**
-   * @deprecated Use {@link #setMediaSource(MediaSource, boolean)} and {@link #prepare()} instead.
+   * @deprecated 使用 {@link #setMediaSource(MediaSource, boolean)} 和 {@link #prepare()}。
    */
   @UnstableApi
   @Deprecated
   void prepare(MediaSource mediaSource, boolean resetPosition, boolean resetState);
 
   /**
-   * Clears the playlist, adds the specified {@link MediaSource MediaSources} and resets the
-   * position to the default position.
+   * 清除播放列表，添加指定的 {@link MediaSource MediaSources} 并将位置重置为默认位置。
    *
-   * @param mediaSources The new {@link MediaSource MediaSources}.
+   * @param mediaSources 新的 {@link MediaSource MediaSources}。
    */
   @UnstableApi
   void setMediaSources(List<MediaSource> mediaSources);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaSource MediaSources}.
+   * 清除播放列表并添加指定的 {@link MediaSource MediaSources}。
    *
-   * @param mediaSources The new {@link MediaSource MediaSources}.
-   * @param resetPosition Whether the playback position should be reset to the default position in
-   *     the first {@link Timeline.Window}. If false, playback will start from the position defined
-   *     by {@link #getCurrentMediaItemIndex()} and {@link #getCurrentPosition()}.
+   * @param mediaSources 新的 {@link MediaSource MediaSources}。
+   * @param resetPosition 是否将播放位置重置为第一个 {@link Timeline.Window} 中的默认位置。如果为 false，播放将从 {@link #getCurrentMediaItemIndex()} 和 {@link #getCurrentPosition()} 定义的位置开始。
    */
   @UnstableApi
   void setMediaSources(List<MediaSource> mediaSources, boolean resetPosition);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaSource MediaSources}.
+   * 清除播放列表并添加指定的 {@link MediaSource MediaSources}。
    *
-   * @param mediaSources The new {@link MediaSource MediaSources}.
-   * @param startMediaItemIndex The media item index to start playback from. If {@link
-   *     C#INDEX_UNSET} is passed, the current position is not reset.
-   * @param startPositionMs The position in milliseconds to start playback from. If {@link
-   *     C#TIME_UNSET} is passed, the default position of the given media source is used. In any
-   *     case, if {@code startMediaItemIndex} is set to {@link C#INDEX_UNSET}, this parameter is
-   *     ignored and the position is not reset at all.
+   * @param mediaSources 新的 {@link MediaSource MediaSources}。
+   * @param startMediaItemIndex 开始播放的媒体项索引。如果传递 {@link C#INDEX_UNSET}，则不会重置当前位置。
+   * @param startPositionMs 开始播放的位置，单位为毫秒。如果传递 {@link C#TIME_UNSET}，则使用给定媒体源的默认位置。无论如何，如果 {@code startMediaItemIndex} 设置为 {@link C#INDEX_UNSET}，则忽略此参数且不会重置位置。
    */
   @UnstableApi
   void setMediaSources(
       List<MediaSource> mediaSources, int startMediaItemIndex, long startPositionMs);
 
   /**
-   * Clears the playlist, adds the specified {@link MediaSource} and resets the position to the
-   * default position.
+   * 清除播放列表，添加指定的 {@link MediaSource} 并将位置重置为默认位置。
    *
-   * @param mediaSource The new {@link MediaSource}.
+   * @param mediaSource 新的 {@link MediaSource}。
    */
   @UnstableApi
   void setMediaSource(MediaSource mediaSource);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaSource}.
+   * 清除播放列表并添加指定的 {@link MediaSource}。
    *
-   * @param mediaSource The new {@link MediaSource}.
-   * @param startPositionMs The position in milliseconds to start playback from. If {@link
-   *     C#TIME_UNSET} is passed, the default position of the given media source is used.
+   * @param mediaSource 新的 {@link MediaSource}。
+   * @param startPositionMs 开始播放的位置，单位为毫秒。如果传递 {@link C#TIME_UNSET}，则使用给定媒体源的默认位置。
    */
   @UnstableApi
   void setMediaSource(MediaSource mediaSource, long startPositionMs);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaSource}.
+   * 清除播放列表并添加指定的 {@link MediaSource}。
    *
-   * @param mediaSource The new {@link MediaSource}.
-   * @param resetPosition Whether the playback position should be reset to the default position. If
-   *     false, playback will start from the position defined by {@link #getCurrentMediaItemIndex()}
-   *     and {@link #getCurrentPosition()}.
+   * @param mediaSource 新的 {@link MediaSource}。
+   * @param resetPosition 是否将播放位置重置为默认位置。如果为 false，播放将从 {@link #getCurrentMediaItemIndex()} 和 {@link #getCurrentPosition()} 定义的位置开始。
    */
   @UnstableApi
   void setMediaSource(MediaSource mediaSource, boolean resetPosition);
 
   /**
-   * Adds a media source to the end of the playlist.
+   * 将媒体源添加到播放列表的末尾。
    *
-   * @param mediaSource The {@link MediaSource} to add.
+   * @param mediaSource 要添加的 {@link MediaSource}。
    */
   @UnstableApi
   void addMediaSource(MediaSource mediaSource);
 
   /**
-   * Adds a media source at the given index of the playlist.
+   * 将媒体源添加到播放列表的指定索引处。
    *
-   * @param index The index at which to add the source.
-   * @param mediaSource The {@link MediaSource} to add.
+   * @param index 添加源的索引。
+   * @param mediaSource 要添加的 {@link MediaSource}。
    */
   @UnstableApi
   void addMediaSource(int index, MediaSource mediaSource);
 
   /**
-   * Adds a list of media sources to the end of the playlist.
+   * 将媒体源列表添加到播放列表的末尾。
    *
-   * @param mediaSources The {@link MediaSource MediaSources} to add.
+   * @param mediaSources 要添加的 {@link MediaSource MediaSources}。
    */
   @UnstableApi
   void addMediaSources(List<MediaSource> mediaSources);
 
   /**
-   * Adds a list of media sources at the given index of the playlist.
+   * 将媒体源列表添加到播放列表的指定索引处。
    *
-   * @param index The index at which to add the media sources.
-   * @param mediaSources The {@link MediaSource MediaSources} to add.
+   * @param index 添加媒体源的索引。
+   * @param mediaSources 要添加的 {@link MediaSource MediaSources}。
    */
   @UnstableApi
   void addMediaSources(int index, List<MediaSource> mediaSources);
 
   /**
-   * Sets the shuffle order.
+   * 设置播放顺序。
    *
-   * <p>The {@link ShuffleOrder} passed must have the same length as the current playlist ({@link
-   * Player#getMediaItemCount()}).
+   * <p>传递的 {@link ShuffleOrder} 必须与当前播放列表的长度相同（{@link Player#getMediaItemCount()}）。
    *
-   * @param shuffleOrder The shuffle order.
+   * @param shuffleOrder 播放顺序。
    */
   @UnstableApi
   void setShuffleOrder(ShuffleOrder shuffleOrder);
 
   /**
-   * Sets the {@linkplain PreloadConfiguration preload configuration} to configure playlist
-   * preloading.
+   * 设置 {@linkplain PreloadConfiguration 预加载配置} 以配置播放列表的预加载。
    *
-   * @param preloadConfiguration The preload configuration.
+   * @param preloadConfiguration 预加载配置。
    */
   @UnstableApi
   void setPreloadConfiguration(PreloadConfiguration preloadConfiguration);
 
-  /** Returns the {@linkplain PreloadConfiguration preload configuration}. */
+  /** 返回 {@linkplain PreloadConfiguration 预加载配置}。 */
   @UnstableApi
   PreloadConfiguration getPreloadConfiguration();
 
   /**
    * {@inheritDoc}
    *
-   * <p>ExoPlayer will keep the existing {@link MediaSource} for this {@link MediaItem} if
-   * {@linkplain MediaSource#canUpdateMediaItem supported} by the {@link MediaSource}. If the
-   * current item is replaced, this will also not interrupt the ongoing playback.
+   * <p>如果 {@link MediaSource} 支持 {@linkplain MediaSource#canUpdateMediaItem}，ExoPlayer 将保留此 {@link MediaItem} 的现有 {@link MediaSource}。如果当前项被替换，这也不会中断正在进行的播放。
    */
   @Override
   void replaceMediaItem(int index, MediaItem mediaItem);
@@ -1675,62 +1545,55 @@ public interface ExoPlayer extends Player {
   /**
    * {@inheritDoc}
    *
-   * <p>ExoPlayer will keep the existing {@link MediaSource} instances for the new {@link MediaItem
-   * MediaItems} if {@linkplain MediaSource#canUpdateMediaItem supported} by all of these {@link
-   * MediaSource} instances. If the current item is replaced, this will also not interrupt the
-   * ongoing playback.
+   * <p>如果所有 {@link MediaSource} 实例都支持 {@linkplain MediaSource#canUpdateMediaItem}，ExoPlayer 将保留新 {@link MediaItem MediaItems} 的现有 {@link MediaSource} 实例。如果当前项被替换，这也不会中断正在进行的播放。
    */
   @Override
   void replaceMediaItems(int fromIndex, int toIndex, List<MediaItem> mediaItems);
 
   /**
-   * Sets the ID of the audio session to attach to the underlying {@link android.media.AudioTrack}.
+   * 设置要附加到底层 {@link android.media.AudioTrack} 的音频会话 ID。
    *
-   * <p>The audio session ID can be generated using {@link Util#generateAudioSessionIdV21(Context)}
-   * for API 21+.
+   * <p>音频会话 ID 可以使用 {@link Util#generateAudioSessionIdV21(Context)} 为 API 21+ 生成。
    *
-   * @param audioSessionId The audio session ID, or {@link C#AUDIO_SESSION_ID_UNSET} if it should be
-   *     generated by the framework.
+   * @param audioSessionId 音频会话 ID，或 {@link C#AUDIO_SESSION_ID_UNSET} 表示由框架生成。
    */
   @UnstableApi
   void setAudioSessionId(int audioSessionId);
-
   /**
-   * Returns the audio session identifier, or {@link C#AUDIO_SESSION_ID_UNSET} if not set.
+   * 返回音频会话标识符，如果未设置则返回 {@link C#AUDIO_SESSION_ID_UNSET}。
    *
    * @see Listener#onAudioSessionIdChanged(int)
    */
   @UnstableApi
   int getAudioSessionId();
 
-  /** Sets information on an auxiliary audio effect to attach to the underlying audio track. */
+  /** 设置附加到底层音频轨道的辅助音频效果的信息。 */
   @UnstableApi
   void setAuxEffectInfo(AuxEffectInfo auxEffectInfo);
 
-  /** Detaches any previously attached auxiliary audio effect from the underlying audio track. */
+  /** 从底层音频轨道分离之前附加的任何辅助音频效果。 */
   @UnstableApi
   void clearAuxEffectInfo();
 
   /**
-   * Sets the preferred audio device.
+   * 设置首选的音频设备。
    *
-   * @param audioDeviceInfo The preferred {@linkplain AudioDeviceInfo audio device}, or null to
-   *     restore the default.
+   * @param audioDeviceInfo 首选的 {@linkplain AudioDeviceInfo 音频设备}，或 null 以恢复默认设置。
    */
   @UnstableApi
   @RequiresApi(23)
   void setPreferredAudioDevice(@Nullable AudioDeviceInfo audioDeviceInfo);
 
   /**
-   * Sets whether skipping silences in the audio stream is enabled.
+   * 设置是否启用跳过音频流中的静音部分。
    *
-   * @param skipSilenceEnabled Whether skipping silences in the audio stream is enabled.
+   * @param skipSilenceEnabled 是否启用跳过音频流中的静音部分。
    */
   @UnstableApi
   void setSkipSilenceEnabled(boolean skipSilenceEnabled);
 
   /**
-   * Returns whether skipping silences in the audio stream is enabled.
+   * 返回是否启用跳过音频流中的静音部分。
    *
    * @see Listener#onSkipSilenceEnabledChanged(boolean)
    */
@@ -1738,277 +1601,218 @@ public interface ExoPlayer extends Player {
   boolean getSkipSilenceEnabled();
 
   /**
-   * Sets a {@link List} of {@linkplain Effect video effects} that will be applied to each video
-   * frame.
+   * 设置将应用于每个视频帧的 {@linkplain Effect 视频效果} 的 {@link List}。
    *
-   * <p>If {@linkplain #setVideoSurface passing a surface to the player directly}, the output
-   * resolution needs to be signaled by passing a {@linkplain #createMessage(PlayerMessage.Target)
-   * message} to the {@linkplain Renderer video renderer} with type {@link
-   * Renderer#MSG_SET_VIDEO_OUTPUT_RESOLUTION} after calling this method. For {@link SurfaceView},
-   * {@link TextureView} and {@link SurfaceHolder} output this happens automatically.
+   * <p>如果 {@linkplain #setVideoSurface 直接向播放器传递 Surface}，则需要在调用此方法后通过向 {@linkplain Renderer 视频渲染器} 传递类型为 {@link Renderer#MSG_SET_VIDEO_OUTPUT_RESOLUTION} 的 {@linkplain #createMessage(PlayerMessage.Target) 消息} 来通知输出分辨率。对于 {@link SurfaceView}、{@link TextureView} 和 {@link SurfaceHolder} 输出，这会自动完成。
    *
-   * <p>The following limitations exist for using {@linkplain Effect video effects}:
+   * <p>使用 {@linkplain Effect 视频效果} 存在以下限制：
    *
    * <ul>
-   *   <li>The {@code androidx.media3:media3-effect} module must be available on the runtime
-   *       classpath. {@code androidx.media3:media3-exoplayer} does not explicitly depend on the
-   *       effect module, so apps must make sure it's available themselves. It must be the same
-   *       version as the rest of the {@code androidx.media3} modules being used by the app.
-   *   <li>This feature works only with the default {@link MediaCodecVideoRenderer} and not custom
-   *       or extension {@linkplain Renderer video renderers}.
-   *   <li>This feature does not work with {@linkplain Effect effects} that update the frame
-   *       timestamps.
-   *   <li>This feature does not work with DRM-protected content.
-   *   <li>This method must be called at least once before calling {@link #prepare()} (in order to
-   *       set up the effects pipeline). The effects can be changed during playback by subsequent
-   *       calls to this method after {@link #prepare()}.
+   *   <li>{@code androidx.media3:media3-effect} 模块必须在运行时类路径中可用。{@code androidx.media3:media3-exoplayer} 并不显式依赖效果模块，因此应用必须确保其可用。它必须与应用使用的其他 {@code androidx.media3} 模块版本相同。
+   *   <li>此功能仅适用于默认的 {@link MediaCodecVideoRenderer}，不适用于自定义或扩展的 {@linkplain Renderer 视频渲染器}。
+   *   <li>此功能不适用于更新帧时间戳的 {@linkplain Effect 效果}。
+   *   <li>此功能不适用于受 DRM 保护的内容。
+   *   <li>此方法必须在调用 {@link #prepare()} 之前至少调用一次（以设置效果管道）。在调用 {@link #prepare()} 后，可以通过后续调用此方法更改效果。
    * </ul>
    *
-   * @param videoEffects The {@link List} of {@linkplain Effect video effects} to apply.
+   * @param videoEffects 要应用的 {@linkplain Effect 视频效果} 的 {@link List}。
    */
   @UnstableApi
   void setVideoEffects(List<Effect> videoEffects);
 
   /**
-   * Sets the {@link C.VideoScalingMode}.
+   * 设置 {@link C.VideoScalingMode}。
    *
-   * <p>The scaling mode only applies if a {@link MediaCodec}-based video {@link Renderer} is
-   * enabled and if the output surface is owned by a {@link SurfaceView}.
+   * <p>缩放模式仅在使用基于 {@link MediaCodec} 的视频 {@link Renderer} 且输出 Surface 由 {@link SurfaceView} 拥有时生效。
    *
-   * @param videoScalingMode The {@link C.VideoScalingMode}.
+   * @param videoScalingMode {@link C.VideoScalingMode}。
    */
   @UnstableApi
   void setVideoScalingMode(@C.VideoScalingMode int videoScalingMode);
 
-  /** Returns the {@link C.VideoScalingMode}. */
+  /** 返回 {@link C.VideoScalingMode}。 */
   @UnstableApi
   @C.VideoScalingMode
   int getVideoScalingMode();
 
   /**
-   * Sets a {@link C.VideoChangeFrameRateStrategy} that will be used by the player when provided
-   * with a video output {@link Surface}.
+   * 设置播放器在提供视频输出 {@link Surface} 时将使用的 {@link C.VideoChangeFrameRateStrategy}。
    *
-   * <p>The strategy only applies if a {@link MediaCodec}-based video {@link Renderer} is enabled.
-   * Applications wishing to use {@link Surface#CHANGE_FRAME_RATE_ALWAYS} should set the mode to
-   * {@link C#VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF} to disable calls to {@link Surface#setFrameRate}
-   * from ExoPlayer, and should then call {@link Surface#setFrameRate} directly from application
-   * code.
+   * <p>该策略仅在使用基于 {@link MediaCodec} 的视频 {@link Renderer} 时生效。如果应用程序希望使用 {@link Surface#CHANGE_FRAME_RATE_ALWAYS}，
+   * 应将模式设置为 {@link C#VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF} 以禁用 ExoPlayer 对 {@link Surface#setFrameRate} 的调用，
+   * 然后从应用程序代码中直接调用 {@link Surface#setFrameRate}。
    *
-   * @param videoChangeFrameRateStrategy A {@link C.VideoChangeFrameRateStrategy}.
+   * @param videoChangeFrameRateStrategy {@link C.VideoChangeFrameRateStrategy}。
    */
   @UnstableApi
   void setVideoChangeFrameRateStrategy(
       @C.VideoChangeFrameRateStrategy int videoChangeFrameRateStrategy);
 
-  /** Returns the {@link C.VideoChangeFrameRateStrategy}. */
+  /** 返回 {@link C.VideoChangeFrameRateStrategy}。 */
   @UnstableApi
   @C.VideoChangeFrameRateStrategy
   int getVideoChangeFrameRateStrategy();
 
   /**
-   * Sets a listener to receive video frame metadata events.
+   * 设置监听器以接收视频帧元数据事件。
    *
-   * <p>This method is intended to be called by the same component that sets the {@link Surface}
-   * onto which video will be rendered. If using ExoPlayer's standard UI components, this method
-   * should not be called directly from application code.
+   * <p>此方法应由设置视频渲染 {@link Surface} 的组件调用。如果使用 ExoPlayer 的标准 UI 组件，则不应直接从应用程序代码调用此方法。
    *
-   * @param listener The listener.
+   * @param listener 监听器。
    */
   @UnstableApi
   void setVideoFrameMetadataListener(VideoFrameMetadataListener listener);
 
   /**
-   * Clears the listener which receives video frame metadata events if it matches the one passed.
-   * Else does nothing.
+   * 如果传入的监听器与当前监听器匹配，则清除接收视频帧元数据事件的监听器。否则不执行任何操作。
    *
-   * @param listener The listener to clear.
+   * @param listener 要清除的监听器。
    */
   @UnstableApi
   void clearVideoFrameMetadataListener(VideoFrameMetadataListener listener);
 
   /**
-   * Sets a listener of camera motion events.
+   * 设置监听器以接收相机运动事件。
    *
-   * @param listener The listener.
+   * @param listener 监听器。
    */
   @UnstableApi
   void setCameraMotionListener(CameraMotionListener listener);
 
   /**
-   * Clears the listener which receives camera motion events if it matches the one passed. Else does
-   * nothing.
+   * 如果传入的监听器与当前监听器匹配，则清除接收相机运动事件的监听器。否则不执行任何操作。
    *
-   * @param listener The listener to clear.
+   * @param listener 要清除的监听器。
    */
   @UnstableApi
   void clearCameraMotionListener(CameraMotionListener listener);
 
   /**
-   * Creates a message that can be sent to a {@link PlayerMessage.Target}. By default, the message
-   * will be delivered immediately without blocking on the playback thread. The default {@link
-   * PlayerMessage#getType()} is 0 and the default {@link PlayerMessage#getPayload()} is null. If a
-   * position is specified with {@link PlayerMessage#setPosition(long)}, the message will be
-   * delivered at this position in the current media item defined by {@link
-   * #getCurrentMediaItemIndex()}. Alternatively, the message can be sent at a specific mediaItem
-   * using {@link PlayerMessage#setPosition(int, long)}.
+   * 创建一个可以发送到 {@link PlayerMessage.Target} 的消息。默认情况下，消息将立即传递，而不会阻塞播放线程。默认的 {@link PlayerMessage#getType()} 为 0，默认的 {@link PlayerMessage#getPayload()} 为 null。如果使用 {@link PlayerMessage#setPosition(long)} 指定了位置，则消息将在当前媒体项中定义的位置传递，位置由 {@link #getCurrentMediaItemIndex()} 确定。或者，可以使用 {@link PlayerMessage#setPosition(int, long)} 在特定媒体项中发送消息。
    */
   @UnstableApi
   PlayerMessage createMessage(PlayerMessage.Target target);
 
   /**
-   * Sets the parameters that control how seek operations are performed.
+   * 设置控制搜索操作执行方式的参数。
    *
-   * @param seekParameters The seek parameters, or {@code null} to use the defaults.
+   * @param seekParameters 搜索参数，或 {@code null} 以使用默认值。
    */
   @UnstableApi
   void setSeekParameters(@Nullable SeekParameters seekParameters);
 
-  /** Returns the currently active {@link SeekParameters} of the player. */
+  /** 返回播放器当前活动的 {@link SeekParameters}。 */
   @UnstableApi
   SeekParameters getSeekParameters();
 
   /**
-   * Sets whether the player is allowed to keep holding limited resources such as video decoders,
-   * even when in the idle state. By doing so, the player may be able to reduce latency when
-   * starting to play another piece of content for which the same resources are required.
+   * 设置是否允许播放器在空闲状态下继续持有有限的资源（例如视频解码器）。这样做可以减少在播放需要相同资源的新内容时的延迟。
    *
-   * <p>This mode should be used with caution, since holding limited resources may prevent other
-   * players of media components from acquiring them. It should only be enabled when <em>both</em>
-   * of the following conditions are true:
+   * <p>应谨慎使用此模式，因为持有有限的资源可能会阻止其他播放器或媒体组件获取它们。只有在以下<em>两个</em>条件都成立时才应启用：
    *
    * <ul>
-   *   <li>The application that owns the player is in the foreground.
-   *   <li>The player is used in a way that may benefit from foreground mode. For this to be true,
-   *       the same player instance must be used to play multiple pieces of content, and there must
-   *       be gaps between the playbacks (i.e. {@link #stop} is called to halt one playback, and
-   *       {@link #prepare} is called some time later to start a new one).
+   *   <li>拥有播放器的应用程序处于前台。
+   *   <li>播放器的使用方式可能受益于前台模式。为此，必须使用相同的播放器实例播放多个内容片段，并且播放之间必须有间隙（即调用 {@link #stop} 停止一个播放，并在稍后调用 {@link #prepare} 开始新的播放）。
    * </ul>
    *
-   * <p>Note that foreground mode is <em>not</em> useful for switching between content without gaps
-   * between the playbacks. For this use case {@link #stop} does not need to be called, and simply
-   * calling {@link #prepare} for the new media will cause limited resources to be retained even if
-   * foreground mode is not enabled.
+   * <p>请注意，前台模式<em>不</em>适用于在播放之间没有间隙的情况下切换内容。对于此用例，无需调用 {@link #stop}，只需为新媒体调用 {@link #prepare} 即可，即使未启用前台模式，也会保留有限的资源。
    *
-   * <p>If foreground mode is enabled, it's the application's responsibility to disable it when the
-   * conditions described above no longer hold.
+   * <p>如果启用了前台模式，应用程序有责任在不再满足上述条件时禁用它。
    *
-   * @param foregroundMode Whether the player is allowed to keep limited resources even when in the
-   *     idle state.
+   * @param foregroundMode 是否允许播放器在空闲状态下继续持有有限的资源。
    */
   @UnstableApi
   void setForegroundMode(boolean foregroundMode);
-
   /**
-   * Sets whether to pause playback at the end of each media item.
+   * 设置是否在每个媒体项结束时暂停播放。
    *
-   * <p>This means the player will pause at the end of each window in the current {@link
-   * #getCurrentTimeline() timeline}. Listeners will be informed by a call to {@link
-   * Player.Listener#onPlayWhenReadyChanged(boolean, int)} with the reason {@link
-   * Player#PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM} when this happens.
+   * <p>这意味着播放器将在当前 {@link #getCurrentTimeline() 时间轴} 的每个窗口结束时暂停。当这种情况发生时，监听器将通过 {@link Player.Listener#onPlayWhenReadyChanged(boolean, int)} 被通知，原因值为 {@link Player#PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM}。
    *
-   * @param pauseAtEndOfMediaItems Whether to pause playback at the end of each media item.
+   * @param pauseAtEndOfMediaItems 是否在每个媒体项结束时暂停播放。
    */
   @UnstableApi
   void setPauseAtEndOfMediaItems(boolean pauseAtEndOfMediaItems);
 
   /**
-   * Returns whether the player pauses playback at the end of each media item.
+   * 返回播放器是否在每个媒体项结束时暂停播放。
    *
    * @see #setPauseAtEndOfMediaItems(boolean)
    */
   @UnstableApi
   boolean getPauseAtEndOfMediaItems();
 
-  /** Returns the audio format currently being played, or null if no audio is being played. */
+  /** 返回当前正在播放的音频格式，如果没有播放音频则返回 null。 */
   @UnstableApi
   @Nullable
   Format getAudioFormat();
 
-  /** Returns the video format currently being played, or null if no video is being played. */
+  /** 返回当前正在播放的视频格式，如果没有播放视频则返回 null。 */
   @UnstableApi
   @Nullable
   Format getVideoFormat();
 
-  /** Returns {@link DecoderCounters} for audio, or null if no audio is being played. */
+  /** 返回音频的 {@link DecoderCounters}，如果没有播放音频则返回 null。 */
   @UnstableApi
   @Nullable
   DecoderCounters getAudioDecoderCounters();
 
-  /** Returns {@link DecoderCounters} for video, or null if no video is being played. */
+  /** 返回视频的 {@link DecoderCounters}，如果没有播放视频则返回 null。 */
   @UnstableApi
   @Nullable
   DecoderCounters getVideoDecoderCounters();
 
   /**
-   * Sets whether the player should pause automatically when audio is rerouted from a headset to
-   * device speakers. See the <a
-   * href="https://developer.android.com/guide/topics/media-apps/volume-and-earphones#becoming-noisy">audio
-   * becoming noisy</a> documentation for more information.
+   * 设置当音频从耳机切换到设备扬声器时，播放器是否应自动暂停。有关更多信息，请参阅 <a
+   * href="https://developer.android.com/guide/topics/media-apps/volume-and-earphones#becoming-noisy">音频变得嘈杂</a> 文档。
    *
-   * @param handleAudioBecomingNoisy Whether the player should pause automatically when audio is
-   *     rerouted from a headset to device speakers.
+   * @param handleAudioBecomingNoisy 当音频从耳机切换到设备扬声器时，播放器是否应自动暂停。
    */
   void setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisy);
 
   /**
-   * Sets how the player should keep the device awake for playback when the screen is off.
+   * 设置播放器在屏幕关闭时如何保持设备唤醒以进行播放。
    *
-   * <p>Enabling this feature requires the {@link android.Manifest.permission#WAKE_LOCK} permission.
-   * It should be used together with a foreground {@link android.app.Service} for use cases where
-   * playback occurs and the screen is off (e.g. background audio playback). It is not useful when
-   * the screen will be kept on during playback (e.g. foreground video playback).
+   * <p>启用此功能需要 {@link android.Manifest.permission#WAKE_LOCK} 权限。它应与前台 {@link android.app.Service} 一起使用，用于屏幕关闭时的播放场景（例如后台音频播放）。对于屏幕保持开启的播放场景（例如前台视频播放），此功能无意义。
    *
-   * <p>When enabled, the locks ({@link android.os.PowerManager.WakeLock} / {@link
-   * android.net.wifi.WifiManager.WifiLock}) will be held whenever the player is in the {@link
-   * #STATE_READY} or {@link #STATE_BUFFERING} states with {@code playWhenReady = true}. The locks
-   * held depends on the specified {@link C.WakeMode}.
+   * <p>启用后，当播放器处于 {@link #STATE_READY} 或 {@link #STATE_BUFFERING} 状态且 {@code playWhenReady = true} 时，将持有锁（{@link android.os.PowerManager.WakeLock} / {@link android.net.wifi.WifiManager.WifiLock}）。持有的锁取决于指定的 {@link C.WakeMode}。
    *
-   * @param wakeMode The {@link C.WakeMode} option to keep the device awake during playback.
+   * @param wakeMode 用于在播放期间保持设备唤醒的 {@link C.WakeMode} 选项。
    */
   void setWakeMode(@C.WakeMode int wakeMode);
 
   /**
-   * Sets the {@link C.Priority} for this player.
+   * 设置此播放器的 {@link C.Priority}。
    *
-   * <p>The priority may influence resource allocation between multiple players or other components
-   * running in the same app.
+   * <p>优先级可能影响同一应用程序中运行的多个播放器或其他组件之间的资源分配。
    *
-   * <p>This priority is used for the {@link PriorityTaskManager}, if {@linkplain
-   * #setPriorityTaskManager set}.
+   * <p>如果设置了 {@linkplain #setPriorityTaskManager PriorityTaskManager}，则此优先级将用于 {@link PriorityTaskManager}。
    *
-   * @param priority The {@link C.Priority}.
+   * @param priority {@link C.Priority}。
    */
   @UnstableApi
   void setPriority(@C.Priority int priority);
 
   /**
-   * Sets a {@link PriorityTaskManager}, or null to clear a previously set priority task manager.
+   * 设置 {@link PriorityTaskManager}，或 null 以清除之前设置的优先级任务管理器。
    *
-   * <p>The priority set via {@link #setPriority} (or {@link C#PRIORITY_PLAYBACK by default)} will
-   * be set while the player is loading.
+   * <p>通过 {@link #setPriority} 设置的优先级（或默认的 {@link C#PRIORITY_PLAYBACK}）将在播放器加载时使用。
    *
-   * @param priorityTaskManager The {@link PriorityTaskManager}, or null to clear a previously set
-   *     priority task manager.
+   * @param priorityTaskManager {@link PriorityTaskManager}，或 null 以清除之前设置的优先级任务管理器。
    */
   @UnstableApi
   void setPriorityTaskManager(@Nullable PriorityTaskManager priorityTaskManager);
 
   /**
-   * Returns whether the player has paused its main loop to save power in offload scheduling mode.
+   * 返回播放器是否已暂停其主循环以在卸载调度模式下节省电量。
    *
-   * <p>Offload scheduling mode should save significant power when the phone is playing offload
-   * audio with the screen off.
+   * <p>在屏幕关闭时播放卸载音频时，卸载调度模式应显著节省电量。
    *
-   * <p>Offload scheduling is only enabled when playing an audio track in offload mode, which
-   * requires all the following:
+   * <p>卸载调度仅在以下所有条件满足时启用：
    *
    * <ul>
-   *   <li>Audio offload rendering is enabled through {@link
-   *       TrackSelectionParameters.Builder#setAudioOffloadPreferences}.
-   *   <li>An audio track is playing in a format that the device supports offloading (for example,
-   *       MP3 or AAC).
-   *   <li>The {@link AudioSink} is playing with an offload {@link AudioTrack}.
+   *   <li>通过 {@link TrackSelectionParameters.Builder#setAudioOffloadPreferences} 启用了音频卸载渲染。
+   *   <li>正在播放的音频轨道是设备支持卸载的格式（例如 MP3 或 AAC）。
+   *   <li>{@link AudioSink} 正在使用卸载 {@link AudioTrack} 播放。
    * </ul>
    *
    * @see AudioOffloadListener#onSleepingForOffloadChanged(boolean)
@@ -2017,9 +1821,7 @@ public interface ExoPlayer extends Player {
   boolean isSleepingForOffload();
 
   /**
-   * Returns whether <a
-   * href="https://source.android.com/devices/tv/multimedia-tunneling">tunneling</a> is enabled for
-   * the currently selected tracks.
+   * 返回是否启用了 <a href="https://source.android.com/devices/tv/multimedia-tunneling">隧道模式</a> 用于当前选定的轨道。
    *
    * @see Player.Listener#onTracksChanged(Tracks)
    */
@@ -2029,24 +1831,23 @@ public interface ExoPlayer extends Player {
   /**
    * {@inheritDoc}
    *
-   * <p>The exception to the above rule is {@link #isReleased()} which can be called on a released
-   * player.
+   * <p>上述规则的例外是 {@link #isReleased()}，它可以在已释放的播放器上调用。
    */
   @Override
   void release();
 
   /**
-   * Returns whether {@link #release()} has been called on the player.
+   * 返回是否已对播放器调用 {@link #release()}。
    *
-   * <p>This method is allowed to be called after {@link #release()}.
+   * <p>此方法允许在 {@link #release()} 之后调用。
    */
   @UnstableApi
   boolean isReleased();
 
   /**
-   * Sets the {@link ImageOutput} where rendered images will be forwarded.
+   * 设置渲染图像将转发到的 {@link ImageOutput}。
    *
-   * @param imageOutput The {@link ImageOutput}. May be null to clear a previously set image output.
+   * @param imageOutput {@link ImageOutput}。可以为 null 以清除之前设置的图像输出。
    */
   @UnstableApi
   void setImageOutput(@Nullable ImageOutput imageOutput);

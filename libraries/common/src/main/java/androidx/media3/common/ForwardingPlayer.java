@@ -13,27 +13,17 @@ import androidx.media3.common.util.UnstableApi;
 import java.util.List;
 
 /**
- * A {@link Player} that forwards method calls to another {@link Player}. Applications can use this
- * class to suppress or modify specific operations, by overriding the respective methods.
+ * 一个 {@link Player}，它将方法调用转发给另一个 {@link Player}。应用程序可以通过重写相应的方法来抑制或修改特定操作。
  *
- * <p>Subclasses must ensure they maintain consistency with the {@link Player} interface, including
- * interactions with {@link Player.Listener}, which can be quite fiddly. For example, if removing an
- * available {@link Player.Command} and disabling the corresponding method, subclasses need to:
+ * <p>子类必须确保它们与 {@link Player} 接口保持一致，包括与 {@link Player.Listener} 的交互，这可能会相当复杂。例如，如果移除一个可用的 {@link Player.Command} 并禁用相应的方法，子类需要：
  *
  * <ul>
- *   <li>Override {@link #isCommandAvailable(int)} and {@link #getAvailableCommands()}
- *   <li>Override and no-op the method itself
- *   <li>Override {@link #addListener(Listener)} and wrap the provided {@link Player.Listener} with
- *       an implementation that drops calls to {@link
- *       Player.Listener#onAvailableCommandsChanged(Commands)} and {@link
- *       Player.Listener#onEvents(Player, Events)} if they were only triggered by a change in
- *       command availability that is 'invisible' after the command removal.
+ *   <li>重写 {@link #isCommandAvailable(int)} 和 {@link #getAvailableCommands()}
+ *   <li>重写并将方法本身设为无操作（no-op）
+ *   <li>重写 {@link #addListener(Listener)} 并包装提供的 {@link Player.Listener}，使其在命令移除后，如果 {@link Player.Listener#onAvailableCommandsChanged(Commands)} 和 {@link Player.Listener#onEvents(Player, Events)} 的调用仅由命令可用性的变化触发，则丢弃这些调用。
  * </ul>
  *
- * <p>Many customization use-cases are instead better served by {@link ForwardingSimpleBasePlayer},
- * which allows subclasses to more concisely modify the behavior of an operation, or disallow a
- * {@link Player.Command}. In many cases {@link ForwardingSimpleBasePlayer} should be used in
- * preference to {@code ForwardingPlayer}.
+ * <p>许多自定义用例更适合使用 {@link ForwardingSimpleBasePlayer}，它允许子类更简洁地修改操作的行为或禁止 {@link Player.Command}。在许多情况下，应优先使用 {@link ForwardingSimpleBasePlayer} 而不是 {@code ForwardingPlayer}。
  */
 @UnstableApi
 public class ForwardingPlayer implements Player {
@@ -52,14 +42,11 @@ public class ForwardingPlayer implements Player {
   }
 
   /**
-   * Calls {@link Player#addListener(Listener)} on the delegate.
+   * 在委托对象上调用 {@link Player#addListener(Listener)}。
    *
-   * <p>Overrides of this method must <strong>not</strong> directly call {@code
-   * delegate.addListener}. If the override wants to pass the {@link Player.Listener} instance to
-   * the delegate {@link Player}, it must do so by calling {@code super.addListener} instead. This
-   * ensures the correct {@link Player} instance is passed to {@link
-   * Player.Listener#onEvents(Player, Events)} (i.e. this forwarding instance, and not the
-   * underlying {@code delegate} instance).
+   * <p>重写此方法时<strong>不得</strong>直接调用 {@code delegate.addListener}。
+   * 如果重写方法希望将 {@link Player.Listener} 实例传递给委托 {@link Player}，则必须通过调用 {@code super.addListener} 来实现。
+   * 、这确保了正确的 {@link Player} 实例被传递给 {@link Player.Listener#onEvents(Player, Events)}（即此转发实例，而不是底层的 {@code delegate} 实例）。
    */
   @Override
   public void addListener(Listener listener) {
@@ -67,11 +54,10 @@ public class ForwardingPlayer implements Player {
   }
 
   /**
-   * Calls {@link Player#removeListener(Listener)} on the delegate.
+   * 在委托对象上调用 {@link Player#removeListener(Listener)}。
    *
-   * <p>Overrides of this method must <strong>not</strong> directly call {@code
-   * delegate.removeListener}. If the override wants to pass the {@link Player.Listener} instance to
-   * the delegate {@link Player}, it must do so by calling {@code super.removeListener} instead.
+   * <p>重写此方法时<strong>不得</strong>直接调用 {@code delegate.removeListener}。
+   * 如果重写方法希望将 {@link Player.Listener} 实例传递给委托 {@link Player}，则必须通过调用 {@code super.removeListener} 来实现。
    */
   @Override
   public void removeListener(Listener listener) {

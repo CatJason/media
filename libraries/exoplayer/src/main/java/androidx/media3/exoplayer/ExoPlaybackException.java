@@ -42,16 +42,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Thrown when a non locally recoverable playback failure occurs. */
+/** 当发生无法本地恢复的播放失败时抛出。 */
 public final class ExoPlaybackException extends PlaybackException {
 
   /**
-   * The type of source that produced the error. One of {@link #TYPE_SOURCE}, {@link #TYPE_RENDERER}
-   * {@link #TYPE_UNEXPECTED} or {@link #TYPE_REMOTE}. Note that new types may be added in the
-   * future and error handling should handle unknown type values.
+   * 产生错误的源类型。取值为 {@link #TYPE_SOURCE}、{@link #TYPE_RENDERER}、{@link #TYPE_UNEXPECTED} 或 {@link #TYPE_REMOTE} 之一。请注意，未来可能会添加新的类型，错误处理应能够处理未知的类型值。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+  // @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @UnstableApi
   @Documented
   @Retention(RetentionPolicy.SOURCE)
@@ -60,71 +57,66 @@ public final class ExoPlaybackException extends PlaybackException {
   public @interface Type {}
 
   /**
-   * The error occurred loading data from a {@link MediaSource}.
+   * 错误发生在从 {@link MediaSource} 加载数据时。
    *
-   * <p>Call {@link #getSourceException()} to retrieve the underlying cause.
+   * <p>调用 {@link #getSourceException()} 以获取根本原因。
    */
   @UnstableApi public static final int TYPE_SOURCE = 0;
 
   /**
-   * The error occurred in a {@link Renderer}.
+   * 错误发生在 {@link Renderer} 中。
    *
-   * <p>Call {@link #getRendererException()} to retrieve the underlying cause.
+   * <p>调用 {@link #getRendererException()} 以获取根本原因。
    */
   @UnstableApi public static final int TYPE_RENDERER = 1;
 
   /**
-   * The error was an unexpected {@link RuntimeException}.
+   * 错误是一个意外的 {@link RuntimeException}。
    *
-   * <p>Call {@link #getUnexpectedException()} to retrieve the underlying cause.
+   * <p>调用 {@link #getUnexpectedException()} 以获取根本原因。
    */
   @UnstableApi public static final int TYPE_UNEXPECTED = 2;
 
   /**
-   * The error occurred in a remote component.
+   * 错误发生在远程组件中。
    *
-   * <p>Call {@link #getMessage()} to retrieve the message associated with the error.
+   * <p>调用 {@link #getMessage()} 以获取与错误相关的消息。
    */
   @UnstableApi public static final int TYPE_REMOTE = 3;
 
-  /** The {@link Type} of the playback failure. */
+  /** 播放失败的 {@link Type} 类型。 */
   @UnstableApi public final @Type int type;
 
-  /** If {@link #type} is {@link #TYPE_RENDERER}, this is the name of the renderer. */
+  /** 如果 {@link #type} 是 {@link #TYPE_RENDERER}，这是渲染器的名称。 */
   @UnstableApi @Nullable public final String rendererName;
 
-  /** If {@link #type} is {@link #TYPE_RENDERER}, this is the index of the renderer. */
+  /** 如果 {@link #type} 是 {@link #TYPE_RENDERER}，这是渲染器的索引。 */
   @UnstableApi public final int rendererIndex;
 
   /**
-   * If {@link #type} is {@link #TYPE_RENDERER}, this is the {@link Format} the renderer was using
-   * at the time of the exception, or null if the renderer wasn't using a {@link Format}.
+   * 如果 {@link #type} 是 {@link #TYPE_RENDERER}，这是异常发生时渲染器使用的 {@link Format}，如果渲染器未使用 {@link Format}，则为 null。
    */
   @UnstableApi @Nullable public final Format rendererFormat;
 
   /**
-   * If {@link #type} is {@link #TYPE_RENDERER}, this is the level of {@link FormatSupport} of the
-   * renderer for {@link #rendererFormat}. If {@link #rendererFormat} is null, this is {@link
-   * C#FORMAT_HANDLED}.
+   * 如果 {@link #type} 是 {@link #TYPE_RENDERER}，这是渲染器对 {@link #rendererFormat} 的 {@link FormatSupport} 级别。如果 {@link #rendererFormat} 为 null，则此值为 {@link C#FORMAT_HANDLED}。
    */
   @UnstableApi public final @FormatSupport int rendererFormatSupport;
 
-  /** The {@link MediaPeriodId} of the media associated with this error, or null if undetermined. */
+  /** 与此错误关联的 {@link MediaPeriodId}，如果未确定，则为 null。 */
   @UnstableApi @Nullable public final MediaPeriodId mediaPeriodId;
 
   /**
-   * If {@link #type} is {@link #TYPE_RENDERER}, this field indicates whether the error may be
-   * recoverable by disabling and re-enabling (but <em>not</em> resetting) the renderers. For other
-   * {@link Type types} this field will always be {@code false}.
+   * 如果 {@link #type} 是 {@link #TYPE_RENDERER}，此字段指示是否可以通过禁用并重新启用（但 <em>不</em> 重置）渲染器来恢复错误。对于其他 {@link Type} 类型，此字段始终为 {@code false}。
    */
   /* package */ final boolean isRecoverable;
 
   /**
-   * Creates an instance of type {@link #TYPE_SOURCE}.
+   * 创建一个类型为 {@link #TYPE_SOURCE} 的实例。
    *
-   * @param cause The cause of the failure.
-   * @param errorCode See {@link #errorCode}.
-   * @return The created instance.
+   * @param cause 失败的原因。
+   * @param errorCode 参见 {@link #errorCode}。
+   * @return 创建的实例。
    */
   @UnstableApi
   public static ExoPlaybackException createForSource(IOException cause, int errorCode) {
@@ -132,19 +124,16 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * Creates an instance of type {@link #TYPE_RENDERER}.
+   * 创建一个类型为 {@link #TYPE_RENDERER} 的实例。
    *
-   * @param cause The cause of the failure.
-   * @param rendererName The {@linkplain Renderer#getName() name} of the renderer in which the
-   *     failure occurred.
-   * @param rendererIndex The index of the renderer in which the failure occurred.
-   * @param rendererFormat The {@link Format} the renderer was using at the time of the exception,
-   *     or null if the renderer wasn't using a {@link Format}.
-   * @param rendererFormatSupport The {@link FormatSupport} of the renderer for {@code
-   *     rendererFormat}. Ignored if {@code rendererFormat} is null.
-   * @param isRecoverable If the failure can be recovered by disabling and re-enabling the renderer.
-   * @param errorCode See {@link #errorCode}.
-   * @return The created instance.
+   * @param cause 失败的原因。
+   * @param rendererName 发生失败的渲染器的 {@linkplain Renderer#getName() 名称}。
+   * @param rendererIndex 发生失败的渲染器的索引。
+   * @param rendererFormat 异常发生时渲染器使用的 {@link Format}，如果渲染器未使用 {@link Format}，则为 null。
+   * @param rendererFormatSupport 渲染器对 {@code rendererFormat} 的 {@link FormatSupport}。如果 {@code rendererFormat} 为 null，则忽略此参数。
+   * @param isRecoverable 是否可以通过禁用并重新启用渲染器来恢复失败。
+   * @param errorCode 参见 {@link #errorCode}。
+   * @return 创建的实例。
    */
   @UnstableApi
   public static ExoPlaybackException createForRenderer(
@@ -169,8 +158,8 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * @deprecated Use {@link #createForUnexpected(RuntimeException, int)
-   *     createForUnexpected(RuntimeException, ERROR_CODE_UNSPECIFIED)} instead.
+   * @deprecated 请使用 {@link #createForUnexpected(RuntimeException, int)
+   *     createForUnexpected(RuntimeException, ERROR_CODE_UNSPECIFIED)} 代替。
    */
   @UnstableApi
   @Deprecated
@@ -179,11 +168,11 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * Creates an instance of type {@link #TYPE_UNEXPECTED}.
+   * 创建一个类型为 {@link #TYPE_UNEXPECTED} 的实例。
    *
-   * @param cause The cause of the failure.
-   * @param errorCode See {@link #errorCode}.
-   * @return The created instance.
+   * @param cause 失败的原因。
+   * @param errorCode 参见 {@link #errorCode}。
+   * @return 创建的实例。
    */
   @UnstableApi
   public static ExoPlaybackException createForUnexpected(
@@ -192,10 +181,10 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * Creates an instance of type {@link #TYPE_REMOTE}.
+   * 创建一个类型为 {@link #TYPE_REMOTE} 的实例。
    *
-   * @param message The message associated with the error.
-   * @return The created instance.
+   * @param message 与错误相关的消息。
+   * @return 创建的实例。
    */
   @UnstableApi
   public static ExoPlaybackException createForRemote(String message) {
@@ -290,11 +279,10 @@ public final class ExoPlaybackException extends PlaybackException {
     this.mediaPeriodId = mediaPeriodId;
     this.isRecoverable = isRecoverable;
   }
-
   /**
-   * Retrieves the underlying error when {@link #type} is {@link #TYPE_SOURCE}.
+   * 当 {@link #type} 为 {@link #TYPE_SOURCE} 时，获取底层错误。
    *
-   * @throws IllegalStateException If {@link #type} is not {@link #TYPE_SOURCE}.
+   * @throws IllegalStateException 如果 {@link #type} 不是 {@link #TYPE_SOURCE}。
    */
   @UnstableApi
   public IOException getSourceException() {
@@ -303,9 +291,9 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * Retrieves the underlying error when {@link #type} is {@link #TYPE_RENDERER}.
+   * 当 {@link #type} 为 {@link #TYPE_RENDERER} 时，获取底层错误。
    *
-   * @throws IllegalStateException If {@link #type} is not {@link #TYPE_RENDERER}.
+   * @throws IllegalStateException 如果 {@link #type} 不是 {@link #TYPE_RENDERER}。
    */
   @UnstableApi
   public Exception getRendererException() {
@@ -314,9 +302,9 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * Retrieves the underlying error when {@link #type} is {@link #TYPE_UNEXPECTED}.
+   * 当 {@link #type} 为 {@link #TYPE_UNEXPECTED} 时，获取底层错误。
    *
-   * @throws IllegalStateException If {@link #type} is not {@link #TYPE_UNEXPECTED}.
+   * @throws IllegalStateException 如果 {@link #type} 不是 {@link #TYPE_UNEXPECTED}。
    */
   @UnstableApi
   public RuntimeException getUnexpectedException() {
@@ -329,8 +317,7 @@ public final class ExoPlaybackException extends PlaybackException {
     if (!super.errorInfoEquals(that)) {
       return false;
     }
-    // We know that is not null and is an ExoPlaybackException because of the super call returning
-    // true.
+    // 我们知道 that 不为 null 且是 ExoPlaybackException，因为 super 调用返回了 true。
     ExoPlaybackException other = (ExoPlaybackException) Util.castNonNull(that);
     return type == other.type
         && Util.areEqual(rendererName, other.rendererName)
@@ -342,10 +329,10 @@ public final class ExoPlaybackException extends PlaybackException {
   }
 
   /**
-   * Returns a copy of this exception with the provided {@link MediaPeriodId}.
+   * 返回带有指定 {@link MediaPeriodId} 的此异常的副本。
    *
-   * @param mediaPeriodId The {@link MediaPeriodId}.
-   * @return The copied exception.
+   * @param mediaPeriodId {@link MediaPeriodId}。
+   * @return 复制的异常。
    */
   @CheckResult
   /* package */ ExoPlaybackException copyWithMediaPeriodId(@Nullable MediaPeriodId mediaPeriodId) {
@@ -421,8 +408,7 @@ public final class ExoPlaybackException extends PlaybackException {
   /**
    * {@inheritDoc}
    *
-   * <p>It omits the {@link #mediaPeriodId} field. The {@link #mediaPeriodId} of an instance
-   * restored by {@link #fromBundle} will always be {@code null}.
+   * <p>它省略了 {@link #mediaPeriodId} 字段。通过 {@link #fromBundle} 恢复的实例的 {@link #mediaPeriodId} 始终为 {@code null}。
    */
   @UnstableApi
   @Override

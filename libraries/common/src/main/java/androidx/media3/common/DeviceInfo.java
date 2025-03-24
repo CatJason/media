@@ -16,29 +16,29 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Information about the playback device. */
+/** 播放设备的信息。 */
 public final class DeviceInfo {
 
-  /** Types of playback. One of {@link #PLAYBACK_TYPE_LOCAL} or {@link #PLAYBACK_TYPE_REMOTE}. */
+  /** 播放类型。取值为 {@link #PLAYBACK_TYPE_LOCAL} 或 {@link #PLAYBACK_TYPE_REMOTE}。 */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    PLAYBACK_TYPE_LOCAL,
-    PLAYBACK_TYPE_REMOTE,
+      PLAYBACK_TYPE_LOCAL,
+      PLAYBACK_TYPE_REMOTE,
   })
   public @interface PlaybackType {}
 
-  /** Playback happens on the local device (e.g. phone). */
+  /** 播放发生在本地设备上（例如手机）。 */
   public static final int PLAYBACK_TYPE_LOCAL = 0;
 
-  /** Playback happens outside of the device (e.g. a cast device). */
+  /** 播放发生在设备外部（例如投屏设备）。 */
   public static final int PLAYBACK_TYPE_REMOTE = 1;
 
-  /** Unknown DeviceInfo. */
+  /** 未知的 DeviceInfo。 */
   public static final DeviceInfo UNKNOWN = new Builder(PLAYBACK_TYPE_LOCAL).build();
 
-  /** Builder for {@link DeviceInfo}. */
+  /** {@link DeviceInfo} 的构建器。 */
   public static final class Builder {
 
     private final @PlaybackType int playbackType;
@@ -48,21 +48,21 @@ public final class DeviceInfo {
     @Nullable private String routingControllerId;
 
     /**
-     * Creates the builder.
+     * 创建构建器。
      *
-     * @param playbackType The {@link PlaybackType}.
+     * @param playbackType 播放类型。
      */
     public Builder(@PlaybackType int playbackType) {
       this.playbackType = playbackType;
     }
 
     /**
-     * Sets the minimum supported device volume.
+     * 设置设备支持的最小音量。
      *
-     * <p>The minimum will be set to {@code 0} if not specified.
+     * <p>如果未指定，最小值将设置为 {@code 0}。
      *
-     * @param minVolume The minimum device volume.
-     * @return This builder.
+     * @param minVolume 设备的最小音量。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMinVolume(@IntRange(from = 0) int minVolume) {
@@ -71,10 +71,10 @@ public final class DeviceInfo {
     }
 
     /**
-     * Sets the maximum supported device volume.
+     * 设置设备支持的最大音量。
      *
-     * @param maxVolume The maximum device volume, or {@code 0} to leave the maximum unspecified.
-     * @return This builder.
+     * @param maxVolume 设备的最大音量，或 {@code 0} 表示不指定最大值。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxVolume(@IntRange(from = 0) int maxVolume) {
@@ -83,19 +83,14 @@ public final class DeviceInfo {
     }
 
     /**
-     * Sets the {@linkplain MediaRouter2.RoutingController#getId() routing controller id} of the
-     * associated {@link MediaRouter2.RoutingController}.
+     * 设置关联的 {@link MediaRouter2.RoutingController} 的 {@linkplain MediaRouter2.RoutingController#getId() 路由控制器 ID}。
      *
-     * <p>This id allows mapping this device information to a routing controller, which provides
-     * information about the media route and allows controlling its volume.
+     * <p>此 ID 允许将此设备信息映射到路由控制器，路由控制器提供有关媒体路由的信息并允许控制其音量。
      *
-     * <p>The set value must be null if {@link DeviceInfo#playbackType} is {@link
-     * #PLAYBACK_TYPE_LOCAL}.
+     * <p>如果 {@link DeviceInfo#playbackType} 是 {@link #PLAYBACK_TYPE_LOCAL}，则设置的值必须为 null。
      *
-     * @param routingControllerId The {@linkplain MediaRouter2.RoutingController#getId() routing
-     *     controller id} of the associated {@link MediaRouter2.RoutingController}, or null to leave
-     *     it unspecified.
-     * @return This builder.
+     * @param routingControllerId 关联的 {@link MediaRouter2.RoutingController} 的 {@linkplain MediaRouter2.RoutingController#getId() 路由控制器 ID}，或 null 表示不指定。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setRoutingControllerId(@Nullable String routingControllerId) {
@@ -104,36 +99,33 @@ public final class DeviceInfo {
       return this;
     }
 
-    /** Builds the {@link DeviceInfo}. */
+    /** 构建 {@link DeviceInfo}。 */
     public DeviceInfo build() {
       Assertions.checkArgument(minVolume <= maxVolume);
       return new DeviceInfo(this);
     }
   }
 
-  /** The type of playback. */
+  /** 播放类型。 */
   public final @PlaybackType int playbackType;
 
-  /** The minimum volume that the device supports. */
+  /** 设备支持的最小音量。 */
   @IntRange(from = 0)
   public final int minVolume;
 
-  /** The maximum volume that the device supports, or {@code 0} if unspecified. */
+  /** 设备支持的最大音量，或 {@code 0} 表示未指定。 */
   @IntRange(from = 0)
   public final int maxVolume;
 
   /**
-   * The {@linkplain MediaRouter2.RoutingController#getId() routing controller id} of the associated
-   * {@link MediaRouter2.RoutingController}, or null if unset or {@link #playbackType} is {@link
-   * #PLAYBACK_TYPE_LOCAL}.
+   * 关联的 {@link MediaRouter2.RoutingController} 的 {@linkplain MediaRouter2.RoutingController#getId() 路由控制器 ID}，或 null 表示未设置或 {@link #playbackType} 为 {@link #PLAYBACK_TYPE_LOCAL}。
    *
-   * <p>This id allows mapping this device information to a routing controller, which provides
-   * information about the media route and allows controlling its volume.
+   * <p>此 ID 允许将此设备信息映射到路由控制器，路由控制器提供有关媒体路由的信息并允许控制其音量。
    */
   @Nullable public final String routingControllerId;
 
   /**
-   * @deprecated Use {@link Builder} instead.
+   * @deprecated 请使用 {@link Builder} 代替。
    */
   @UnstableApi
   @Deprecated
@@ -199,7 +191,7 @@ public final class DeviceInfo {
     return bundle;
   }
 
-  /** Restores a {@code DeviceInfo} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复 {@code DeviceInfo}。 */
   @UnstableApi
   public static DeviceInfo fromBundle(Bundle bundle) {
     int playbackType = bundle.getInt(FIELD_PLAYBACK_TYPE, /* defaultValue= */ PLAYBACK_TYPE_LOCAL);

@@ -8,19 +8,15 @@ import androidx.media3.common.util.Util;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 /**
- * Attributes for audio playback, which configure the underlying platform {@link
- * android.media.AudioTrack}.
+ * 音频播放属性，用于配置底层的 {@link android.media.AudioTrack}。
  *
- * <p>To set the audio attributes, create an instance using the {@link Builder} and either pass it
- * to the player or send a message of type {@code Renderer#MSG_SET_AUDIO_ATTRIBUTES} to the audio
- * renderers.
+ * <p>要设置音频属性，请使用 {@link Builder} 创建实例，并将其传递给播放器，或向音频渲染器发送类型为 {@code Renderer#MSG_SET_AUDIO_ATTRIBUTES} 的消息。
  *
- * <p>This class is based on {@link android.media.AudioAttributes}, but can be used on all supported
- * API versions.
+ * <p>此类基于 {@link android.media.AudioAttributes}，但可以在所有支持的 API 版本上使用。
  */
 public final class AudioAttributes {
 
-  /** A direct wrapper around {@link android.media.AudioAttributes}. */
+  /** {@link android.media.AudioAttributes} 的直接封装类。 */
   public static final class AudioAttributesV21 {
     public final android.media.AudioAttributes audioAttributes;
 
@@ -41,13 +37,11 @@ public final class AudioAttributes {
   }
 
   /**
-   * The default audio attributes, where the content type is {@link C#AUDIO_CONTENT_TYPE_UNKNOWN},
-   * usage is {@link C#USAGE_MEDIA}, capture policy is {@link C#ALLOW_CAPTURE_BY_ALL} and no flags
-   * are set.
+   * 默认的音频属性，其中内容类型为 {@link C#AUDIO_CONTENT_TYPE_UNKNOWN}，用途为 {@link C#USAGE_MEDIA}，捕获策略为 {@link C#ALLOW_CAPTURE_BY_ALL}，且未设置任何标志。
    */
   public static final AudioAttributes DEFAULT = new Builder().build();
 
-  /** Builder for {@link AudioAttributes}. */
+  /** {@link AudioAttributes} 的构建器。 */
   public static final class Builder {
 
     private @C.AudioContentType int contentType;
@@ -57,10 +51,9 @@ public final class AudioAttributes {
     private @C.SpatializationBehavior int spatializationBehavior;
 
     /**
-     * Creates a new builder for {@link AudioAttributes}.
+     * 创建一个新的 {@link AudioAttributes} 构建器。
      *
-     * <p>By default the content type is {@link C#AUDIO_CONTENT_TYPE_UNKNOWN}, usage is {@link
-     * C#USAGE_MEDIA}, capture policy is {@link C#ALLOW_CAPTURE_BY_ALL} and no flags are set.
+     * <p>默认情况下，内容类型为 {@link C#AUDIO_CONTENT_TYPE_UNKNOWN}，用途为 {@link C#USAGE_MEDIA}，捕获策略为 {@link C#ALLOW_CAPTURE_BY_ALL}，且未设置任何标志。
      */
     public Builder() {
       contentType = C.AUDIO_CONTENT_TYPE_UNKNOWN;
@@ -70,61 +63,61 @@ public final class AudioAttributes {
       spatializationBehavior = C.SPATIALIZATION_BEHAVIOR_AUTO;
     }
 
-    /** See {@link android.media.AudioAttributes.Builder#setContentType(int)} */
+    /** 参见 {@link android.media.AudioAttributes.Builder#setContentType(int)} */
     @CanIgnoreReturnValue
     public Builder setContentType(@C.AudioContentType int contentType) {
       this.contentType = contentType;
       return this;
     }
 
-    /** See {@link android.media.AudioAttributes.Builder#setFlags(int)} */
+    /** 参见 {@link android.media.AudioAttributes.Builder#setFlags(int)} */
     @CanIgnoreReturnValue
     public Builder setFlags(@C.AudioFlags int flags) {
       this.flags = flags;
       return this;
     }
 
-    /** See {@link android.media.AudioAttributes.Builder#setUsage(int)} */
+    /** 参见 {@link android.media.AudioAttributes.Builder#setUsage(int)} */
     @CanIgnoreReturnValue
     public Builder setUsage(@C.AudioUsage int usage) {
       this.usage = usage;
       return this;
     }
 
-    /** See {@link android.media.AudioAttributes.Builder#setAllowedCapturePolicy(int)}. */
+    /** 参见 {@link android.media.AudioAttributes.Builder#setAllowedCapturePolicy(int)}。 */
     @CanIgnoreReturnValue
     public Builder setAllowedCapturePolicy(@C.AudioAllowedCapturePolicy int allowedCapturePolicy) {
       this.allowedCapturePolicy = allowedCapturePolicy;
       return this;
     }
 
-    /** See {@link android.media.AudioAttributes.Builder#setSpatializationBehavior(int)}. */
+    /** 参见 {@link android.media.AudioAttributes.Builder#setSpatializationBehavior(int)}。 */
     @CanIgnoreReturnValue
     public Builder setSpatializationBehavior(@C.SpatializationBehavior int spatializationBehavior) {
       this.spatializationBehavior = spatializationBehavior;
       return this;
     }
 
-    /** Creates an {@link AudioAttributes} instance from this builder. */
+    /** 从该构建器创建 {@link AudioAttributes} 实例。 */
     public AudioAttributes build() {
       return new AudioAttributes(
           contentType, flags, usage, allowedCapturePolicy, spatializationBehavior);
     }
   }
 
-  /** The {@link C.AudioContentType}. */
+  /** {@link C.AudioContentType}。 */
   public final @C.AudioContentType int contentType;
 
-  /** The {@link C.AudioFlags}. */
+  /** {@link C.AudioFlags}。 */
   public final @C.AudioFlags int flags;
 
-  /** The {@link C.AudioUsage}. */
+  /** {@link C.AudioUsage}。 */
   public final @C.AudioUsage int usage;
 
-  /** The {@link C.AudioAllowedCapturePolicy}. */
+  /** {@link C.AudioAllowedCapturePolicy}。 */
   public final @C.AudioAllowedCapturePolicy int allowedCapturePolicy;
 
-  /** The {@link C.SpatializationBehavior}. */
+  /** {@link C.SpatializationBehavior}。 */
   public final @C.SpatializationBehavior int spatializationBehavior;
 
   @Nullable private AudioAttributesV21 audioAttributesV21;
@@ -143,10 +136,9 @@ public final class AudioAttributes {
   }
 
   /**
-   * Returns a {@link AudioAttributesV21} from this instance.
+   * 从该实例返回一个 {@link AudioAttributesV21}。
    *
-   * <p>Some fields are ignored if the corresponding {@link android.media.AudioAttributes.Builder}
-   * setter is not available on the current API level.
+   * <p>如果当前 API 级别不支持相应的 {@link android.media.AudioAttributes.Builder} 设置方法，则某些字段将被忽略。
    */
   public AudioAttributesV21 getAudioAttributesV21() {
     if (audioAttributesV21 == null) {
@@ -199,7 +191,7 @@ public final class AudioAttributes {
     return bundle;
   }
 
-  /** Restores a {@code AudioAttributes} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复 {@code AudioAttributes}。 */
   @UnstableApi
   public static AudioAttributes fromBundle(Bundle bundle) {
     Builder builder = new Builder();

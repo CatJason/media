@@ -5,25 +5,24 @@ import androidx.media3.common.util.UnstableApi;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-/** A {@link VideoGraph} specific to previewing. */
+/** 用于预览的 {@link VideoGraph}。 */
 @UnstableApi
 public interface PreviewingVideoGraph extends VideoGraph {
 
-  /** A factory for creating a {@link PreviewingVideoGraph}. */
+  /** 用于创建 {@link PreviewingVideoGraph} 的工厂接口。 */
   interface Factory {
     /**
-     * Creates a new {@link PreviewingVideoGraph} instance.
+     * 创建一个新的 {@link PreviewingVideoGraph} 实例。
      *
-     * @param context A {@link Context}.
-     * @param outputColorInfo The {@link ColorInfo} for the output frames.
-     * @param debugViewProvider A {@link DebugViewProvider}.
-     * @param listener A {@link Listener}.
-     * @param listenerExecutor The {@link Executor} on which the {@code listener} is invoked.
-     * @param compositionEffects A list of {@linkplain Effect effects} to apply to the composition.
-     * @param initialTimestampOffsetUs The timestamp offset for the first frame, in microseconds.
-     * @return A new instance.
-     * @throws VideoFrameProcessingException If a problem occurs while creating the {@link
-     *     VideoFrameProcessor}.
+     * @param context 一个 {@link Context}。
+     * @param outputColorInfo 输出帧的 {@link ColorInfo}。
+     * @param debugViewProvider 一个 {@link DebugViewProvider}。
+     * @param listener 一个 {@link Listener}。
+     * @param listenerExecutor 调用 {@code listener} 的 {@link Executor}。
+     * @param compositionEffects 应用于合成的 {@linkplain Effect 效果} 列表。
+     * @param initialTimestampOffsetUs 第一帧的时间戳偏移量，以微秒为单位。
+     * @return 一个新的实例。
+     * @throws VideoFrameProcessingException 如果创建 {@link VideoFrameProcessor} 时出现问题。
      */
     PreviewingVideoGraph create(
         Context context,
@@ -37,20 +36,18 @@ public interface PreviewingVideoGraph extends VideoGraph {
   }
 
   /**
-   * Renders the oldest unrendered output frame that has become {@linkplain
-   * Listener#onOutputFrameAvailableForRendering(long) available for rendering} at the given {@code
-   * renderTimeNs}.
+   * 渲染最早未渲染的输出帧，该帧在给定的 {@code renderTimeNs} 时已 {@linkplain
+   * Listener#onOutputFrameAvailableForRendering(long) 可用于渲染}。
    *
-   * <p>This will either render the output frame to the {@linkplain #setOutputSurfaceInfo output
-   * surface}, or drop the frame, per {@code renderTimeNs}.
+   * <p>这将根据 {@code renderTimeNs} 将输出帧渲染到 {@linkplain #setOutputSurfaceInfo 输出
+   * 表面}，或丢弃该帧。
    *
-   * <p>The {@code renderTimeNs} may be passed to {@link
-   * android.opengl.EGLExt#eglPresentationTimeANDROID} depending on the implementation.
+   * <p>根据实现，{@code renderTimeNs} 可能会传递给 {@link
+   * android.opengl.EGLExt#eglPresentationTimeANDROID}。
    *
-   * @param renderTimeNs The render time to use for the frame, in nanoseconds. The render time can
-   *     be before or after the current system time. Use {@link
-   *     VideoFrameProcessor#DROP_OUTPUT_FRAME} to drop the frame, or {@link
-   *     VideoFrameProcessor#RENDER_OUTPUT_FRAME_IMMEDIATELY} to render the frame immediately.
+   * @param renderTimeNs 用于帧的渲染时间，以纳秒为单位。渲染时间可以在当前系统时间之前或之后。使用 {@link
+   *     VideoFrameProcessor#DROP_OUTPUT_FRAME} 丢弃帧，或使用 {@link
+   *     VideoFrameProcessor#RENDER_OUTPUT_FRAME_IMMEDIATELY} 立即渲染帧。
    */
   void renderOutputFrame(long renderTimeNs);
 }

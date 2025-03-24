@@ -10,7 +10,7 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import com.google.common.base.Objects;
 
-/** A rating expressed as a fractional number of stars. */
+/** 以分数表示的星级评分。 */
 public final class StarRating extends Rating {
 
   @IntRange(from = 1)
@@ -19,10 +19,9 @@ public final class StarRating extends Rating {
   private final float starRating;
 
   /**
-   * Creates a unrated instance with {@code maxStars}. If {@code maxStars} is not a positive
-   * integer, it will throw an {@link IllegalArgumentException}.
+   * 创建一个未评分的实例，指定 {@code maxStars}。如果 {@code maxStars} 不是正整数，则会抛出 {@link IllegalArgumentException}。
    *
-   * @param maxStars The maximum number of stars this rating can have.
+   * @param maxStars 该评分可以拥有的最大星数。
    */
   public StarRating(@IntRange(from = 1) int maxStars) {
     checkArgument(maxStars > 0, "maxStars must be a positive integer");
@@ -31,14 +30,10 @@ public final class StarRating extends Rating {
   }
 
   /**
-   * Creates a rated instance with {@code maxStars} and the given fractional number of stars.
-   * Non-integer values may be used to represent an average rating value. If {@code maxStars} is not
-   * a positive integer or {@code starRating} is out of range, it will throw an {@link
-   * IllegalArgumentException}.
+   * 创建一个已评分的实例，指定 {@code maxStars} 和给定的分数星数。非整数值可用于表示平均评分。如果 {@code maxStars} 不是正整数或 {@code starRating} 超出范围，则会抛出 {@link IllegalArgumentException}。
    *
-   * @param maxStars The maximum number of stars this rating can have.
-   * @param starRating A fractional number of stars of this rating from {@code 0f} to {@code
-   *     maxStars}.
+   * @param maxStars 该评分可以拥有的最大星数。
+   * @param starRating 该评分的分数星数，范围从 {@code 0f} 到 {@code maxStars}。
    */
   public StarRating(@IntRange(from = 1) int maxStars, @FloatRange(from = 0.0) float starRating) {
     checkArgument(maxStars > 0, "maxStars must be a positive integer");
@@ -53,15 +48,14 @@ public final class StarRating extends Rating {
     return starRating != RATING_UNSET;
   }
 
-  /** Returns the maximum number of stars. Must be a positive number. */
+  /** 返回最大星数。必须为正数。 */
   @IntRange(from = 1)
   public int getMaxStars() {
     return maxStars;
   }
 
   /**
-   * Returns the fractional number of stars of this rating. Will range from {@code 0f} to {@link
-   * #maxStars}, or {@link #RATING_UNSET} if unrated.
+   * 返回该评分的分数星数。范围从 {@code 0f} 到 {@link #maxStars}，如果未评分则返回 {@link #RATING_UNSET}。
    */
   public float getStarRating() {
     return starRating;
@@ -97,7 +91,7 @@ public final class StarRating extends Rating {
     return bundle;
   }
 
-  /** Restores a {@code StarRating} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code StarRating}。 */
   @UnstableApi
   public static StarRating fromBundle(Bundle bundle) {
     checkArgument(bundle.getInt(FIELD_RATING_TYPE, /* defaultValue= */ RATING_TYPE_UNSET) == TYPE);

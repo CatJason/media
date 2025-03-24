@@ -8,37 +8,34 @@ import androidx.media3.common.util.Assertions;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
-/** Parameters that apply to playback, including speed setting. */
+/** 适用于播放的参数，包括速度设置。 */
 public final class PlaybackParameters {
 
-  /** The default playback parameters: real-time playback with no silence skipping. */
+  /** 默认的播放参数：实时播放，不跳过静音。 */
   public static final PlaybackParameters DEFAULT = new PlaybackParameters(/* speed= */ 1f);
 
-  /** The factor by which playback will be sped up. */
+  /** 播放速度的倍数。 */
   public final float speed;
 
-  /** The factor by which pitch will be shifted. */
+  /** 音高调整的倍数。 */
   public final float pitch;
 
   private final int scaledUsPerMs;
 
   /**
-   * Creates new playback parameters that set the playback speed. The pitch of audio will not be
-   * adjusted, so the effect is to time-stretch the audio.
+   * 创建新的播放参数，设置播放速度。音频的音高不会调整，因此效果是拉伸音频时间。
    *
-   * @param speed The factor by which playback will be sped up. Must be greater than zero.
+   * @param speed 播放速度的倍数。必须大于零。
    */
   public PlaybackParameters(@FloatRange(from = 0, fromInclusive = false) float speed) {
     this(speed, /* pitch= */ 1f);
   }
 
   /**
-   * Creates new playback parameters that set the playback speed/pitch.
+   * 创建新的播放参数，设置播放速度和音高。
    *
-   * @param speed The factor by which playback will be sped up. Must be greater than zero.
-   * @param pitch The factor by which the pitch of audio will be adjusted. Must be greater than
-   *     zero. Useful values are {@code 1} (to time-stretch audio) and the same value as passed in
-   *     as the {@code speed} (to resample audio, which is useful for slow-motion videos).
+   * @param speed 播放速度的倍数。必须大于零。
+   * @param pitch 音频音高调整的倍数。必须大于零。常用的值为 {@code 1}（用于拉伸音频时间）和与 {@code speed} 相同的值（用于重新采样音频，适用于慢动作视频）。
    */
   public PlaybackParameters(
       @FloatRange(from = 0, fromInclusive = false) float speed,
@@ -51,11 +48,10 @@ public final class PlaybackParameters {
   }
 
   /**
-   * Returns the media time in microseconds that will elapse in {@code timeMs} milliseconds of
-   * wallclock time.
+   * 返回在 {@code timeMs} 毫秒的墙钟时间内将流逝的媒体时间（以微秒为单位）。
    *
-   * @param timeMs The time to scale, in milliseconds.
-   * @return The scaled time, in microseconds.
+   * @param timeMs 要缩放的时间，以毫秒为单位。
+   * @return 缩放后的时间，以微秒为单位。
    */
   @UnstableApi
   public long getMediaTimeUsForPlayoutTimeMs(long timeMs) {
@@ -63,10 +59,10 @@ public final class PlaybackParameters {
   }
 
   /**
-   * Returns a copy with the given speed.
+   * 返回具有给定速度的副本。
    *
-   * @param speed The new speed. Must be greater than zero.
-   * @return The copied playback parameters.
+   * @param speed 新的速度。必须大于零。
+   * @return 复制后的播放参数。
    */
   @CheckResult
   public PlaybackParameters withSpeed(@FloatRange(from = 0, fromInclusive = false) float speed) {
@@ -109,7 +105,7 @@ public final class PlaybackParameters {
     return bundle;
   }
 
-  /** Restores a {@code PlaybackParameters} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code PlaybackParameters}。 */
   @UnstableApi
   public static PlaybackParameters fromBundle(Bundle bundle) {
     float speed = bundle.getFloat(FIELD_SPEED, /* defaultValue= */ 1f);

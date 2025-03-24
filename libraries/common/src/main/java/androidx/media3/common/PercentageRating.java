@@ -9,20 +9,20 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import com.google.common.base.Objects;
 
-/** A rating expressed as a percentage. */
+/** 以百分比表示的评分。 */
 public final class PercentageRating extends Rating {
 
   private final float percent;
 
-  /** Creates a unrated instance. */
+  /** 创建一个未评分的实例。 */
   public PercentageRating() {
     percent = RATING_UNSET;
   }
 
   /**
-   * Creates a rated instance with the given percentage.
+   * 使用给定的百分比创建一个评分实例。
    *
-   * @param percent The percentage value of the rating.
+   * @param percent 评分的百分比值。
    */
   public PercentageRating(@FloatRange(from = 0, to = 100) float percent) {
     checkArgument(percent >= 0.0f && percent <= 100.0f, "percent must be in the range of [0, 100]");
@@ -35,8 +35,7 @@ public final class PercentageRating extends Rating {
   }
 
   /**
-   * Returns the percent value of this rating. Will be within the range {@code [0f, 100f]}, or
-   * {@link #RATING_UNSET} if unrated.
+   * 返回此评分的百分比值。范围在 {@code [0f, 100f]} 之间，如果未评分则返回 {@link #RATING_UNSET}。
    */
   public float getPercent() {
     return percent;
@@ -68,7 +67,7 @@ public final class PercentageRating extends Rating {
     return bundle;
   }
 
-  /** Restores a {@code PercentageRating} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code PercentageRating}。 */
   @UnstableApi
   public static PercentageRating fromBundle(Bundle bundle) {
     checkArgument(bundle.getInt(FIELD_RATING_TYPE, /* defaultValue= */ RATING_TYPE_UNSET) == TYPE);

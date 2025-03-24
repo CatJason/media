@@ -249,17 +249,12 @@ public abstract class BasePlayer implements Player {
   }
 
   /**
-   * Seeks to a position in the specified {@link MediaItem}.
+   * 跳转到指定 {@link MediaItem} 中的某个位置。
    *
-   * @param mediaItemIndex The index of the {@link MediaItem}. If the original seek operation did
-   *     not directly specify an index, this is the most likely implied index based on the available
-   *     player state. If the implied action is to do nothing, this will be {@link C#INDEX_UNSET}.
-   * @param positionMs The seek position in the specified {@link MediaItem} in milliseconds, or
-   *     {@link C#TIME_UNSET} to seek to the media item's default position. If the original seek
-   *     operation did not directly specify a position, this is the most likely implied position
-   *     based on the available player state.
-   * @param seekCommand The {@link Player.Command} used to trigger the seek.
-   * @param isRepeatingCurrentItem Whether this seeks repeats the current item.
+   * @param mediaItemIndex {@link MediaItem} 的索引。如果原始跳转操作未直接指定索引，则这是基于当前播放器状态最可能的隐含索引。如果隐含的操作是不执行任何操作，则此值为 {@link C#INDEX_UNSET}。
+   * @param positionMs 指定 {@link MediaItem} 中的跳转位置（以毫秒为单位），或 {@link C#TIME_UNSET} 以跳转到媒体项的默认位置。如果原始跳转操作未直接指定位置，则这是基于当前播放器状态最可能的隐含位置。
+   * @param seekCommand 用于触发跳转的 {@link Player.Command}。
+   * @param isRepeatingCurrentItem 此跳转是否重复当前媒体项。
    */
   @VisibleForTesting(otherwise = PROTECTED)
   public abstract void seekTo(

@@ -6,40 +6,40 @@ import android.view.Surface;
 import androidx.annotation.Nullable;
 import androidx.media3.common.util.UnstableApi;
 
-/** Immutable value class for a {@link Surface} and supporting information. */
+/** 用于表示 {@link Surface} 及其相关信息的不可变值类。 */
 @UnstableApi
 public final class SurfaceInfo {
 
-  /** The {@link Surface}. */
+  /** {@link Surface} 对象。 */
   public final Surface surface;
 
-  /** The width of frames rendered to the {@link #surface}, in pixels. */
+  /** 渲染到 {@link #surface} 的帧的宽度，以像素为单位。 */
   public final int width;
 
-  /** The height of frames rendered to the {@link #surface}, in pixels. */
+  /** 渲染到 {@link #surface} 的帧的高度，以像素为单位。 */
   public final int height;
 
   /**
-   * A counter-clockwise rotation to apply to frames before rendering them to the {@link #surface}.
+   * 在将帧渲染到 {@link #surface} 之前，应用于帧的逆时针旋转角度。
    *
-   * <p>Must be 0, 90, 180, or 270 degrees. Default is 0.
+   * <p>必须为 0、90、180 或 270 度。默认值为 0。
    */
   public final int orientationDegrees;
 
-  /** Whether the {@link #surface} is an encoder input surface. */
+  /** {@link #surface} 是否为编码器输入表面。 */
   public final boolean isEncoderInputSurface;
 
-  /** Creates a new instance. */
+  /** 创建一个新实例。 */
   public SurfaceInfo(Surface surface, int width, int height) {
     this(surface, width, height, /* orientationDegrees= */ 0);
   }
 
-  /** Creates a new instance. */
+  /** 创建一个新实例。 */
   public SurfaceInfo(Surface surface, int width, int height, int orientationDegrees) {
     this(surface, width, height, orientationDegrees, /* isEncoderInputSurface= */ false);
   }
 
-  /** Creates a new instance. */
+  /** 创建一个新实例。 */
   public SurfaceInfo(
       Surface surface,
       int width,

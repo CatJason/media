@@ -5,17 +5,16 @@ import androidx.media3.common.C.DataType;
 import androidx.media3.common.util.UnstableApi;
 import java.io.IOException;
 
-/** Thrown when an error occurs parsing media data and metadata. */
+/** 当解析媒体数据或元数据时发生错误时抛出的异常。 */
 @UnstableApi
 public class ParserException extends IOException {
 
   /**
-   * Creates a new instance for which {@link #contentIsMalformed} is true and {@link #dataType} is
-   * {@link C#DATA_TYPE_UNKNOWN}.
+   * 创建一个新实例，其中 {@link #contentIsMalformed} 为 true，且 {@link #dataType} 为 {@link C#DATA_TYPE_UNKNOWN}。
    *
-   * @param message See {@link #getMessage()}.
-   * @param cause See {@link #getCause()}.
-   * @return The created instance.
+   * @param message 参见 {@link #getMessage()}。
+   * @param cause 参见 {@link #getCause()}。
+   * @return 创建的实例。
    */
   public static ParserException createForMalformedDataOfUnknownType(
       @Nullable String message, @Nullable Throwable cause) {
@@ -23,12 +22,11 @@ public class ParserException extends IOException {
   }
 
   /**
-   * Creates a new instance for which {@link #contentIsMalformed} is true and {@link #dataType} is
-   * {@link C#DATA_TYPE_MEDIA}.
+   * 创建一个新实例，其中 {@link #contentIsMalformed} 为 true，且 {@link #dataType} 为 {@link C#DATA_TYPE_MEDIA}。
    *
-   * @param message See {@link #getMessage()}.
-   * @param cause See {@link #getCause()}.
-   * @return The created instance.
+   * @param message 参见 {@link #getMessage()}。
+   * @param cause 参见 {@link #getCause()}。
+   * @return 创建的实例。
    */
   public static ParserException createForMalformedContainer(
       @Nullable String message, @Nullable Throwable cause) {
@@ -36,12 +34,11 @@ public class ParserException extends IOException {
   }
 
   /**
-   * Creates a new instance for which {@link #contentIsMalformed} is true and {@link #dataType} is
-   * {@link C#DATA_TYPE_MANIFEST}.
+   * 创建一个新实例，其中 {@link #contentIsMalformed} 为 true，且 {@link #dataType} 为 {@link C#DATA_TYPE_MANIFEST}。
    *
-   * @param message See {@link #getMessage()}.
-   * @param cause See {@link #getCause()}.
-   * @return The created instance.
+   * @param message 参见 {@link #getMessage()}。
+   * @param cause 参见 {@link #getCause()}。
+   * @return 创建的实例。
    */
   public static ParserException createForMalformedManifest(
       @Nullable String message, @Nullable Throwable cause) {
@@ -50,12 +47,11 @@ public class ParserException extends IOException {
   }
 
   /**
-   * Creates a new instance for which {@link #contentIsMalformed} is false and {@link #dataType} is
-   * {@link C#DATA_TYPE_MANIFEST}.
+   * 创建一个新实例，其中 {@link #contentIsMalformed} 为 false，且 {@link #dataType} 为 {@link C#DATA_TYPE_MANIFEST}。
    *
-   * @param message See {@link #getMessage()}.
-   * @param cause See {@link #getCause()}.
-   * @return The created instance.
+   * @param message 参见 {@link #getMessage()}。
+   * @param cause 参见 {@link #getCause()}。
+   * @return 创建的实例。
    */
   public static ParserException createForManifestWithUnsupportedFeature(
       @Nullable String message, @Nullable Throwable cause) {
@@ -64,11 +60,10 @@ public class ParserException extends IOException {
   }
 
   /**
-   * Creates a new instance for which {@link #contentIsMalformed} is false and {@link #dataType} is
-   * {@link C#DATA_TYPE_MEDIA}.
+   * 创建一个新实例，其中 {@link #contentIsMalformed} 为 false，且 {@link #dataType} 为 {@link C#DATA_TYPE_MEDIA}。
    *
-   * @param message See {@link #getMessage()}.
-   * @return The created instance.
+   * @param message 参见 {@link #getMessage()}。
+   * @return 创建的实例。
    */
   public static ParserException createForUnsupportedContainerFeature(@Nullable String message) {
     return new ParserException(
@@ -76,12 +71,11 @@ public class ParserException extends IOException {
   }
 
   /**
-   * Whether the parsing error was caused by a bitstream not following the expected format. May be
-   * false when a parser encounters a legal condition which it does not support.
+   * 解析错误是否由于比特流未遵循预期格式引起。如果解析器遇到合法但不支持的条件，则可能为 false。
    */
   public final boolean contentIsMalformed;
 
-  /** The {@link DataType data type} of the parsed bitstream. */
+  /** 解析的比特流的 {@link DataType 数据类型}。 */
   public final int dataType;
 
   protected ParserException(

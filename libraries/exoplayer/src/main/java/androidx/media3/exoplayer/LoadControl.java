@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2016 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非遵守许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发软件，
+ * 没有任何明示或暗示的担保或条件。
+ * 有关特定语言的管理权限和限制，请参阅许可证。
  */
 package androidx.media3.exoplayer;
 
@@ -29,69 +27,61 @@ import androidx.media3.exoplayer.source.TrackGroupArray;
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection;
 import androidx.media3.exoplayer.upstream.Allocator;
 
-/** Controls buffering of media. */
+/** 控制媒体的缓冲。 */
 @UnstableApi
 public interface LoadControl {
 
   /**
-   * Information about the current playback context and the {@link MediaPeriod} for which {@link
-   * LoadControl} methods are called.
+   * 关于当前播放上下文以及调用 {@link LoadControl} 方法的 {@link MediaPeriod} 的信息。
    */
   final class Parameters {
-    /** The {@linkplain PlayerId ID of the player}. */
+    /** 播放器的 {@linkplain PlayerId ID}。 */
     public final PlayerId playerId;
 
-    /** The current {@link Timeline} of the player. */
+    /** 播放器当前的 {@link Timeline}。 */
     public final Timeline timeline;
 
     /**
-     * The {@link MediaPeriodId} of the affected {@link MediaPeriod} in the current {@link
-     * #timeline}.
+     * 当前 {@link #timeline} 中受影响的 {@link MediaPeriod} 的 {@link MediaPeriodId}。
      */
     public final MediaPeriodId mediaPeriodId;
 
     /**
-     * The current playback position in microseconds, relative to the start of the affected {@link
-     * MediaPeriod} identified by {@link #mediaPeriodId}. If playback of this period has not yet
-     * started, the value will be negative and equal in magnitude to the duration of any media in
-     * previous periods still to be played.
+     * 当前播放位置，单位为微秒，相对于由 {@link #mediaPeriodId} 标识的 {@link MediaPeriod} 的开始位置。如果此时段的播放尚未开始，则该值为负数，其绝对值等于仍需播放的前一时段的媒体时长。
      */
     public final long playbackPositionUs;
 
-    /** The total duration of media that's currently buffered. */
+    /** 当前缓冲的媒体总时长。 */
     public final long bufferedDurationUs;
 
-    /** The current factor by which playback is sped up. */
+    /** 当前播放速度的加速因子。 */
     public final float playbackSpeed;
 
-    /** Whether playback should proceed when {@link Player#STATE_READY}. */
+    /** 当 {@link Player#STATE_READY} 时，是否应继续播放。 */
     public final boolean playWhenReady;
 
     /**
-     * Whether the player is rebuffering. A rebuffer is defined to be caused by buffer depletion
-     * rather than a user action. Hence this parameter is false during initial buffering and when
-     * buffering as a result of a seek operation.
+     * 播放器是否正在重新缓冲。重新缓冲定义为由缓冲区耗尽引起，而不是用户操作。因此，在初始缓冲期间或由于搜索操作导致的缓冲期间，此参数为 false。
      */
     public final boolean rebuffering;
 
     /**
-     * The desired playback position offset to the live edge in microseconds, or {@link
-     * C#TIME_UNSET} if the media is not a live stream or no offset is configured.
+     * 期望的播放位置与直播边缘的偏移量，单位为微秒，如果媒体不是直播流或未配置偏移量，则为 {@link C#TIME_UNSET}。
      */
     public final long targetLiveOffsetUs;
 
     /**
-     * Creates parameters for {@link LoadControl} methods.
+     * 为 {@link LoadControl} 方法创建参数。
      *
-     * @param playerId See {@link #playerId}.
-     * @param timeline See {@link #timeline}.
-     * @param mediaPeriodId See {@link #mediaPeriodId}.
-     * @param playbackPositionUs See {@link #playbackPositionUs}.
-     * @param bufferedDurationUs See {@link #bufferedDurationUs}.
-     * @param playbackSpeed See {@link #playbackSpeed}.
-     * @param playWhenReady See {@link #playWhenReady}.
-     * @param rebuffering See {@link #rebuffering}.
-     * @param targetLiveOffsetUs See {@link #targetLiveOffsetUs}.
+     * @param playerId 参见 {@link #playerId}。
+     * @param timeline 参见 {@link #timeline}。
+     * @param mediaPeriodId 参见 {@link #mediaPeriodId}。
+     * @param playbackPositionUs 参见 {@link #playbackPositionUs}。
+     * @param bufferedDurationUs 参见 {@link #bufferedDurationUs}。
+     * @param playbackSpeed 参见 {@link #playbackSpeed}。
+     * @param playWhenReady 参见 {@link #playWhenReady}。
+     * @param rebuffering 参见 {@link #rebuffering}。
+     * @param targetLiveOffsetUs 参见 {@link #targetLiveOffsetUs}。
      */
     public Parameters(
         PlayerId playerId,
@@ -116,56 +106,50 @@ public interface LoadControl {
   }
 
   /**
-   * @deprecated Used as a placeholder when MediaPeriodId is unknown. Only used when the deprecated
-   *     methods {@link #onTracksSelected(Renderer[], TrackGroupArray, ExoTrackSelection[])} or
-   *     {@link #shouldStartPlayback(long, float, boolean, long)} are called.
+   * @deprecated 当 MediaPeriodId 未知时用作占位符。仅在调用已弃用的方法 {@link #onTracksSelected(Renderer[], TrackGroupArray, ExoTrackSelection[])} 或
+   *     {@link #shouldStartPlayback(long, float, boolean, long)} 时使用。
    */
   @Deprecated
   MediaPeriodId EMPTY_MEDIA_PERIOD_ID = new MediaPeriodId(/* periodUid= */ new Object());
 
   /**
-   * Called by the player when prepared with a new source.
+   * 当播放器准备好新源时调用。
    *
-   * @param playerId The {@linkplain PlayerId ID of the player} that prepared a new source.
+   * @param playerId 准备好新源的播放器的 {@linkplain PlayerId ID}。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   default void onPrepared(PlayerId playerId) {
     onPrepared();
   }
 
   /**
-   * @deprecated Use {@link #onPrepared(PlayerId)} instead.
+   * @deprecated 请使用 {@link #onPrepared(PlayerId)} 代替。
    */
   @Deprecated
   default void onPrepared() {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("onPrepared not implemented");
   }
 
   /**
-   * Called by the player when a track selection occurs.
+   * 当发生轨道选择时由播放器调用。
    *
-   * @param parameters containing the {@linkplain PlayerId ID of the player}, the current {@link
-   *     Timeline} in ExoPlayer, and the {@link MediaPeriod} for which the selection was made. Will
-   *     be {@link #EMPTY_MEDIA_PERIOD_ID} when {@code timeline} is empty.
-   * @param trackGroups The {@link TrackGroup}s from which the selection was made.
-   * @param trackSelections The track selections that were made.
+   * @param parameters 包含播放器的 {@linkplain PlayerId ID}、ExoPlayer 中的当前 {@link Timeline} 以及进行选择的 {@link MediaPeriod}。当 {@code timeline} 为空时，将为 {@link #EMPTY_MEDIA_PERIOD_ID}。
+   * @param trackGroups 进行选择的 {@link TrackGroup}。
+   * @param trackSelections 所做的轨道选择。
    */
   default void onTracksSelected(
       Parameters parameters,
       TrackGroupArray trackGroups,
       @NullableType ExoTrackSelection[] trackSelections) {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("onTracksSelected not implemented");
   }
 
   /**
-   * @deprecated Implement {@link #onTracksSelected(Parameters, TrackGroupArray,
-   *     ExoTrackSelection[])} instead.
+   * @deprecated 请实现 {@link #onTracksSelected(Parameters, TrackGroupArray, ExoTrackSelection[])} 代替。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   @Deprecated
   default void onTracksSelected(
       PlayerId playerId,
@@ -178,10 +162,9 @@ public interface LoadControl {
   }
 
   /**
-   * @deprecated Implement {@link #onTracksSelected(Parameters, TrackGroupArray,
-   *     ExoTrackSelection[])} instead.
+   * @deprecated 请实现 {@link #onTracksSelected(Parameters, TrackGroupArray, ExoTrackSelection[])} 代替。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   @Deprecated
   default void onTracksSelected(
       Timeline timeline,
@@ -193,135 +176,113 @@ public interface LoadControl {
   }
 
   /**
-   * @deprecated Implement {@link #onTracksSelected(Parameters, TrackGroupArray,
-   *     ExoTrackSelection[])} instead.
+   * @deprecated 请实现 {@link #onTracksSelected(Parameters, TrackGroupArray, ExoTrackSelection[])} 代替。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   @Deprecated
   default void onTracksSelected(
       Renderer[] renderers,
       TrackGroupArray trackGroups,
       @NullableType ExoTrackSelection[] trackSelections) {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("onTracksSelected not implemented");
   }
 
   /**
-   * Called by the player when stopped.
+   * 当播放器停止时调用。
    *
-   * @param playerId The {@linkplain PlayerId ID of the player} that was stopped.
+   * @param playerId 已停止的播放器的 {@linkplain PlayerId ID}。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   default void onStopped(PlayerId playerId) {
     onStopped();
   }
 
   /**
-   * @deprecated Implement {@link #onStopped(PlayerId)} instead.
+   * @deprecated 请实现 {@link #onStopped(PlayerId)} 代替。
    */
   @Deprecated
   default void onStopped() {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("onStopped not implemented");
   }
 
   /**
-   * Called by the player when released.
+   * 当播放器释放时调用。
    *
-   * @param playerId The {@linkplain PlayerId ID of the player} that was released.
+   * @param playerId 已释放的播放器的 {@linkplain PlayerId ID}。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   default void onReleased(PlayerId playerId) {
     onReleased();
   }
 
   /**
-   * @deprecated Implement {@link #onReleased(PlayerId)} instead.
+   * @deprecated 请实现 {@link #onReleased(PlayerId)} 代替。
    */
   @Deprecated
   default void onReleased() {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("onReleased not implemented");
   }
 
-  /** Returns the {@link Allocator} that should be used to obtain media buffer allocations. */
+  /** 返回应用于获取媒体缓冲区分配的 {@link Allocator}。 */
   Allocator getAllocator();
 
   /**
-   * Returns the duration of media to retain in the buffer prior to the current playback position,
-   * for fast backward seeking.
+   * 返回在当前播放位置之前保留在缓冲区中的媒体时长，用于快速向后搜索。
    *
-   * <p>Note: If {@link #retainBackBufferFromKeyframe()} is false then seeking in the back-buffer
-   * will only be fast if the back-buffer contains a keyframe prior to the seek position.
+   * <p>注意：如果 {@link #retainBackBufferFromKeyframe()} 为 false，则只有当后缓冲区包含搜索位置之前的关键帧时，向后搜索才会快速。
    *
-   * <p>Note: Implementations should return a single value. Dynamic changes to the back-buffer are
-   * not currently supported.
+   * <p>注意：实现应返回单个值。目前不支持动态更改后缓冲区。
    *
-   * @param playerId The {@linkplain PlayerId ID of the player} that requests the back buffer
-   *     duration.
-   * @return The duration of media to retain in the buffer prior to the current playback position,
-   *     in microseconds.
+   * @param playerId 请求后缓冲时长的播放器的 {@linkplain PlayerId ID}。
+   * @return 在当前播放位置之前保留在缓冲区中的媒体时长，单位为微秒。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   default long getBackBufferDurationUs(PlayerId playerId) {
     return getBackBufferDurationUs();
   }
 
   /**
-   * @deprecated Implements {@link #getBackBufferDurationUs(PlayerId)} instead.
+   * @deprecated 请实现 {@link #getBackBufferDurationUs(PlayerId)} 代替。
    */
   @Deprecated
   default long getBackBufferDurationUs() {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("getBackBufferDurationUs not implemented");
   }
 
   /**
-   * Returns whether media should be retained from the keyframe before the current playback position
-   * minus {@link #getBackBufferDurationUs()}, rather than any sample before or at that position.
+   * 返回是否应从当前播放位置减去 {@link #getBackBufferDurationUs()} 之前的关键帧保留媒体，而不是从该位置之前或该位置的任何样本保留。
    *
-   * <p>Warning: Returning true will cause the back-buffer size to depend on the spacing of
-   * keyframes in the media being played. Returning true is not recommended unless you control the
-   * media and are comfortable with the back-buffer size exceeding {@link
-   * #getBackBufferDurationUs()} by as much as the maximum duration between adjacent keyframes in
-   * the media.
+   * <p>警告：返回 true 将导致后缓冲区的大小取决于所播放媒体中关键帧的间距。除非您控制媒体并且能够接受后缓冲区大小超过 {@link
+   * #getBackBufferDurationUs()} 的最大关键帧间距，否则不建议返回 true。
    *
-   * <p>Note: Implementations should return a single value. Dynamic changes to the back-buffer are
-   * not currently supported.
+   * <p>注意：实现应返回单个值。目前不支持动态更改后缓冲区。
    *
-   * @param playerId The {@linkplain PlayerId ID of the player} that requests whether to retain the
-   *     back buffer from key frame.
-   * @return Whether media should be retained from the keyframe before the current playback position
-   *     minus {@link #getBackBufferDurationUs()}, rather than any sample before or at that
-   *     position.
+   * @param playerId 请求是否从关键帧保留后缓冲区的播放器的 {@linkplain PlayerId ID}。
+   * @return 是否应从当前播放位置减去 {@link #getBackBufferDurationUs()} 之前的关键帧保留媒体，而不是从该位置之前或该位置的任何样本保留。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   default boolean retainBackBufferFromKeyframe(PlayerId playerId) {
     return retainBackBufferFromKeyframe();
   }
 
   /**
-   * @deprecated Implements {@link #retainBackBufferFromKeyframe(PlayerId)} instead.
+   * @deprecated 请实现 {@link #retainBackBufferFromKeyframe(PlayerId)} 代替。
    */
   @Deprecated
   default boolean retainBackBufferFromKeyframe() {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("retainBackBufferFromKeyframe not implemented");
   }
 
   /**
-   * Called by the player to determine whether it should continue to load the source. If this method
-   * returns true, the {@link MediaPeriod} identified in the most recent {@link #onTracksSelected}
-   * call will continue being loaded.
+   * 由播放器调用以确定是否应继续加载源。如果此方法返回 true，则在最近的 {@link #onTracksSelected} 调用中标识的 {@link MediaPeriod} 将继续加载。
    *
-   * @param parameters Information about the playback context and the {@link MediaPeriod} that will
-   *     continue to load if this method returns {@code true}.
-   * @return Whether the loading should continue.
+   * @param parameters 关于播放上下文和将在此方法返回 {@code true} 时继续加载的 {@link MediaPeriod} 的信息。
+   * @return 是否应继续加载。
    */
   @SuppressWarnings("deprecation")
   default boolean shouldContinueLoading(Parameters parameters) {
@@ -330,45 +291,39 @@ public interface LoadControl {
   }
 
   /**
-   * @deprecated Implement {@link #shouldContinueLoading(Parameters)} instead.
+   * @deprecated 请实现 {@link #shouldContinueLoading(Parameters)} 代替。
    */
   @Deprecated
   default boolean shouldContinueLoading(
       long playbackPositionUs, long bufferedDurationUs, float playbackSpeed) {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("shouldContinueLoading not implemented");
   }
 
   /**
-   * Called to determine whether preloading should be continued. If this method returns true, the
-   * presented period will continue to load media.
+   * 调用以确定是否应继续预加载。如果此方法返回 true，则呈现的时段将继续加载媒体。
    *
-   * @param timeline The Timeline containing the preload period that can be looked up with
-   *     MediaPeriodId.periodUid.
-   * @param mediaPeriodId The MediaPeriodId of the preloading period.
-   * @param bufferedDurationUs The duration of media currently buffered by the preload period.
-   * @return Whether the preloading should continue for the given period.
+   * @param timeline 包含可通过 MediaPeriodId.periodUid 查找的预加载时段的 Timeline。
+   * @param mediaPeriodId 预加载时段的 MediaPeriodId。
+   * @param bufferedDurationUs 预加载时段当前缓冲的媒体时长。
+   * @return 是否应继续为给定时段进行预加载。
    */
   default boolean shouldContinuePreloading(
       Timeline timeline, MediaPeriodId mediaPeriodId, long bufferedDurationUs) {
     Log.w(
         "LoadControl",
-        "shouldContinuePreloading needs to be implemented when playlist preloading is enabled");
+        "启用播放列表预加载时需要实现 shouldContinuePreloading");
     return false;
   }
 
   /**
-   * Called repeatedly by the player when it's loading the source, has yet to start playback, and
-   * has the minimum amount of data necessary for playback to be started. The value returned
-   * determines whether playback is actually started. The load control may opt to return {@code
-   * false} until some condition has been met (e.g. a certain amount of media is buffered).
+   * 当播放器正在加载源、尚未开始播放并且具有开始播放所需的最小数据量时，由播放器重复调用。返回值决定是否实际开始播放。加载控制可以选择返回 {@code
+   * false}，直到满足某些条件（例如缓冲了一定量的媒体）。
    *
-   * @param parameters Information about the playback context and the {@link MediaPeriod} that will
-   *     start playing if this method returns {@code true}.
-   * @return Whether playback should be allowed to start or resume.
+   * @param parameters 关于播放上下文和将在此方法返回 {@code true} 时开始播放的 {@link MediaPeriod} 的信息。
+   * @return 是否应允许开始或恢复播放。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   default boolean shouldStartPlayback(Parameters parameters) {
     return shouldStartPlayback(
         parameters.timeline,
@@ -380,9 +335,9 @@ public interface LoadControl {
   }
 
   /**
-   * @deprecated Implement {@link #shouldStartPlayback(Parameters)} instead.
+   * @deprecated 请实现 {@link #shouldStartPlayback(Parameters)} 代替。
    */
-  @SuppressWarnings("deprecation") // Calling deprecated version of this method.
+  @SuppressWarnings("deprecation") // 调用此方法的已弃用版本。
   @Deprecated
   default boolean shouldStartPlayback(
       Timeline timeline,
@@ -391,19 +346,17 @@ public interface LoadControl {
       float playbackSpeed,
       boolean rebuffering,
       long targetLiveOffsetUs) {
-    // Media3 ExoPlayer will never call this method. The default implementation is only used to
-    // forward to the deprecated version below.
+    // Media3 ExoPlayer 永远不会调用此方法。默认实现仅用于转发到下面的已弃用版本。
     return shouldStartPlayback(bufferedDurationUs, playbackSpeed, rebuffering, targetLiveOffsetUs);
   }
 
   /**
-   * @deprecated Implement {@link #shouldStartPlayback(Parameters)} instead.
+   * @deprecated 请实现 {@link #shouldStartPlayback(Parameters)} 代替。
    */
   @Deprecated
   default boolean shouldStartPlayback(
       long bufferedDurationUs, float playbackSpeed, boolean rebuffering, long targetLiveOffsetUs) {
-    // Media3 ExoPlayer will never call this method. This default implementation provides an
-    // implementation to please the compiler only.
+    // Media3 ExoPlayer 永远不会调用此方法。此默认实现仅为满足编译器要求。
     throw new IllegalStateException("shouldStartPlayback not implemented");
   }
 }

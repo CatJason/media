@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer;
 
 import androidx.media3.common.C;
@@ -20,51 +5,43 @@ import androidx.media3.common.MediaItem.LiveConfiguration;
 import androidx.media3.common.util.UnstableApi;
 
 /**
- * Controls the playback speed while playing live content in order to maintain a steady target live
- * offset.
+ * 控制播放直播内容时的播放速度，以保持稳定的目标直播偏移量。
  */
 @UnstableApi
 public interface LivePlaybackSpeedControl {
 
   /**
-   * Sets the live configuration defined by the media.
+   * 设置由媒体定义的直播配置。
    *
-   * @param liveConfiguration The {@link LiveConfiguration} as defined by the media.
+   * @param liveConfiguration 媒体定义的 {@link LiveConfiguration}。
    */
   void setLiveConfiguration(LiveConfiguration liveConfiguration);
 
   /**
-   * Sets the target live offset in microseconds that overrides the live offset {@link
-   * #setLiveConfiguration configured} by the media. Passing {@code C.TIME_UNSET} deletes a previous
-   * override.
+   * 设置以微秒为单位的目标直播偏移量，覆盖通过 {@link #setLiveConfiguration} 配置的直播偏移量。传递 {@code C.TIME_UNSET} 会删除之前的覆盖。
    *
-   * <p>If no target live offset is configured by {@link #setLiveConfiguration}, this override has
-   * no effect.
+   * <p>如果未通过 {@link #setLiveConfiguration} 配置目标直播偏移量，则此覆盖无效。
    */
   void setTargetLiveOffsetOverrideUs(long liveOffsetUs);
 
   /**
-   * Notifies the live playback speed control that a rebuffer occurred.
+   * 通知直播播放速度控制发生了重新缓冲。
    *
-   * <p>A rebuffer is defined to be caused by buffer depletion rather than a user action. Hence this
-   * method is not called during initial buffering or when buffering as a result of a seek
-   * operation.
+   * <p>重新缓冲定义为由缓冲区耗尽引起，而不是用户操作。因此，在初始缓冲期间或由于搜索操作导致的缓冲期间不会调用此方法。
    */
   void notifyRebuffer();
 
   /**
-   * Returns the adjusted playback speed in order get closer towards the {@link
-   * #getTargetLiveOffsetUs() target live offset}.
+   * 返回调整后的播放速度，以便更接近 {@link #getTargetLiveOffsetUs() 目标直播偏移量}。
    *
-   * @param liveOffsetUs The current live offset, in microseconds.
-   * @param bufferedDurationUs The duration of media that's currently buffered, in microseconds.
-   * @return The adjusted factor by which playback should be sped up.
+   * @param liveOffsetUs 当前的直播偏移量，单位为微秒。
+   * @param bufferedDurationUs 当前缓冲的媒体时长，单位为微秒。
+   * @return 应加速播放的调整因子。
    */
   float getAdjustedPlaybackSpeed(long liveOffsetUs, long bufferedDurationUs);
 
   /**
-   * Returns the current target live offset, in microseconds, or {@link C#TIME_UNSET} if no target
-   * live offset is defined for the current media.
+   * 返回当前的目标直播偏移量，单位为微秒，如果当前媒体未定义目标直播偏移量，则返回 {@link C#TIME_UNSET}。
    */
   long getTargetLiveOffsetUs();
 }

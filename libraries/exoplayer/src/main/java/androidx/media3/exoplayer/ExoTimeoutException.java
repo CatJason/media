@@ -1,17 +1,15 @@
 /*
  * Copyright 2021 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 根据 Apache License, Version 2.0（“许可证”）授权；
+ * 除非遵守许可证，否则不得使用此文件。
+ * 您可以在以下网址获取许可证的副本：
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 除非适用法律要求或书面同意，否则按“原样”分发软件，
+ * 没有任何明示或暗示的担保或条件。
+ * 有关特定语言的管理权限和限制，请参阅许可证。
  */
 package androidx.media3.exoplayer;
 
@@ -29,48 +27,45 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** A timeout of an operation on the ExoPlayer playback thread. */
+/** ExoPlayer 播放线程上操作超时的异常。 */
 @UnstableApi
 public final class ExoTimeoutException extends RuntimeException {
 
   /**
-   * The operation which produced the timeout error. One of {@link #TIMEOUT_OPERATION_RELEASE},
-   * {@link #TIMEOUT_OPERATION_SET_FOREGROUND_MODE}, {@link #TIMEOUT_OPERATION_DETACH_SURFACE} or
-   * {@link #TIMEOUT_OPERATION_UNDEFINED}. Note that new operations may be added in the future and
-   * error handling should handle unknown operation values.
+   * 导致超时错误的操作。取值为 {@link #TIMEOUT_OPERATION_RELEASE}、{@link #TIMEOUT_OPERATION_SET_FOREGROUND_MODE}、{@link #TIMEOUT_OPERATION_DETACH_SURFACE} 或
+   * {@link #TIMEOUT_OPERATION_UNDEFINED} 之一。请注意，未来可能会添加新的操作，错误处理应能够处理未知的操作值。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+  // @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    TIMEOUT_OPERATION_UNDEFINED,
-    TIMEOUT_OPERATION_RELEASE,
-    TIMEOUT_OPERATION_SET_FOREGROUND_MODE,
-    TIMEOUT_OPERATION_DETACH_SURFACE
+      TIMEOUT_OPERATION_UNDEFINED,
+      TIMEOUT_OPERATION_RELEASE,
+      TIMEOUT_OPERATION_SET_FOREGROUND_MODE,
+      TIMEOUT_OPERATION_DETACH_SURFACE
   })
   public @interface TimeoutOperation {}
 
-  /** The operation where this error occurred is not defined. */
+  /** 发生此错误的操作未定义。 */
   public static final int TIMEOUT_OPERATION_UNDEFINED = 0;
 
-  /** The error occurred in {@link Player#release}. */
+  /** 错误发生在 {@link Player#release} 中。 */
   public static final int TIMEOUT_OPERATION_RELEASE = 1;
 
-  /** The error occurred in {@link ExoPlayer#setForegroundMode}. */
+  /** 错误发生在 {@link ExoPlayer#setForegroundMode} 中。 */
   public static final int TIMEOUT_OPERATION_SET_FOREGROUND_MODE = 2;
 
-  /** The error occurred while detaching a surface from the player. */
+  /** 错误发生在从播放器分离表面时。 */
   public static final int TIMEOUT_OPERATION_DETACH_SURFACE = 3;
 
-  /** The operation on the ExoPlayer playback thread that timed out. */
+  /** 在 ExoPlayer 播放线程上超时的操作。 */
   public final @TimeoutOperation int timeoutOperation;
 
   /**
-   * Creates the timeout exception.
+   * 创建超时异常。
    *
-   * @param timeoutOperation The {@link TimeoutOperation operation} that produced the timeout.
+   * @param timeoutOperation 导致超时的 {@link TimeoutOperation 操作}。
    */
   public ExoTimeoutException(@TimeoutOperation int timeoutOperation) {
     super(getErrorMessage(timeoutOperation));
@@ -80,14 +75,14 @@ public final class ExoTimeoutException extends RuntimeException {
   private static String getErrorMessage(@TimeoutOperation int timeoutOperation) {
     switch (timeoutOperation) {
       case TIMEOUT_OPERATION_RELEASE:
-        return "Player release timed out.";
+        return "播放器释放超时。";
       case TIMEOUT_OPERATION_SET_FOREGROUND_MODE:
-        return "Setting foreground mode timed out.";
+        return "设置前台模式超时。";
       case TIMEOUT_OPERATION_DETACH_SURFACE:
-        return "Detaching surface timed out.";
+        return "分离表面超时。";
       case TIMEOUT_OPERATION_UNDEFINED:
       default:
-        return "Undefined timeout.";
+        return "未定义的超时。";
     }
   }
 }

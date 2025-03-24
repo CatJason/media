@@ -26,303 +26,287 @@ import java.lang.annotation.Target;
 public class PlaybackException extends Exception {
 
   /**
-   * Codes that identify causes of player errors.
+   * 标识播放器错误原因的代码。
    *
-   * <p>This list of errors may be extended in future versions, and {@link Player} implementations
-   * may define custom error codes.
+   * <p>此错误列表可能会在未来的版本中扩展，并且 {@link Player} 实现可以定义自定义错误代码。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef(
       open = true,
       value = {
-        ERROR_CODE_INVALID_STATE,
-        ERROR_CODE_BAD_VALUE,
-        ERROR_CODE_PERMISSION_DENIED,
-        ERROR_CODE_NOT_SUPPORTED,
-        ERROR_CODE_DISCONNECTED,
-        ERROR_CODE_AUTHENTICATION_EXPIRED,
-        ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED,
-        ERROR_CODE_CONCURRENT_STREAM_LIMIT,
-        ERROR_CODE_PARENTAL_CONTROL_RESTRICTED,
-        ERROR_CODE_NOT_AVAILABLE_IN_REGION,
-        ERROR_CODE_SKIP_LIMIT_REACHED,
-        ERROR_CODE_SETUP_REQUIRED,
-        ERROR_CODE_END_OF_PLAYLIST,
-        ERROR_CODE_CONTENT_ALREADY_PLAYING,
-        ERROR_CODE_UNSPECIFIED,
-        ERROR_CODE_REMOTE_ERROR,
-        ERROR_CODE_BEHIND_LIVE_WINDOW,
-        ERROR_CODE_TIMEOUT,
-        ERROR_CODE_FAILED_RUNTIME_CHECK,
-        ERROR_CODE_IO_UNSPECIFIED,
-        ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
-        ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
-        ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE,
-        ERROR_CODE_IO_BAD_HTTP_STATUS,
-        ERROR_CODE_IO_FILE_NOT_FOUND,
-        ERROR_CODE_IO_NO_PERMISSION,
-        ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED,
-        ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE,
-        ERROR_CODE_PARSING_CONTAINER_MALFORMED,
-        ERROR_CODE_PARSING_MANIFEST_MALFORMED,
-        ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
-        ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
-        ERROR_CODE_DECODER_INIT_FAILED,
-        ERROR_CODE_DECODER_QUERY_FAILED,
-        ERROR_CODE_DECODING_FAILED,
-        ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES,
-        ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
-        ERROR_CODE_AUDIO_TRACK_INIT_FAILED,
-        ERROR_CODE_AUDIO_TRACK_WRITE_FAILED,
-        ERROR_CODE_AUDIO_TRACK_OFFLOAD_INIT_FAILED,
-        ERROR_CODE_AUDIO_TRACK_OFFLOAD_WRITE_FAILED,
-        ERROR_CODE_DRM_UNSPECIFIED,
-        ERROR_CODE_DRM_SCHEME_UNSUPPORTED,
-        ERROR_CODE_DRM_PROVISIONING_FAILED,
-        ERROR_CODE_DRM_CONTENT_ERROR,
-        ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED,
-        ERROR_CODE_DRM_DISALLOWED_OPERATION,
-        ERROR_CODE_DRM_SYSTEM_ERROR,
-        ERROR_CODE_DRM_DEVICE_REVOKED,
-        ERROR_CODE_DRM_LICENSE_EXPIRED
+          ERROR_CODE_INVALID_STATE, // 无效状态
+          ERROR_CODE_BAD_VALUE, // 错误的值
+          ERROR_CODE_PERMISSION_DENIED, // 权限被拒绝
+          ERROR_CODE_NOT_SUPPORTED, // 不支持的操作
+          ERROR_CODE_DISCONNECTED, // 连接断开
+          ERROR_CODE_AUTHENTICATION_EXPIRED, // 认证过期
+          ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED, // 需要高级账户
+          ERROR_CODE_CONCURRENT_STREAM_LIMIT, // 并发流限制
+          ERROR_CODE_PARENTAL_CONTROL_RESTRICTED, // 家长控制限制
+          ERROR_CODE_NOT_AVAILABLE_IN_REGION, // 在当前区域不可用
+          ERROR_CODE_SKIP_LIMIT_REACHED, // 跳过限制已达到
+          ERROR_CODE_SETUP_REQUIRED, // 需要设置
+          ERROR_CODE_END_OF_PLAYLIST, // 播放列表结束
+          ERROR_CODE_CONTENT_ALREADY_PLAYING, // 内容已在播放
+          ERROR_CODE_UNSPECIFIED, // 未指定的错误
+          ERROR_CODE_REMOTE_ERROR, // 远程错误
+          ERROR_CODE_BEHIND_LIVE_WINDOW, // 落后于直播窗口
+          ERROR_CODE_TIMEOUT, // 超时
+          ERROR_CODE_FAILED_RUNTIME_CHECK, // 运行时检查失败
+          ERROR_CODE_IO_UNSPECIFIED, // 未指定的 I/O 错误
+          ERROR_CODE_IO_NETWORK_CONNECTION_FAILED, // 网络连接失败
+          ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT, // 网络连接超时
+          ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE, // 无效的 HTTP 内容类型
+          ERROR_CODE_IO_BAD_HTTP_STATUS, // 错误的 HTTP 状态
+          ERROR_CODE_IO_FILE_NOT_FOUND, // 文件未找到
+          ERROR_CODE_IO_NO_PERMISSION, // 没有权限
+          ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED, // 不允许明文传输
+          ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE, // 读取位置超出范围
+          ERROR_CODE_PARSING_CONTAINER_MALFORMED, // 容器格式解析错误
+          ERROR_CODE_PARSING_MANIFEST_MALFORMED, // 清单文件解析错误
+          ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED, // 不支持的容器格式
+          ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED, // 不支持的清单格式
+          ERROR_CODE_DECODER_INIT_FAILED, // 解码器初始化失败
+          ERROR_CODE_DECODER_QUERY_FAILED, // 解码器查询失败
+          ERROR_CODE_DECODING_FAILED, // 解码失败
+          ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES, // 解码格式超出设备能力
+          ERROR_CODE_DECODING_FORMAT_UNSUPPORTED, // 不支持的解码格式
+          ERROR_CODE_AUDIO_TRACK_INIT_FAILED, // 音频轨道初始化失败
+          ERROR_CODE_AUDIO_TRACK_WRITE_FAILED, // 音频轨道写入失败
+          ERROR_CODE_AUDIO_TRACK_OFFLOAD_INIT_FAILED, // 音频轨道卸载初始化失败
+          ERROR_CODE_AUDIO_TRACK_OFFLOAD_WRITE_FAILED, // 音频轨道卸载写入失败
+          ERROR_CODE_DRM_UNSPECIFIED, // 未指定的 DRM 错误
+          ERROR_CODE_DRM_SCHEME_UNSUPPORTED, // 不支持的 DRM 方案
+          ERROR_CODE_DRM_PROVISIONING_FAILED, // DRM 配置失败
+          ERROR_CODE_DRM_CONTENT_ERROR, // DRM 内容错误
+          ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED, // DRM 许可证获取失败
+          ERROR_CODE_DRM_DISALLOWED_OPERATION, // DRM 不允许的操作
+          ERROR_CODE_DRM_SYSTEM_ERROR, // DRM 系统错误
+          ERROR_CODE_DRM_DEVICE_REVOKED, // DRM 设备被吊销
+          ERROR_CODE_DRM_LICENSE_EXPIRED // DRM 许可证过期
       })
   public @interface ErrorCode {}
 
   // Policy errors (-1 to -999)
-
-  /** Caused by a command that cannot be completed because the current state is not valid. */
+  /** 由于当前状态无效而无法完成命令导致的错误。 */
   public static final int ERROR_CODE_INVALID_STATE = -2;
 
-  /** Caused by an argument that is illegal. */
+  /** 由于参数非法导致的错误。 */
   public static final int ERROR_CODE_BAD_VALUE = -3;
 
-  /** Caused by a command that is not allowed. */
+  /** 由于命令不被允许导致的错误。 */
   public static final int ERROR_CODE_PERMISSION_DENIED = -4;
 
-  /** Caused by a command that is not supported. */
+  /** 由于命令不被支持导致的错误。 */
   public static final int ERROR_CODE_NOT_SUPPORTED = -6;
 
-  /** Caused by a disconnected component. */
+  /** 由于组件断开连接导致的错误。 */
   public static final int ERROR_CODE_DISCONNECTED = -100;
 
-  /** Caused by expired authentication. */
+  /** 由于认证过期导致的错误。 */
   public static final int ERROR_CODE_AUTHENTICATION_EXPIRED = -102;
 
-  /** Caused by a premium account that is required but the user is not subscribed. */
+  /** 由于需要高级账户但用户未订阅导致的错误。 */
   public static final int ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED = -103;
 
-  /** Caused by too many concurrent streams. */
+  /** 由于并发流数量过多导致的错误。 */
   public static final int ERROR_CODE_CONCURRENT_STREAM_LIMIT = -104;
 
-  /** Caused by the content being blocked due to parental controls. */
+  /** 由于内容被家长控制屏蔽导致的错误。 */
   public static final int ERROR_CODE_PARENTAL_CONTROL_RESTRICTED = -105;
 
-  /** Caused by the content being blocked due to being regionally unavailable. */
+  /** 由于内容在区域不可用导致的错误。 */
   public static final int ERROR_CODE_NOT_AVAILABLE_IN_REGION = -106;
 
-  /** Caused by the skip limit that is exhausted. */
+  /** 由于跳过次数达到限制导致的错误。 */
   public static final int ERROR_CODE_SKIP_LIMIT_REACHED = -107;
 
-  /** Caused by playback that needs manual user intervention. */
+  /** 由于播放需要手动用户干预导致的错误。 */
   public static final int ERROR_CODE_SETUP_REQUIRED = -108;
 
-  /** Caused by navigation that failed because the playlist was exhausted. */
+  /** 由于导航失败，因为播放列表已耗尽导致的错误。 */
   public static final int ERROR_CODE_END_OF_PLAYLIST = -109;
 
-  /** Caused by a request for content that was already playing. */
+  /** 由于请求的内容已在播放导致的错误。 */
   public static final int ERROR_CODE_CONTENT_ALREADY_PLAYING = -110;
 
-  // Miscellaneous errors (1xxx).
+// 其他错误 (1xxx)。
 
-  /** Caused by an error whose cause could not be identified. */
+  /** 由于无法识别原因导致的错误。 */
   public static final int ERROR_CODE_UNSPECIFIED = 1000;
 
   /**
-   * Caused by an unidentified error in a remote Player, which is a Player that runs on a different
-   * host or process.
+   * 由于远程播放器（运行在不同主机或进程中的播放器）中未识别的错误导致的错误。
    */
   public static final int ERROR_CODE_REMOTE_ERROR = 1001;
 
-  /** Caused by the loading position falling behind the sliding window of available live content. */
+  /** 由于加载位置落后于可用直播内容的滑动窗口导致的错误。 */
   public static final int ERROR_CODE_BEHIND_LIVE_WINDOW = 1002;
 
-  /** Caused by a generic timeout. */
+  /** 由于通用超时导致的错误。 */
   public static final int ERROR_CODE_TIMEOUT = 1003;
 
   /**
-   * Caused by a failed runtime check.
+   * 由于运行时检查失败导致的错误。
    *
-   * <p>This can happen when the application fails to comply with the player's API requirements (for
-   * example, by passing invalid arguments), or when the player reaches an invalid state.
+   * <p>当应用程序未遵守播放器的 API 要求（例如传递了无效参数）或播放器达到无效状态时，可能会发生此错误。
    */
   public static final int ERROR_CODE_FAILED_RUNTIME_CHECK = 1004;
 
-  // Input/Output errors (2xxx).
+// 输入/输出错误 (2xxx)。
 
-  /** Caused by an Input/Output error which could not be identified. */
+  /** 由于无法识别的输入/输出错误导致的错误。 */
   public static final int ERROR_CODE_IO_UNSPECIFIED = 2000;
 
   /**
-   * Caused by a network connection failure.
+   * 由于网络连接失败导致的错误。
    *
-   * <p>The following is a non-exhaustive list of possible reasons:
+   * <p>以下是非详尽的可能原因列表：
    *
    * <ul>
-   *   <li>There is no network connectivity (you can check this by querying {@link
-   *       ConnectivityManager#getActiveNetwork}).
-   *   <li>The URL's domain is misspelled or does not exist.
-   *   <li>The target host is unreachable.
-   *   <li>The server unexpectedly closes the connection.
+   *   <li>没有网络连接（可以通过查询 {@link ConnectivityManager#getActiveNetwork} 检查）。
+   *   <li>URL 的域名拼写错误或不存在。
+   *   <li>目标主机无法访问。
+   *   <li>服务器意外关闭连接。
    * </ul>
    */
   public static final int ERROR_CODE_IO_NETWORK_CONNECTION_FAILED = 2001;
 
-  /** Caused by a network timeout, meaning the server is taking too long to fulfill a request. */
+  /** 由于网络超时，意味着服务器处理请求时间过长导致的错误。 */
   public static final int ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT = 2002;
 
   /**
-   * Caused by a server returning a resource with an invalid "Content-Type" HTTP header value.
+   * 由于服务器返回的资源具有无效的 "Content-Type" HTTP 标头值导致的错误。
    *
-   * <p>For example, this can happen when the player is expecting a piece of media, but the server
-   * returns a paywall HTML page, with content type "text/html".
+   * <p>例如，当播放器期望获取媒体资源，但服务器返回了一个付费墙 HTML 页面（内容类型为 "text/html"）时，可能会发生此错误。
    */
   public static final int ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE = 2003;
 
-  /** Caused by an HTTP server returning an unexpected HTTP response status code. */
+  /** 由于 HTTP 服务器返回意外的 HTTP 响应状态码导致的错误。 */
   public static final int ERROR_CODE_IO_BAD_HTTP_STATUS = 2004;
 
-  /** Caused by a non-existent file. */
+  /** 由于文件不存在导致的错误。 */
   public static final int ERROR_CODE_IO_FILE_NOT_FOUND = 2005;
 
   /**
-   * Caused by lack of permission to perform an IO operation. For example, lack of permission to
-   * access internet or external storage.
+   * 由于缺乏执行 I/O 操作的权限导致的错误。例如，缺乏访问互联网或外部存储的权限。
    */
   public static final int ERROR_CODE_IO_NO_PERMISSION = 2006;
 
   /**
-   * Caused by the player trying to access cleartext HTTP traffic (meaning http:// rather than
-   * https://) when the app's Network Security Configuration does not permit it.
+   * 由于播放器尝试访问明文 HTTP 流量（即 http:// 而不是 https://），而应用的网络安全配置不允许导致的错误。
    *
-   * <p>See <a
-   * href="https://developer.android.com/guide/topics/media/issues/cleartext-not-permitted">this
-   * corresponding troubleshooting topic</a>.
+   * <p>请参阅 <a
+   * href="https://developer.android.com/guide/topics/media/issues/cleartext-not-permitted">此相关故障排除主题</a>。
    */
   public static final int ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED = 2007;
 
-  /** Caused by reading data out of the data bound. */
+  /** 由于读取数据超出数据范围导致的错误。 */
   public static final int ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE = 2008;
 
-  // Content parsing errors (3xxx).
+// 内容解析错误 (3xxx)。
 
-  /** Caused by a parsing error associated with a media container format bitstream. */
+  /** 由于与媒体容器格式比特流相关的解析错误导致的错误。 */
   public static final int ERROR_CODE_PARSING_CONTAINER_MALFORMED = 3001;
 
   /**
-   * Caused by a parsing error associated with a media manifest. Examples of a media manifest are a
-   * DASH or a SmoothStreaming manifest, or an HLS playlist.
+   * 由于与媒体清单相关的解析错误导致的错误。媒体清单的示例包括 DASH 或 SmoothStreaming 清单，或 HLS 播放列表。
    */
   public static final int ERROR_CODE_PARSING_MANIFEST_MALFORMED = 3002;
 
   /**
-   * Caused by attempting to extract a file with an unsupported media container format, or an
-   * unsupported media container feature.
+   * 由于尝试提取具有不受支持的媒体容器格式或不受支持的媒体容器功能的文件导致的错误。
    */
   public static final int ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED = 3003;
 
   /**
-   * Caused by an unsupported feature in a media manifest. Examples of a media manifest are a DASH
-   * or a SmoothStreaming manifest, or an HLS playlist.
+   * 由于媒体清单中不受支持的功能导致的错误。媒体清单的示例包括 DASH 或 SmoothStreaming 清单，或 HLS 播放列表。
    */
   public static final int ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED = 3004;
 
-  // Decoding errors (4xxx).
+// 解码错误 (4xxx)。
 
-  /** Caused by a decoder initialization failure. */
+  /** 由于解码器初始化失败导致的错误。 */
   public static final int ERROR_CODE_DECODER_INIT_FAILED = 4001;
 
-  /** Caused by a decoder query failure. */
+  /** 由于解码器查询失败导致的错误。 */
   public static final int ERROR_CODE_DECODER_QUERY_FAILED = 4002;
 
-  /** Caused by a failure while trying to decode media samples. */
+  /** 由于尝试解码媒体样本时失败导致的错误。 */
   public static final int ERROR_CODE_DECODING_FAILED = 4003;
 
-  /** Caused by trying to decode content whose format exceeds the capabilities of the device. */
+  /** 由于尝试解码格式超出设备能力的内容导致的错误。 */
   public static final int ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES = 4004;
 
-  /** Caused by trying to decode content whose format is not supported. */
+  /** 由于尝试解码格式不受支持的内容导致的错误。 */
   public static final int ERROR_CODE_DECODING_FORMAT_UNSUPPORTED = 4005;
 
-  // TODO: b/322943860 - Stabilize error code and add to IntDef
-  /** Caused by higher priority task reclaiming resources needed for decoding. */
+// TODO: b/322943860 - 稳定错误代码并添加到 IntDef
+  /** 由于更高优先级的任务回收了解码所需的资源导致的错误。 */
   @UnstableApi public static final int ERROR_CODE_DECODING_RESOURCES_RECLAIMED = 4006;
 
-  // AudioTrack errors (5xxx).
+// AudioTrack 错误 (5xxx)。
 
-  /** Caused by an AudioTrack initialization failure. */
+  /** 由于 AudioTrack 初始化失败导致的错误。 */
   public static final int ERROR_CODE_AUDIO_TRACK_INIT_FAILED = 5001;
 
-  /** Caused by an AudioTrack write operation failure. */
+  /** 由于 AudioTrack 写入操作失败导致的错误。 */
   public static final int ERROR_CODE_AUDIO_TRACK_WRITE_FAILED = 5002;
 
-  /** Caused by an AudioTrack write operation failure in offload mode. */
+  /** 由于 AudioTrack 在卸载模式下的写入操作失败导致的错误。 */
   public static final int ERROR_CODE_AUDIO_TRACK_OFFLOAD_WRITE_FAILED = 5003;
 
-  /** Caused by an AudioTrack init operation failure in offload mode. */
+  /** 由于 AudioTrack 在卸载模式下的初始化操作失败导致的错误。 */
   public static final int ERROR_CODE_AUDIO_TRACK_OFFLOAD_INIT_FAILED = 5004;
 
-  // DRM errors (6xxx).
+// DRM 错误 (6xxx)。
 
-  /** Caused by an unspecified error related to DRM protection. */
+  /** 由于与 DRM 保护相关的未指定错误导致的错误。 */
   public static final int ERROR_CODE_DRM_UNSPECIFIED = 6000;
 
   /**
-   * Caused by a chosen DRM protection scheme not being supported by the device. Examples of DRM
-   * protection schemes are ClearKey and Widevine.
+   * 由于设备不支持所选的 DRM 保护方案导致的错误。DRM 保护方案的示例包括 ClearKey 和 Widevine。
    */
   public static final int ERROR_CODE_DRM_SCHEME_UNSUPPORTED = 6001;
 
-  /** Caused by a failure while provisioning the device. */
+  /** 由于设备配置失败导致的错误。 */
   public static final int ERROR_CODE_DRM_PROVISIONING_FAILED = 6002;
 
   /**
-   * Caused by attempting to play incompatible DRM-protected content.
+   * 由于尝试播放不兼容的 DRM 保护内容导致的错误。
    *
-   * <p>For example, this can happen when attempting to play a DRM protected stream using a scheme
-   * (like Widevine) for which there is no corresponding license acquisition data (like a pssh box).
+   * <p>例如，当尝试播放使用 DRM 保护方案（如 Widevine）的流，但没有相应的许可证获取数据（如 pssh 盒子）时，可能会发生此错误。
    */
   public static final int ERROR_CODE_DRM_CONTENT_ERROR = 6003;
 
-  /** Caused by a failure while trying to obtain a license. */
+  /** 由于尝试获取许可证时失败导致的错误。 */
   public static final int ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED = 6004;
 
-  /** Caused by an operation being disallowed by a license policy. */
+  /** 由于许可证策略不允许的操作导致的错误。 */
   public static final int ERROR_CODE_DRM_DISALLOWED_OPERATION = 6005;
 
-  /** Caused by an error in the DRM system. */
+  /** 由于 DRM 系统中的错误导致的错误。 */
   public static final int ERROR_CODE_DRM_SYSTEM_ERROR = 6006;
 
-  /** Caused by the device having revoked DRM privileges. */
+  /** 由于设备的 DRM 权限被吊销导致的错误。 */
   public static final int ERROR_CODE_DRM_DEVICE_REVOKED = 6007;
 
-  /** Caused by an expired DRM license being loaded into an open DRM session. */
+  /** 由于将过期的 DRM 许可证加载到打开的 DRM 会话中导致的错误。 */
   public static final int ERROR_CODE_DRM_LICENSE_EXPIRED = 6008;
 
-  // Frame processing errors (7xxx).
+// 帧处理错误 (7xxx)。
 
-  /** Caused by a failure when initializing a {@link VideoFrameProcessor}. */
+  /** 由于初始化 {@link VideoFrameProcessor} 时失败导致的错误。 */
   @UnstableApi public static final int ERROR_CODE_VIDEO_FRAME_PROCESSOR_INIT_FAILED = 7000;
 
-  /** Caused by a failure when processing a video frame. */
+  /** 由于处理视频帧时失败导致的错误。 */
   @UnstableApi public static final int ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED = 7001;
 
   /**
-   * Player implementations that want to surface custom errors can use error codes greater than this
-   * value, so as to avoid collision with other error codes defined in this class.
+   * 播放器实现如果希望展示自定义错误，可以使用大于此值的错误代码，以避免与此类中定义的其他错误代码冲突。
    */
   public static final int CUSTOM_ERROR_CODE_BASE = 1000000;
 
@@ -443,31 +427,28 @@ public class PlaybackException extends Exception {
         }
     }
   }
-
   /**
-   * Equivalent to {@link PlaybackException#getErrorCodeName(int)
-   * PlaybackException.getErrorCodeName(this.errorCode)}.
+   * 等效于 {@link PlaybackException#getErrorCodeName(int) PlaybackException.getErrorCodeName(this.errorCode)}。
    */
   public final String getErrorCodeName() {
     return getErrorCodeName(errorCode);
   }
 
-  /** An error code which identifies the cause of the playback failure. */
+  /** 标识播放失败原因的错误代码。 */
   public final @ErrorCode int errorCode;
 
-  /** The value of {@link SystemClock#elapsedRealtime()} when this exception was created. */
+  /** 创建此异常时 {@link SystemClock#elapsedRealtime()} 的值。 */
   public final long timestampMs;
 
-  /** An extras {@link Bundle}. */
+  /** 附加的 {@link Bundle}。 */
   @UnstableApi public final Bundle extras;
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param errorCode A number which identifies the cause of the error. May be one of the {@link
-   *     ErrorCode ErrorCodes}.
-   * @param cause See {@link #getCause()}.
-   * @param message See {@link #getMessage()}.
+   * @param errorCode 标识错误原因的数字。可以是 {@link ErrorCode ErrorCodes} 之一。
+   * @param cause 参见 {@link #getCause()}。
+   * @param message 参见 {@link #getMessage()}。
    */
   @UnstableApi
   public PlaybackException(
@@ -476,13 +457,12 @@ public class PlaybackException extends Exception {
   }
 
   /**
-   * Creates an instance.
+   * 创建一个实例。
    *
-   * @param errorCode A number which identifies the cause of the error. May be one of the {@link
-   *     ErrorCode ErrorCodes}.
-   * @param cause See {@link #getCause()}.
-   * @param message See {@link #getMessage()}.
-   * @param extras An optional {@link Bundle}.
+   * @param errorCode 标识错误原因的数字。可以是 {@link ErrorCode ErrorCodes} 之一。
+   * @param cause 参见 {@link #getCause()}。
+   * @param message 参见 {@link #getMessage()}。
+   * @param extras 可选的 {@link Bundle}。
    */
   @UnstableApi
   public PlaybackException(
@@ -521,10 +501,9 @@ public class PlaybackException extends Exception {
   }
 
   /**
-   * Returns whether the error data associated to this exception equals the error data associated to
-   * {@code other}.
+   * 返回与此异常关联的错误数据是否与 {@code other} 关联的错误数据相等。
    *
-   * <p>Note that this method does not compare the exceptions' stacktraces.
+   * <p>请注意，此方法不会比较异常的堆栈跟踪。
    */
   @CallSuper
   public boolean errorInfoEquals(@Nullable PlaybackException other) {
@@ -560,11 +539,9 @@ public class PlaybackException extends Exception {
   private static final String FIELD_BUNDLE_EXTRAS = Util.intToStringMaxRadix(5);
 
   /**
-   * Defines a minimum field ID value for subclasses to use when implementing {@link #toBundle()}
-   * and delegating to {@link #PlaybackException(Bundle)}.
+   * 定义了子类在实现 {@link #toBundle()} 并委托给 {@link #PlaybackException(Bundle)} 时使用的最小字段 ID 值。
    *
-   * <p>Subclasses should obtain their {@link Bundle Bundle's} field keys by applying a non-negative
-   * offset on this constant and passing the result to {@link Util#intToStringMaxRadix(int)}.
+   * <p>子类应通过对此常量应用一个非负偏移量，并将结果传递给 {@link Util#intToStringMaxRadix(int)}，来获取其 {@link Bundle Bundle's} 字段键。
    */
   @UnstableApi protected static final int FIELD_CUSTOM_ID_BASE = 1000;
 
@@ -623,12 +600,10 @@ public class PlaybackException extends Exception {
           cause = createThrowable(clazz, causeMessage);
         }
       } catch (Throwable e) {
-        // There was an error while creating the cause using reflection, do nothing here and let the
-        // finally block handle the issue.
+        // 在使用反射创建 cause 时发生错误，此处不执行任何操作，让 finally 块处理该问题。
       } finally {
         if (cause == null) {
-          // The bundle has fields to represent the cause, but we were unable to re-create the
-          // exception using reflection. We instantiate a RemoteException to reflect this problem.
+          // Bundle 中有表示 cause 的字段，但我们无法使用反射重新创建异常。我们实例化一个 RemoteException 来反映此问题。
           cause = createRemoteException(causeMessage);
         }
       }

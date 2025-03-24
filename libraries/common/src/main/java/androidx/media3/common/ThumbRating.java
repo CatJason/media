@@ -8,22 +8,22 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import com.google.common.base.Objects;
 
-/** A rating expressed as "thumbs up" or "thumbs down". */
+/** 以“点赞”或“点踩”表示的评分。 */
 public final class ThumbRating extends Rating {
 
   private final boolean rated;
   private final boolean isThumbsUp;
 
-  /** Creates a unrated instance. */
+  /** 创建一个未评分的实例。 */
   public ThumbRating() {
     rated = false;
     isThumbsUp = false;
   }
 
   /**
-   * Creates a rated instance.
+   * 创建一个已评分的实例。
    *
-   * @param isThumbsUp {@code true} for "thumbs up", {@code false} for "thumbs down".
+   * @param isThumbsUp {@code true} 表示“点赞”，{@code false} 表示“点踩”。
    */
   public ThumbRating(boolean isThumbsUp) {
     rated = true;
@@ -35,7 +35,7 @@ public final class ThumbRating extends Rating {
     return rated;
   }
 
-  /** Returns whether the rating is "thumbs up". */
+  /** 返回评分是否为“点赞”。 */
   public boolean isThumbsUp() {
     return isThumbsUp;
   }
@@ -69,7 +69,7 @@ public final class ThumbRating extends Rating {
     return bundle;
   }
 
-  /** Restores a {@code ThumbRating} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 中恢复一个 {@code ThumbRating}。 */
   @UnstableApi
   public static ThumbRating fromBundle(Bundle bundle) {
     checkArgument(bundle.getInt(FIELD_RATING_TYPE, /* defaultValue= */ RATING_TYPE_UNSET) == TYPE);

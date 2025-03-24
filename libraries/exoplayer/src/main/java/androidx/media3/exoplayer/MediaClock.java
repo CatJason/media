@@ -1,43 +1,27 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package androidx.media3.exoplayer;
 
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.util.UnstableApi;
 
-/** Tracks the progression of media time. */
+/** 跟踪媒体时间的进度。 */
 @UnstableApi
 public interface MediaClock {
 
-  /** Returns the current media position in microseconds. */
+  /** 返回当前的媒体位置，单位为微秒。 */
   long getPositionUs();
 
-  /** Returns whether there is a skipped silence since the last call to this method. */
+  /** 返回自上次调用此方法以来是否跳过了静音。 */
   default boolean hasSkippedSilenceSinceLastCall() {
     return false;
   }
 
   /**
-   * Attempts to set the playback parameters. The media clock may override the speed if changing the
-   * playback parameters is not supported.
+   * 尝试设置播放参数。如果更改播放参数不受支持，媒体时钟可能会覆盖速度。
    *
-   * @param playbackParameters The playback parameters to attempt to set.
+   * @param playbackParameters 要尝试设置的播放参数。
    */
   void setPlaybackParameters(PlaybackParameters playbackParameters);
 
-  /** Returns the active playback parameters. */
+  /** 返回当前的播放参数。 */
   PlaybackParameters getPlaybackParameters();
 }

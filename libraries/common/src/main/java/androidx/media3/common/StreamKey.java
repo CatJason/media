@@ -8,47 +8,43 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 
 /**
- * A key for a subset of media that can be separately loaded (a "stream").
+ * 用于标识可以单独加载的媒体子集（即“流”）的键。
  *
- * <p>The stream key consists of a period index, a group index within the period and a stream index
- * within the group. The interpretation of these indices depends on the type of media for which the
- * stream key is used. Note that they are <em>not</em> the same as track group and track indices,
- * because multiple tracks can be multiplexed into a single stream.
+ * <p>流键由周期索引、周期内的组索引和组内的流索引组成。这些索引的解释取决于使用流键的媒体类型。
+ * 注意，这些索引<em>不</em>等同于轨道组和轨道索引，因为多个轨道可以复用到单个流中。
  *
- * <p>Application code should not generally attempt to build StreamKey instances directly. Instead,
- * {@code DownloadHelper.getDownloadRequest} can be used to generate download requests with the
- * correct StreamKeys for the track selections that have been configured on the helper. {@code
- * MediaPeriod.getStreamKeys} provides a lower level way of generating StreamKeys corresponding to a
- * particular track selection.
+ * <p>应用程序代码通常不应直接尝试构建 StreamKey 实例。相反，可以使用 {@code DownloadHelper.getDownloadRequest}
+ * 生成下载请求，其中包含与帮助程序上配置的轨道选择相对应的正确 StreamKey。{@code MediaPeriod.getStreamKeys}
+ * 提供了一种更低级别的方式来生成与特定轨道选择相对应的 StreamKey。
  */
 @UnstableApi
 public final class StreamKey implements Comparable<StreamKey>, Parcelable {
 
-  /** The period index. */
+  /** 周期索引。 */
   public final int periodIndex;
 
-  /** The group index. */
+  /** 组索引。 */
   public final int groupIndex;
 
-  /** The stream index. */
+  /** 流索引。 */
   public final int streamIndex;
 
   /**
-   * Creates an instance with {@link #periodIndex} set to 0.
+   * 创建一个实例，其中 {@link #periodIndex} 设置为 0。
    *
-   * @param groupIndex The group index.
-   * @param streamIndex The stream index.
+   * @param groupIndex 组索引。
+   * @param streamIndex 流索引。
    */
   public StreamKey(int groupIndex, int streamIndex) {
     this(0, groupIndex, streamIndex);
   }
 
   /**
-   * Creates an instance of {@link StreamKey} using 3 indices.
+   * 使用 3 个索引创建一个 {@link StreamKey} 实例。
    *
-   * @param periodIndex The period index.
-   * @param groupIndex The group index.
-   * @param streamIndex The stream index.
+   * @param periodIndex 周期索引。
+   * @param groupIndex 组索引。
+   * @param streamIndex 流索引。
    */
   public StreamKey(int periodIndex, int groupIndex, int streamIndex) {
     this.periodIndex = periodIndex;
@@ -90,7 +86,7 @@ public final class StreamKey implements Comparable<StreamKey>, Parcelable {
     return result;
   }
 
-  // Comparable implementation.
+  // Comparable 接口实现。
 
   @Override
   public int compareTo(StreamKey o) {
@@ -104,7 +100,7 @@ public final class StreamKey implements Comparable<StreamKey>, Parcelable {
     return result;
   }
 
-  // Parcelable implementation.
+  // Parcelable 接口实现。
 
   @Override
   public int describeContents() {
@@ -151,8 +147,7 @@ public final class StreamKey implements Comparable<StreamKey>, Parcelable {
   }
 
   /**
-   * Constructs an instance of {@link StreamKey} from a {@link Bundle} produced by {@link
-   * #toBundle()}.
+   * 从 {@link Bundle} 中构建一个 {@link StreamKey} 实例，该 Bundle 由 {@link #toBundle()} 生成。
    */
   public static StreamKey fromBundle(Bundle bundle) {
     return new StreamKey(
