@@ -26,8 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Metadata of a {@link MediaItem}, playlist, or a combination of multiple sources of {@link
- * Metadata}.
+ * {@link MediaItem} 的元数据、播放列表，或来自多个 {@link Metadata} 源的组合元数据。
  */
 public final class MediaMetadata {
 

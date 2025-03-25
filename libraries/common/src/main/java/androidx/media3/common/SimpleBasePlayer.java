@@ -44,39 +44,24 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /**
- * A base implementation for {@link Player} that reduces the number of methods to implement to a
- * minimum.
+ * {@link Player} 的基础实现，将需要实现的方法数量减少到最少。
  *
- * <p>Implementation notes:
+ * <p>实现说明：
  *
  * <ul>
- *   <li>Subclasses must override {@link #getState()} to populate the current player state on
- *       request.
- *   <li>The {@link State} should set the {@linkplain State.Builder#setAvailableCommands available
- *       commands} to indicate which {@link Player} methods are supported.
- *   <li>All setter-like player methods (for example, {@link #setPlayWhenReady}) forward to
- *       overridable methods (for example, {@link #handleSetPlayWhenReady}) that can be used to
- *       handle these requests. These methods return a {@link ListenableFuture} to indicate when the
- *       request has been handled and is fully reflected in the values returned from {@link
- *       #getState}. This class will automatically request a state update once the request is done.
- *       If the state changes can be handled synchronously, these methods can return Guava's {@link
- *       Futures#immediateVoidFuture()}.
- *   <li>Subclasses can manually trigger state updates with {@link #invalidateState}, for example if
- *       something changes independent of {@link Player} method calls.
+ *   <li>子类必须重写 {@link #getState()}，以便在请求时填充当前的播放器状态。
+ *   <li>{@link State} 应设置 {@linkplain State.Builder#setAvailableCommands 可用命令}，以指示支持哪些 {@link Player} 方法。
+ *   <li>所有类似 setter 的播放器方法（例如 {@link #setPlayWhenReady}）会转发到可重写的方法（例如 {@link #handleSetPlayWhenReady}），这些方法可用于处理这些请求。这些方法返回一个 {@link ListenableFuture}，以指示请求何时被处理并完全反映在 {@link #getState} 返回的值中。此类将在请求完成后自动请求状态更新。如果状态更改可以同步处理，这些方法可以返回 Guava 的 {@link Futures#immediateVoidFuture()}。
+ *   <li>子类可以通过 {@link #invalidateState} 手动触发状态更新，例如在独立于 {@link Player} 方法调用的情况下发生变化时。
  * </ul>
  *
- * This base class handles various aspects of the player implementation to simplify the subclass:
+ * 此基类处理播放器实现的各个方面，以简化子类的实现：
  *
  * <ul>
- *   <li>The {@link State} can only be created with allowed combinations of state values, avoiding
- *       any invalid player states.
- *   <li>Only functionality that is declared as {@linkplain Player.Command available} needs to be
- *       implemented. Other methods are automatically ignored.
- *   <li>Listener handling and informing listeners of state changes is handled automatically.
- *   <li>The base class provides a framework for asynchronous handling of method calls. It changes
- *       the visible playback state immediately to the most likely outcome to ensure the
- *       user-visible state changes look like synchronous operations. The state is then updated
- *       again once the asynchronous method calls have been fully handled.
+ *   <li>{@link State} 只能使用允许的状态值组合创建，从而避免任何无效的播放器状态。
+ *   <li>只需实现声明为 {@linkplain Player.Command 可用} 的功能。其他方法会自动忽略。
+ *   <li>监听器处理以及通知监听器状态更改是自动处理的。
+ *   <li>基类提供了异步处理方法调用的框架。它立即将可见的播放状态更改为最可能的结果，以确保用户可见的状态更改看起来像同步操作。一旦异步方法调用完全处理完毕，状态将再次更新。
  * </ul>
  */
 @UnstableApi
@@ -226,10 +211,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the available {@link Commands}.
+       * 设置可用的 {@link Commands}。
        *
-       * @param availableCommands The available {@link Commands}.
-       * @return This builder.
+       * @param availableCommands 可用的 {@link Commands}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setAvailableCommands(Commands availableCommands) {
@@ -238,12 +223,11 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets whether playback should proceed when ready and not suppressed.
+       * 设置当播放器准备就绪且未被抑制时是否应继续播放。
        *
-       * @param playWhenReady Whether playback should proceed when ready and not suppressed.
-       * @param playWhenReadyChangeReason The {@linkplain PlayWhenReadyChangeReason reason} for
-       *     changing the value.
-       * @return This builder.
+       * @param playWhenReady 当播放器准备就绪且未被抑制时是否应继续播放。
+       * @param playWhenReadyChangeReason 更改此值的 {@linkplain PlayWhenReadyChangeReason 原因}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlayWhenReady(
@@ -254,13 +238,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@linkplain Player.State state} of the player.
+       * 设置播放器的 {@linkplain Player.State 状态}。
        *
-       * <p>If the {@linkplain #setPlaylist playlist} is empty, the state must be either {@link
-       * Player#STATE_IDLE} or {@link Player#STATE_ENDED}.
+       * <p>如果 {@linkplain #setPlaylist 播放列表} 为空，状态必须为 {@link Player#STATE_IDLE} 或 {@link Player#STATE_ENDED}。
        *
-       * @param playbackState The {@linkplain Player.State state} of the player.
-       * @return This builder.
+       * @param playbackState 播放器的 {@linkplain Player.State 状态}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlaybackState(@Player.State int playbackState) {
@@ -269,11 +252,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the reason why playback is suppressed even if {@link #getPlayWhenReady()} is true.
+       * 设置即使 {@link #getPlayWhenReady()} 为 true，播放仍被抑制的原因。
        *
-       * @param playbackSuppressionReason The {@link Player.PlaybackSuppressionReason} why playback
-       *     is suppressed even if {@link #getPlayWhenReady()} is true.
-       * @return This builder.
+       * @param playbackSuppressionReason 即使 {@link #getPlayWhenReady()} 为 true，播放仍被抑制的 {@link Player.PlaybackSuppressionReason 原因}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlaybackSuppressionReason(
@@ -283,14 +265,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets last error that caused playback to fail, or null if there was no error.
+       * 设置导致播放失败的最后一次错误，如果没有错误则为 null。
        *
-       * <p>The {@linkplain #setPlaybackState playback state} must be set to {@link
-       * Player#STATE_IDLE} while an error is set.
+       * <p>设置错误时，必须将 {@linkplain #setPlaybackState 播放状态} 设置为 {@link Player#STATE_IDLE}。
        *
-       * @param playerError The last error that caused playback to fail, or null if there was no
-       *     error.
-       * @return This builder.
+       * @param playerError 导致播放失败的最后一次错误，如果没有错误则为 null。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlayerError(@Nullable PlaybackException playerError) {
@@ -299,10 +279,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link RepeatMode} used for playback.
+       * 设置用于播放的 {@link RepeatMode}。
        *
-       * @param repeatMode The {@link RepeatMode} used for playback.
-       * @return This builder.
+       * @param repeatMode 用于播放的 {@link RepeatMode}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setRepeatMode(@Player.RepeatMode int repeatMode) {
@@ -311,10 +291,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets whether shuffling of media items is enabled.
+       * 设置是否启用了媒体项的随机播放。
        *
-       * @param shuffleModeEnabled Whether shuffling of media items is enabled.
-       * @return This builder.
+       * @param shuffleModeEnabled 是否启用了媒体项的随机播放。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setShuffleModeEnabled(boolean shuffleModeEnabled) {
@@ -323,13 +303,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets whether the player is currently loading its source.
+       * 设置播放器当前是否正在加载其源。
        *
-       * <p>The player can not be marked as loading if the {@linkplain #setPlaybackState state} is
-       * {@link Player#STATE_IDLE} or {@link Player#STATE_ENDED}.
+       * <p>如果 {@linkplain #setPlaybackState 状态} 为 {@link Player#STATE_IDLE} 或 {@link Player#STATE_ENDED}，则不能将播放器标记为正在加载。
        *
-       * @param isLoading Whether the player is currently loading its source.
-       * @return This builder.
+       * @param isLoading 播放器当前是否正在加载其源。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setIsLoading(boolean isLoading) {
@@ -338,10 +317,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link Player#seekBack()} increment in milliseconds.
+       * 设置 {@link Player#seekBack()} 的增量，以毫秒为单位。
        *
-       * @param seekBackIncrementMs The {@link Player#seekBack()} increment in milliseconds.
-       * @return This builder.
+       * @param seekBackIncrementMs {@link Player#seekBack()} 的增量，以毫秒为单位。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setSeekBackIncrementMs(long seekBackIncrementMs) {
@@ -350,10 +329,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link Player#seekForward()} increment in milliseconds.
+       * 设置 {@link Player#seekForward()} 的增量，以毫秒为单位。
        *
-       * @param seekForwardIncrementMs The {@link Player#seekForward()} increment in milliseconds.
-       * @return This builder.
+       * @param seekForwardIncrementMs {@link Player#seekForward()} 的增量，以毫秒为单位。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setSeekForwardIncrementMs(long seekForwardIncrementMs) {
@@ -362,12 +341,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the maximum position for which {@link #seekToPrevious()} seeks to the previous item,
-       * in milliseconds.
+       * 设置 {@link #seekToPrevious()} 跳转到上一个项目的最大位置，以毫秒为单位。
        *
-       * @param maxSeekToPreviousPositionMs The maximum position for which {@link #seekToPrevious()}
-       *     seeks to the previous item, in milliseconds.
-       * @return This builder.
+       * @param maxSeekToPreviousPositionMs {@link #seekToPrevious()} 跳转到上一个项目的最大位置，以毫秒为单位。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setMaxSeekToPreviousPositionMs(long maxSeekToPreviousPositionMs) {
@@ -376,10 +353,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the currently active {@link PlaybackParameters}.
+       * 设置当前活动的 {@link PlaybackParameters}。
        *
-       * @param playbackParameters The currently active {@link PlaybackParameters}.
-       * @return This builder.
+       * @param playbackParameters 当前活动的 {@link PlaybackParameters}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlaybackParameters(PlaybackParameters playbackParameters) {
@@ -388,10 +365,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the currently active {@link TrackSelectionParameters}.
+       * 设置当前活动的 {@link TrackSelectionParameters}。
        *
-       * @param trackSelectionParameters The currently active {@link TrackSelectionParameters}.
-       * @return This builder.
+       * @param trackSelectionParameters 当前活动的 {@link TrackSelectionParameters}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setTrackSelectionParameters(
@@ -401,10 +378,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current {@link AudioAttributes}.
+       * 设置当前的 {@link AudioAttributes}。
        *
-       * @param audioAttributes The current {@link AudioAttributes}.
-       * @return This builder.
+       * @param audioAttributes 当前的 {@link AudioAttributes}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setAudioAttributes(AudioAttributes audioAttributes) {
@@ -413,12 +390,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current audio volume, with 0 being silence and 1 being unity gain (signal
-       * unchanged).
+       * 设置当前的音频音量，0 表示静音，1 表示单位增益（信号不变）。
        *
-       * @param volume The current audio volume, with 0 being silence and 1 being unity gain (signal
-       *     unchanged).
-       * @return This builder.
+       * @param volume 当前的音频音量，0 表示静音，1 表示单位增益（信号不变）。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setVolume(@FloatRange(from = 0, to = 1.0) float volume) {
@@ -428,10 +403,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current video size.
+       * 设置当前的视频尺寸。
        *
-       * @param videoSize The current video size.
-       * @return This builder.
+       * @param videoSize 当前的视频尺寸。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setVideoSize(VideoSize videoSize) {
@@ -440,10 +415,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current {@linkplain CueGroup cues}.
+       * 设置当前的 {@linkplain CueGroup 字幕组}。
        *
-       * @param currentCues The current {@linkplain CueGroup cues}.
-       * @return This builder.
+       * @param currentCues 当前的 {@linkplain CueGroup 字幕组}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setCurrentCues(CueGroup currentCues) {
@@ -452,10 +427,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link DeviceInfo}.
+       * 设置 {@link DeviceInfo}。
        *
-       * @param deviceInfo The {@link DeviceInfo}.
-       * @return This builder.
+       * @param deviceInfo {@link DeviceInfo}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setDeviceInfo(DeviceInfo deviceInfo) {
@@ -464,10 +439,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current device volume.
+       * 设置当前的设备音量。
        *
-       * @param deviceVolume The current device volume.
-       * @return This builder.
+       * @param deviceVolume 当前的设备音量。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setDeviceVolume(@IntRange(from = 0) int deviceVolume) {
@@ -477,10 +452,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets whether the device is muted.
+       * 设置设备是否静音。
        *
-       * @param isDeviceMuted Whether the device is muted.
-       * @return This builder.
+       * @param isDeviceMuted 设备是否静音。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setIsDeviceMuted(boolean isDeviceMuted) {
@@ -489,11 +464,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the size of the surface onto which the video is being rendered.
+       * 设置渲染视频的表面的尺寸。
        *
-       * @param surfaceSize The surface size. Dimensions may be {@link C#LENGTH_UNSET} if unknown,
-       *     or 0 if the video is not rendered onto a surface.
-       * @return This builder.
+       * @param surfaceSize 表面的尺寸。如果未知，尺寸可能是 {@link C#LENGTH_UNSET}；如果视频未渲染到表面上，则可能是 0。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setSurfaceSize(Size surfaceSize) {
@@ -502,14 +476,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets whether a frame has been rendered for the first time since setting the surface, a
-       * rendering reset, or since the stream being rendered was changed.
+       * 设置自设置表面、渲染重置或渲染的流更改以来是否首次渲染了帧。
        *
-       * <p>Note: As this will trigger a {@link Listener#onRenderedFirstFrame()} event, the flag
-       * should only be set for the first {@link State} update after the first frame was rendered.
+       * <p>注意：由于这将触发 {@link Listener#onRenderedFirstFrame()} 事件，因此该标志应仅在首次渲染帧后的第一次 {@link State} 更新时设置。
        *
-       * @param newlyRenderedFirstFrame Whether the first frame was newly rendered.
-       * @return This builder.
+       * @param newlyRenderedFirstFrame 是否首次渲染了帧。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setNewlyRenderedFirstFrame(boolean newlyRenderedFirstFrame) {
@@ -518,13 +490,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the most recent timed {@link Metadata}.
+       * 设置最近的定时 {@link Metadata}。
        *
-       * <p>Metadata with a {@link Metadata#presentationTimeUs} of {@link C#TIME_UNSET} will not be
-       * forwarded to listeners.
+       * <p>如果 {@link Metadata#presentationTimeUs} 为 {@link C#TIME_UNSET}，则不会将元数据转发给监听器。
        *
-       * @param timedMetadata The most recent timed {@link Metadata}.
-       * @return This builder.
+       * @param timedMetadata 最近的定时 {@link Metadata}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setTimedMetadata(Metadata timedMetadata) {
@@ -533,21 +504,20 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the playlist as a list of {@link MediaItemData media items}.
+       * 将播放列表设置为 {@link MediaItemData 媒体项} 的列表。
        *
-       * <p>All items must have unique {@linkplain MediaItemData.Builder#setUid UIDs}.
+       * <p>所有项必须具有唯一的 {@linkplain MediaItemData.Builder#setUid UID}。
        *
-       * <p>This call replaces any previous playlist set via {@link #setPlaylist(Timeline, Tracks,
-       * MediaMetadata)}.
+       * <p>此调用将替换之前通过 {@link #setPlaylist(Timeline, Tracks, MediaMetadata)} 设置的任何播放列表。
        *
-       * @param playlist The list of {@link MediaItemData media items} in the playlist.
-       * @return This builder.
+       * @param playlist {@link MediaItemData 媒体项} 的列表。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlaylist(List<MediaItemData> playlist) {
         HashSet<Object> uids = new HashSet<>();
         for (int i = 0; i < playlist.size(); i++) {
-          checkArgument(uids.add(playlist.get(i).uid), "Duplicate MediaItemData UID in playlist");
+          checkArgument(uids.add(playlist.get(i).uid), "播放列表中的 MediaItemData UID 重复");
         }
         this.playlist = ImmutableList.copyOf(playlist);
         this.timeline = new PlaylistTimeline(this.playlist);
@@ -557,19 +527,14 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the playlist as a {@link Timeline} with information about the current {@link Tracks}
-       * and {@link MediaMetadata}.
+       * 将播放列表设置为包含当前 {@link Tracks} 和 {@link MediaMetadata} 信息的 {@link Timeline}。
        *
-       * <p>This call replaces any previous playlist set via {@link #setPlaylist(List)}.
+       * <p>此调用将替换之前通过 {@link #setPlaylist(List)} 设置的任何播放列表。
        *
-       * @param timeline The {@link Timeline} containing the playlist data.
-       * @param currentTracks The {@link Tracks} of the {@linkplain #setCurrentMediaItemIndex
-       *     current media item}.
-       * @param currentMetadata The combined {@link MediaMetadata} of the {@linkplain
-       *     #setCurrentMediaItemIndex current media item}. If null, the current metadata is assumed
-       *     to be the combination of the {@link MediaItem#mediaMetadata MediaItem} metadata and the
-       *     metadata of the selected {@link Format#metadata Formats}.
-       * @return This builder.
+       * @param timeline 包含播放列表数据的 {@link Timeline}。
+       * @param currentTracks {@linkplain #setCurrentMediaItemIndex 当前媒体项} 的 {@link Tracks}。
+       * @param currentMetadata {@linkplain #setCurrentMediaItemIndex 当前媒体项} 的组合 {@link MediaMetadata}。如果为 null，则当前元数据假定为 {@link MediaItem#mediaMetadata MediaItem} 元数据与所选 {@link Format#metadata 格式} 元数据的组合。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlaylist(
@@ -582,10 +547,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the playlist {@link MediaMetadata}.
+       * 设置播放列表的 {@link MediaMetadata}。
        *
-       * @param playlistMetadata The playlist {@link MediaMetadata}.
-       * @return This builder.
+       * @param playlistMetadata 播放列表的 {@link MediaMetadata}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setPlaylistMetadata(MediaMetadata playlistMetadata) {
@@ -594,14 +559,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current media item index.
+       * 设置当前媒体项的索引。
        *
-       * <p>The media item index must be less than the number of {@linkplain #setPlaylist media
-       * items in the playlist}, if set.
+       * <p>如果设置了播放列表，则媒体项索引必须小于 {@linkplain #setPlaylist 播放列表中的媒体项数量}。
        *
-       * @param currentMediaItemIndex The current media item index, or {@link C#INDEX_UNSET} to
-       *     assume the default first item in the playlist.
-       * @return This builder.
+       * @param currentMediaItemIndex 当前媒体项的索引，或 {@link C#INDEX_UNSET} 以假定播放列表中的默认第一项。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setCurrentMediaItemIndex(int currentMediaItemIndex) {
@@ -610,19 +573,15 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current ad indices, or {@link C#INDEX_UNSET} if no ad is playing.
+       * 设置当前的广告索引，如果没有播放广告则为 {@link C#INDEX_UNSET}。
        *
-       * <p>Either both indices need to be {@link C#INDEX_UNSET} or both are not {@link
-       * C#INDEX_UNSET}.
+       * <p>两个索引要么都需要是 {@link C#INDEX_UNSET}，要么都不是 {@link C#INDEX_UNSET}。
        *
-       * <p>Ads indices can only be set if there is a corresponding {@link AdPlaybackState} defined
-       * in the current {@linkplain MediaItemData.Builder#setPeriods period}.
+       * <p>广告索引只能在当前 {@linkplain MediaItemData.Builder#setPeriods 时段} 中定义了相应的 {@link AdPlaybackState} 时设置。
        *
-       * @param adGroupIndex The current ad group index, or {@link C#INDEX_UNSET} if no ad is
-       *     playing.
-       * @param adIndexInAdGroup The current ad index in the ad group, or {@link C#INDEX_UNSET} if
-       *     no ad is playing.
-       * @return This builder.
+       * @param adGroupIndex 当前的广告组索引，如果没有播放广告则为 {@link C#INDEX_UNSET}。
+       * @param adIndexInAdGroup 当前广告组中的广告索引，如果没有播放广告则为 {@link C#INDEX_UNSET}。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setCurrentAd(int adGroupIndex, int adIndexInAdGroup) {
@@ -633,17 +592,14 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current content playback position in milliseconds.
+       * 设置当前内容的播放位置（以毫秒为单位）。
        *
-       * <p>This position will be converted to an advancing {@link PositionSupplier} if the overall
-       * state indicates an advancing playback position.
+       * <p>如果整体状态指示播放位置正在推进，则此位置将转换为推进的 {@link PositionSupplier}。
        *
-       * <p>This method overrides any other {@link PositionSupplier} set via {@link
-       * #setContentPositionMs(PositionSupplier)}.
+       * <p>此方法会覆盖通过 {@link #setContentPositionMs(PositionSupplier)} 设置的其他 {@link PositionSupplier}。
        *
-       * @param positionMs The current content playback position in milliseconds, or {@link
-       *     C#TIME_UNSET} to indicate the default start position.
-       * @return This builder.
+       * @param positionMs 当前内容的播放位置（以毫秒为单位），或 {@link C#TIME_UNSET} 以指示默认起始位置。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setContentPositionMs(long positionMs) {
@@ -652,18 +608,14 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link PositionSupplier} for the current content playback position in
-       * milliseconds.
+       * 设置当前内容播放位置的 {@link PositionSupplier}（以毫秒为单位）。
        *
-       * <p>The supplier is expected to return the updated position on every call if the playback is
-       * advancing, for example by using {@link PositionSupplier#getExtrapolating}.
+       * <p>如果播放正在推进，供应商应在每次调用时返回更新后的位置，例如使用 {@link PositionSupplier#getExtrapolating}。
        *
-       * <p>This method overrides any other position set via {@link #setContentPositionMs(long)}.
+       * <p>此方法会覆盖通过 {@link #setContentPositionMs(long)} 设置的其他位置。
        *
-       * @param contentPositionMsSupplier The {@link PositionSupplier} for the current content
-       *     playback position in milliseconds, or {@link C#TIME_UNSET} to indicate the default
-       *     start position.
-       * @return This builder.
+       * @param contentPositionMsSupplier 当前内容播放位置的 {@link PositionSupplier}（以毫秒为单位），或 {@link C#TIME_UNSET} 以指示默认起始位置。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setContentPositionMs(PositionSupplier contentPositionMsSupplier) {
@@ -673,17 +625,14 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the current ad playback position in milliseconds. The value is unused if no ad is
-       * playing.
+       * 设置当前广告的播放位置（以毫秒为单位）。如果没有播放广告，则忽略此值。
        *
-       * <p>This position will be converted to an advancing {@link PositionSupplier} if the overall
-       * state indicates an advancing ad playback position.
+       * <p>如果整体状态指示广告播放位置正在推进，则此位置将转换为推进的 {@link PositionSupplier}。
        *
-       * <p>This method overrides any other {@link PositionSupplier} set via {@link
-       * #setAdPositionMs(PositionSupplier)}.
+       * <p>此方法会覆盖通过 {@link #setAdPositionMs(PositionSupplier)} 设置的其他 {@link PositionSupplier}。
        *
-       * @param positionMs The current ad playback position in milliseconds.
-       * @return This builder.
+       * @param positionMs 当前广告的播放位置（以毫秒为单位）。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setAdPositionMs(long positionMs) {
@@ -692,17 +641,14 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link PositionSupplier} for the current ad playback position in milliseconds. The
-       * value is unused if no ad is playing.
+       * 设置当前广告播放位置的 {@link PositionSupplier}（以毫秒为单位）。如果没有播放广告，则忽略此值。
        *
-       * <p>The supplier is expected to return the updated position on every call if the playback is
-       * advancing, for example by using {@link PositionSupplier#getExtrapolating}.
+       * <p>如果播放正在推进，供应商应在每次调用时返回更新后的位置，例如使用 {@link PositionSupplier#getExtrapolating}。
        *
-       * <p>This method overrides any other position set via {@link #setAdPositionMs(long)}.
+       * <p>此方法会覆盖通过 {@link #setAdPositionMs(long)} 设置的其他位置。
        *
-       * @param adPositionMsSupplier The {@link PositionSupplier} for the current ad playback
-       *     position in milliseconds. The value is unused if no ad is playing.
-       * @return This builder.
+       * @param adPositionMsSupplier 当前广告播放位置的 {@link PositionSupplier}（以毫秒为单位）。如果没有播放广告，则忽略此值。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setAdPositionMs(PositionSupplier adPositionMsSupplier) {
@@ -712,13 +658,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link PositionSupplier} for the estimated position up to which the currently
-       * playing content is buffered, in milliseconds.
+       * 设置当前播放内容的缓冲位置的 {@link PositionSupplier}（以毫秒为单位）。
        *
-       * @param contentBufferedPositionMsSupplier The {@link PositionSupplier} for the estimated
-       *     position up to which the currently playing content is buffered, in milliseconds, or
-       *     {@link C#TIME_UNSET} to indicate the default start position.
-       * @return This builder.
+       * @param contentBufferedPositionMsSupplier 当前播放内容的缓冲位置的 {@link PositionSupplier}（以毫秒为单位），或 {@link C#TIME_UNSET} 以指示默认起始位置。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setContentBufferedPositionMs(
@@ -728,13 +671,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link PositionSupplier} for the estimated position up to which the currently
-       * playing ad is buffered, in milliseconds. The value is unused if no ad is playing.
+       * 设置当前播放广告的缓冲位置的 {@link PositionSupplier}（以毫秒为单位）。如果没有播放广告，则忽略此值。
        *
-       * @param adBufferedPositionMsSupplier The {@link PositionSupplier} for the estimated position
-       *     up to which the currently playing ad is buffered, in milliseconds. The value is unused
-       *     if no ad is playing.
-       * @return This builder.
+       * @param adBufferedPositionMsSupplier 当前播放广告的缓冲位置的 {@link PositionSupplier}（以毫秒为单位）。如果没有播放广告，则忽略此值。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setAdBufferedPositionMs(PositionSupplier adBufferedPositionMsSupplier) {
@@ -743,12 +683,10 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Sets the {@link PositionSupplier} for the estimated total buffered duration in
-       * milliseconds.
+       * 设置总缓冲时长的 {@link PositionSupplier}（以毫秒为单位）。
        *
-       * @param totalBufferedDurationMsSupplier The {@link PositionSupplier} for the estimated total
-       *     buffered duration in milliseconds.
-       * @return This builder.
+       * @param totalBufferedDurationMsSupplier 总缓冲时长的 {@link PositionSupplier}（以毫秒为单位）。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setTotalBufferedDurationMs(PositionSupplier totalBufferedDurationMsSupplier) {
@@ -757,14 +695,11 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Signals that a position discontinuity happened since the last player update and sets the
-       * reason for it.
+       * 指示自上次播放器更新以来发生了位置不连续，并设置其原因。
        *
-       * @param positionDiscontinuityReason The {@linkplain Player.DiscontinuityReason reason} for
-       *     the discontinuity.
-       * @param discontinuityPositionMs The position, in milliseconds, in the current content or ad
-       *     from which playback continues after the discontinuity.
-       * @return This builder.
+       * @param positionDiscontinuityReason 不连续的 {@linkplain Player.DiscontinuityReason 原因}。
+       * @param discontinuityPositionMs 不连续后继续播放的当前内容或广告中的位置（以毫秒为单位）。
+       * @return 此构建器。
        * @see #clearPositionDiscontinuity
        */
       @CanIgnoreReturnValue
@@ -778,9 +713,9 @@ public abstract class SimpleBasePlayer extends BasePlayer {
       }
 
       /**
-       * Clears a previously set position discontinuity signal.
+       * 清除之前设置的位置不连续信号。
        *
-       * @return This builder.
+       * @return 此构建器。
        * @see #hasPositionDiscontinuity
        */
       @CanIgnoreReturnValue
@@ -789,157 +724,146 @@ public abstract class SimpleBasePlayer extends BasePlayer {
         return this;
       }
 
-      /** Builds the {@link State}. */
+      /** 构建 {@link State}。 */
       public State build() {
         return new State(this);
       }
     }
 
-    /** The available {@link Commands}. */
+    /** 可用的 {@link Commands}。 */
     public final Commands availableCommands;
 
-    /** Whether playback should proceed when ready and not suppressed. */
+    /** 当播放器准备就绪且未被抑制时是否应继续播放。 */
     public final boolean playWhenReady;
 
-    /** The last reason for changing {@link #playWhenReady}. */
+    /** 更改 {@link #playWhenReady} 的最后原因。 */
     public final @PlayWhenReadyChangeReason int playWhenReadyChangeReason;
 
-    /** The {@linkplain Player.State state} of the player. */
+    /** 播放器的 {@linkplain Player.State 状态}。 */
     public final @Player.State int playbackState;
 
-    /** The reason why playback is suppressed even if {@link #getPlayWhenReady()} is true. */
+    /** 即使 {@link #getPlayWhenReady()} 为 true，播放仍被抑制的原因。 */
     public final @PlaybackSuppressionReason int playbackSuppressionReason;
 
-    /** The last error that caused playback to fail, or null if there was no error. */
+    /** 导致播放失败的最后一次错误，如果没有错误则为 null。 */
     @Nullable public final PlaybackException playerError;
 
-    /** The {@link RepeatMode} used for playback. */
+    /** 用于播放的 {@link RepeatMode}。 */
     public final @RepeatMode int repeatMode;
 
-    /** Whether shuffling of media items is enabled. */
+    /** 是否启用了媒体项的随机播放。 */
     public final boolean shuffleModeEnabled;
 
-    /** Whether the player is currently loading its source. */
+    /** 播放器当前是否正在加载其源。 */
     public final boolean isLoading;
 
-    /** The {@link Player#seekBack()} increment in milliseconds. */
+    /** {@link Player#seekBack()} 的增量（以毫秒为单位）。 */
     public final long seekBackIncrementMs;
 
-    /** The {@link Player#seekForward()} increment in milliseconds. */
+    /** {@link Player#seekForward()} 的增量（以毫秒为单位）。 */
     public final long seekForwardIncrementMs;
 
     /**
-     * The maximum position for which {@link #seekToPrevious()} seeks to the previous item, in
-     * milliseconds.
+     * {@link #seekToPrevious()} 跳转到上一个项目的最大位置（以毫秒为单位）。
      */
     public final long maxSeekToPreviousPositionMs;
 
-    /** The currently active {@link PlaybackParameters}. */
+    /** 当前活动的 {@link PlaybackParameters}。 */
     public final PlaybackParameters playbackParameters;
 
-    /** The currently active {@link TrackSelectionParameters}. */
+    /** 当前活动的 {@link TrackSelectionParameters}。 */
     public final TrackSelectionParameters trackSelectionParameters;
 
-    /** The current {@link AudioAttributes}. */
+    /** 当前的 {@link AudioAttributes}。 */
     public final AudioAttributes audioAttributes;
 
-    /** The current audio volume, with 0 being silence and 1 being unity gain (signal unchanged). */
+    /** 当前的音频音量，0 表示静音，1 表示单位增益（信号不变）。 */
     @FloatRange(from = 0, to = 1.0)
     public final float volume;
 
-    /** The current video size. */
+    /** 当前的视频尺寸。 */
     public final VideoSize videoSize;
 
-    /** The current {@linkplain CueGroup cues}. */
+    /** 当前的 {@linkplain CueGroup 字幕组}。 */
     public final CueGroup currentCues;
 
-    /** The {@link DeviceInfo}. */
+    /** {@link DeviceInfo}。 */
     public final DeviceInfo deviceInfo;
 
-    /** The current device volume. */
+    /** 当前的设备音量。 */
     @IntRange(from = 0)
     public final int deviceVolume;
 
-    /** Whether the device is muted. */
+    /** 设备是否静音。 */
     public final boolean isDeviceMuted;
 
-    /** The size of the surface onto which the video is being rendered. */
+    /** 渲染视频的表面的尺寸。 */
     public final Size surfaceSize;
 
     /**
-     * Whether a frame has been rendered for the first time since setting the surface, a rendering
-     * reset, or since the stream being rendered was changed.
+     * 自设置表面、渲染重置或渲染的流更改以来是否首次渲染了帧。
      */
     public final boolean newlyRenderedFirstFrame;
 
-    /** The most recent timed metadata. */
+    /** 最近的定时元数据。 */
     public final Metadata timedMetadata;
 
-    /** The {@link Timeline}. */
+    /** {@link Timeline}。 */
     public final Timeline timeline;
 
-    /** The current {@link Tracks}. */
+    /** 当前的 {@link Tracks}。 */
     public final Tracks currentTracks;
 
-    /** The current combined {@link MediaMetadata}. */
+    /** 当前的组合 {@link MediaMetadata}。 */
     public final MediaMetadata currentMetadata;
 
-    /** The playlist {@link MediaMetadata}. */
+    /** 播放列表的 {@link MediaMetadata}。 */
     public final MediaMetadata playlistMetadata;
 
     /**
-     * The current media item index, or {@link C#INDEX_UNSET} to assume the default first item of
-     * the playlist is played.
+     * 当前媒体项的索引，或 {@link C#INDEX_UNSET} 以假定播放列表中的默认第一项。
      */
     public final int currentMediaItemIndex;
 
-    /** The current ad group index, or {@link C#INDEX_UNSET} if no ad is playing. */
+    /** 当前的广告组索引，如果没有播放广告则为 {@link C#INDEX_UNSET}。 */
     public final int currentAdGroupIndex;
 
-    /** The current ad index in the ad group, or {@link C#INDEX_UNSET} if no ad is playing. */
+    /** 当前广告组中的广告索引，如果没有播放广告则为 {@link C#INDEX_UNSET}。 */
     public final int currentAdIndexInAdGroup;
 
     /**
-     * The {@link PositionSupplier} for the current content playback position in milliseconds, or
-     * {@link C#TIME_UNSET} to indicate the default start position.
+     * 当前内容播放位置的 {@link PositionSupplier}（以毫秒为单位），或 {@link C#TIME_UNSET} 以指示默认起始位置。
      */
     public final PositionSupplier contentPositionMsSupplier;
 
     /**
-     * The {@link PositionSupplier} for the current ad playback position in milliseconds. The value
-     * is unused if no ad is playing.
+     * 当前广告播放位置的 {@link PositionSupplier}（以毫秒为单位）。如果没有播放广告，则忽略此值。
      */
     public final PositionSupplier adPositionMsSupplier;
 
     /**
-     * The {@link PositionSupplier} for the estimated position up to which the currently playing
-     * content is buffered, in milliseconds, or {@link C#TIME_UNSET} to indicate the default start
-     * position.
+     * 当前播放内容的缓冲位置的 {@link PositionSupplier}（以毫秒为单位），或 {@link C#TIME_UNSET} 以指示默认起始位置。
      */
     public final PositionSupplier contentBufferedPositionMsSupplier;
 
     /**
-     * The {@link PositionSupplier} for the estimated position up to which the currently playing ad
-     * is buffered, in milliseconds. The value is unused if no ad is playing.
+     * 当前播放广告的缓冲位置的 {@link PositionSupplier}（以毫秒为单位）。如果没有播放广告，则忽略此值。
      */
     public final PositionSupplier adBufferedPositionMsSupplier;
 
-    /** The {@link PositionSupplier} for the estimated total buffered duration in milliseconds. */
+    /** 总缓冲时长的 {@link PositionSupplier}（以毫秒为单位）。 */
     public final PositionSupplier totalBufferedDurationMsSupplier;
 
-    /** Signals that a position discontinuity happened since the last update to the player. */
+    /** 指示自上次更新播放器以来是否发生了位置不连续。 */
     public final boolean hasPositionDiscontinuity;
 
     /**
-     * The {@linkplain Player.DiscontinuityReason reason} for the last position discontinuity. The
-     * value is unused if {@link #hasPositionDiscontinuity} is {@code false}.
+     * 上次位置不连续的 {@linkplain Player.DiscontinuityReason 原因}。如果 {@link #hasPositionDiscontinuity} 为 {@code false}，则忽略此值。
      */
     public final @Player.DiscontinuityReason int positionDiscontinuityReason;
 
     /**
-     * The position, in milliseconds, in the current content or ad from which playback continued
-     * after the discontinuity. The value is unused if {@link #hasPositionDiscontinuity} is {@code
-     * false}.
+     * 不连续后继续播放的当前内容或广告中的位置（以毫秒为单位）。如果 {@link #hasPositionDiscontinuity} 为 {@code false}，则忽略此值。
      */
     public final long discontinuityPositionMs;
 
@@ -3004,13 +2928,11 @@ public abstract class SimpleBasePlayer extends BasePlayer {
   }
 
   /**
-   * Invalidates the current state.
+   * 使当前状态失效。
    *
-   * <p>Triggers a call to {@link #getState()} and informs listeners if the state changed.
+   * <p>触发对 {@link #getState()} 的调用，并在状态更改时通知监听器。
    *
-   * <p>Note that this may not have an immediate effect while there are still player methods being
-   * handled asynchronously. The state will be invalidated automatically once these pending
-   * synchronous operations are finished and there is no need to call this method again.
+   * <p>请注意，在异步处理播放器方法时，此操作可能不会立即生效。一旦这些挂起的异步操作完成，状态将自动失效，无需再次调用此方法。
    */
   protected final void invalidateState() {
     verifyApplicationThreadAndInitState();
@@ -3022,32 +2944,22 @@ public abstract class SimpleBasePlayer extends BasePlayer {
   }
 
   /**
-   * Returns the current {@link State} of the player.
+   * 返回播放器的当前 {@link State}。
    *
-   * <p>The {@link State} should include all {@linkplain
-   * State.Builder#setAvailableCommands(Commands) available commands} indicating which player
-   * methods are allowed to be called.
+   * <p>{@link State} 应包括所有 {@linkplain State.Builder#setAvailableCommands(Commands) 可用命令}，以指示允许调用哪些播放器方法。
    *
-   * <p>Note that this method won't be called while asynchronous handling of player methods is in
-   * progress. This means that the implementation doesn't need to handle state changes caused by
-   * these asynchronous operations until they are done and can return the currently known state
-   * directly. The placeholder state used while these asynchronous operations are in progress can be
-   * customized by overriding {@link #getPlaceholderState(State)} if required.
+   * <p>请注意，在异步处理播放器方法时，不会调用此方法。这意味着实现不需要处理由这些异步操作引起的状态更改，直到它们完成，并可以直接返回当前已知的状态。如果需要，可以通过重写 {@link #getPlaceholderState(State)} 来自定义这些异步操作进行期间使用的占位符状态。
    */
   @ForOverride
   protected abstract State getState();
 
   /**
-   * Returns the placeholder state used while a player method is handled asynchronously.
+   * 返回在异步处理播放器方法时使用的占位符状态。
    *
-   * <p>The {@code suggestedPlaceholderState} already contains the most likely state update, for
-   * example setting {@link State#playWhenReady} to true if {@code player.setPlayWhenReady(true)} is
-   * called, and an implementations only needs to override this method if it can determine a more
-   * accurate placeholder state.
+   * <p>{@code suggestedPlaceholderState} 已经包含了最可能的状态更新，例如如果调用了 {@code player.setPlayWhenReady(true)}，则会将 {@link State#playWhenReady} 设置为 true，实现只需在可以确定更准确的占位符状态时重写此方法。
    *
-   * @param suggestedPlaceholderState The suggested placeholder {@link State}, including the most
-   *     likely outcome of handling all pending asynchronous operations.
-   * @return The placeholder {@link State} to use while asynchronous operations are pending.
+   * @param suggestedPlaceholderState 建议的占位符 {@link State}，包括处理所有挂起的异步操作的最可能结果。
+   * @return 在异步操作挂起期间使用的占位符 {@link State}。
    */
   @ForOverride
   protected State getPlaceholderState(State suggestedPlaceholderState) {
@@ -3055,15 +2967,12 @@ public abstract class SimpleBasePlayer extends BasePlayer {
   }
 
   /**
-   * Returns the placeholder {@link MediaItemData} used for a new {@link MediaItem} added to the
-   * playlist.
+   * 返回添加到播放列表的新 {@link MediaItem} 的占位符 {@link MediaItemData}。
    *
-   * <p>An implementation only needs to override this method if it can determine a more accurate
-   * placeholder state than the default.
+   * <p>实现只需在可以确定比默认更准确的占位符状态时重写此方法。
    *
-   * @param mediaItem The {@link MediaItem} added to the playlist.
-   * @return The {@link MediaItemData} used as placeholder while adding the item to the playlist is
-   *     in progress.
+   * @param mediaItem 添加到播放列表的 {@link MediaItem}。
+   * @return 在将项目添加到播放列表的过程中使用的 {@link MediaItemData}。
    */
   @ForOverride
   protected MediaItemData getPlaceholderMediaItemData(MediaItem mediaItem) {
@@ -3075,339 +2984,287 @@ public abstract class SimpleBasePlayer extends BasePlayer {
   }
 
   /**
-   * Handles calls to {@link Player#setPlayWhenReady}, {@link Player#play} and {@link Player#pause}.
+   * 处理对 {@link Player#setPlayWhenReady}、{@link Player#play} 和 {@link Player#pause} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_PLAY_PAUSE} is available.
+   * <p>仅在 {@link Player#COMMAND_PLAY_PAUSE} 可用时调用。
    *
-   * @param playWhenReady The requested {@link State#playWhenReady}
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param playWhenReady 请求的 {@link State#playWhenReady}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetPlayWhenReady(boolean playWhenReady) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_PLAY_PAUSE");
+    throw new IllegalStateException("缺少处理 COMMAND_PLAY_PAUSE 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#prepare}.
+   * 处理对 {@link Player#prepare} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_PREPARE} is available.
+   * <p>仅在 {@link Player#COMMAND_PREPARE} 可用时调用。
    *
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handlePrepare() {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_PREPARE");
+    throw new IllegalStateException("缺少处理 COMMAND_PREPARE 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#stop}.
+   * 处理对 {@link Player#stop} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_STOP} is available.
+   * <p>仅在 {@link Player#COMMAND_STOP} 可用时调用。
    *
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleStop() {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_STOP");
+    throw new IllegalStateException("缺少处理 COMMAND_STOP 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#release}.
+   * 处理对 {@link Player#release} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_RELEASE} is available.
+   * <p>仅在 {@link Player#COMMAND_RELEASE} 可用时调用。
    *
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleRelease() {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_RELEASE");
+    throw new IllegalStateException("缺少处理 COMMAND_RELEASE 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setRepeatMode}.
+   * 处理对 {@link Player#setRepeatMode} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_REPEAT_MODE} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_REPEAT_MODE} 可用时调用。
    *
-   * @param repeatMode The requested {@link RepeatMode}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param repeatMode 请求的 {@link RepeatMode}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetRepeatMode(@RepeatMode int repeatMode) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_REPEAT_MODE");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_REPEAT_MODE 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setShuffleModeEnabled}.
+   * 处理对 {@link Player#setShuffleModeEnabled} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_SHUFFLE_MODE} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_SHUFFLE_MODE} 可用时调用。
    *
-   * @param shuffleModeEnabled Whether shuffle mode was requested to be enabled.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param shuffleModeEnabled 是否请求启用随机播放模式。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetShuffleModeEnabled(boolean shuffleModeEnabled) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_SHUFFLE_MODE");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_SHUFFLE_MODE 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setPlaybackParameters} or {@link Player#setPlaybackSpeed}.
+   * 处理对 {@link Player#setPlaybackParameters} 或 {@link Player#setPlaybackSpeed} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_SPEED_AND_PITCH} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_SPEED_AND_PITCH} 可用时调用。
    *
-   * @param playbackParameters The requested {@link PlaybackParameters}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param playbackParameters 请求的 {@link PlaybackParameters}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetPlaybackParameters(PlaybackParameters playbackParameters) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_SPEED_AND_PITCH");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_SPEED_AND_PITCH 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setTrackSelectionParameters}.
+   * 处理对 {@link Player#setTrackSelectionParameters} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_TRACK_SELECTION_PARAMETERS} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_TRACK_SELECTION_PARAMETERS} 可用时调用。
    *
-   * @param trackSelectionParameters The requested {@link TrackSelectionParameters}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param trackSelectionParameters 请求的 {@link TrackSelectionParameters}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetTrackSelectionParameters(
       TrackSelectionParameters trackSelectionParameters) {
-    throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_SET_TRACK_SELECTION_PARAMETERS");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_TRACK_SELECTION_PARAMETERS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setPlaylistMetadata}.
+   * 处理对 {@link Player#setPlaylistMetadata} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_PLAYLIST_METADATA} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_PLAYLIST_METADATA} 可用时调用。
    *
-   * @param playlistMetadata The requested {@linkplain MediaMetadata playlist metadata}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param playlistMetadata 请求的 {@linkplain MediaMetadata 播放列表元数据}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetPlaylistMetadata(MediaMetadata playlistMetadata) {
-    throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_SET_PLAYLIST_METADATA");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_PLAYLIST_METADATA 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setVolume}.
+   * 处理对 {@link Player#setVolume} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_VOLUME} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_VOLUME} 可用时调用。
    *
-   * @param volume The requested audio volume, with 0 being silence and 1 being unity gain (signal
-   *     unchanged).
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param volume 请求的音频音量，0 表示静音，1 表示单位增益（信号不变）。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetVolume(@FloatRange(from = 0, to = 1.0) float volume) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_VOLUME");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_VOLUME 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setDeviceVolume(int)} and {@link Player#setDeviceVolume(int,
-   * int)}.
+   * 处理对 {@link Player#setDeviceVolume(int)} 和 {@link Player#setDeviceVolume(int, int)} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_DEVICE_VOLUME} or {@link
-   * Player#COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_DEVICE_VOLUME} 或 {@link Player#COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} 可用时调用。
    *
-   * @param deviceVolume The requested device volume.
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param deviceVolume 请求的设备音量。
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetDeviceVolume(
       @IntRange(from = 0) int deviceVolume, int flags) {
     throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_SET_DEVICE_VOLUME or"
-            + " COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS");
+        "缺少处理 COMMAND_SET_DEVICE_VOLUME 或 COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#increaseDeviceVolume()} and {@link
-   * Player#increaseDeviceVolume(int)}.
+   * 处理对 {@link Player#increaseDeviceVolume()} 和 {@link Player#increaseDeviceVolume(int)} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_ADJUST_DEVICE_VOLUME} or {@link
-   * Player#COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is available.
+   * <p>仅在 {@link Player#COMMAND_ADJUST_DEVICE_VOLUME} 或 {@link Player#COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} 可用时调用。
    *
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleIncreaseDeviceVolume(@C.VolumeFlags int flags) {
     throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_ADJUST_DEVICE_VOLUME or"
-            + " COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS");
+        "缺少处理 COMMAND_ADJUST_DEVICE_VOLUME 或 COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#decreaseDeviceVolume()} and {@link
-   * Player#decreaseDeviceVolume(int)}.
+   * 处理对 {@link Player#decreaseDeviceVolume()} 和 {@link Player#decreaseDeviceVolume(int)} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_ADJUST_DEVICE_VOLUME} or {@link
-   * Player#COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is available.
+   * <p>仅在 {@link Player#COMMAND_ADJUST_DEVICE_VOLUME} 或 {@link Player#COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} 可用时调用。
    *
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleDecreaseDeviceVolume(@C.VolumeFlags int flags) {
     throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_ADJUST_DEVICE_VOLUME or"
-            + " COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS");
+        "缺少处理 COMMAND_ADJUST_DEVICE_VOLUME 或 COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setDeviceMuted(boolean)} and {@link
-   * Player#setDeviceMuted(boolean, int)}.
+   * 处理对 {@link Player#setDeviceMuted(boolean)} 和 {@link Player#setDeviceMuted(boolean, int)} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_ADJUST_DEVICE_VOLUME} or {@link
-   * Player#COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is available.
+   * <p>仅在 {@link Player#COMMAND_ADJUST_DEVICE_VOLUME} 或 {@link Player#COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} 可用时调用。
    *
-   * @param muted Whether the device was requested to be muted.
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param muted 是否请求将设备静音。
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetDeviceMuted(boolean muted, @C.VolumeFlags int flags) {
     throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_ADJUST_DEVICE_VOLUME or"
-            + " COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS");
+        "缺少处理 COMMAND_ADJUST_DEVICE_VOLUME 或 COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS 的实现");
   }
 
   /**
-   * Handles calls to set the audio attributes.
+   * 处理设置音频属性的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_AUDIO_ATTRIBUTES} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_AUDIO_ATTRIBUTES} 可用时调用。
    *
-   * @param audioAttributes The attributes to use for audio playback.
-   * @param handleAudioFocus True if the player should handle audio focus, false otherwise.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param audioAttributes 用于音频播放的属性。
+   * @param handleAudioFocus 如果播放器应处理音频焦点，则为 true，否则为 false。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetAudioAttributes(
       AudioAttributes audioAttributes, boolean handleAudioFocus) {
-    throw new IllegalStateException(
-        "Missing implementation to handle COMMAND_SET_AUDIO_ATTRIBUTES");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_AUTIO_ATTRIBUTES 的实现");
   }
 
   /**
-   * Handles calls to set the video output.
+   * 处理设置视频输出的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_VIDEO_SURFACE} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_VIDEO_SURFACE} 可用时调用。
    *
-   * @param videoOutput The requested video output. This is either a {@link Surface}, {@link
-   *     SurfaceHolder}, {@link TextureView} or {@link SurfaceView}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param videoOutput 请求的视频输出。这是一个 {@link Surface}、{@link SurfaceHolder}、{@link TextureView} 或 {@link SurfaceView}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetVideoOutput(Object videoOutput) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_VIDEO_SURFACE");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_VIDEO_SURFACE 的实现");
   }
 
   /**
-   * Handles calls to clear the video output.
+   * 处理清除视频输出的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_VIDEO_SURFACE} is available.
+   * <p>仅在 {@link Player#COMMAND_SET_VIDEO_SURFACE} 可用时调用。
    *
-   * @param videoOutput The video output to clear. If null any current output should be cleared. If
-   *     non-null, the output should only be cleared if it matches the provided argument. This is
-   *     either a {@link Surface}, {@link SurfaceHolder}, {@link TextureView} or {@link
-   *     SurfaceView}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param videoOutput 要清除的视频输出。如果为 null，则应清除任何当前输出。如果为非 null，则仅在输出与提供的参数匹配时才清除输出。这是一个 {@link Surface}、{@link SurfaceHolder}、{@link TextureView} 或 {@link SurfaceView}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleClearVideoOutput(@Nullable Object videoOutput) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_VIDEO_SURFACE");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_VIDEO_SURFACE 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#setMediaItem} and {@link Player#setMediaItems}.
+   * 处理对 {@link Player#setMediaItem} 和 {@link Player#setMediaItems} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_SET_MEDIA_ITEM} or {@link
-   * Player#COMMAND_CHANGE_MEDIA_ITEMS} is available. If only {@link Player#COMMAND_SET_MEDIA_ITEM}
-   * is available, the list of media items will always contain exactly one item.
+   * <p>仅在 {@link Player#COMMAND_SET_MEDIA_ITEM} 或 {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} 可用时调用。如果仅 {@link Player#COMMAND_SET_MEDIA_ITEM} 可用，则媒体项列表将始终包含一个项目。
    *
-   * @param mediaItems The media items to add.
-   * @param startIndex The index at which to start playback from, or {@link C#INDEX_UNSET} to start
-   *     at the default item.
-   * @param startPositionMs The position in milliseconds to start playback from, or {@link
-   *     C#TIME_UNSET} to start at the default position in the media item.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param mediaItems 要添加的媒体项。
+   * @param startIndex 开始播放的索引，或 {@link C#INDEX_UNSET} 以从默认项目开始。
+   * @param startPositionMs 开始播放的位置（以毫秒为单位），或 {@link C#TIME_UNSET} 以从媒体项中的默认位置开始。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSetMediaItems(
       List<MediaItem> mediaItems, int startIndex, long startPositionMs) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_SET_MEDIA_ITEM(S)");
+    throw new IllegalStateException("缺少处理 COMMAND_SET_MEDIA_ITEM(S) 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#addMediaItem} and {@link Player#addMediaItems}.
+   * 处理对 {@link Player#addMediaItem} 和 {@link Player#addMediaItems} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} is available.
+   * <p>仅在 {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} 可用时调用。
    *
-   * @param index The index at which to add the items. The index is in the range 0 &lt;= {@code
-   *     index} &lt;= {@link #getMediaItemCount()}.
-   * @param mediaItems The media items to add.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param index 添加项目的索引。索引范围为 0 &lt;= {@code index} &lt;= {@link #getMediaItemCount()}。
+   * @param mediaItems 要添加的媒体项。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleAddMediaItems(int index, List<MediaItem> mediaItems) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_CHANGE_MEDIA_ITEMS");
+    throw new IllegalStateException("缺少处理 COMMAND_CHANGE_MEDIA_ITEMS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#moveMediaItem} and {@link Player#moveMediaItems}.
+   * 处理对 {@link Player#moveMediaItem} 和 {@link Player#moveMediaItems} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} is available.
+   * <p>仅在 {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} 可用时调用。
    *
-   * @param fromIndex The start index of the items to move. The index is in the range 0 &lt;= {@code
-   *     fromIndex} &lt; {@link #getMediaItemCount()}.
-   * @param toIndex The index of the first item not to be included in the move (exclusive). The
-   *     index is in the range {@code fromIndex} &lt; {@code toIndex} &lt;= {@link
-   *     #getMediaItemCount()}.
-   * @param newIndex The new index of the first moved item. The index is in the range {@code 0}
-   *     &lt;= {@code newIndex} &lt; {@link #getMediaItemCount() - (toIndex - fromIndex)}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param fromIndex 要移动的项目的起始索引。索引范围为 0 &lt;= {@code fromIndex} &lt; {@link #getMediaItemCount()}。
+   * @param toIndex 不包括在移动中的第一个项目的索引（独占）。索引范围为 {@code fromIndex} &lt; {@code toIndex} &lt;= {@link #getMediaItemCount()}。
+   * @param newIndex 第一个移动项目的新索引。索引范围为 {@code 0} &lt;= {@code newIndex} &lt; {@link #getMediaItemCount() - (toIndex - fromIndex)}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleMoveMediaItems(int fromIndex, int toIndex, int newIndex) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_CHANGE_MEDIA_ITEMS");
+    throw new IllegalStateException("缺少处理 COMMAND_CHANGE_MEDIA_ITEMS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#replaceMediaItem} and {@link Player#replaceMediaItems}.
+   * 处理对 {@link Player#replaceMediaItem} 和 {@link Player#replaceMediaItems} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} is available.
+   * <p>仅在 {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} 可用时调用。
    *
-   * @param fromIndex The start index of the items to replace. The index is in the range 0 &lt;=
-   *     {@code fromIndex} &lt; {@link #getMediaItemCount()}.
-   * @param toIndex The index of the first item not to be replaced (exclusive). The index is in the
-   *     range {@code fromIndex} &lt; {@code toIndex} &lt;= {@link #getMediaItemCount()}.
-   * @param mediaItems The media items to replace the specified range with.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param fromIndex 要替换的项目的起始索引。索引范围为 0 &lt;= {@code fromIndex} &lt; {@link #getMediaItemCount()}。
+   * @param toIndex 不包括在替换中的第一个项目的索引（独占）。索引范围为 {@code fromIndex} &lt; {@code toIndex} &lt;= {@link #getMediaItemCount()}。
+   * @param mediaItems 用于替换指定范围的媒体项。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleReplaceMediaItems(
@@ -3418,60 +3275,47 @@ public abstract class SimpleBasePlayer extends BasePlayer {
   }
 
   /**
-   * Handles calls to {@link Player#removeMediaItem} and {@link Player#removeMediaItems}.
+   * 处理对 {@link Player#removeMediaItem} 和 {@link Player#removeMediaItems} 的调用。
    *
-   * <p>Will only be called if {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} is available.
+   * <p>仅在 {@link Player#COMMAND_CHANGE_MEDIA_ITEMS} 可用时调用。
    *
-   * @param fromIndex The index at which to start removing media items. The index is in the range 0
-   *     &lt;= {@code fromIndex} &lt; {@link #getMediaItemCount()}.
-   * @param toIndex The index of the first item to be kept (exclusive). The index is in the range
-   *     {@code fromIndex} &lt; {@code toIndex} &lt;= {@link #getMediaItemCount()}.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param fromIndex 开始删除媒体项的索引。索引范围为 0 &lt;= {@code fromIndex} &lt; {@link #getMediaItemCount()}。
+   * @param toIndex 保留的第一个项目的索引（独占）。索引范围为 {@code fromIndex} &lt; {@code toIndex} &lt;= {@link #getMediaItemCount()}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleRemoveMediaItems(int fromIndex, int toIndex) {
-    throw new IllegalStateException("Missing implementation to handle COMMAND_CHANGE_MEDIA_ITEMS");
+    throw new IllegalStateException("缺少处理 COMMAND_CHANGE_MEDIA_ITEMS 的实现");
   }
 
   /**
-   * Handles calls to {@link Player#seekTo} and other seek operations (for example, {@link
-   * Player#seekToNext}).
+   * 处理对 {@link Player#seekTo} 和其他跳转操作（例如 {@link Player#seekToNext}）的调用。
    *
-   * <p>Will only be called if the appropriate {@link Player.Command}, for example {@link
-   * Player#COMMAND_SEEK_TO_MEDIA_ITEM} or {@link Player#COMMAND_SEEK_TO_NEXT}, is available.
+   * <p>仅在适当的 {@link Player.Command}（例如 {@link Player#COMMAND_SEEK_TO_MEDIA_ITEM} 或 {@link Player#COMMAND_SEEK_TO_NEXT}）可用时调用。
    *
-   * @param mediaItemIndex The media item index to seek to. If the original seek operation did not
-   *     directly specify an index, this is the most likely implied index based on the available
-   *     player state. If the implied action is to do nothing, this will be {@link C#INDEX_UNSET}.
-   * @param positionMs The position in milliseconds to start playback from, or {@link C#TIME_UNSET}
-   *     to start at the default position in the media item. If the original seek operation did not
-   *     directly specify a position, this is the most likely implied position based on the
-   *     available player state.
-   * @param seekCommand The {@link Player.Command} used to trigger the seek.
-   * @return A {@link ListenableFuture} indicating the completion of all immediate {@link State}
-   *     changes caused by this call.
+   * @param mediaItemIndex 要跳转到的媒体项索引。如果原始跳转操作未直接指定索引，则这是基于可用播放器状态的最可能隐含索引。如果隐含的操作是不执行任何操作，则此值为 {@link C#INDEX_UNSET}。
+   * @param positionMs 开始播放的位置（以毫秒为单位），或 {@link C#TIME_UNSET} 以从媒体项中的默认位置开始。如果原始跳转操作未直接指定位置，则这是基于可用播放器状态的最可能隐含位置。
+   * @param seekCommand 用于触发跳转的 {@link Player.Command}。
+   * @return 一个 {@link ListenableFuture}，指示此调用引起的所有即时 {@link State} 更改的完成。
    */
   @ForOverride
   protected ListenableFuture<?> handleSeek(
       int mediaItemIndex, long positionMs, @Player.Command int seekCommand) {
-    throw new IllegalStateException("Missing implementation to handle one of the COMMAND_SEEK_*");
+    throw new IllegalStateException("缺少处理 COMMAND_SEEK_* 的实现");
   }
 
   /**
-   * Throws an {@link IllegalStateException} if the the thread calling this method does not match
-   * the {@link Looper} thread that was specified upon construction of this instance.
+   * 如果调用此方法的线程与构造此实例时指定的 {@link Looper} 线程不匹配，则抛出 {@link IllegalStateException}。
    *
-   * <p>Subclasses can use this method to verify that their own defined methods are also accessed by
-   * the correct thread.
+   * <p>子类可以使用此方法来验证其定义的方法是否也由正确的线程访问。
    */
   protected final void verifyApplicationThread() {
     if (Thread.currentThread() != applicationLooper.getThread()) {
       String message =
           Util.formatInvariant(
-              "Player is accessed on the wrong thread.\n"
-                  + "Current thread: '%s'\n"
-                  + "Expected thread: '%s'\n",
+              "播放器在错误的线程上被访问。\n"
+                  + "当前线程：'%s'\n"
+                  + "预期线程：'%s'\n",
               Thread.currentThread().getName(), applicationLooper.getThread().getName());
       throw new IllegalStateException(message);
     }

@@ -35,33 +35,32 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 // LINT.IfChange(javadoc)
+
 /**
- * Parameters for controlling track selection.
+ * 用于控制轨道选择的参数。
  *
- * <p>Parameters can be queried and set on a {@link Player}. For example the following code modifies
- * the parameters to restrict video track selections to SD, and to select a German audio track if
- * there is one:
+ * <p>可以在 {@link Player} 上查询和设置这些参数。例如，以下代码修改参数以将视频轨道选择限制为标清（SD），并优先选择德语音频轨道（如果存在）：
  *
  * <pre>{@code
- * // Build on the current parameters.
+ * // 基于当前参数构建。
  * TrackSelectionParameters currentParameters = player.getTrackSelectionParameters();
- * // Build the resulting parameters.
+ * // 构建新的参数。
  * TrackSelectionParameters newParameters = currentParameters
  *     .buildUpon()
  *     .setMaxVideoSizeSd()
  *     .setPreferredAudioLanguage("de")
  *     .build();
- * // Set the new parameters.
+ * // 设置新参数。
  * player.setTrackSelectionParameters(newParameters);
  * }</pre>
  */
 public class TrackSelectionParameters {
 
   /**
-   * A builder for {@link TrackSelectionParameters}. See the {@link TrackSelectionParameters}
-   * documentation for explanations of the parameters that can be configured using this builder.
+   * {@link TrackSelectionParameters} 的构建器。有关可以使用此构建器配置的参数的说明，请参阅 {@link TrackSelectionParameters} 文档。
    */
   public static class Builder {
+
     // Video
     private int maxVideoWidth;
     private int maxVideoHeight;
@@ -98,7 +97,7 @@ public class TrackSelectionParameters {
 
     /**
      * @deprecated {@link Context} constraints will not be set using this constructor. Use {@link
-     *     #Builder(Context)} instead.
+     * #Builder(Context)} instead.
      */
     @UnstableApi
     @Deprecated
@@ -146,13 +145,17 @@ public class TrackSelectionParameters {
       setViewportSizeToPhysicalDisplaySize(context, /* viewportOrientationMayChange= */ true);
     }
 
-    /** Creates a builder with the initial values specified in {@code initialValues}. */
+    /**
+     * Creates a builder with the initial values specified in {@code initialValues}.
+     */
     @UnstableApi
     protected Builder(TrackSelectionParameters initialValues) {
       init(initialValues);
     }
 
-    /** Creates a builder with the initial values specified in {@code bundle}. */
+    /**
+     * Creates a builder with the initial values specified in {@code bundle}.
+     */
     @UnstableApi
     protected Builder(Bundle bundle) {
       // Video
@@ -266,15 +269,17 @@ public class TrackSelectionParameters {
               .build();
     }
 
-    /** Overrides the value of the builder with the value of {@link TrackSelectionParameters}. */
+    /**
+     * Overrides the value of the builder with the value of {@link TrackSelectionParameters}.
+     */
     @EnsuresNonNull({
-      "preferredVideoMimeTypes",
-      "preferredAudioLanguages",
-      "preferredAudioMimeTypes",
-      "audioOffloadPreferences",
-      "preferredTextLanguages",
-      "overrides",
-      "disabledTrackTypes",
+        "preferredVideoMimeTypes",
+        "preferredAudioLanguages",
+        "preferredAudioMimeTypes",
+        "audioOffloadPreferences",
+        "preferredTextLanguages",
+        "overrides",
+        "disabledTrackTypes",
     })
     private void init(@UnknownInitialization Builder this, TrackSelectionParameters parameters) {
       // Video
@@ -312,7 +317,9 @@ public class TrackSelectionParameters {
       overrides = new HashMap<>(parameters.overrides);
     }
 
-    /** Overrides the value of the builder with the value of {@link TrackSelectionParameters}. */
+    /**
+     * Overrides the value of the builder with the value of {@link TrackSelectionParameters}.
+     */
     @CanIgnoreReturnValue
     @UnstableApi
     protected Builder set(TrackSelectionParameters parameters) {
@@ -320,12 +327,12 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    // Video
+    // 视频
 
     /**
-     * Equivalent to {@link #setMaxVideoSize setMaxVideoSize(1279, 719)}.
+     * 等同于 {@link #setMaxVideoSize setMaxVideoSize(1279, 719)}。
      *
-     * @return This builder.
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxVideoSizeSd() {
@@ -333,9 +340,9 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Equivalent to {@link #setMaxVideoSize setMaxVideoSize(Integer.MAX_VALUE, Integer.MAX_VALUE)}.
+     * 等同于 {@link #setMaxVideoSize setMaxVideoSize(Integer.MAX_VALUE, Integer.MAX_VALUE)}。
      *
-     * @return This builder.
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder clearVideoSizeConstraints() {
@@ -343,11 +350,11 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the maximum allowed video width and height.
+     * 设置允许的最大视频宽度和高度。
      *
-     * @param maxVideoWidth Maximum allowed video width in pixels.
-     * @param maxVideoHeight Maximum allowed video height in pixels.
-     * @return This builder.
+     * @param maxVideoWidth  允许的最大视频宽度（以像素为单位）。
+     * @param maxVideoHeight 允许的最大视频高度（以像素为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxVideoSize(int maxVideoWidth, int maxVideoHeight) {
@@ -357,10 +364,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the maximum allowed video frame rate.
+     * 设置允许的最大视频帧率。
      *
-     * @param maxVideoFrameRate Maximum allowed video frame rate in hertz.
-     * @return This builder.
+     * @param maxVideoFrameRate 允许的最大视频帧率（以赫兹为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxVideoFrameRate(int maxVideoFrameRate) {
@@ -369,10 +376,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the maximum allowed video bitrate.
+     * 设置允许的最大视频比特率。
      *
-     * @param maxVideoBitrate Maximum allowed video bitrate in bits per second.
-     * @return This builder.
+     * @param maxVideoBitrate 允许的最大视频比特率（以比特/秒为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxVideoBitrate(int maxVideoBitrate) {
@@ -381,11 +388,11 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the minimum allowed video width and height.
+     * 设置允许的最小视频宽度和高度。
      *
-     * @param minVideoWidth Minimum allowed video width in pixels.
-     * @param minVideoHeight Minimum allowed video height in pixels.
-     * @return This builder.
+     * @param minVideoWidth  允许的最小视频宽度（以像素为单位）。
+     * @param minVideoHeight 允许的最小视频高度（以像素为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMinVideoSize(int minVideoWidth, int minVideoHeight) {
@@ -395,10 +402,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the minimum allowed video frame rate.
+     * 设置允许的最小视频帧率。
      *
-     * @param minVideoFrameRate Minimum allowed video frame rate in hertz.
-     * @return This builder.
+     * @param minVideoFrameRate 允许的最小视频帧率（以赫兹为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMinVideoFrameRate(int minVideoFrameRate) {
@@ -407,10 +414,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the minimum allowed video bitrate.
+     * 设置允许的最小视频比特率。
      *
-     * @param minVideoBitrate Minimum allowed video bitrate in bits per second.
-     * @return This builder.
+     * @param minVideoBitrate 允许的最小视频比特率（以比特/秒为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMinVideoBitrate(int minVideoBitrate) {
@@ -419,27 +426,24 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Equivalent to calling {@link #setViewportSize(int, int, boolean)} with the viewport size
-     * obtained from {@link Util#getCurrentDisplayModeSize(Context)}.
+     * 等同于调用 {@link #setViewportSize(int, int, boolean)}，并使用从 {@link Util#getCurrentDisplayModeSize(Context)} 获取的视口大小。
      *
-     * @param context Any context.
-     * @param viewportOrientationMayChange Whether the viewport orientation may change during
-     *     playback.
-     * @return This builder.
+     * @param context                      任意上下文。
+     * @param viewportOrientationMayChange 视口方向是否可能在播放期间发生变化。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setViewportSizeToPhysicalDisplaySize(
         Context context, boolean viewportOrientationMayChange) {
-      // Assume the viewport is fullscreen.
+      // 假设视口为全屏。
       Point viewportSize = Util.getCurrentDisplayModeSize(context);
       return setViewportSize(viewportSize.x, viewportSize.y, viewportOrientationMayChange);
     }
 
     /**
-     * Equivalent to {@link #setViewportSize setViewportSize(Integer.MAX_VALUE, Integer.MAX_VALUE,
-     * true)}.
+     * 等同于 {@link #setViewportSize setViewportSize(Integer.MAX_VALUE, Integer.MAX_VALUE, true)}。
      *
-     * @return This builder.
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder clearViewportSizeConstraints() {
@@ -447,14 +451,12 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the viewport size to constrain adaptive video selections so that only tracks suitable
-     * for the viewport are selected.
+     * 设置视口大小以限制自适应视频选择，以便仅选择适合视口的轨道。
      *
-     * @param viewportWidth Viewport width in pixels.
-     * @param viewportHeight Viewport height in pixels.
-     * @param viewportOrientationMayChange Whether the viewport orientation may change during
-     *     playback.
-     * @return This builder.
+     * @param viewportWidth                视口宽度（以像素为单位）。
+     * @param viewportHeight               视口高度（以像素为单位）。
+     * @param viewportOrientationMayChange 视口方向是否可能在播放期间发生变化。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setViewportSize(
@@ -466,22 +468,20 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred sample MIME type for video tracks.
+     * 设置视频轨道的首选样本 MIME 类型。
      *
-     * @param mimeType The preferred MIME type for video tracks, or {@code null} to clear a
-     *     previously set preference.
-     * @return This builder.
+     * @param mimeType 视频轨道的首选 MIME 类型，或 {@code null} 以清除先前设置的首选项。
+     * @return 此构建器。
      */
     public Builder setPreferredVideoMimeType(@Nullable String mimeType) {
       return mimeType == null ? setPreferredVideoMimeTypes() : setPreferredVideoMimeTypes(mimeType);
     }
 
     /**
-     * Sets the preferred sample MIME types for video tracks.
+     * 设置视频轨道的首选样本 MIME 类型。
      *
-     * @param mimeTypes The preferred MIME types for video tracks in order of preference, or an
-     *     empty list for no preference.
-     * @return This builder.
+     * @param mimeTypes 视频轨道的首选 MIME 类型（按优先级顺序），或空列表表示无首选项。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredVideoMimeTypes(String... mimeTypes) {
@@ -490,10 +490,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred {@link C.RoleFlags} for video tracks.
+     * 设置视频轨道的首选 {@link C.RoleFlags}。
      *
-     * @param preferredVideoRoleFlags Preferred video role flags.
-     * @return This builder.
+     * @param preferredVideoRoleFlags 首选视频角色标志。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredVideoRoleFlags(@C.RoleFlags int preferredVideoRoleFlags) {
@@ -501,14 +501,13 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    // Audio
+    // 音频
 
     /**
-     * Sets the preferred language for audio and forced text tracks.
+     * 设置音频和强制文本轨道的首选语言。
      *
-     * @param preferredAudioLanguage Preferred audio language as an IETF BCP 47 conformant tag, or
-     *     {@code null} to select the default track, or the first track if there's no default.
-     * @return This builder.
+     * @param preferredAudioLanguage 首选音频语言，符合 IETF BCP 47 标准，或 {@code null} 以选择默认轨道，如果没有默认轨道则选择第一个轨道。
+     * @return 此构建器。
      */
     public Builder setPreferredAudioLanguage(@Nullable String preferredAudioLanguage) {
       return preferredAudioLanguage == null
@@ -517,12 +516,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred languages for audio and forced text tracks.
+     * 设置音频和强制文本轨道的首选语言。
      *
-     * @param preferredAudioLanguages Preferred audio languages as IETF BCP 47 conformant tags in
-     *     order of preference, or an empty array to select the default track, or the first track if
-     *     there's no default.
-     * @return This builder.
+     * @param preferredAudioLanguages 首选音频语言，符合 IETF BCP 47 标准（按优先级顺序），或空数组以选择默认轨道，如果没有默认轨道则选择第一个轨道。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredAudioLanguages(String... preferredAudioLanguages) {
@@ -531,10 +528,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred {@link C.RoleFlags} for audio tracks.
+     * 设置音频轨道的首选 {@link C.RoleFlags}。
      *
-     * @param preferredAudioRoleFlags Preferred audio role flags.
-     * @return This builder.
+     * @param preferredAudioRoleFlags 首选音频角色标志。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredAudioRoleFlags(@C.RoleFlags int preferredAudioRoleFlags) {
@@ -543,10 +540,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the maximum allowed audio channel count.
+     * 设置允许的最大音频通道数。
      *
-     * @param maxAudioChannelCount Maximum allowed audio channel count.
-     * @return This builder.
+     * @param maxAudioChannelCount 允许的最大音频通道数。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxAudioChannelCount(int maxAudioChannelCount) {
@@ -555,10 +552,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the maximum allowed audio bitrate.
+     * 设置允许的最大音频比特率。
      *
-     * @param maxAudioBitrate Maximum allowed audio bitrate in bits per second.
-     * @return This builder.
+     * @param maxAudioBitrate 允许的最大音频比特率（以比特/秒为单位）。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setMaxAudioBitrate(int maxAudioBitrate) {
@@ -567,22 +564,20 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred sample MIME type for audio tracks.
+     * 设置音频轨道的首选样本 MIME 类型。
      *
-     * @param mimeType The preferred MIME type for audio tracks, or {@code null} to clear a
-     *     previously set preference.
-     * @return This builder.
+     * @param mimeType 音频轨道的首选 MIME 类型，或 {@code null} 以清除先前设置的首选项。
+     * @return 此构建器。
      */
     public Builder setPreferredAudioMimeType(@Nullable String mimeType) {
       return mimeType == null ? setPreferredAudioMimeTypes() : setPreferredAudioMimeTypes(mimeType);
     }
 
     /**
-     * Sets the preferred sample MIME types for audio tracks.
+     * 设置音频轨道的首选样本 MIME 类型。
      *
-     * @param mimeTypes The preferred MIME types for audio tracks in order of preference, or an
-     *     empty list for no preference.
-     * @return This builder.
+     * @param mimeTypes 音频轨道的首选 MIME 类型（按优先级顺序），或空列表表示无首选项。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredAudioMimeTypes(String... mimeTypes) {
@@ -591,9 +586,7 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the audio offload mode preferences. This includes whether to enable/disable offload as
-     * well as to set requirements like if the device must support gapless transitions or speed
-     * change during offload.
+     * 设置音频卸载模式的首选项。这包括是否启用/禁用卸载，以及设置设备是否必须支持无缝过渡或卸载期间的速度变化等要求。
      */
     @UnstableApi
     @CanIgnoreReturnValue
@@ -602,23 +595,21 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    // Text
+    // 文本
 
     /**
-     * Sets the preferred language and role flags for text tracks based on the accessibility
-     * settings of {@link CaptioningManager}.
+     * 根据 {@link CaptioningManager} 的可访问性设置，设置文本轨道的首选语言和角色标志。
      *
-     * <p>Does nothing when the {@link CaptioningManager} is disabled.
+     * <p>当 {@link CaptioningManager} 被禁用时，不执行任何操作。
      *
-     * @param context A {@link Context}.
-     * @return This builder.
+     * @param context 一个 {@link Context}。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredTextLanguageAndRoleFlagsToCaptioningManagerSettings(
         Context context) {
       if (Util.SDK_INT < 23 && Looper.myLooper() == null) {
-        // Android platform bug (pre-Marshmallow) that causes RuntimeExceptions when
-        // CaptioningService is instantiated from a non-Looper thread. See [internal: b/143779904].
+        // Android 平台错误（Marshmallow 之前），当从非 Looper 线程实例化 CaptioningService 时会导致运行时异常。参见 [内部：b/143779904]。
         return this;
       }
       CaptioningManager captioningManager =
@@ -635,11 +626,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred language for text tracks.
+     * 设置文本轨道的首选语言。
      *
-     * @param preferredTextLanguage Preferred text language as an IETF BCP 47 conformant tag, or
-     *     {@code null} to select the default track if there is one, or no track otherwise.
-     * @return This builder.
+     * @param preferredTextLanguage 首选文本语言，符合 IETF BCP 47 标准，或 {@code null} 以选择默认轨道（如果有），否则不选择任何轨道。
+     * @return 此构建器。
      */
     public Builder setPreferredTextLanguage(@Nullable String preferredTextLanguage) {
       return preferredTextLanguage == null
@@ -648,12 +638,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred languages for text tracks.
+     * 设置文本轨道的首选语言。
      *
-     * @param preferredTextLanguages Preferred text languages as IETF BCP 47 conformant tags in
-     *     order of preference, or an empty array to select the default track if there is one, or no
-     *     track otherwise.
-     * @return This builder.
+     * @param preferredTextLanguages 首选文本语言，符合 IETF BCP 47 标准（按优先级顺序），或空数组以选择默认轨道（如果有），否则不选择任何轨道。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredTextLanguages(String... preferredTextLanguages) {
@@ -662,10 +650,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the preferred {@link C.RoleFlags} for text tracks.
+     * 设置文本轨道的首选 {@link C.RoleFlags}。
      *
-     * @param preferredTextRoleFlags Preferred text role flags.
-     * @return This builder.
+     * @param preferredTextRoleFlags 首选文本角色标志。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setPreferredTextRoleFlags(@C.RoleFlags int preferredTextRoleFlags) {
@@ -674,11 +662,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets a bitmask of selection flags that are ignored for text track selections.
+     * 设置文本轨道选择时忽略的选择标志位掩码。
      *
-     * @param ignoredTextSelectionFlags A bitmask of {@link C.SelectionFlags} that are ignored for
-     *     text track selections.
-     * @return This builder.
+     * @param ignoredTextSelectionFlags 文本轨道选择时忽略的 {@link C.SelectionFlags} 位掩码。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setIgnoredTextSelectionFlags(@C.SelectionFlags int ignoredTextSelectionFlags) {
@@ -687,13 +674,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets whether a text track with undetermined language should be selected if no track with
-     * {@link #setPreferredTextLanguages(String...) a preferred language} is available, or if the
-     * preferred language is unset.
+     * 设置如果 {@link #setPreferredTextLanguages(String...) 首选语言} 不可用或未设置时，是否应选择语言未确定的文本轨道。
      *
-     * @param selectUndeterminedTextLanguage Whether a text track with undetermined language should
-     *     be selected if no preferred language track is available.
-     * @return This builder.
+     * @param selectUndeterminedTextLanguage 如果首选语言轨道不可用，是否应选择语言未确定的文本轨道。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setSelectUndeterminedTextLanguage(boolean selectUndeterminedTextLanguage) {
@@ -701,14 +685,13 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    // Image
+    // 图像
 
     /**
-     * Sets whether an image track would be selected over a video track if both are available.
+     * 设置如果图像轨道和视频轨道都可用时，是否优先选择图像轨道。
      *
-     * @param isPrioritizeImageOverVideoEnabled Whether an image track would be selected over a
-     *     video track if both are available.
-     * @return This builder.
+     * @param isPrioritizeImageOverVideoEnabled 如果图像轨道和视频轨道都可用时，是否优先选择图像轨道。
+     * @return 此构建器。
      */
     @UnstableApi
     @CanIgnoreReturnValue
@@ -717,15 +700,13 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    // General
+    // 通用
 
     /**
-     * Sets whether to force selection of the single lowest bitrate audio and video tracks that
-     * comply with all other constraints.
+     * 设置是否强制选择符合所有其他约束的最低比特率的音频和视频轨道。
      *
-     * @param forceLowestBitrate Whether to force selection of the single lowest bitrate audio and
-     *     video tracks.
-     * @return This builder.
+     * @param forceLowestBitrate 是否强制选择最低比特率的音频和视频轨道。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setForceLowestBitrate(boolean forceLowestBitrate) {
@@ -734,12 +715,10 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets whether to force selection of the highest bitrate audio and video tracks that comply
-     * with all other constraints.
+     * 设置是否强制选择符合所有其他约束的最高比特率的音频和视频轨道。
      *
-     * @param forceHighestSupportedBitrate Whether to force selection of the highest bitrate audio
-     *     and video tracks.
-     * @return This builder.
+     * @param forceHighestSupportedBitrate 是否强制选择最高比特率的音频和视频轨道。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setForceHighestSupportedBitrate(boolean forceHighestSupportedBitrate) {
@@ -747,14 +726,18 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    /** Adds an override, replacing any override for the same {@link TrackGroup}. */
+    /**
+     * 添加一个覆盖，替换相同 {@link TrackGroup} 的任何现有覆盖。
+     */
     @CanIgnoreReturnValue
     public Builder addOverride(TrackSelectionOverride override) {
       overrides.put(override.mediaTrackGroup, override);
       return this;
     }
 
-    /** Sets an override, replacing all existing overrides with the same track type. */
+    /**
+     * 设置一个覆盖，替换所有具有相同轨道类型的现有覆盖。
+     */
     @CanIgnoreReturnValue
     public Builder setOverrideForType(TrackSelectionOverride override) {
       clearOverridesOfType(override.getType());
@@ -762,14 +745,18 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    /** Removes the override for the provided media {@link TrackGroup}, if there is one. */
+    /**
+     * 移除提供的媒体 {@link TrackGroup} 的覆盖（如果有）。
+     */
     @CanIgnoreReturnValue
     public Builder clearOverride(TrackGroup mediaTrackGroup) {
       overrides.remove(mediaTrackGroup);
       return this;
     }
 
-    /** Removes all overrides of the provided track type. */
+    /**
+     * 移除所有指定轨道类型的覆盖。
+     */
     @CanIgnoreReturnValue
     public Builder clearOverridesOfType(@C.TrackType int trackType) {
       Iterator<TrackSelectionOverride> it = overrides.values().iterator();
@@ -782,7 +769,9 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    /** Removes all overrides. */
+    /**
+     * 移除所有覆盖。
+     */
     @CanIgnoreReturnValue
     public Builder clearOverrides() {
       overrides.clear();
@@ -790,12 +779,11 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets the disabled track types, preventing all tracks of those types from being selected for
-     * playback. Any previously disabled track types are cleared.
+     * 设置禁用的轨道类型，阻止选择这些类型的所有轨道进行播放。任何先前禁用的轨道类型将被清除。
      *
-     * @param disabledTrackTypes The track types to disable.
-     * @return This builder.
-     * @deprecated Use {@link #setTrackTypeDisabled(int, boolean)}.
+     * @param disabledTrackTypes 要禁用的轨道类型。
+     * @return 此构建器。
+     * @deprecated 使用 {@link #setTrackTypeDisabled(int, boolean)}。
      */
     @CanIgnoreReturnValue
     @Deprecated
@@ -807,12 +795,11 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Sets whether a track type is disabled. If disabled, no tracks of the specified type will be
-     * selected for playback.
+     * 设置是否禁用某个轨道类型。如果禁用，将不会选择指定类型的任何轨道进行播放。
      *
-     * @param trackType The track type.
-     * @param disabled Whether the track type should be disabled.
-     * @return This builder.
+     * @param trackType 轨道类型。
+     * @param disabled  是否应禁用该轨道类型。
+     * @return 此构建器。
      */
     @CanIgnoreReturnValue
     public Builder setTrackTypeDisabled(@C.TrackType int trackType, boolean disabled) {
@@ -824,7 +811,9 @@ public class TrackSelectionParameters {
       return this;
     }
 
-    /** Builds a {@link TrackSelectionParameters} instance with the selected values. */
+    /**
+     * 使用选定的值构建 {@link TrackSelectionParameters} 实例。
+     */
     public TrackSelectionParameters build() {
       return new TrackSelectionParameters(this);
     }
@@ -838,49 +827,47 @@ public class TrackSelectionParameters {
     }
   }
 
-  /** Preferences and constraints for enabling audio offload. */
+  /**
+   * 启用音频卸载的首选项和约束。
+   */
   @UnstableApi
   public static final class AudioOffloadPreferences {
 
     /**
-     * The preference level for enabling audio offload on the audio sink. One of {@link
-     * #AUDIO_OFFLOAD_MODE_REQUIRED}, {@link #AUDIO_OFFLOAD_MODE_ENABLED}, or {@link
-     * #AUDIO_OFFLOAD_MODE_DISABLED}.
+     * 在音频接收器上启用音频卸载的首选项级别。可以是 {@link #AUDIO_OFFLOAD_MODE_REQUIRED}、{@link #AUDIO_OFFLOAD_MODE_ENABLED} 或 {@link #AUDIO_OFFLOAD_MODE_DISABLED} 之一。
      */
     @Documented
     @Retention(SOURCE)
     @Target(TYPE_USE)
     @IntDef({
-      AUDIO_OFFLOAD_MODE_REQUIRED,
-      AUDIO_OFFLOAD_MODE_ENABLED,
-      AUDIO_OFFLOAD_MODE_DISABLED,
+        AUDIO_OFFLOAD_MODE_REQUIRED,
+        AUDIO_OFFLOAD_MODE_ENABLED,
+        AUDIO_OFFLOAD_MODE_DISABLED,
     })
-    public @interface AudioOffloadMode {}
+    public @interface AudioOffloadMode {
+
+    }
 
     /**
-     * The track selector will only select tracks that with the renderer capabilities provide an
-     * audio offload compatible playback scenario. If it is impossible to create an
-     * offload-compatible track selection, then no tracks will be selected.
+     * 轨道选择器将仅选择与渲染器功能兼容的轨道，以提供支持音频卸载的播放场景。如果无法创建支持卸载的轨道选择，则不会选择任何轨道。
      */
     public static final int AUDIO_OFFLOAD_MODE_REQUIRED = 2;
 
     /**
-     * The track selector will enable audio offload if the selected tracks and renderer capabilities
-     * are compatible.
+     * 如果选定的轨道和渲染器功能兼容，轨道选择器将启用音频卸载。
      */
     public static final int AUDIO_OFFLOAD_MODE_ENABLED = 1;
 
     /**
-     * The track selector will disable audio offload on the audio sink. Track selection will not
-     * take into consideration whether or not a track is offload compatible.
+     * 轨道选择器将禁用音频接收器上的音频卸载。轨道选择不会考虑轨道是否支持卸载。
      */
     public static final int AUDIO_OFFLOAD_MODE_DISABLED = 0;
 
     /**
-     * A builder for {@link AudioOffloadPreferences}. See the {@link AudioOffloadPreferences}
-     * documentation for explanations of the parameters that can be configured using this builder.
+     * {@link AudioOffloadPreferences} 的构建器。有关可以使用此构建器配置的参数的说明，请参阅 {@link AudioOffloadPreferences} 文档。
      */
     public static final class Builder {
+
       private @AudioOffloadMode int audioOffloadMode;
       private boolean isGaplessSupportRequired;
       private boolean isSpeedChangeSupportRequired;
@@ -892,14 +879,10 @@ public class TrackSelectionParameters {
       }
 
       /**
-       * Sets the audio offload mode preferences. For instance if the preferred mode is
-       * enabled/disabled or if offload is required for playback. Default value is {@link
-       * #AUDIO_OFFLOAD_MODE_DISABLED}.
+       * 设置音频卸载模式的首选项。例如，首选模式是启用/禁用，或者是否需要卸载才能播放。默认值为 {@link #AUDIO_OFFLOAD_MODE_DISABLED}。
        *
-       * @param audioOffloadMode for enabling/disabling offload. One of {@link
-       *     #AUDIO_OFFLOAD_MODE_REQUIRED}, {@link #AUDIO_OFFLOAD_MODE_ENABLED}, or {@link
-       *     #AUDIO_OFFLOAD_MODE_DISABLED}.
-       * @return This builder.
+       * @param audioOffloadMode 用于启用/禁用卸载。可以是 {@link #AUDIO_OFFLOAD_MODE_REQUIRED}、{@link #AUDIO_OFFLOAD_MODE_ENABLED} 或 {@link #AUDIO_OFFLOAD_MODE_DISABLED} 之一。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setAudioOffloadMode(@AudioOffloadMode int audioOffloadMode) {
@@ -908,12 +891,10 @@ public class TrackSelectionParameters {
       }
 
       /**
-       * Sets a constraint on audio offload enablement. If {@code true} then audio offload will be
-       * enabled only if the device supports gapless transitions during offload or the selected
-       * audio is not gapless. Default value is {@code false}.
+       * 设置音频卸载启用的约束。如果为 {@code true}，则仅当设备支持卸载期间的无缝过渡或所选音频不是无缝时，才会启用音频卸载。默认值为 {@code false}。
        *
-       * @param isGaplessSupportRequired for playing gapless audio offloaded.
-       * @return This builder.
+       * @param isGaplessSupportRequired 用于播放无缝音频卸载。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setIsGaplessSupportRequired(boolean isGaplessSupportRequired) {
@@ -922,12 +903,10 @@ public class TrackSelectionParameters {
       }
 
       /**
-       * Sets a constraint on audio offload enablement. If {@code true}, then audio offload will be
-       * enabled only if the device supports changing playback speed during offload. Default value
-       * is {@code false}.
+       * 设置音频卸载启用的约束。如果为 {@code true}，则仅当设备支持卸载期间更改播放速度时，才会启用音频卸载。默认值为 {@code false}。
        *
-       * @param isSpeedChangeSupportRequired for playing audio offloaded.
-       * @return This builder.
+       * @param isSpeedChangeSupportRequired 用于播放音频卸载。
+       * @return 此构建器。
        */
       @CanIgnoreReturnValue
       public Builder setIsSpeedChangeSupportRequired(boolean isSpeedChangeSupportRequired) {
@@ -935,28 +914,32 @@ public class TrackSelectionParameters {
         return this;
       }
 
-      /** Builds a {@link TrackSelectionParameters} instance with the selected values. */
+      /**
+       * 使用选定的值构建 {@link TrackSelectionParameters} 实例。
+       */
       public AudioOffloadPreferences build() {
         return new AudioOffloadPreferences(this);
       }
     }
 
-    /** Returns an instance configured with default values. */
+    /**
+     * 返回使用默认值配置的实例。
+     */
     public static final AudioOffloadPreferences DEFAULT =
         new AudioOffloadPreferences.Builder().build();
 
-    /** The preferred offload mode setting for audio playback. */
+    /**
+     * 音频播放的首选卸载模式设置。
+     */
     public final @AudioOffloadMode int audioOffloadMode;
 
     /**
-     * A constraint on enabling offload. If {@code true}, then audio offload will be enabled only if
-     * the device supports gapless transitions during offload or the selected audio is not gapless.
+     * 启用卸载的约束。如果为 {@code true}，则仅当设备支持卸载期间的无缝过渡或所选音频不是无缝时，才会启用音频卸载。
      */
     public final boolean isGaplessSupportRequired;
 
     /**
-     * A constraint on enabling offload. If {@code true}, then audio offload will be enabled only if
-     * the device supports changing playback speed during offload.
+     * 启用卸载的约束。如果为 {@code true}，则仅当设备支持卸载期间更改播放速度时，才会启用音频卸载。
      */
     public final boolean isSpeedChangeSupportRequired;
 
@@ -967,8 +950,7 @@ public class TrackSelectionParameters {
     }
 
     /**
-     * Creates a new {@link AudioOffloadPreferences.Builder}, copying the initial values from this
-     * instance.
+     * 创建一个新的 {@link AudioOffloadPreferences.Builder}，并从当前实例复制初始值。
      */
     public AudioOffloadPreferences.Builder buildUpon() {
       return new AudioOffloadPreferences.Builder()
@@ -1013,7 +995,9 @@ public class TrackSelectionParameters {
       return bundle;
     }
 
-    /** Construct an instance from a {@link Bundle} produced by {@link #toBundle()}. */
+    /**
+     * Construct an instance from a {@link Bundle} produced by {@link #toBundle()}.
+     */
     public static AudioOffloadPreferences fromBundle(Bundle bundle) {
       return new AudioOffloadPreferences.Builder()
           .setAudioOffloadMode(
@@ -1027,20 +1011,17 @@ public class TrackSelectionParameters {
           .build();
     }
   }
-
   /**
-   * An instance with default values, except those obtained from the {@link Context}.
+   * 一个包含默认值的实例，除了从 {@link Context} 获取的值。
    *
-   * <p>If possible, use {@link #getDefaults(Context)} instead.
+   * <p>如果可能，请使用 {@link #getDefaults(Context)} 代替。
    *
-   * <p>This instance will not have the following settings:
+   * <p>此实例将不包含以下设置：
    *
    * <ul>
-   *   <li>{@link Builder#setViewportSizeToPhysicalDisplaySize(Context, boolean) Viewport
-   *       constraints} configured for the primary display.
+   *   <li>{@link Builder#setViewportSizeToPhysicalDisplaySize(Context, boolean) 视口约束} 未为主显示器配置。
    *   <li>{@link Builder#setPreferredTextLanguageAndRoleFlagsToCaptioningManagerSettings(Context)
-   *       Preferred text language and role flags} configured to the accessibility settings of
-   *       {@link CaptioningManager}.
+   *       首选文本语言和角色标志} 未配置为 {@link CaptioningManager} 的可访问性设置。
    * </ul>
    */
   @UnstableApi
@@ -1048,192 +1029,167 @@ public class TrackSelectionParameters {
   public static final TrackSelectionParameters DEFAULT_WITHOUT_CONTEXT = new Builder().build();
 
   /**
-   * @deprecated This instance is not configured using {@link Context} constraints. Use {@link
-   *     #getDefaults(Context)} instead.
+   * @deprecated 此实例未使用 {@link Context} 约束进行配置。请使用 {@link #getDefaults(Context)} 代替。
    */
-  @UnstableApi @Deprecated
+  @UnstableApi
+  @Deprecated
   public static final TrackSelectionParameters DEFAULT = DEFAULT_WITHOUT_CONTEXT;
 
-  /** Returns an instance configured with default values. */
+  /**
+   * 返回使用默认值配置的实例。
+   */
   public static TrackSelectionParameters getDefaults(Context context) {
     return new Builder(context).build();
   }
 
-  // Video
+  // 视频
   /**
-   * Maximum allowed video width in pixels. The default value is {@link Integer#MAX_VALUE} (i.e. no
-   * constraint).
+   * 允许的最大视频宽度（以像素为单位）。默认值为 {@link Integer#MAX_VALUE}（即无约束）。
    *
-   * <p>To constrain adaptive video track selections to be suitable for a given viewport (the region
-   * of the display within which video will be played), use ({@link #viewportWidth}, {@link
-   * #viewportHeight} and {@link #viewportOrientationMayChange}) instead.
+   * <p>要限制自适应视频轨道选择以适应给定的视口（视频将在其中播放的显示区域），请使用 ({@link #viewportWidth}, {@link #viewportHeight} 和 {@link #viewportOrientationMayChange}) 代替。
    */
   public final int maxVideoWidth;
 
   /**
-   * Maximum allowed video height in pixels. The default value is {@link Integer#MAX_VALUE} (i.e. no
-   * constraint).
+   * 允许的最大视频高度（以像素为单位）。默认值为 {@link Integer#MAX_VALUE}（即无约束）。
    *
-   * <p>To constrain adaptive video track selections to be suitable for a given viewport (the region
-   * of the display within which video will be played), use ({@link #viewportWidth}, {@link
-   * #viewportHeight} and {@link #viewportOrientationMayChange}) instead.
+   * <p>要限制自适应视频轨道选择以适应给定的视口（视频将在其中播放的显示区域），请使用 ({@link #viewportWidth}, {@link #viewportHeight} 和 {@link #viewportOrientationMayChange}) 代替。
    */
   public final int maxVideoHeight;
 
   /**
-   * Maximum allowed video frame rate in hertz. The default value is {@link Integer#MAX_VALUE} (i.e.
-   * no constraint).
+   * 允许的最大视频帧率（以赫兹为单位）。默认值为 {@link Integer#MAX_VALUE}（即无约束）。
    */
   public final int maxVideoFrameRate;
 
   /**
-   * Maximum allowed video bitrate in bits per second. The default value is {@link
-   * Integer#MAX_VALUE} (i.e. no constraint).
+   * 允许的最大视频比特率（以比特/秒为单位）。默认值为 {@link Integer#MAX_VALUE}（即无约束）。
    */
   public final int maxVideoBitrate;
 
-  /** Minimum allowed video width in pixels. The default value is 0 (i.e. no constraint). */
+  /**
+   * 允许的最小视频宽度（以像素为单位）。默认值为 0（即无约束）。
+   */
   public final int minVideoWidth;
 
-  /** Minimum allowed video height in pixels. The default value is 0 (i.e. no constraint). */
+  /**
+   * 允许的最小视频高度（以像素为单位）。默认值为 0（即无约束）。
+   */
   public final int minVideoHeight;
 
-  /** Minimum allowed video frame rate in hertz. The default value is 0 (i.e. no constraint). */
+  /**
+   * 允许的最小视频帧率（以赫兹为单位）。默认值为 0（即无约束）。
+   */
   public final int minVideoFrameRate;
 
   /**
-   * Minimum allowed video bitrate in bits per second. The default value is 0 (i.e. no constraint).
+   * 允许的最小视频比特率（以比特/秒为单位）。默认值为 0（即无约束）。
    */
   public final int minVideoBitrate;
 
   /**
-   * Viewport width in pixels. Constrains video track selections for adaptive content so that only
-   * tracks suitable for the viewport are selected. The default value is the physical width of the
-   * primary display, in pixels.
+   * 视口宽度（以像素为单位）。限制自适应内容的视频轨道选择，以便仅选择适合视口的轨道。默认值是主显示器的物理宽度（以像素为单位）。
    */
   public final int viewportWidth;
 
   /**
-   * Viewport height in pixels. Constrains video track selections for adaptive content so that only
-   * tracks suitable for the viewport are selected. The default value is the physical height of the
-   * primary display, in pixels.
+   * 视口高度（以像素为单位）。限制自适应内容的视频轨道选择，以便仅选择适合视口的轨道。默认值是主显示器的物理高度（以像素为单位）。
    */
   public final int viewportHeight;
 
   /**
-   * Whether the viewport orientation may change during playback. Constrains video track selections
-   * for adaptive content so that only tracks suitable for the viewport are selected. The default
-   * value is {@code true}.
+   * 视口方向是否可能在播放期间发生变化。限制自适应内容的视频轨道选择，以便仅选择适合视口的轨道。默认值为 {@code true}。
    */
   public final boolean viewportOrientationMayChange;
 
   /**
-   * The preferred sample MIME types for video tracks in order of preference, or an empty list for
-   * no preference. The default is an empty list.
+   * 视频轨道的首选样本 MIME 类型（按优先级顺序），或空列表表示无首选项。默认值为空列表。
    */
   public final ImmutableList<String> preferredVideoMimeTypes;
 
   /**
-   * The preferred {@link C.RoleFlags} for video tracks. {@code 0} selects the default track if
-   * there is one, or the first track if there's no default. The default value is {@code 0}.
+   * 视频轨道的首选 {@link C.RoleFlags}。{@code 0} 选择默认轨道（如果有），否则选择第一个轨道。默认值为 {@code 0}。
    */
   public final @C.RoleFlags int preferredVideoRoleFlags;
 
-  // Audio
+  // 音频
   /**
-   * The preferred languages for audio and forced text tracks as IETF BCP 47 conformant tags in
-   * order of preference. An empty list selects the default track, or the first track if there's no
-   * default. The default value is an empty list.
+   * 音频和强制文本轨道的首选语言，符合 IETF BCP 47 标准（按优先级顺序）。空列表选择默认轨道，如果没有默认轨道则选择第一个轨道。默认值为空列表。
    */
   public final ImmutableList<String> preferredAudioLanguages;
 
   /**
-   * The preferred {@link C.RoleFlags} for audio tracks. {@code 0} selects the default track if
-   * there is one, or the first track if there's no default. The default value is {@code 0}.
+   * 音频轨道的首选 {@link C.RoleFlags}。{@code 0} 选择默认轨道（如果有），否则选择第一个轨道。默认值为 {@code 0}。
    */
   public final @C.RoleFlags int preferredAudioRoleFlags;
 
   /**
-   * Maximum allowed audio channel count. The default value is {@link Integer#MAX_VALUE} (i.e. no
-   * constraint).
+   * 允许的最大音频通道数。默认值为 {@link Integer#MAX_VALUE}（即无约束）。
    */
   public final int maxAudioChannelCount;
 
   /**
-   * Maximum allowed audio bitrate in bits per second. The default value is {@link
-   * Integer#MAX_VALUE} (i.e. no constraint).
+   * 允许的最大音频比特率（以比特/秒为单位）。默认值为 {@link Integer#MAX_VALUE}（即无约束）。
    */
   public final int maxAudioBitrate;
 
   /**
-   * The preferred sample MIME types for audio tracks in order of preference, or an empty list for
-   * no preference. The default is an empty list.
+   * 音频轨道的首选样本 MIME 类型（按优先级顺序），或空列表表示无首选项。默认值为空列表。
    */
   public final ImmutableList<String> preferredAudioMimeTypes;
 
   /**
-   * The preferred offload mode settings for audio playback. The default is {@link
-   * AudioOffloadPreferences#DEFAULT}.
+   * 音频播放的首选卸载模式设置。默认值为 {@link AudioOffloadPreferences#DEFAULT}。
    */
-  @UnstableApi public final AudioOffloadPreferences audioOffloadPreferences;
+  @UnstableApi
+  public final AudioOffloadPreferences audioOffloadPreferences;
 
-  // Text
+  // 文本
   /**
-   * The preferred languages for text tracks as IETF BCP 47 conformant tags in order of preference.
-   * An empty list selects the default track if there is one, or no track otherwise. The default
-   * value is an empty list, or the language of the accessibility {@link CaptioningManager} if
-   * enabled.
+   * 文本轨道的首选语言，符合 IETF BCP 47 标准（按优先级顺序）。空列表选择默认轨道（如果有），否则不选择任何轨道。默认值为空列表，或者如果启用了可访问性 {@link CaptioningManager}，则为 {@link CaptioningManager} 的语言。
    */
   public final ImmutableList<String> preferredTextLanguages;
 
   /**
-   * The preferred {@link C.RoleFlags} for text tracks. {@code 0} selects the default track if there
-   * is one, or no track otherwise. The default value is {@code 0}, or {@link C#ROLE_FLAG_SUBTITLE}
-   * | {@link C#ROLE_FLAG_DESCRIBES_MUSIC_AND_SOUND} if the accessibility {@link CaptioningManager}
-   * is enabled.
+   * 文本轨道的首选 {@link C.RoleFlags}。{@code 0} 选择默认轨道（如果有），否则不选择任何轨道。默认值为 {@code 0}，或者如果启用了可访问性 {@link CaptioningManager}，则为 {@link C#ROLE_FLAG_SUBTITLE} | {@link C#ROLE_FLAG_DESCRIBES_MUSIC_AND_SOUND}。
    */
   public final @C.RoleFlags int preferredTextRoleFlags;
 
   /**
-   * Bitmask of selection flags that are ignored for text track selections. See {@link
-   * C.SelectionFlags}. The default value is {@code 0} (i.e., no flags are ignored).
+   * 文本轨道选择时忽略的选择标志位掩码。参见 {@link C.SelectionFlags}。默认值为 {@code 0}（即不忽略任何标志）。
    */
   public final @C.SelectionFlags int ignoredTextSelectionFlags;
 
   /**
-   * Whether a text track with undetermined language should be selected if no track with {@link
-   * #preferredTextLanguages} is available, or if {@link #preferredTextLanguages} is unset. The
-   * default value is {@code false}.
+   * 如果 {@link #preferredTextLanguages} 不可用或未设置，是否应选择语言未确定的文本轨道。默认值为 {@code false}。
    */
   public final boolean selectUndeterminedTextLanguage;
 
-  // Image
+  // 图像
   /**
-   * Whether an image track will be selected over a video track if both are available. The default
-   * value is {@code false}.
+   * 如果图像轨道和视频轨道都可用，是否优先选择图像轨道。默认值为 {@code false}。
    */
-  @UnstableApi public final boolean isPrioritizeImageOverVideoEnabled;
+  @UnstableApi
+  public final boolean isPrioritizeImageOverVideoEnabled;
 
-  // General
+  // 通用
   /**
-   * Whether to force selection of the single lowest bitrate audio and video tracks that comply with
-   * all other constraints. The default value is {@code false}.
+   * 是否强制选择符合所有其他约束的最低比特率的音频和视频轨道。默认值为 {@code false}。
    */
   public final boolean forceLowestBitrate;
 
   /**
-   * Whether to force selection of the highest bitrate audio and video tracks that comply with all
-   * other constraints. The default value is {@code false}.
+   * 是否强制选择符合所有其他约束的最高比特率的音频和视频轨道。默认值为 {@code false}。
    */
   public final boolean forceHighestSupportedBitrate;
 
-  /** Overrides to force selection of specific tracks. */
+  /**
+   * 强制选择特定轨道的覆盖。
+   */
   public final ImmutableMap<TrackGroup, TrackSelectionOverride> overrides;
 
   /**
-   * The track types that are disabled. No track of a disabled type will be selected, thus no track
-   * type contained in the set will be played. The default value is that no track type is disabled
-   * (empty set).
+   * 禁用的轨道类型。不会选择禁用类型的任何轨道，因此不会播放包含在集合中的任何轨道类型。默认值为未禁用任何轨道类型（空集合）。
    */
   public final ImmutableSet<@C.TrackType Integer> disabledTrackTypes;
 
@@ -1274,7 +1230,9 @@ public class TrackSelectionParameters {
     this.disabledTrackTypes = ImmutableSet.copyOf(builder.disabledTrackTypes);
   }
 
-  /** Creates a new {@link Builder}, copying the initial values from this instance. */
+  /**
+   * Creates a new {@link Builder}, copying the initial values from this instance.
+   */
   public Builder buildUpon() {
     return new Builder(this);
   }
@@ -1397,14 +1355,12 @@ public class TrackSelectionParameters {
       Util.intToStringMaxRadix(31);
 
   /**
-   * Defines a minimum field ID value for subclasses to use when implementing {@link #toBundle()}
-   * and delegating to {@link Builder#Builder(Bundle)}.
+   * 定义子类在实现 {@link #toBundle()} 并委托给 {@link Builder#Builder(Bundle)} 时使用的最小字段 ID 值。
    *
-   * <p>Subclasses should obtain keys for their {@link Bundle} representation by applying a
-   * non-negative offset on this constant and passing the result to {@link
-   * Util#intToStringMaxRadix(int)}.
+   * <p>子类应通过在此常量上应用非负偏移量并将结果传递给 {@link Util#intToStringMaxRadix(int)} 来获取其 {@link Bundle} 表示的键。
    */
-  @UnstableApi protected static final int FIELD_CUSTOM_ID_BASE = 1000;
+  @UnstableApi
+  protected static final int FIELD_CUSTOM_ID_BASE = 1000;
 
   @CallSuper
   public Bundle toBundle() {
@@ -1459,7 +1415,9 @@ public class TrackSelectionParameters {
     return bundle;
   }
 
-  /** Construct an instance from a {@link Bundle} produced by {@link #toBundle()}. */
+  /**
+   * Construct an instance from a {@link Bundle} produced by {@link #toBundle()}.
+   */
   public static TrackSelectionParameters fromBundle(Bundle bundle) {
     return new Builder(bundle).build();
   }

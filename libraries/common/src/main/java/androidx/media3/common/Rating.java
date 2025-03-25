@@ -12,21 +12,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A rating for media content. The style of a rating can be one of {@link HeartRating}, {@link
- * PercentageRating}, {@link StarRating}, or {@link ThumbRating}.
+ * 媒体内容的评分。评分类型可以是 {@link HeartRating}、{@link PercentageRating}、{@link StarRating} 或 {@link ThumbRating} 之一。
  */
 public abstract class Rating {
 
-  /** A float value that denotes the rating is unset. */
+  /** 一个浮点值，表示评分未设置。 */
   /* package */ static final float RATING_UNSET = -1.0f;
 
-  // Default package-private constructor to prevent extending Rating class outside this package.
+  // 默认的包级私有构造函数，防止在此包之外扩展 Rating 类。
   /* package */ Rating() {}
 
-  /** Whether the rating exists or not. */
+  /** 评分是否存在。 */
   public abstract boolean isRated();
 
-  /** Returns a {@link Bundle} representing the information stored in this rating. */
+  /** 返回一个 {@link Bundle}，表示此评分中存储的信息。 */
   @UnstableApi
   public abstract Bundle toBundle();
 
@@ -34,13 +33,13 @@ public abstract class Rating {
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    RATING_TYPE_UNSET,
-    RATING_TYPE_HEART,
-    RATING_TYPE_PERCENTAGE,
-    RATING_TYPE_STAR,
-    RATING_TYPE_THUMB
+      RATING_TYPE_UNSET,
+      RATING_TYPE_HEART,
+      RATING_TYPE_PERCENTAGE,
+      RATING_TYPE_STAR,
+      RATING_TYPE_THUMB
   })
-  /* package */ @interface RatingType {}
+      /* package */ @interface RatingType {}
 
   /* package */ static final int RATING_TYPE_UNSET = -1;
   /* package */ static final int RATING_TYPE_HEART = 0;
@@ -50,7 +49,7 @@ public abstract class Rating {
 
   /* package */ static final String FIELD_RATING_TYPE = Util.intToStringMaxRadix(0);
 
-  /** Restores a {@code Rating} from a {@link Bundle}. */
+  /** 从 {@link Bundle} 恢复 {@code Rating}。 */
   @UnstableApi
   public static Rating fromBundle(Bundle bundle) {
     @RatingType
@@ -66,7 +65,7 @@ public abstract class Rating {
         return ThumbRating.fromBundle(bundle);
       case RATING_TYPE_UNSET:
       default:
-        throw new IllegalArgumentException("Unknown RatingType: " + ratingType);
+        throw new IllegalArgumentException("未知的评分类型: " + ratingType);
     }
   }
 }

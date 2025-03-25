@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 
-/** Defines common MIME types and helper methods. */
+/** 定义常见的 MIME 类型和辅助方法。 */
 public final class MimeTypes {
   @UnstableApi public static final String BASE_TYPE_VIDEO = "video"; // 视频基础类型
   @UnstableApi public static final String BASE_TYPE_AUDIO = "audio"; // 音频基础类型

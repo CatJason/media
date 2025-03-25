@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Thrown when a non locally recoverable playback failure occurs. */
+/** 当发生无法本地恢复的播放失败时抛出。 */
 public class PlaybackException extends Exception {
 
   /**
