@@ -32,137 +32,84 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A media player interface defining high-level functionality, such as the ability to play, pause,
- * seek and query properties of the currently playing media.
+ * 一个媒体播放器接口，定义了高级功能，例如播放、暂停、跳转以及查询当前播放媒体的属性。
  *
- * <h2>Player features and usage</h2>
+ * <h2>播放器功能与用法</h2>
  *
- * <p>Some important properties of media players that implement this interface are:
+ * <p>实现此接口的媒体播放器具有以下重要特性：
  *
  * <ul>
- *   <li>All methods must be called from a single {@linkplain #getApplicationLooper() application
- *       thread} unless indicated otherwise. Callbacks in registered listeners are called on the
- *       same thread.
- *   <li>The available functionality can be limited. Player instances provide a set of {@link
- *       #getAvailableCommands() available commands} to signal feature support and users of the
- *       interface must only call methods if the corresponding {@link Command} is available.
- *   <li>Users can register {@link Player.Listener} callbacks that get informed about state changes.
- *   <li>Player instances need to update the visible state immediately after each method call, even
- *       if the actual changes are handled on background threads or even other devices. This
- *       simplifies the usage for callers of methods as no asynchronous handling needs to be
- *       considered.
- *   <li>Player instances can provide playlist operations, like 'set', 'add', 'remove', 'move' or
- *       'replace' of {@link MediaItem} instances. The player can also support {@linkplain
- *       RepeatMode repeat modes} and shuffling within this playlist. The player provides a {@link
- *       Timeline} representing the structure of the playlist and all its items, which can be
- *       obtained by calling {@link #getCurrentTimeline()}
- *   <li>Player instances can provide seeking within the currently playing item and to other items,
- *       using the various {@code seek...} methods.
- *   <li>Player instances can provide {@link Tracks} defining the currently available and selected
- *       tracks, which can be obtained by calling {@link #getCurrentTracks()}. Users can also modify
- *       track selection behavior by setting {@link TrackSelectionParameters} with {@link
- *       #setTrackSelectionParameters}.
- *   <li>Player instances can provide {@link MediaMetadata} about the currently playing item, which
- *       can be obtained by calling {@link #getMediaMetadata()}.
- *   <li>Player instances can provide information about ads in its media structure, for example via
- *       {@link #isPlayingAd()}.
- *   <li>Player instances can accept different types of video outputs, like {@link
- *       #setVideoSurfaceView SurfaceView} or {@link #setVideoTextureView TextureView} for video
- *       rendering.
- *   <li>Player instances can handle {@linkplain #setPlaybackSpeed playback speed}, {@linkplain
- *       #getAudioAttributes audio attributes}, and {@linkplain #setVolume audio volume}.
- *   <li>Player instances can provide information about the {@linkplain #getDeviceInfo playback
- *       device}, which may be remote, and allow to change the device's volume.
+ *   <li>所有方法必须从单一的 {@linkplain #getApplicationLooper() 应用线程} 调用，除非另有说明。注册监听器中的回调也会在同一线程中调用。
+ *   <li>可用功能可能受限。播放器实例提供一组 {@link #getAvailableCommands() 可用命令} 来标识功能支持，接口使用者必须仅在相应 {@link Command} 可用时调用方法。
+ *   <li>用户可以注册 {@link Player.Listener} 回调，以获取状态变更的通知。
+ *   <li>播放器实例需要在每次方法调用后立即更新可见状态，即使实际变更是在后台线程或其他设备上处理的。这简化了方法调用者的使用，因为无需考虑异步处理。
+ *   <li>播放器实例可以提供播放列表操作，例如对 {@link MediaItem} 实例的“设置”、“添加”、“删除”、“移动”或“替换”。播放器还可以支持播放列表内的 {@linkplain RepeatMode 重复模式} 和随机播放。播放器提供 {@link Timeline} 表示播放列表的结构及其所有项，可通过调用 {@link #getCurrentTimeline()} 获取。
+ *   <li>播放器实例可以提供在当前播放项内和其他项之间的跳转功能，使用各种 {@code seek...} 方法。
+ *   <li>播放器实例可以提供 {@link Tracks}，定义当前可用和选定的轨道，可通过调用 {@link #getCurrentTracks()} 获取。用户还可以通过设置 {@link TrackSelectionParameters} 来修改轨道选择行为，使用 {@link #setTrackSelectionParameters}。
+ *   <li>播放器实例可以提供关于当前播放项的 {@link MediaMetadata}，可通过调用 {@link #getMediaMetadata()} 获取。
+ *   <li>播放器实例可以提供其媒体结构中的广告信息，例如通过 {@link #isPlayingAd()}。
+ *   <li>播放器实例可以接受不同类型的视频输出，例如用于视频渲染的 {@link #setVideoSurfaceView SurfaceView} 或 {@link #setVideoTextureView TextureView}。
+ *   <li>播放器实例可以处理 {@linkplain #setPlaybackSpeed 播放速度}、{@linkplain #getAudioAttributes 音频属性} 和 {@linkplain #setVolume 音频音量}。
+ *   <li>播放器实例可以提供关于 {@linkplain #getDeviceInfo 播放设备} 的信息（可能是远程设备），并允许更改设备的音量。
  * </ul>
  *
- * <h2>API stability guarantees</h2>
+ * <h2>API 稳定性保证</h2>
  *
- * <p>The majority of the Player interface and its related classes are part of the stable API that
- * guarantees backwards-compatibility for users of the API. Only more advances use cases may need to
- * rely on {@link UnstableApi} classes and methods that are subject to incompatible changes or even
- * removal in a future release. Implementors of the Player interface are not covered by these API
- * stability guarantees.
+ * <p>Player 接口及其相关类的大部分内容属于稳定 API，保证向后兼容。只有更高级的用例可能需要依赖 {@link UnstableApi} 类和方法，这些类和方法可能会在未来版本中进行不兼容的更改甚至移除。Player 接口的实现者不受这些 API 稳定性保证的约束。
  *
- * <h2>Player state</h2>
+ * <h2>播放器状态</h2>
  *
- * <p>Users can listen to state changes by adding a {@link Player.Listener} with {@link
- * #addListener}.
+ * <p>用户可以通过 {@link #addListener} 添加 {@link Player.Listener} 来监听状态变更。
  *
- * <p>The main elements of the overall player state are:
+ * <p>播放器整体状态的主要元素包括：
  *
  * <ul>
- *   <li>Playlist
+ *   <li>播放列表
  *       <ul>
- *         <li>{@link MediaItem} instances can be added with methods like {@link #setMediaItem} to
- *             define what the player will be playing.
- *         <li>The current playlist can be obtained via {@link #getCurrentTimeline} and convenience
- *             methods like {@link #getMediaItemCount} or {@link #getCurrentMediaItem}.
- *         <li>With an empty playlist, the player can only be in {@link #STATE_IDLE} or {@link
- *             #STATE_ENDED}.
+ *         <li>可以通过 {@link #setMediaItem} 等方法添加 {@link MediaItem} 实例，以定义播放器将播放的内容。
+ *         <li>当前播放列表可通过 {@link #getCurrentTimeline} 以及便捷方法（如 {@link #getMediaItemCount} 或 {@link #getCurrentMediaItem}）获取。
+ *         <li>如果播放列表为空，播放器只能处于 {@link #STATE_IDLE} 或 {@link #STATE_ENDED} 状态。
  *       </ul>
- *   <li>Playback state
+ *   <li>播放状态
  *       <ul>
- *         <li>{@link #STATE_IDLE}: This is the initial state, the state when the player is
- *             {@linkplain #stop stopped}, and when playback {@linkplain #getPlayerError failed}.
- *             The player will hold only limited resources in this state. {@link #prepare} must be
- *             called to transition away from this state.
- *         <li>{@link #STATE_BUFFERING}: The player is not able to immediately play from its current
- *             position. This mostly happens because more data needs to be loaded.
- *         <li>{@link #STATE_READY}: The player is able to immediately play from its current
- *             position.
- *         <li>{@link #STATE_ENDED}: The player finished playing all media, or there is no media to
- *             play.
+ *         <li>{@link #STATE_IDLE}：初始状态，播放器 {@linkplain #stop 停止} 时的状态，以及播放 {@linkplain #getPlayerError 失败} 时的状态。在此状态下，播放器仅持有有限的资源。必须调用 {@link #prepare} 以从此状态转换。
+ *         <li>{@link #STATE_BUFFERING}：播放器无法立即从其当前位置播放。通常是因为需要加载更多数据。
+ *         <li>{@link #STATE_READY}：播放器能够立即从其当前位置播放。
+ *         <li>{@link #STATE_ENDED}：播放器完成播放所有媒体，或者没有媒体可播放。
  *       </ul>
- *   <li>Play/Pause, playback suppression and isPlaying
+ *   <li>播放/暂停、播放抑制和 isPlaying
  *       <ul>
- *         <li>{@linkplain #getPlayWhenReady() playWhenReady}: Indicates the user intention to play.
- *             It can be set with {@link #play} or {@link #pause}.
- *         <li>{@linkplain #getPlaybackSuppressionReason() playback suppression}: Defines a reason
- *             for which playback will be suppressed even if {@linkplain #getPlayWhenReady()
- *             playWhenReady} is {@code true}.
- *         <li>{@link #isPlaying()}: Whether the player is playing (that is, its position is
- *             advancing and media is being presented). This will only be {@code true} if playback
- *             state is {@link #STATE_READY}, {@linkplain #getPlayWhenReady() playWhenReady} is
- *             {@code true}, and playback is not suppressed.
+ *         <li>{@linkplain #getPlayWhenReady() playWhenReady}：表示用户的播放意图。可以通过 {@link #play} 或 {@link #pause} 设置。
+ *         <li>{@linkplain #getPlaybackSuppressionReason() playback suppression}：定义即使 {@linkplain #getPlayWhenReady() playWhenReady} 为 {@code true}，播放仍被抑制的原因。
+ *         <li>{@link #isPlaying()}：播放器是否正在播放（即其位置正在前进且媒体正在呈现）。仅当播放状态为 {@link #STATE_READY}、{@linkplain #getPlayWhenReady() playWhenReady} 为 {@code true} 且播放未被抑制时，此值才为 {@code true}。
  *       </ul>
- *   <li>Playback position
+ *   <li>播放位置
  *       <ul>
- *         <li>{@linkplain #getCurrentMediaItemIndex() media item index}: The index in the playlist.
- *         <li>{@linkplain #isPlayingAd() ad insertion}: Whether an inserted ad is playing and which
- *             {@linkplain #getCurrentAdGroupIndex() ad group index} and {@linkplain
- *             #getCurrentAdIndexInAdGroup() ad index in the group} it belongs to
- *         <li>{@linkplain #getCurrentPosition() current position}: The current position of the
- *             playback. This is the same as the {@linkplain #getContentPosition() content position}
- *             unless an ad is playing, where this indicates the position in the inserted ad.
+ *         <li>{@linkplain #getCurrentMediaItemIndex() media item index}：播放列表中的索引。
+ *         <li>{@linkplain #isPlayingAd() ad insertion}：是否正在播放插入的广告，以及其所属的 {@linkplain #getCurrentAdGroupIndex() 广告组索引} 和 {@linkplain #getCurrentAdIndexInAdGroup() 广告组中的广告索引}。
+ *         <li>{@linkplain #getCurrentPosition() current position}：播放的当前位置。除非正在播放广告，否则这与 {@linkplain #getContentPosition() 内容位置} 相同，此时表示插入广告中的位置。
  *       </ul>
  * </ul>
  *
- * <p>Note that there are no callbacks for normal playback progression, only for {@linkplain
- * Listener#onMediaItemTransition transitions between media items} and other {@linkplain
- * Listener#onPositionDiscontinuity position discontinuities}. Code that needs to monitor playback
- * progress (for example, an UI progress bar) should query the current position in appropriate
- * intervals.
+ * <p>注意，没有针对正常播放进度的回调，只有针对 {@linkplain Listener#onMediaItemTransition 媒体项间切换} 和其他 {@linkplain Listener#onPositionDiscontinuity 位置不连续性} 的回调。需要监控播放进度的代码（例如 UI 进度条）应在适当的时间间隔内查询当前位置。
  *
- * <h2>Implementing the Player interface</h2>
+ * <h2>实现 Player 接口</h2>
  *
- * <p>Implementing the Player interface is complex, as the interface includes many convenience
- * methods that need to provide a consistent state and behavior, requires correct handling of
- * listeners and available commands, and expects immediate state changes even if methods are
- * internally handled asynchronously. For this reason, implementations are advised to inherit {@link
- * SimpleBasePlayer} that handles all of these complexities and provides a simpler integration point
- * for implementors of the interface.
+ * <p>实现 Player 接口非常复杂，因为该接口包含许多需要提供一致状态和行为的便捷方法，需要正确处理监听器和可用命令，并且即使方法在内部是异步处理的，也期望立即发生状态变更。因此，建议实现者继承 {@link SimpleBasePlayer}，它处理了所有这些复杂性，并为接口实现者提供了更简单的集成点。
  */
 public interface Player {
 
-  /** A set of {@linkplain Event events}. */
+  /**
+   * 一个包含 {@linkplain Event 事件} 的集合。
+   */
   final class Events {
 
     private final FlagSet flags;
 
     /**
-     * Creates an instance.
+     * 创建一个实例。
      *
-     * @param flags The {@link FlagSet} containing the {@linkplain Event events}.
+     * @param flags 包含 {@linkplain Event 事件} 的 {@link FlagSet}。
      */
     @UnstableApi
     public Events(FlagSet flags) {
@@ -170,39 +117,40 @@ public interface Player {
     }
 
     /**
-     * Returns whether the given {@link Event} occurred.
+     * 返回给定的 {@link Event} 是否发生。
      *
-     * @param event The {@link Event}.
-     * @return Whether the {@link Event} occurred.
+     * @param event 要检查的 {@link Event}。
+     * @return 如果 {@link Event} 发生，则返回 true；否则返回 false。
      */
     public boolean contains(@Event int event) {
       return flags.contains(event);
     }
 
     /**
-     * Returns whether any of the given {@linkplain Event events} occurred.
+     * 返回给定的任意一个 {@linkplain Event 事件} 是否发生。
      *
-     * @param events The {@linkplain Event events}.
-     * @return Whether any of the {@linkplain Event events} occurred.
+     * @param events 要检查的 {@linkplain Event 事件} 数组。
+     * @return 如果任意一个 {@linkplain Event 事件} 发生，则返回 true；否则返回 false。
      */
     public boolean containsAny(@Event int... events) {
       return flags.containsAny(events);
     }
 
-    /** Returns the number of events in the set. */
+    /**
+     * 返回集合中事件的数量。
+     */
     public int size() {
       return flags.size();
     }
 
     /**
-     * Returns the {@link Event} at the given index.
+     * 返回给定索引处的 {@link Event}。
      *
-     * <p>Although index-based access is possible, it doesn't imply a particular order of these
-     * events.
+     * <p>尽管支持基于索引的访问，但这并不意味着这些事件的特定顺序。
      *
-     * @param index The index. Must be between 0 (inclusive) and {@link #size()} (exclusive).
-     * @return The {@link Event} at the given index.
-     * @throws IndexOutOfBoundsException If index is outside the allowed range.
+     * @param index 索引。必须在 0（包含）到 {@link #size()}（不包含）之间。
+     * @return 给定索引处的 {@link Event}。
+     * @throws IndexOutOfBoundsException 如果索引超出允许范围。
      */
     public @Event int get(int index) {
       return flags.get(index);
@@ -226,58 +174,72 @@ public interface Player {
     }
   }
 
-  /** Position info describing a playback position involved in a discontinuity. */
+  /**
+   * 描述播放不连续性中涉及的播放位置的信息。
+   */
   final class PositionInfo {
 
     /**
-     * The UID of the window, or {@code null} if the timeline is {@link Timeline#isEmpty() empty}.
+     * 窗口的 UID，如果时间轴 {@link Timeline#isEmpty() 为空}，则为 {@code null}。
      */
-    @Nullable public final Object windowUid;
+    @Nullable
+    public final Object windowUid;
 
     /**
-     * @deprecated Use {@link #mediaItemIndex} instead.
+     * @deprecated 请使用 {@link #mediaItemIndex} 代替。
      */
-    @UnstableApi @Deprecated public final int windowIndex;
+    @UnstableApi
+    @Deprecated
+    public final int windowIndex;
 
-    /** The media item index. */
+    /**
+     * 媒体项的索引。
+     */
     public final int mediaItemIndex;
 
-    /** The media item, or {@code null} if the timeline is {@link Timeline#isEmpty() empty}. */
-    @UnstableApi @Nullable public final MediaItem mediaItem;
+    /**
+     * 媒体项，如果时间轴 {@link Timeline#isEmpty() 为空}，则为 {@code null}。
+     */
+    @UnstableApi
+    @Nullable
+    public final MediaItem mediaItem;
 
     /**
-     * The UID of the period, or {@code null} if the timeline is {@link Timeline#isEmpty() empty}.
+     * 时间段的 UID，如果时间轴 {@link Timeline#isEmpty() 为空}，则为 {@code null}。
      */
-    @Nullable public final Object periodUid;
+    @Nullable
+    public final Object periodUid;
 
-    /** The period index. */
+    /**
+     * 时间段的索引。
+     */
     public final int periodIndex;
 
-    /** The playback position, in milliseconds. */
+    /**
+     * 播放位置，以毫秒为单位。
+     */
     public final long positionMs;
 
     /**
-     * The content position, in milliseconds.
+     * 内容位置，以毫秒为单位。
      *
-     * <p>If {@link #adGroupIndex} is {@link C#INDEX_UNSET}, this is the same as {@link
-     * #positionMs}.
+     * <p>如果 {@link #adGroupIndex} 为 {@link C#INDEX_UNSET}，则此值与 {@link #positionMs} 相同。
      */
     public final long contentPositionMs;
 
     /**
-     * The ad group index if the playback position is within an ad, {@link C#INDEX_UNSET} otherwise.
+     * 如果播放位置在广告中，则为广告组的索引；否则为 {@link C#INDEX_UNSET}。
      */
     public final int adGroupIndex;
 
     /**
-     * The index of the ad within the ad group if the playback position is within an ad, {@link
-     * C#INDEX_UNSET} otherwise.
+     * 如果播放位置在广告中，则为广告组中广告的索引；否则为 {@link C#INDEX_UNSET}。
      */
     public final int adIndexInAdGroup;
 
     /**
-     * @deprecated Use {@link #PositionInfo(Object, int, MediaItem, Object, int, long, long, int,
-     *     int)} instead.
+     * @deprecated 请使用 {@link #PositionInfo(Object, int, MediaItem, Object, int, long, long, int,
+     * int)} 代替。
      */
     @Deprecated
     @UnstableApi
@@ -302,7 +264,9 @@ public interface Player {
           adIndexInAdGroup);
     }
 
-    /** Creates an instance. */
+    /**
+     * Creates an instance.
+     */
     @UnstableApi
     @SuppressWarnings("deprecation") // Setting deprecated windowIndex field
     public PositionInfo(
@@ -370,25 +334,28 @@ public interface Player {
           && Objects.equal(mediaItem, other.mediaItem);
     }
 
-    @VisibleForTesting static final String FIELD_MEDIA_ITEM_INDEX = Util.intToStringMaxRadix(0);
+    @VisibleForTesting
+    static final String FIELD_MEDIA_ITEM_INDEX = Util.intToStringMaxRadix(0);
     private static final String FIELD_MEDIA_ITEM = Util.intToStringMaxRadix(1);
-    @VisibleForTesting static final String FIELD_PERIOD_INDEX = Util.intToStringMaxRadix(2);
-    @VisibleForTesting static final String FIELD_POSITION_MS = Util.intToStringMaxRadix(3);
-    @VisibleForTesting static final String FIELD_CONTENT_POSITION_MS = Util.intToStringMaxRadix(4);
+    @VisibleForTesting
+    static final String FIELD_PERIOD_INDEX = Util.intToStringMaxRadix(2);
+    @VisibleForTesting
+    static final String FIELD_POSITION_MS = Util.intToStringMaxRadix(3);
+    @VisibleForTesting
+    static final String FIELD_CONTENT_POSITION_MS = Util.intToStringMaxRadix(4);
     private static final String FIELD_AD_GROUP_INDEX = Util.intToStringMaxRadix(5);
     private static final String FIELD_AD_INDEX_IN_AD_GROUP = Util.intToStringMaxRadix(6);
 
     /**
-     * Returns a copy of this position info, filtered by the specified available commands.
+     * 返回此位置信息的副本，并根据指定的可用命令进行过滤。
      *
-     * <p>The filtered fields are reset to their default values.
+     * <p>被过滤的字段将被重置为默认值。
      *
-     * <p>The return value may be the same object if nothing is filtered.
+     * <p>如果没有字段被过滤，返回值可能是同一个对象。
      *
-     * @param canAccessCurrentMediaItem Whether {@link Player#COMMAND_GET_CURRENT_MEDIA_ITEM} is
-     *     available.
-     * @param canAccessTimeline Whether {@link Player#COMMAND_GET_TIMELINE} is available.
-     * @return The filtered position info.
+     * @param canAccessCurrentMediaItem 是否可用 {@link Player#COMMAND_GET_CURRENT_MEDIA_ITEM} 命令。
+     * @param canAccessTimeline         是否可用 {@link Player#COMMAND_GET_TIMELINE} 命令。
+     * @return 过滤后的位置信息。
      */
     @UnstableApi
     public PositionInfo filterByAvailableCommands(
@@ -409,14 +376,12 @@ public interface Player {
     }
 
     /**
-     * Returns a {@link Bundle} representing the information stored in this object.
+     * 返回一个 {@link Bundle}，表示此对象中存储的信息。
      *
-     * <p>It omits the {@link #windowUid} and {@link #periodUid} fields. The {@link #windowUid} and
-     * {@link #periodUid} of an instance restored by {@link #fromBundle(Bundle)} will always be
-     * {@code null}.
+     * <p>它会忽略 {@link #windowUid} 和 {@link #periodUid} 字段。
+     * 通过 {@link #fromBundle(Bundle)} 恢复的实例的 {@link #windowUid} 和 {@link #periodUid} 将始终为 {@code null}。
      *
-     * @param controllerInterfaceVersion The interface version of the media controller this Bundle
-     *     will be sent to.
+     * @param controllerInterfaceVersion 此 Bundle 将发送到的媒体控制器的接口版本。
      */
     @UnstableApi
     public Bundle toBundle(int controllerInterfaceVersion) {
@@ -454,7 +419,9 @@ public interface Player {
       return toBundle(Integer.MAX_VALUE);
     }
 
-    /** Restores a {@code PositionInfo} from a {@link Bundle}. */
+    /**
+     * Restores a {@code PositionInfo} from a {@link Bundle}.
+     */
     @UnstableApi
     public static PositionInfo fromBundle(Bundle bundle) {
       int mediaItemIndex = bundle.getInt(FIELD_MEDIA_ITEM_INDEX, /* defaultValue= */ 0);
@@ -487,52 +454,56 @@ public interface Player {
    */
   final class Commands {
 
-    /** A builder for {@link Commands} instances. */
+    /**
+     * A builder for {@link Commands} instances.
+     */
     @UnstableApi
     public static final class Builder {
 
       @SuppressWarnings("deprecation") // Includes deprecated commands
       private static final @Command int[] SUPPORTED_COMMANDS = {
-        COMMAND_PLAY_PAUSE,
-        COMMAND_PREPARE,
-        COMMAND_STOP,
-        COMMAND_SEEK_TO_DEFAULT_POSITION,
-        COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM,
-        COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
-        COMMAND_SEEK_TO_PREVIOUS,
-        COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
-        COMMAND_SEEK_TO_NEXT,
-        COMMAND_SEEK_TO_MEDIA_ITEM,
-        COMMAND_SEEK_BACK,
-        COMMAND_SEEK_FORWARD,
-        COMMAND_SET_SPEED_AND_PITCH,
-        COMMAND_SET_SHUFFLE_MODE,
-        COMMAND_SET_REPEAT_MODE,
-        COMMAND_GET_CURRENT_MEDIA_ITEM,
-        COMMAND_GET_TIMELINE,
-        COMMAND_GET_METADATA,
-        COMMAND_SET_PLAYLIST_METADATA,
-        COMMAND_SET_MEDIA_ITEM,
-        COMMAND_CHANGE_MEDIA_ITEMS,
-        COMMAND_GET_AUDIO_ATTRIBUTES,
-        COMMAND_GET_VOLUME,
-        COMMAND_GET_DEVICE_VOLUME,
-        COMMAND_SET_VOLUME,
-        COMMAND_SET_DEVICE_VOLUME,
-        COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
-        COMMAND_ADJUST_DEVICE_VOLUME,
-        COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
-        COMMAND_SET_AUDIO_ATTRIBUTES,
-        COMMAND_SET_VIDEO_SURFACE,
-        COMMAND_GET_TEXT,
-        COMMAND_SET_TRACK_SELECTION_PARAMETERS,
-        COMMAND_GET_TRACKS,
-        COMMAND_RELEASE
+          COMMAND_PLAY_PAUSE,
+          COMMAND_PREPARE,
+          COMMAND_STOP,
+          COMMAND_SEEK_TO_DEFAULT_POSITION,
+          COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM,
+          COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+          COMMAND_SEEK_TO_PREVIOUS,
+          COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+          COMMAND_SEEK_TO_NEXT,
+          COMMAND_SEEK_TO_MEDIA_ITEM,
+          COMMAND_SEEK_BACK,
+          COMMAND_SEEK_FORWARD,
+          COMMAND_SET_SPEED_AND_PITCH,
+          COMMAND_SET_SHUFFLE_MODE,
+          COMMAND_SET_REPEAT_MODE,
+          COMMAND_GET_CURRENT_MEDIA_ITEM,
+          COMMAND_GET_TIMELINE,
+          COMMAND_GET_METADATA,
+          COMMAND_SET_PLAYLIST_METADATA,
+          COMMAND_SET_MEDIA_ITEM,
+          COMMAND_CHANGE_MEDIA_ITEMS,
+          COMMAND_GET_AUDIO_ATTRIBUTES,
+          COMMAND_GET_VOLUME,
+          COMMAND_GET_DEVICE_VOLUME,
+          COMMAND_SET_VOLUME,
+          COMMAND_SET_DEVICE_VOLUME,
+          COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
+          COMMAND_ADJUST_DEVICE_VOLUME,
+          COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
+          COMMAND_SET_AUDIO_ATTRIBUTES,
+          COMMAND_SET_VIDEO_SURFACE,
+          COMMAND_GET_TEXT,
+          COMMAND_SET_TRACK_SELECTION_PARAMETERS,
+          COMMAND_GET_TRACKS,
+          COMMAND_RELEASE
       };
 
       private final FlagSet.Builder flagsBuilder;
 
-      /** Creates a builder. */
+      /**
+       * Creates a builder.
+       */
       public Builder() {
         flagsBuilder = new FlagSet.Builder();
       }
@@ -558,7 +529,7 @@ public interface Player {
       /**
        * Adds a {@link Command} if the provided condition is true. Does nothing otherwise.
        *
-       * @param command A {@link Command}.
+       * @param command   A {@link Command}.
        * @param condition A condition.
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
@@ -623,7 +594,7 @@ public interface Player {
       /**
        * Removes a {@link Command} if the provided condition is true. Does nothing otherwise.
        *
-       * @param command A {@link Command}.
+       * @param command   A {@link Command}.
        * @param condition A condition.
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
@@ -657,7 +628,9 @@ public interface Player {
       }
     }
 
-    /** An empty set of commands. */
+    /**
+     * An empty set of commands.
+     */
     public static final Commands EMPTY = new Builder().build();
 
     private final FlagSet flags;
@@ -666,23 +639,31 @@ public interface Player {
       this.flags = flags;
     }
 
-    /** Returns a {@link Builder} initialized with the values of this instance. */
+    /**
+     * Returns a {@link Builder} initialized with the values of this instance.
+     */
     @UnstableApi
     public Builder buildUpon() {
       return new Builder(this);
     }
 
-    /** Returns whether the set of commands contains the specified {@link Command}. */
+    /**
+     * Returns whether the set of commands contains the specified {@link Command}.
+     */
     public boolean contains(@Command int command) {
       return flags.contains(command);
     }
 
-    /** Returns whether the set of commands contains at least one of the given {@code commands}. */
+    /**
+     * Returns whether the set of commands contains at least one of the given {@code commands}.
+     */
     public boolean containsAny(@Command int... commands) {
       return flags.containsAny(commands);
     }
 
-    /** Returns the number of commands in this set. */
+    /**
+     * Returns the number of commands in this set.
+     */
     public int size() {
       return flags.size();
     }
@@ -728,7 +709,9 @@ public interface Player {
       return bundle;
     }
 
-    /** Restores a {@code Commands} from a {@link Bundle}. */
+    /**
+     * 从 {@link Bundle} 恢复 {@code Commands}。
+     */
     @UnstableApi
     public static Commands fromBundle(Bundle bundle) {
       @Nullable ArrayList<Integer> commands = bundle.getIntegerArrayList(FIELD_COMMANDS);
@@ -744,721 +727,676 @@ public interface Player {
   }
 
   /**
-   * Listener for changes in a {@link Player}.
+   * 用于监听 {@link Player} 变化的监听器。
    *
-   * <p>All methods have no-op default implementations to allow selective overrides.
+   * <p>所有方法都有无操作的默认实现，以允许选择性重写。
    *
-   * <p>If the return value of a {@link Player} getter changes due to a change in {@linkplain
-   * #onAvailableCommandsChanged(Commands) command availability}, the corresponding listener
-   * method(s) will be invoked. If the return value of a {@link Player} getter does not change
-   * because the corresponding command is {@linkplain #onAvailableCommandsChanged(Commands) not
-   * available}, the corresponding listener method will not be invoked.
+   * <p>如果由于 {@linkplain #onAvailableCommandsChanged(Commands) 命令可用性} 的变化导致 {@link Player} getter 的返回值发生变化，则会调用相应的监听器方法。如果由于相应的命令 {@linkplain #onAvailableCommandsChanged(Commands) 不可用} 而导致 {@link Player} getter 的返回值未发生变化，则不会调用相应的监听器方法。
    */
   interface Listener {
 
     /**
-     * Called when one or more player states changed.
+     * 当一个或多个播放器状态发生变化时调用。
      *
-     * <p>State changes and events that happen within one {@link Looper} message queue iteration are
-     * reported together and only after all individual callbacks were triggered.
+     * <p>在一个 {@link Looper} 消息队列迭代中发生的状态变化和事件会一起报告，并且仅在所有单独的回调被触发后才会报告。
      *
-     * <p>Listeners should prefer this method over individual callbacks in the following cases:
+     * <p>在以下情况下，监听器应优先使用此方法而不是单独的回调：
      *
      * <ul>
-     *   <li>They intend to trigger the same logic for multiple events (e.g. when updating a UI for
-     *       both {@link #onPlaybackStateChanged(int)} and {@link #onPlayWhenReadyChanged(boolean,
-     *       int)}).
-     *   <li>They need access to the {@link Player} object to trigger further events (e.g. to call
-     *       {@link Player#seekTo(long)} after a {@link #onMediaItemTransition(MediaItem, int)}).
-     *   <li>They intend to use multiple state values together or in combination with {@link Player}
-     *       getter methods. For example using {@link #getCurrentMediaItemIndex()} with the {@code
-     *       timeline} provided in {@link #onTimelineChanged(Timeline, int)} is only safe from
-     *       within this method.
-     *   <li>They are interested in events that logically happened together (e.g {@link
-     *       #onPlaybackStateChanged(int)} to {@link #STATE_BUFFERING} because of {@link
-     *       #onMediaItemTransition(MediaItem, int)}).
+     *   <li>它们打算为多个事件触发相同的逻辑（例如，在 {@link #onPlaybackStateChanged(int)} 和 {@link #onPlayWhenReadyChanged(boolean, int)} 时更新 UI）。
+     *   <li>它们需要访问 {@link Player} 对象以触发进一步的事件（例如，在 {@link #onMediaItemTransition(MediaItem, int)} 后调用 {@link Player#seekTo(long)}）。
+     *   <li>它们打算一起使用多个状态值或与 {@link Player} getter 方法结合使用。例如，使用 {@link #getCurrentMediaItemIndex()} 与 {@link #onTimelineChanged(Timeline, int)} 中提供的 {@code timeline} 结合使用，只有在此方法内部才是安全的。
+     *   <li>它们对逻辑上一起发生的事件感兴趣（例如，由于 {@link #onMediaItemTransition(MediaItem, int)} 导致 {@link #onPlaybackStateChanged(int)} 变为 {@link #STATE_BUFFERING}）。
      * </ul>
      *
-     * @param player The {@link Player} whose state changed. Use the getters to obtain the latest
-     *     states.
-     * @param events The {@link Events} that happened in this iteration, indicating which player
-     *     states changed.
+     * @param player 状态发生变化的 {@link Player}。使用 getter 获取最新状态。
+     * @param events 在此迭代中发生的事件，指示哪些播放器状态发生了变化。
      */
-    default void onEvents(Player player, Events events) {}
+    default void onEvents(Player player, Events events) {
+    }
 
     /**
-     * Called when the value of {@link Player#getCurrentTimeline()} changes.
+     * 当 {@link Player#getCurrentTimeline()} 的值发生变化时调用。
      *
-     * <p>Note that the current {@link MediaItem} or playback position may change as a result of a
-     * timeline change. If playback can't continue smoothly because of this timeline change, a
-     * separate {@link #onPositionDiscontinuity(PositionInfo, PositionInfo, int)} callback will be
-     * triggered.
+     * <p>请注意，当前的 {@link MediaItem} 或播放位置可能会由于时间线的变化而发生变化。如果由于此时间线变化导致播放无法顺利继续，则会触发单独的 {@link #onPositionDiscontinuity(PositionInfo, PositionInfo, int)} 回调。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param timeline The latest timeline. Never null, but may be empty.
-     * @param reason The {@link TimelineChangeReason} responsible for this timeline change.
+     * @param timeline 最新的时间线。永远不会为 null，但可能为空。
+     * @param reason   导致此时间线变化的 {@link TimelineChangeReason}。
      */
-    default void onTimelineChanged(Timeline timeline, @TimelineChangeReason int reason) {}
+    default void onTimelineChanged(Timeline timeline, @TimelineChangeReason int reason) {
+    }
 
     /**
-     * Called when playback transitions to a media item or starts repeating a media item according
-     * to the current {@link #getRepeatMode() repeat mode}.
+     * 当播放根据当前的 {@link #getRepeatMode() 重复模式} 过渡到某个媒体项或开始重复某个媒体项时调用。
      *
-     * <p>Note that this callback is also called when the value of {@link #getCurrentTimeline()}
-     * becomes non-empty or empty.
+     * <p>请注意，当 {@link #getCurrentTimeline()} 的值变为非空或空时，也会调用此回调。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param mediaItem The {@link MediaItem}. May be null if the playlist becomes empty.
-     * @param reason The reason for the transition.
+     * @param mediaItem {@link MediaItem}。如果播放列表变为空，则可能为 null。
+     * @param reason    过渡的原因。
      */
     default void onMediaItemTransition(
-        @Nullable MediaItem mediaItem, @MediaItemTransitionReason int reason) {}
+        @Nullable MediaItem mediaItem, @MediaItemTransitionReason int reason) {
+    }
 
     /**
-     * Called when the value of {@link Player#getCurrentTracks()} changes.
+     * 当 {@link Player#getCurrentTracks()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param tracks The available tracks information. Never null, but may be of length zero.
+     * @param tracks 可用的轨道信息。永远不会为 null，但长度可能为零。
      */
-    default void onTracksChanged(Tracks tracks) {}
+    default void onTracksChanged(Tracks tracks) {
+    }
 
     /**
-     * Called when the value of {@link Player#getMediaMetadata()} changes.
+     * 当 {@link Player#getMediaMetadata()} 的值发生变化时调用。
      *
-     * <p>This method may be called multiple times in quick succession.
+     * <p>此方法可能会在短时间内多次调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param mediaMetadata The combined {@link MediaMetadata}.
+     * @param mediaMetadata 组合的 {@link MediaMetadata}。
      */
-    default void onMediaMetadataChanged(MediaMetadata mediaMetadata) {}
+    default void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
+    }
 
     /**
-     * Called when the value of {@link Player#getPlaylistMetadata()} changes.
+     * 当 {@link Player#getPlaylistMetadata()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      */
-    default void onPlaylistMetadataChanged(MediaMetadata mediaMetadata) {}
+    default void onPlaylistMetadataChanged(MediaMetadata mediaMetadata) {
+    }
 
     /**
-     * Called when the player starts or stops loading the source.
+     * 当播放器开始或停止加载源时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param isLoading Whether the source is currently being loaded.
+     * @param isLoading 当前是否正在加载源。
      */
-    default void onIsLoadingChanged(boolean isLoading) {}
+    default void onIsLoadingChanged(boolean isLoading) {
+    }
 
     /**
-     * @deprecated Use {@link #onIsLoadingChanged(boolean)} instead.
-     */
-    @Deprecated
-    @UnstableApi
-    default void onLoadingChanged(boolean isLoading) {}
-
-    /**
-     * Called when the value returned from {@link #isCommandAvailable(int)} changes for at least one
-     * {@link Command}.
-     *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
-     *
-     * @param availableCommands The available {@link Commands}.
-     */
-    default void onAvailableCommandsChanged(Commands availableCommands) {}
-
-    /**
-     * Called when the value returned from {@link #getTrackSelectionParameters()} changes.
-     *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
-     *
-     * @param parameters The new {@link TrackSelectionParameters}.
-     */
-    default void onTrackSelectionParametersChanged(TrackSelectionParameters parameters) {}
-
-    /**
-     * @deprecated Use {@link #onPlaybackStateChanged(int)} and {@link
-     *     #onPlayWhenReadyChanged(boolean, int)} instead.
+     * @deprecated 请使用 {@link #onIsLoadingChanged(boolean)} 代替。
      */
     @Deprecated
     @UnstableApi
-    default void onPlayerStateChanged(boolean playWhenReady, @State int playbackState) {}
+    default void onLoadingChanged(boolean isLoading) {
+    }
 
     /**
-     * Called when the value returned from {@link #getPlaybackState()} changes.
+     * 当至少一个 {@link Command} 的 {@link #isCommandAvailable(int)} 返回值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param playbackState The new playback {@link State}.
+     * @param availableCommands 可用的 {@link Commands}。
      */
-    default void onPlaybackStateChanged(@State int playbackState) {}
+    default void onAvailableCommandsChanged(Commands availableCommands) {
+    }
 
     /**
-     * Called when the value returned from {@link #getPlayWhenReady()} changes.
+     * 当 {@link #getTrackSelectionParameters()} 的返回值发生变化时调用。
      *
-     * <p>The current {@code playWhenReady} value may be re-reported if the {@code reason} for this
-     * value changes.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * @param parameters 新的 {@link TrackSelectionParameters}。
+     */
+    default void onTrackSelectionParametersChanged(TrackSelectionParameters parameters) {
+    }
+
+    /**
+     * @deprecated 请使用 {@link #onPlaybackStateChanged(int)} 和 {@link #onPlayWhenReadyChanged(boolean, int)} 代替。
+     */
+    @Deprecated
+    @UnstableApi
+    default void onPlayerStateChanged(boolean playWhenReady, @State int playbackState) {
+    }
+
+    /**
+     * 当 {@link #getPlaybackState()} 的返回值发生变化时调用。
      *
-     * @param playWhenReady Whether playback will proceed when ready.
-     * @param reason The {@link PlayWhenReadyChangeReason} for the change.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
+     *
+     * @param playbackState 新的播放 {@link State}。
+     */
+    default void onPlaybackStateChanged(@State int playbackState) {
+    }
+
+    /**
+     * 当 {@link #getPlayWhenReady()} 的返回值发生变化时调用。
+     *
+     * <p>如果 {@code reason} 发生变化，当前的 {@code playWhenReady} 值可能会被重新报告。
+     *
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
+     *
+     * @param playWhenReady 是否在准备好时继续播放。
+     * @param reason        变化的 {@link PlayWhenReadyChangeReason}。
      */
     default void onPlayWhenReadyChanged(
-        boolean playWhenReady, @PlayWhenReadyChangeReason int reason) {}
+        boolean playWhenReady, @PlayWhenReadyChangeReason int reason) {
+    }
 
     /**
-     * Called when the value returned from {@link #getPlaybackSuppressionReason()} changes.
+     * 当 {@link #getPlaybackSuppressionReason()} 的返回值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param playbackSuppressionReason The current {@link PlaybackSuppressionReason}.
+     * @param playbackSuppressionReason 当前的 {@link PlaybackSuppressionReason}。
      */
     default void onPlaybackSuppressionReasonChanged(
-        @PlaybackSuppressionReason int playbackSuppressionReason) {}
+        @PlaybackSuppressionReason int playbackSuppressionReason) {
+    }
 
     /**
-     * Called when the value of {@link #isPlaying()} changes.
+     * 当 {@link #isPlaying()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param isPlaying Whether the player is playing.
+     * @param isPlaying 播放器是否正在播放。
      */
-    default void onIsPlayingChanged(boolean isPlaying) {}
+    default void onIsPlayingChanged(boolean isPlaying) {
+    }
 
     /**
-     * Called when the value of {@link #getRepeatMode()} changes.
+     * 当 {@link #getRepeatMode()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param repeatMode The {@link RepeatMode} used for playback.
+     * @param repeatMode 用于播放的 {@link RepeatMode}。
      */
-    default void onRepeatModeChanged(@RepeatMode int repeatMode) {}
+    default void onRepeatModeChanged(@RepeatMode int repeatMode) {
+    }
 
     /**
-     * Called when the value of {@link #getShuffleModeEnabled()} changes.
+     * 当 {@link #getShuffleModeEnabled()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param shuffleModeEnabled Whether shuffling of {@linkplain MediaItem media items} is enabled.
+     * @param shuffleModeEnabled 是否启用了 {@linkplain MediaItem 媒体项} 的随机播放。
      */
-    default void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {}
+    default void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+    }
 
     /**
-     * Called when an error occurs. The playback state will transition to {@link #STATE_IDLE}
-     * immediately after this method is called. The player instance can still be used, and {@link
-     * #release()} must still be called on the player should it no longer be required.
+     * 当发生错误时调用。播放状态将在调用此方法后立即转换为 {@link #STATE_IDLE}。播放器实例仍可使用，如果不再需要，仍必须调用 {@link #release()}。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * <p>Implementations of Player may pass an instance of a subclass of {@link PlaybackException}
-     * to this method in order to include more information about the error.
+     * <p>播放器的实现可能会将 {@link PlaybackException} 的子类实例传递给此方法，以包含有关错误的更多信息。
      *
-     * @param error The error.
+     * @param error 错误。
      */
-    default void onPlayerError(PlaybackException error) {}
+    default void onPlayerError(PlaybackException error) {
+    }
 
     /**
-     * Called when the {@link PlaybackException} returned by {@link #getPlayerError()} changes.
+     * 当 {@link #getPlayerError()} 返回的 {@link PlaybackException} 发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * <p>Implementations of Player may pass an instance of a subclass of {@link PlaybackException}
-     * to this method in order to include more information about the error.
+     * <p>播放器的实现可能会将 {@link PlaybackException} 的子类实例传递给此方法，以包含有关错误的更多信息。
      *
-     * @param error The new error, or null if the error is being cleared.
+     * @param error 新的错误，如果错误被清除则为 null。
      */
-    default void onPlayerErrorChanged(@Nullable PlaybackException error) {}
+    default void onPlayerErrorChanged(@Nullable PlaybackException error) {
+    }
 
     /**
-     * @deprecated Use {@link #onPositionDiscontinuity(PositionInfo, PositionInfo, int)} instead.
+     * @deprecated 请使用 {@link #onPositionDiscontinuity(PositionInfo, PositionInfo, int)} 代替。
      */
     @Deprecated
     @UnstableApi
-    default void onPositionDiscontinuity(@DiscontinuityReason int reason) {}
+    default void onPositionDiscontinuity(@DiscontinuityReason int reason) {
+    }
 
     /**
-     * Called when a position discontinuity occurs.
+     * 当发生位置不连续时调用。
      *
-     * <p>A position discontinuity occurs when the playing period changes, the playback position
-     * jumps within the period currently being played, or when the playing period has been skipped
-     * or removed.
+     * <p>位置不连续发生在播放的周期发生变化、播放位置在当前播放的周期内跳跃，或者当前播放的周期被跳过或移除时。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param oldPosition The position before the discontinuity.
-     * @param newPosition The position after the discontinuity.
-     * @param reason The {@link DiscontinuityReason} responsible for the discontinuity.
+     * @param oldPosition 不连续之前的位置。
+     * @param newPosition 不连续之后的位置。
+     * @param reason      导致不连续的 {@link DiscontinuityReason}。
      */
     default void onPositionDiscontinuity(
-        PositionInfo oldPosition, PositionInfo newPosition, @DiscontinuityReason int reason) {}
+        PositionInfo oldPosition, PositionInfo newPosition, @DiscontinuityReason int reason) {
+    }
 
     /**
-     * Called when the value of {@link #getPlaybackParameters()} changes. The playback parameters
-     * may change due to a call to {@link #setPlaybackParameters(PlaybackParameters)}, or the player
-     * itself may change them (for example, if audio playback switches to passthrough or offload
-     * mode, where speed adjustment is no longer possible).
+     * 当 {@link #getPlaybackParameters()} 的值发生变化时调用。播放参数可能会由于调用 {@link #setPlaybackParameters(PlaybackParameters)} 而发生变化，或者播放器本身可能会更改它们（例如，如果音频播放切换到直通或卸载模式，速度调整将不再可能）。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param playbackParameters The playback parameters.
+     * @param playbackParameters 播放参数。
      */
-    default void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {}
+    default void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+    }
 
     /**
-     * Called when the value of {@link #getSeekBackIncrement()} changes.
+     * 当 {@link #getSeekBackIncrement()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param seekBackIncrementMs The {@link #seekBack()} increment, in milliseconds.
+     * @param seekBackIncrementMs {@link #seekBack()} 的增量，以毫秒为单位。
      */
-    default void onSeekBackIncrementChanged(long seekBackIncrementMs) {}
+    default void onSeekBackIncrementChanged(long seekBackIncrementMs) {
+    }
 
     /**
-     * Called when the value of {@link #getSeekForwardIncrement()} changes.
+     * 当 {@link #getSeekForwardIncrement()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param seekForwardIncrementMs The {@link #seekForward()} increment, in milliseconds.
+     * @param seekForwardIncrementMs {@link #seekForward()} 的增量，以毫秒为单位。
      */
-    default void onSeekForwardIncrementChanged(long seekForwardIncrementMs) {}
+    default void onSeekForwardIncrementChanged(long seekForwardIncrementMs) {
+    }
 
     /**
-     * Called when the value of {@link #getMaxSeekToPreviousPosition()} changes.
+     * 当 {@link #getMaxSeekToPreviousPosition()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param maxSeekToPreviousPositionMs The maximum position for which {@link #seekToPrevious()}
-     *     seeks to the previous position, in milliseconds.
+     * @param maxSeekToPreviousPositionMs {@link #seekToPrevious()} 的最大位置，以毫秒为单位。
      */
-    default void onMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) {}
+    default void onMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) {
+    }
 
     /**
-     * Called when the audio session ID changes.
+     * 当音频会话 ID 发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param audioSessionId The audio session ID.
+     * @param audioSessionId 音频会话 ID。
      */
     @UnstableApi
-    default void onAudioSessionIdChanged(int audioSessionId) {}
+    default void onAudioSessionIdChanged(int audioSessionId) {
+    }
 
     /**
-     * Called when the value of {@link #getAudioAttributes()} changes.
+     * 当 {@link #getAudioAttributes()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param audioAttributes The audio attributes.
+     * @param audioAttributes 音频属性。
      */
-    default void onAudioAttributesChanged(AudioAttributes audioAttributes) {}
+    default void onAudioAttributesChanged(AudioAttributes audioAttributes) {
+    }
 
     /**
-     * Called when the value of {@link #getVolume()} changes.
+     * 当 {@link #getVolume()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param volume The new volume, with 0 being silence and 1 being unity gain.
+     * @param volume 新的音量，0 表示静音，1 表示单位增益。
      */
-    default void onVolumeChanged(float volume) {}
+    default void onVolumeChanged(float volume) {
+    }
 
     /**
-     * Called when skipping silences is enabled or disabled in the audio stream.
+     * 当音频流中跳过静音功能启用或禁用时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param skipSilenceEnabled Whether skipping silences in the audio stream is enabled.
+     * @param skipSilenceEnabled 是否启用了音频流中的跳过静音功能。
      */
-    default void onSkipSilenceEnabledChanged(boolean skipSilenceEnabled) {}
+    default void onSkipSilenceEnabledChanged(boolean skipSilenceEnabled) {
+    }
 
     /**
-     * Called when the device information changes
+     * 当设备信息发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param deviceInfo The new {@link DeviceInfo}.
+     * @param deviceInfo 新的 {@link DeviceInfo}。
      */
-    default void onDeviceInfoChanged(DeviceInfo deviceInfo) {}
+    default void onDeviceInfoChanged(DeviceInfo deviceInfo) {
+    }
 
     /**
-     * Called when the value of {@link #getDeviceVolume()} or {@link #isDeviceMuted()} changes.
+     * 当 {@link #getDeviceVolume()} 或 {@link #isDeviceMuted()} 的值发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param volume The new device volume, with 0 being silence and 1 being unity gain.
-     * @param muted Whether the device is muted.
+     * @param volume 新的设备音量，0 表示静音，1 表示单位增益。
+     * @param muted  设备是否静音。
      */
-    default void onDeviceVolumeChanged(int volume, boolean muted) {}
+    default void onDeviceVolumeChanged(int volume, boolean muted) {
+    }
 
     /**
-     * Called each time when {@link Player#getVideoSize()} changes.
+     * 每次 {@link Player#getVideoSize()} 发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param videoSize The new size of the video.
+     * @param videoSize 视频的新尺寸。
      */
-    default void onVideoSizeChanged(VideoSize videoSize) {}
+    default void onVideoSizeChanged(VideoSize videoSize) {
+    }
 
     /**
-     * Called each time there's a change in the size of the surface onto which the video is being
-     * rendered.
+     * 每次渲染视频的表面的尺寸发生变化时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param width The surface width in pixels. May be {@link C#LENGTH_UNSET} if unknown, or 0 if
-     *     the video is not rendered onto a surface.
-     * @param height The surface height in pixels. May be {@link C#LENGTH_UNSET} if unknown, or 0 if
-     *     the video is not rendered onto a surface.
+     * @param width  表面的宽度，以像素为单位。如果未知，可能是 {@link C#LENGTH_UNSET}；如果视频未渲染到表面上，则可能是 0。
+     * @param height 表面的高度，以像素为单位。如果未知，可能是 {@link C#LENGTH_UNSET}；如果视频未渲染到表面上，则可能是 0。
      */
-    default void onSurfaceSizeChanged(int width, int height) {}
+    default void onSurfaceSizeChanged(int width, int height) {
+    }
 
     /**
-     * Called when a frame is rendered for the first time since setting the surface, or since the
-     * renderer was reset, or since the stream being rendered was changed.
+     * 当自设置表面以来、自渲染器重置以来或自渲染的流更改以来首次渲染帧时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      */
-    default void onRenderedFirstFrame() {}
+    default void onRenderedFirstFrame() {
+    }
 
     /**
-     * Called when the value of {@link #getCurrentCues()} changes.
+     * 当 {@link #getCurrentCues()} 的值发生变化时调用。
      *
-     * <p>Both this method and {@link #onCues(CueGroup)} are called when there is a change in the
-     * cues. You should only implement one or the other.
+     * <p>当字幕发生变化时，此方法和 {@link #onCues(CueGroup)} 都会被调用。你只需实现其中一个即可。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @deprecated Use {@link #onCues(CueGroup)} instead.
+     * @deprecated 请使用 {@link #onCues(CueGroup)} 代替。
      */
     @Deprecated
     @UnstableApi
-    default void onCues(List<Cue> cues) {}
+    default void onCues(List<Cue> cues) {
+    }
 
     /**
-     * Called when the value of {@link #getCurrentCues()} changes.
+     * 当 {@link #getCurrentCues()} 的值发生变化时调用。
      *
-     * <p>Both this method and {@link #onCues(List)} are called when there is a change in the cues.
-     * You should only implement one or the other.
+     * <p>当字幕发生变化时，此方法和 {@link #onCues(List)} 都会被调用。你只需实现其中一个即可。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      */
-    default void onCues(CueGroup cueGroup) {}
+    default void onCues(CueGroup cueGroup) {
+    }
 
     /**
-     * Called when there is metadata associated with the current playback time.
+     * 当与当前播放时间相关的元数据存在时调用。
      *
-     * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
-     * other events that happen in the same {@link Looper} message queue iteration.
+     * <p>{@link #onEvents(Player, Events)} 也会被调用，以在同一 {@link Looper} 消息队列迭代中报告此事件以及其他事件。
      *
-     * @param metadata The metadata.
+     * @param metadata 元数据。
      */
     @UnstableApi
-    default void onMetadata(Metadata metadata) {}
+    default void onMetadata(Metadata metadata) {
+    }
   }
 
   /**
-   * Playback state. One of {@link #STATE_IDLE}, {@link #STATE_BUFFERING}, {@link #STATE_READY} or
-   * {@link #STATE_ENDED}.
+   * 播放状态。取值为 {@link #STATE_IDLE}、{@link #STATE_BUFFERING}、{@link #STATE_READY} 或 {@link #STATE_ENDED} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与在添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({STATE_IDLE, STATE_BUFFERING, STATE_READY, STATE_ENDED})
-  @interface State {}
+  @interface State {
+  }
 
   /**
-   * The player is idle, meaning it holds only limited resources. The player must be {@link
-   * #prepare() prepared} before it will play the media.
+   * 播放器处于空闲状态，意味着它仅持有有限的资源。播放器必须 {@link #prepare() 准备} 后才能播放媒体。
    */
   int STATE_IDLE = 1;
 
   /**
-   * The player is not able to immediately play the media, but is doing work toward being able to do
-   * so. This state typically occurs when the player needs to buffer more data before playback can
-   * start.
+   * 播放器无法立即播放媒体，但正在为此进行工作。此状态通常发生在播放器需要缓冲更多数据才能开始播放时。
    */
   int STATE_BUFFERING = 2;
 
   /**
-   * The player is able to immediately play from its current position. The player will be playing if
-   * {@link #getPlayWhenReady()} is true, and paused otherwise.
+   * 播放器能够立即从其当前位置播放。如果 {@link #getPlayWhenReady()} 为 true，则播放器将播放，否则将暂停。
    */
   int STATE_READY = 3;
 
-  /** The player has finished playing the media. */
+  /**
+   * 播放器已完成播放媒体。
+   */
   int STATE_ENDED = 4;
 
   /**
-   * Reasons for {@link #getPlayWhenReady() playWhenReady} changes. One of {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST}, {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS}, {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY}, {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_REMOTE}, {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM} or {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG}.
+   * {@link #getPlayWhenReady() playWhenReady} 变化的原因。取值为 {@link #PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST}、{@link #PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS}、{@link #PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY}、{@link #PLAY_WHEN_READY_CHANGE_REASON_REMOTE}、{@link #PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM} 或 {@link #PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与在添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST,
-    PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS,
-    PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY,
-    PLAY_WHEN_READY_CHANGE_REASON_REMOTE,
-    PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM,
-    PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG
+      PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST,
+      PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS,
+      PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY,
+      PLAY_WHEN_READY_CHANGE_REASON_REMOTE,
+      PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM,
+      PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG
   })
-  @interface PlayWhenReadyChangeReason {}
+  @interface PlayWhenReadyChangeReason {
+  }
 
-  /** Playback has been started or paused by a call to {@link #setPlayWhenReady(boolean)}. */
+  /**
+   * 播放已通过调用 {@link #setPlayWhenReady(boolean)} 开始或暂停。
+   */
   int PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST = 1;
 
-  /** Playback has been paused because of a loss of audio focus. */
+  /**
+   * 播放已因音频焦点丢失而暂停。
+   */
   int PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS = 2;
 
-  /** Playback has been paused to avoid becoming noisy. */
+  /**
+   * 播放已为避免变得嘈杂而暂停。
+   */
   int PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY = 3;
 
-  /** Playback has been started or paused because of a remote change. */
+  /**
+   * 播放已因远程更改而开始或暂停。
+   */
   int PLAY_WHEN_READY_CHANGE_REASON_REMOTE = 4;
 
-  /** Playback has been paused at the end of a media item. */
+  /**
+   * 播放已在媒体项结束时暂停。
+   */
   int PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM = 5;
 
   /**
-   * Playback has been paused because playback has been {@linkplain #getPlaybackSuppressionReason()
-   * suppressed} too long.
+   * 播放已因 {@linkplain #getPlaybackSuppressionReason() 被抑制} 时间过长而暂停。
    */
   int PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG = 6;
 
   /**
-   * Reason why playback is suppressed even though {@link #getPlayWhenReady()} is {@code true}. One
-   * of {@link #PLAYBACK_SUPPRESSION_REASON_NONE}, {@link
-   * #PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS}, {@link
-   * #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE} or {@link
-   * #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT}.
+   * 即使 {@link #getPlayWhenReady()} 为 {@code true}，播放仍被抑制的原因。取值为 {@link #PLAYBACK_SUPPRESSION_REASON_NONE}、{@link #PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS}、{@link #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE} 或 {@link #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
-  @SuppressWarnings("deprecation") // Includes deprecated command
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与在添加 TYPE_USE 之前的 Kotlin 用法兼容。
+  @SuppressWarnings("deprecation") // 包括已弃用的命令
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    PLAYBACK_SUPPRESSION_REASON_NONE,
-    PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS,
-    PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE,
-    PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT
+      PLAYBACK_SUPPRESSION_REASON_NONE,
+      PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS,
+      PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE,
+      PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT
   })
-  @interface PlaybackSuppressionReason {}
+  @interface PlaybackSuppressionReason {
+  }
 
-  /** Playback is not suppressed. */
+  /**
+   * 播放未被抑制。
+   */
   int PLAYBACK_SUPPRESSION_REASON_NONE = 0;
 
-  /** Playback is suppressed due to transient audio focus loss. */
+  /**
+   * 播放因短暂的音频焦点丢失而被抑制。
+   */
   int PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS = 1;
 
   /**
-   * @deprecated Use {@link #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT} instead.
+   * @deprecated 请使用 {@link #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT} 代替。
    */
-  @Deprecated int PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE = 2;
+  @Deprecated
+  int PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE = 2;
 
   /**
-   * Playback is suppressed due to attempt to play on an unsuitable audio output (e.g. attempt to
-   * play on built-in speaker on a Wear OS device).
+   * 播放因尝试在不适合的音频输出上播放而被抑制（例如，尝试在 Wear OS 设备的内置扬声器上播放）。
    */
   int PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_OUTPUT = 3;
 
   /**
-   * Repeat modes for playback. One of {@link #REPEAT_MODE_OFF}, {@link #REPEAT_MODE_ONE} or {@link
-   * #REPEAT_MODE_ALL}.
+   * 播放的重复模式。取值为 {@link #REPEAT_MODE_OFF}、{@link #REPEAT_MODE_ONE} 或 {@link #REPEAT_MODE_ALL} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与在添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({REPEAT_MODE_OFF, REPEAT_MODE_ONE, REPEAT_MODE_ALL})
-  @interface RepeatMode {}
+  @interface RepeatMode {
+  }
 
   /**
-   * Normal playback without repetition. "Previous" and "Next" actions move to the previous and next
-   * {@link MediaItem} respectively, and do nothing when there is no previous or next {@link
-   * MediaItem} to move to.
+   * 正常播放，无重复。“上一首”和“下一首”操作分别移动到上一首和下一首 {@link MediaItem}，如果没有上一首或下一首 {@link MediaItem} 可移动，则不执行任何操作。
    */
   int REPEAT_MODE_OFF = 0;
 
   /**
-   * Repeats the currently playing {@link MediaItem} infinitely during ongoing playback. "Previous"
-   * and "Next" actions behave as they do in {@link #REPEAT_MODE_OFF}, moving to the previous and
-   * next {@link MediaItem} respectively, and doing nothing when there is no previous or next {@link
-   * MediaItem} to move to.
+   * 在持续播放期间无限重复当前正在播放的 {@link MediaItem}。“上一首”和“下一首”操作的行为与 {@link #REPEAT_MODE_OFF} 中相同，分别移动到上一首和下一首 {@link MediaItem}，如果没有上一首或下一首 {@link MediaItem} 可移动，则不执行任何操作。
    */
   int REPEAT_MODE_ONE = 1;
 
   /**
-   * Repeats the entire timeline infinitely. "Previous" and "Next" actions behave as they do in
-   * {@link #REPEAT_MODE_OFF}, but with looping at the ends so that "Previous" when playing the
-   * first {@link MediaItem} will move to the last {@link MediaItem}, and "Next" when playing the
-   * last {@link MediaItem} will move to the first {@link MediaItem}.
+   * 无限重复整个时间线。“上一首”和“下一首”操作的行为与 {@link #REPEAT_MODE_OFF} 中相同，但在末尾循环，因此当播放第一个 {@link MediaItem} 时，“上一首”将移动到最后一个 {@link MediaItem}，当播放最后一个 {@link MediaItem} 时，“下一首”将移动到第一个 {@link MediaItem}。
    */
   int REPEAT_MODE_ALL = 2;
 
   /**
-   * Reasons for position discontinuities. One of {@link #DISCONTINUITY_REASON_AUTO_TRANSITION},
-   * {@link #DISCONTINUITY_REASON_SEEK}, {@link #DISCONTINUITY_REASON_SEEK_ADJUSTMENT}, {@link
-   * #DISCONTINUITY_REASON_SKIP}, {@link #DISCONTINUITY_REASON_REMOVE} or {@link
-   * #DISCONTINUITY_REASON_INTERNAL}.
+   * 位置不连续的原因。取值为 {@link #DISCONTINUITY_REASON_AUTO_TRANSITION}、{@link #DISCONTINUITY_REASON_SEEK}、{@link #DISCONTINUITY_REASON_SEEK_ADJUSTMENT}、{@link #DISCONTINUITY_REASON_SKIP}、{@link #DISCONTINUITY_REASON_REMOVE} 或 {@link #DISCONTINUITY_REASON_INTERNAL} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
+// @Target 列表包括 'default' 目标和 TYPE_USE，以确保与在添加 TYPE_USE 之前的 Kotlin 用法兼容。
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    DISCONTINUITY_REASON_AUTO_TRANSITION,
-    DISCONTINUITY_REASON_SEEK,
-    DISCONTINUITY_REASON_SEEK_ADJUSTMENT,
-    DISCONTINUITY_REASON_SKIP,
-    DISCONTINUITY_REASON_REMOVE,
-    DISCONTINUITY_REASON_INTERNAL,
-    DISCONTINUITY_REASON_SILENCE_SKIP
+      DISCONTINUITY_REASON_AUTO_TRANSITION,
+      DISCONTINUITY_REASON_SEEK,
+      DISCONTINUITY_REASON_SEEK_ADJUSTMENT,
+      DISCONTINUITY_REASON_SKIP,
+      DISCONTINUITY_REASON_REMOVE,
+      DISCONTINUITY_REASON_INTERNAL,
+      DISCONTINUITY_REASON_SILENCE_SKIP
   })
-  @interface DiscontinuityReason {}
+  @interface DiscontinuityReason {
+  }
 
   /**
-   * Automatic playback transition from one period in the timeline to the next. The period index may
-   * be the same as it was before the discontinuity in case the current period is repeated.
+   * 从时间轴中的一个时间段自动过渡到下一个时间段。如果当前时间段重复，则时间段索引可能与不连续性之前相同。
    *
-   * <p>This reason also indicates an automatic transition from the content period to an inserted ad
-   * period or vice versa. Or a transition caused by another player (e.g. multiple controllers can
-   * control the same playback on a remote device).
+   * <p>此原因还表示从内容时间段自动过渡到插入的广告时间段，或反之。或者由另一个播放器引起的过渡（例如，多个控制器可以控制远程设备上的同一播放）。
    */
   int DISCONTINUITY_REASON_AUTO_TRANSITION = 0;
 
-  /** Seek within the current period or to another period. */
+  /**
+   * 在当前时间段内或到另一个时间段内的跳转。
+   */
   int DISCONTINUITY_REASON_SEEK = 1;
 
   /**
-   * Seek adjustment due to being unable to seek to the requested position or because the seek was
-   * permitted to be inexact.
+   * 由于无法跳转到请求的位置或因为跳转被允许不精确而进行的跳转调整。
    */
   int DISCONTINUITY_REASON_SEEK_ADJUSTMENT = 2;
 
-  /** Discontinuity introduced by a skipped period (for instance a skipped ad). */
+  /**
+   * 由于跳过一个时间段（例如跳过的广告）引入的不连续性。
+   */
   int DISCONTINUITY_REASON_SKIP = 3;
 
-  /** Discontinuity caused by the removal of the current period from the {@link Timeline}. */
+  /**
+   * 由于从 {@link Timeline} 中移除当前时间段引起的不连续性。
+   */
   int DISCONTINUITY_REASON_REMOVE = 4;
 
-  /** Discontinuity introduced internally (e.g. by the source). */
+  /**
+   * 内部引入的不连续性（例如由源引起）。
+   */
   int DISCONTINUITY_REASON_INTERNAL = 5;
 
-  /** Discontinuity introduced by a skipped silence. */
+  /**
+   * 由于跳过静音引入的不连续性。
+   */
   int DISCONTINUITY_REASON_SILENCE_SKIP = 6;
 
   /**
-   * Reasons for timeline changes. One of {@link #TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED} or {@link
-   * #TIMELINE_CHANGE_REASON_SOURCE_UPDATE}.
+   * 时间轴变化的原因。取 {@link #TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED} 或 {@link #TIMELINE_CHANGE_REASON_SOURCE_UPDATE} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED, TIMELINE_CHANGE_REASON_SOURCE_UPDATE})
-  @interface TimelineChangeReason {}
+  @interface TimelineChangeReason {
+  }
 
-  /** Timeline changed as a result of a change of the playlist items or the order of the items. */
+  /**
+   * 由于播放列表项或项的顺序发生变化而导致的时间轴变化。
+   */
   int TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED = 0;
 
   /**
-   * Timeline changed as a result of a source update (e.g. result of a dynamic update by the played
-   * media).
+   * 由于源更新（例如播放媒体的动态更新结果）而导致的时间轴变化。
    *
-   * <p>This reason also indicates a change caused by another player (e.g. multiple controllers can
-   * control the same playback on the remote device).
+   * <p>此原因还表示由另一个播放器引起的变化（例如，多个控制器可以控制远程设备上的同一播放）。
    */
   int TIMELINE_CHANGE_REASON_SOURCE_UPDATE = 1;
 
   /**
-   * Reasons for media item transitions. One of {@link #MEDIA_ITEM_TRANSITION_REASON_REPEAT}, {@link
-   * #MEDIA_ITEM_TRANSITION_REASON_AUTO}, {@link #MEDIA_ITEM_TRANSITION_REASON_SEEK} or {@link
-   * #MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED}.
+   * 媒体项过渡的原因。取 {@link #MEDIA_ITEM_TRANSITION_REASON_REPEAT}、{@link #MEDIA_ITEM_TRANSITION_REASON_AUTO}、{@link #MEDIA_ITEM_TRANSITION_REASON_SEEK} 或 {@link #MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED} 之一。
    */
-  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
-  // with Kotlin usages from before TYPE_USE was added.
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    MEDIA_ITEM_TRANSITION_REASON_REPEAT,
-    MEDIA_ITEM_TRANSITION_REASON_AUTO,
-    MEDIA_ITEM_TRANSITION_REASON_SEEK,
-    MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
+      MEDIA_ITEM_TRANSITION_REASON_REPEAT,
+      MEDIA_ITEM_TRANSITION_REASON_AUTO,
+      MEDIA_ITEM_TRANSITION_REASON_SEEK,
+      MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
   })
-  @interface MediaItemTransitionReason {}
+  @interface MediaItemTransitionReason {
+  }
 
-  /** The media item has been repeated. */
+  /**
+   * 媒体项已被重复。
+   */
   int MEDIA_ITEM_TRANSITION_REASON_REPEAT = 0;
 
   /**
-   * Playback has automatically transitioned to the next media item.
+   * 播放已自动过渡到下一个媒体项。
    *
-   * <p>This reason also indicates a transition caused by another player (e.g. multiple controllers
-   * can control the same playback on a remote device).
+   * <p>此原因还表示由另一个播放器引起的过渡（例如，多个控制器可以控制远程设备上的同一播放）。
    */
   int MEDIA_ITEM_TRANSITION_REASON_AUTO = 1;
 
-  /** A seek to another media item has occurred. */
+  /**
+   * 发生了跳转到另一个媒体项的操作。
+   */
   int MEDIA_ITEM_TRANSITION_REASON_SEEK = 2;
 
   /**
-   * The current media item has changed because of a change in the playlist. This can either be if
-   * the media item previously being played has been removed, or when the playlist becomes non-empty
-   * after being empty.
+   * 当前媒体项由于播放列表的变化而发生变化。这可能是由于之前正在播放的媒体项被移除，或者播放列表从空变为非空。
    */
   int MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED = 3;
 
   /**
-   * Events that can be reported via {@link Listener#onEvents(Player, Events)}.
+   * 可以通过 {@link Listener#onEvents(Player, Events)} 报告的事件。
    *
    * <p>One of the {@link Player}{@code .EVENT_*} values.
    */
@@ -1468,151 +1406,205 @@ public interface Player {
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    EVENT_TIMELINE_CHANGED,
-    EVENT_MEDIA_ITEM_TRANSITION,
-    EVENT_TRACKS_CHANGED,
-    EVENT_IS_LOADING_CHANGED,
-    EVENT_PLAYBACK_STATE_CHANGED,
-    EVENT_PLAY_WHEN_READY_CHANGED,
-    EVENT_PLAYBACK_SUPPRESSION_REASON_CHANGED,
-    EVENT_IS_PLAYING_CHANGED,
-    EVENT_REPEAT_MODE_CHANGED,
-    EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
-    EVENT_PLAYER_ERROR,
-    EVENT_POSITION_DISCONTINUITY,
-    EVENT_PLAYBACK_PARAMETERS_CHANGED,
-    EVENT_AVAILABLE_COMMANDS_CHANGED,
-    EVENT_MEDIA_METADATA_CHANGED,
-    EVENT_PLAYLIST_METADATA_CHANGED,
-    EVENT_SEEK_BACK_INCREMENT_CHANGED,
-    EVENT_SEEK_FORWARD_INCREMENT_CHANGED,
-    EVENT_MAX_SEEK_TO_PREVIOUS_POSITION_CHANGED,
-    EVENT_TRACK_SELECTION_PARAMETERS_CHANGED,
-    EVENT_AUDIO_ATTRIBUTES_CHANGED,
-    EVENT_AUDIO_SESSION_ID,
-    EVENT_VOLUME_CHANGED,
-    EVENT_SKIP_SILENCE_ENABLED_CHANGED,
-    EVENT_SURFACE_SIZE_CHANGED,
-    EVENT_VIDEO_SIZE_CHANGED,
-    EVENT_RENDERED_FIRST_FRAME,
-    EVENT_CUES,
-    EVENT_METADATA,
-    EVENT_DEVICE_INFO_CHANGED,
-    EVENT_DEVICE_VOLUME_CHANGED
+      EVENT_TIMELINE_CHANGED,
+      EVENT_MEDIA_ITEM_TRANSITION,
+      EVENT_TRACKS_CHANGED,
+      EVENT_IS_LOADING_CHANGED,
+      EVENT_PLAYBACK_STATE_CHANGED,
+      EVENT_PLAY_WHEN_READY_CHANGED,
+      EVENT_PLAYBACK_SUPPRESSION_REASON_CHANGED,
+      EVENT_IS_PLAYING_CHANGED,
+      EVENT_REPEAT_MODE_CHANGED,
+      EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+      EVENT_PLAYER_ERROR,
+      EVENT_POSITION_DISCONTINUITY,
+      EVENT_PLAYBACK_PARAMETERS_CHANGED,
+      EVENT_AVAILABLE_COMMANDS_CHANGED,
+      EVENT_MEDIA_METADATA_CHANGED,
+      EVENT_PLAYLIST_METADATA_CHANGED,
+      EVENT_SEEK_BACK_INCREMENT_CHANGED,
+      EVENT_SEEK_FORWARD_INCREMENT_CHANGED,
+      EVENT_MAX_SEEK_TO_PREVIOUS_POSITION_CHANGED,
+      EVENT_TRACK_SELECTION_PARAMETERS_CHANGED,
+      EVENT_AUDIO_ATTRIBUTES_CHANGED,
+      EVENT_AUDIO_SESSION_ID,
+      EVENT_VOLUME_CHANGED,
+      EVENT_SKIP_SILENCE_ENABLED_CHANGED,
+      EVENT_SURFACE_SIZE_CHANGED,
+      EVENT_VIDEO_SIZE_CHANGED,
+      EVENT_RENDERED_FIRST_FRAME,
+      EVENT_CUES,
+      EVENT_METADATA,
+      EVENT_DEVICE_INFO_CHANGED,
+      EVENT_DEVICE_VOLUME_CHANGED
   })
-  @interface Event {}
+  @interface Event {
 
-  /** {@link #getCurrentTimeline()} changed. */
+  }
+
+  /**
+   * {@link #getCurrentTimeline()} 发生变化。
+   */
   int EVENT_TIMELINE_CHANGED = 0;
 
-  /** {@link #getCurrentMediaItem()} changed or the player started repeating the current item. */
+  /**
+   * {@link #getCurrentMediaItem()} 发生变化，或者播放器开始重复当前项。
+   */
   int EVENT_MEDIA_ITEM_TRANSITION = 1;
 
-  /** {@link #getCurrentTracks()} changed. */
+  /**
+   * {@link #getCurrentTracks()} 发生变化。
+   */
   int EVENT_TRACKS_CHANGED = 2;
 
-  /** {@link #isLoading()} ()} changed. */
+  /**
+   * {@link #isLoading()} 发生变化。
+   */
   int EVENT_IS_LOADING_CHANGED = 3;
 
-  /** {@link #getPlaybackState()} changed. */
+  /**
+   * {@link #getPlaybackState()} 发生变化。
+   */
   int EVENT_PLAYBACK_STATE_CHANGED = 4;
 
-  /** {@link #getPlayWhenReady()} changed. */
+  /**
+   * {@link #getPlayWhenReady()} 发生变化。
+   */
   int EVENT_PLAY_WHEN_READY_CHANGED = 5;
 
-  /** {@link #getPlaybackSuppressionReason()} changed. */
+  /**
+   * {@link #getPlaybackSuppressionReason()} 发生变化。
+   */
   int EVENT_PLAYBACK_SUPPRESSION_REASON_CHANGED = 6;
 
-  /** {@link #isPlaying()} changed. */
+  /**
+   * {@link #isPlaying()} 发生变化。
+   */
   int EVENT_IS_PLAYING_CHANGED = 7;
 
-  /** {@link #getRepeatMode()} changed. */
+  /**
+   * {@link #getRepeatMode()} 发生变化。
+   */
   int EVENT_REPEAT_MODE_CHANGED = 8;
 
-  /** {@link #getShuffleModeEnabled()} changed. */
+  /**
+   * {@link #getShuffleModeEnabled()} 发生变化。
+   */
   int EVENT_SHUFFLE_MODE_ENABLED_CHANGED = 9;
 
-  /** {@link #getPlayerError()} changed. */
+  /**
+   * {@link #getPlayerError()} 发生变化。
+   */
   int EVENT_PLAYER_ERROR = 10;
 
   /**
-   * A position discontinuity occurred. See {@link Listener#onPositionDiscontinuity(PositionInfo,
-   * PositionInfo, int)}.
+   * 发生了位置不连续性。参见 {@link Listener#onPositionDiscontinuity(PositionInfo, PositionInfo, int)}。
    */
   int EVENT_POSITION_DISCONTINUITY = 11;
 
-  /** {@link #getPlaybackParameters()} changed. */
+  /**
+   * {@link #getPlaybackParameters()} 发生变化。
+   */
   int EVENT_PLAYBACK_PARAMETERS_CHANGED = 12;
 
-  /** {@link #isCommandAvailable(int)} changed for at least one {@link Command}. */
+  /**
+   * {@link #isCommandAvailable(int)} 对至少一个 {@link Command} 发生变化。
+   */
   int EVENT_AVAILABLE_COMMANDS_CHANGED = 13;
 
-  /** {@link #getMediaMetadata()} changed. */
+  /**
+   * {@link #getMediaMetadata()} 发生变化。
+   */
   int EVENT_MEDIA_METADATA_CHANGED = 14;
 
-  /** {@link #getPlaylistMetadata()} changed. */
+  /**
+   * {@link #getPlaylistMetadata()} 发生变化。
+   */
   int EVENT_PLAYLIST_METADATA_CHANGED = 15;
 
-  /** {@link #getSeekBackIncrement()} changed. */
+  /**
+   * {@link #getSeekBackIncrement()} 发生变化。
+   */
   int EVENT_SEEK_BACK_INCREMENT_CHANGED = 16;
 
-  /** {@link #getSeekForwardIncrement()} changed. */
+  /**
+   * {@link #getSeekForwardIncrement()} 发生变化。
+   */
   int EVENT_SEEK_FORWARD_INCREMENT_CHANGED = 17;
 
-  /** {@link #getMaxSeekToPreviousPosition()} changed. */
+  /**
+   * {@link #getMaxSeekToPreviousPosition()} 发生变化。
+   */
   int EVENT_MAX_SEEK_TO_PREVIOUS_POSITION_CHANGED = 18;
 
-  /** {@link #getTrackSelectionParameters()} changed. */
+  /**
+   * {@link #getTrackSelectionParameters()} 发生变化。
+   */
   int EVENT_TRACK_SELECTION_PARAMETERS_CHANGED = 19;
 
-  /** {@link #getAudioAttributes()} changed. */
+  /**
+   * {@link #getAudioAttributes()} 发生变化。
+   */
   int EVENT_AUDIO_ATTRIBUTES_CHANGED = 20;
 
-  /** The audio session id was set. */
+  /**
+   * 音频会话 ID 被设置。
+   */
   int EVENT_AUDIO_SESSION_ID = 21;
 
-  /** {@link #getVolume()} changed. */
+  /**
+   * {@link #getVolume()} 发生变化。
+   */
   int EVENT_VOLUME_CHANGED = 22;
 
-  /** Skipping silences in the audio stream is enabled or disabled. */
+  /**
+   * 音频流中的静音跳过功能被启用或禁用。
+   */
   int EVENT_SKIP_SILENCE_ENABLED_CHANGED = 23;
 
-  /** The size of the surface onto which the video is being rendered changed. */
+  /**
+   * 渲染视频的表面的尺寸发生变化。
+   */
   int EVENT_SURFACE_SIZE_CHANGED = 24;
 
-  /** {@link #getVideoSize()} changed. */
+  /**
+   * {@link #getVideoSize()} 发生变化。
+   */
   int EVENT_VIDEO_SIZE_CHANGED = 25;
 
   /**
-   * A frame is rendered for the first time since setting the surface, or since the renderer was
-   * reset, or since the stream being rendered was changed.
+   * 自设置表面、渲染器重置或渲染的流发生变化以来，首次渲染了一帧。
    */
   int EVENT_RENDERED_FIRST_FRAME = 26;
 
-  /** {@link #getCurrentCues()} changed. */
+  /**
+   * {@link #getCurrentCues()} 发生变化。
+   */
   int EVENT_CUES = 27;
 
-  /** Metadata associated with the current playback time changed. */
+  /**
+   * 与当前播放时间相关的元数据发生变化。
+   */
   int EVENT_METADATA = 28;
 
-  /** {@link #getDeviceInfo()} changed. */
+  /**
+   * {@link #getDeviceInfo()} 发生变化。
+   */
   int EVENT_DEVICE_INFO_CHANGED = 29;
 
-  /** {@link #getDeviceVolume()} changed. */
+  /**
+   * {@link #getDeviceVolume()} 发生变化。
+   */
   int EVENT_DEVICE_VOLUME_CHANGED = 30;
 
   /**
-   * Commands that indicate which method calls are currently permitted on a particular {@code
-   * Player} instance.
+   * 指示在特定 {@code Player} 实例上当前允许调用哪些方法的命令。
    *
-   * <p>The currently available commands can be inspected with {@link #getAvailableCommands()} and
-   * {@link #isCommandAvailable(int)}.
+   * <p>可以通过 {@link #getAvailableCommands()} 和 {@link #isCommandAvailable(int)} 检查当前可用的命令。
    *
-   * <p>See the documentation of each command constant for the details of which methods it permits
-   * calling.
+   * <p>请参阅每个命令常量的文档，了解它允许调用哪些方法的具体细节。
    *
-   * <p>One of the following values:
-   *
+   * <p>取以下值之一：
    * <ul>
    *   <li>{@link #COMMAND_PLAY_PAUSE}
    *   <li>{@link #COMMAND_PREPARE}
@@ -1658,52 +1650,53 @@ public interface Player {
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
-    COMMAND_INVALID,
-    COMMAND_PLAY_PAUSE,
-    COMMAND_PREPARE,
-    COMMAND_STOP,
-    COMMAND_SEEK_TO_DEFAULT_POSITION,
-    COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM,
-    COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
-    COMMAND_SEEK_TO_PREVIOUS,
-    COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
-    COMMAND_SEEK_TO_NEXT,
-    COMMAND_SEEK_TO_MEDIA_ITEM,
-    COMMAND_SEEK_BACK,
-    COMMAND_SEEK_FORWARD,
-    COMMAND_SET_SPEED_AND_PITCH,
-    COMMAND_SET_SHUFFLE_MODE,
-    COMMAND_SET_REPEAT_MODE,
-    COMMAND_GET_CURRENT_MEDIA_ITEM,
-    COMMAND_GET_TIMELINE,
-    COMMAND_GET_MEDIA_ITEMS_METADATA,
-    COMMAND_GET_METADATA,
-    COMMAND_SET_MEDIA_ITEMS_METADATA,
-    COMMAND_SET_PLAYLIST_METADATA,
-    COMMAND_SET_MEDIA_ITEM,
-    COMMAND_CHANGE_MEDIA_ITEMS,
-    COMMAND_GET_AUDIO_ATTRIBUTES,
-    COMMAND_GET_VOLUME,
-    COMMAND_GET_DEVICE_VOLUME,
-    COMMAND_SET_VOLUME,
-    COMMAND_SET_DEVICE_VOLUME,
-    COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
-    COMMAND_ADJUST_DEVICE_VOLUME,
-    COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
-    COMMAND_SET_AUDIO_ATTRIBUTES,
-    COMMAND_SET_VIDEO_SURFACE,
-    COMMAND_GET_TEXT,
-    COMMAND_SET_TRACK_SELECTION_PARAMETERS,
-    COMMAND_GET_TRACKS,
-    COMMAND_RELEASE,
+      COMMAND_INVALID,
+      COMMAND_PLAY_PAUSE,
+      COMMAND_PREPARE,
+      COMMAND_STOP,
+      COMMAND_SEEK_TO_DEFAULT_POSITION,
+      COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM,
+      COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+      COMMAND_SEEK_TO_PREVIOUS,
+      COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+      COMMAND_SEEK_TO_NEXT,
+      COMMAND_SEEK_TO_MEDIA_ITEM,
+      COMMAND_SEEK_BACK,
+      COMMAND_SEEK_FORWARD,
+      COMMAND_SET_SPEED_AND_PITCH,
+      COMMAND_SET_SHUFFLE_MODE,
+      COMMAND_SET_REPEAT_MODE,
+      COMMAND_GET_CURRENT_MEDIA_ITEM,
+      COMMAND_GET_TIMELINE,
+      COMMAND_GET_MEDIA_ITEMS_METADATA,
+      COMMAND_GET_METADATA,
+      COMMAND_SET_MEDIA_ITEMS_METADATA,
+      COMMAND_SET_PLAYLIST_METADATA,
+      COMMAND_SET_MEDIA_ITEM,
+      COMMAND_CHANGE_MEDIA_ITEMS,
+      COMMAND_GET_AUDIO_ATTRIBUTES,
+      COMMAND_GET_VOLUME,
+      COMMAND_GET_DEVICE_VOLUME,
+      COMMAND_SET_VOLUME,
+      COMMAND_SET_DEVICE_VOLUME,
+      COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
+      COMMAND_ADJUST_DEVICE_VOLUME,
+      COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
+      COMMAND_SET_AUDIO_ATTRIBUTES,
+      COMMAND_SET_VIDEO_SURFACE,
+      COMMAND_GET_TEXT,
+      COMMAND_SET_TRACK_SELECTION_PARAMETERS,
+      COMMAND_GET_TRACKS,
+      COMMAND_RELEASE,
   })
-  @interface Command {}
+  @interface Command {
+
+  }
 
   /**
-   * Command to start, pause or resume playback.
+   * 用于启动、暂停或恢复播放的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #play()}
@@ -1714,92 +1707,86 @@ public interface Player {
   int COMMAND_PLAY_PAUSE = 1;
 
   /**
-   * Command to prepare the player.
+   * 用于准备播放器的命令。
    *
-   * <p>The {@link #prepare()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #prepare()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_PREPARE = 2;
 
   /**
-   * Command to stop playback.
+   * 用于停止播放的命令。
    *
-   * <p>The {@link #stop()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #stop()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_STOP = 3;
 
   /**
-   * Command to seek to the default position of the current {@link MediaItem}.
+   * 用于跳转到当前 {@link MediaItem} 默认位置的命令。
    *
-   * <p>The {@link #seekToDefaultPosition()} method must only be called if this command is
-   * {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #seekToDefaultPosition()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_TO_DEFAULT_POSITION = 4;
 
   /**
-   * Command to seek anywhere inside the current {@link MediaItem}.
+   * 用于在当前 {@link MediaItem} 内任意位置跳转的命令。
    *
-   * <p>The {@link #seekTo(long)} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #seekTo(long)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM = 5;
 
   /**
-   * @deprecated Use {@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM} instead.
+   * @deprecated 请使用 {@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM} 代替。
    */
-  @UnstableApi @Deprecated int COMMAND_SEEK_IN_CURRENT_WINDOW = COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM;
+  @UnstableApi
+  @Deprecated
+  int COMMAND_SEEK_IN_CURRENT_WINDOW = COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM;
 
   /**
-   * Command to seek to the default position of the previous {@link MediaItem}.
+   * 用于跳转到上一个 {@link MediaItem} 默认位置的命令。
    *
-   * <p>The {@link #seekToPreviousMediaItem()} method must only be called if this command is
-   * {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #seekToPreviousMediaItem()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM = 6;
 
   /**
-   * @deprecated Use {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} instead.
+   * @deprecated 请使用 {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} 代替。
    */
-  @UnstableApi @Deprecated
+  @UnstableApi
+  @Deprecated
   int COMMAND_SEEK_TO_PREVIOUS_WINDOW = COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM;
 
   /**
-   * Command to seek to an earlier position in the current {@link MediaItem} or the default position
-   * of the previous {@link MediaItem}.
+   * 用于跳转到当前 {@link MediaItem} 的较早位置或上一个 {@link MediaItem} 默认位置的命令。
    *
-   * <p>The {@link #seekToPrevious()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #seekToPrevious()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_TO_PREVIOUS = 7;
 
   /**
-   * Command to seek to the default position of the next {@link MediaItem}.
+   * 用于跳转到下一个 {@link MediaItem} 默认位置的命令。
    *
-   * <p>The {@link #seekToNextMediaItem()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #seekToNextMediaItem()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_TO_NEXT_MEDIA_ITEM = 8;
 
   /**
-   * @deprecated Use {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} instead.
+   * @deprecated 请使用 {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} 代替。
    */
-  @UnstableApi @Deprecated int COMMAND_SEEK_TO_NEXT_WINDOW = COMMAND_SEEK_TO_NEXT_MEDIA_ITEM;
+  @UnstableApi
+  @Deprecated
+  int COMMAND_SEEK_TO_NEXT_WINDOW = COMMAND_SEEK_TO_NEXT_MEDIA_ITEM;
 
   /**
-   * Command to seek to a later position in the current {@link MediaItem} or the default position of
-   * the next {@link MediaItem}.
+   * 用于跳转到当前 {@link MediaItem} 的较晚位置或下一个 {@link MediaItem} 默认位置的命令。
    *
-   * <p>The {@link #seekToNext()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #seekToNext()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_TO_NEXT = 9;
 
   /**
-   * Command to seek anywhere in any {@link MediaItem}.
+   * 用于在任何 {@link MediaItem} 中任意位置跳转的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #seekTo(int, long)}
@@ -1809,31 +1796,30 @@ public interface Player {
   int COMMAND_SEEK_TO_MEDIA_ITEM = 10;
 
   /**
-   * @deprecated Use {@link #COMMAND_SEEK_TO_MEDIA_ITEM} instead.
+   * @deprecated 请使用 {@link #COMMAND_SEEK_TO_MEDIA_ITEM} 代替。
    */
-  @UnstableApi @Deprecated int COMMAND_SEEK_TO_WINDOW = COMMAND_SEEK_TO_MEDIA_ITEM;
+  @UnstableApi
+  @Deprecated
+  int COMMAND_SEEK_TO_WINDOW = COMMAND_SEEK_TO_MEDIA_ITEM;
 
   /**
-   * Command to seek back by a fixed increment inside the current {@link MediaItem}.
+   * 用于在当前 {@link MediaItem} 内向后跳转固定增量的命令。
    *
-   * <p>The {@link #seekBack()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #seekBack()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_BACK = 11;
 
   /**
-   * Command to seek forward by a fixed increment inside the current {@link MediaItem}.
+   * 用于在当前 {@link MediaItem} 内向前跳转固定增量的命令。
    *
-   * <p>The {@link #seekForward()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #seekForward()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SEEK_FORWARD = 12;
 
   /**
-   * Command to set the playback speed and pitch.
+   * 用于设置播放速度和音调的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #setPlaybackParameters(PlaybackParameters)}
@@ -1843,26 +1829,23 @@ public interface Player {
   int COMMAND_SET_SPEED_AND_PITCH = 13;
 
   /**
-   * Command to enable shuffling.
+   * 用于启用随机播放的命令。
    *
-   * <p>The {@link #setShuffleModeEnabled(boolean)} method must only be called if this command is
-   * {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #setShuffleModeEnabled(boolean)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_SHUFFLE_MODE = 14;
 
   /**
-   * Command to set the repeat mode.
+   * 用于设置重复模式的命令。
    *
-   * <p>The {@link #setRepeatMode(int)} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #setRepeatMode(int)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_REPEAT_MODE = 15;
 
   /**
-   * Command to get information about the currently playing {@link MediaItem}.
+   * 用于获取当前播放的 {@link MediaItem} 信息的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #getCurrentMediaItem()}
@@ -1885,10 +1868,9 @@ public interface Player {
   int COMMAND_GET_CURRENT_MEDIA_ITEM = 16;
 
   /**
-   * Command to get the information about the current timeline.
+   * 用于获取当前时间轴信息的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #getCurrentTimeline()}
@@ -1905,15 +1887,15 @@ public interface Player {
   int COMMAND_GET_TIMELINE = 17;
 
   /**
-   * @deprecated Use {@link #COMMAND_GET_METADATA} instead.
+   * @deprecated 请使用 {@link #COMMAND_GET_METADATA} 代替。
    */
-  @Deprecated int COMMAND_GET_MEDIA_ITEMS_METADATA = 18;
+  @Deprecated
+  int COMMAND_GET_MEDIA_ITEMS_METADATA = 18;
 
   /**
-   * Command to get metadata related to the playlist and current {@link MediaItem}.
+   * 用于获取播放列表和当前 {@link MediaItem} 相关元数据的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #getMediaMetadata()}
@@ -1923,23 +1905,22 @@ public interface Player {
   int COMMAND_GET_METADATA = 18;
 
   /**
-   * @deprecated Use {@link #COMMAND_SET_PLAYLIST_METADATA} instead.
+   * @deprecated 请使用 {@link #COMMAND_SET_PLAYLIST_METADATA} 代替。
    */
-  @Deprecated int COMMAND_SET_MEDIA_ITEMS_METADATA = 19;
+  @Deprecated
+  int COMMAND_SET_MEDIA_ITEMS_METADATA = 19;
 
   /**
-   * Command to set the playlist metadata.
+   * 用于设置播放列表元数据的命令。
    *
-   * <p>The {@link #setPlaylistMetadata(MediaMetadata)} method must only be called if this command
-   * is {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #setPlaylistMetadata(MediaMetadata)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_PLAYLIST_METADATA = 19;
 
   /**
-   * Command to set a {@link MediaItem}.
+   * 用于设置 {@link MediaItem} 的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #setMediaItem(MediaItem)}
@@ -1950,10 +1931,9 @@ public interface Player {
   int COMMAND_SET_MEDIA_ITEM = 31;
 
   /**
-   * Command to change the {@linkplain MediaItem media items} in the playlist.
+   * 用于更改播放列表中 {@linkplain MediaItem 媒体项} 的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #addMediaItem(MediaItem)}
@@ -1975,26 +1955,23 @@ public interface Player {
   int COMMAND_CHANGE_MEDIA_ITEMS = 20;
 
   /**
-   * Command to get the player current {@link AudioAttributes}.
+   * 用于获取播放器当前 {@link AudioAttributes} 的命令。
    *
-   * <p>The {@link #getAudioAttributes()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #getAudioAttributes()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_GET_AUDIO_ATTRIBUTES = 21;
 
   /**
-   * Command to get the player volume.
+   * 用于获取播放器音量的命令。
    *
-   * <p>The {@link #getVolume()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #getVolume()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_GET_VOLUME = 22;
 
   /**
-   * Command to get the device volume and whether it is muted.
+   * 用于获取设备音量及是否静音的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #getDeviceVolume()}
@@ -2004,36 +1981,35 @@ public interface Player {
   int COMMAND_GET_DEVICE_VOLUME = 23;
 
   /**
-   * Command to set the player volume.
+   * 用于设置播放器音量的命令。
    *
-   * <p>The {@link #setVolume(float)} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #setVolume(float)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_VOLUME = 24;
 
   /**
-   * @deprecated Use {@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} instead.
+   * @deprecated 请使用 {@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} 代替。
    */
-  @Deprecated int COMMAND_SET_DEVICE_VOLUME = 25;
+  @Deprecated
+  int COMMAND_SET_DEVICE_VOLUME = 25;
 
   /**
-   * Command to set the device volume with volume flags.
+   * 用于设置设备音量及音量标志的命令。
    *
-   * <p>The {@link #setDeviceVolume(int, int)} method must only be called if this command is
-   * {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #setDeviceVolume(int, int)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS = 33;
 
   /**
-   * @deprecated Use {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} instead.
+   * @deprecated 请使用 {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} 代替。
    */
-  @Deprecated int COMMAND_ADJUST_DEVICE_VOLUME = 26;
+  @Deprecated
+  int COMMAND_ADJUST_DEVICE_VOLUME = 26;
 
   /**
-   * Command to increase and decrease the device volume and mute it with volume flags.
+   * 用于增加、减少设备音量及静音操作的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #increaseDeviceVolume(int)}
@@ -2044,18 +2020,16 @@ public interface Player {
   int COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS = 34;
 
   /**
-   * Command to set the player's audio attributes.
+   * 用于设置播放器音频属性的命令。
    *
-   * <p>The {@link #setAudioAttributes(AudioAttributes, boolean)} method must only be called if this
-   * command is {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #setAudioAttributes(AudioAttributes, boolean)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_AUDIO_ATTRIBUTES = 35;
 
   /**
-   * Command to set and clear the surface on which to render the video.
+   * 用于设置和清除视频渲染表面的命令。
    *
-   * <p>The following methods must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}:
+   * <p>以下方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用：
    *
    * <ul>
    *   <li>{@link #setVideoSurface(Surface)}
@@ -2070,785 +2044,649 @@ public interface Player {
   int COMMAND_SET_VIDEO_SURFACE = 27;
 
   /**
-   * Command to get the text that should currently be displayed by the player.
+   * 用于获取当前应显示的文本的命令。
    *
-   * <p>The {@link #getCurrentCues()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #getCurrentCues()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_GET_TEXT = 28;
 
   /**
-   * Command to set the player's track selection parameters.
+   * 用于设置播放器轨道选择参数的命令。
    *
-   * <p>The {@link #setTrackSelectionParameters(TrackSelectionParameters)} method must only be
-   * called if this command is {@linkplain #isCommandAvailable(int) available}.
+   * <p>{@link #setTrackSelectionParameters(TrackSelectionParameters)} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_SET_TRACK_SELECTION_PARAMETERS = 29;
 
   /**
-   * Command to get details of the current track selection.
+   * 用于获取当前轨道选择详情的命令。
    *
-   * <p>The {@link #getCurrentTracks()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #getCurrentTracks()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_GET_TRACKS = 30;
 
   /**
-   * Command to release the player.
+   * 用于释放播放器的命令。
    *
-   * <p>The {@link #release()} method must only be called if this command is {@linkplain
-   * #isCommandAvailable(int) available}.
+   * <p>{@link #release()} 方法必须仅在此命令 {@linkplain #isCommandAvailable(int) 可用} 时调用。
    */
   int COMMAND_RELEASE = 32;
 
-  /** Represents an invalid {@link Command}. */
+  /**
+   * 表示无效的 {@link Command}。
+   */
   int COMMAND_INVALID = -1;
 
   /**
-   * Returns the {@link Looper} associated with the application thread that's used to access the
-   * player and on which player events are received.
+   * 返回与用于访问播放器并接收播放器事件的应用线程关联的 {@link Looper}。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    */
   Looper getApplicationLooper();
 
   /**
-   * Registers a listener to receive all events from the player.
+   * 注册一个监听器以接收来自播放器的所有事件。
    *
-   * <p>The listener's methods will be called on the thread associated with {@link
-   * #getApplicationLooper()}.
+   * <p>监听器的方法将在与 {@link #getApplicationLooper()} 关联的线程上调用。
    *
-   * <p>This method can be called from any thread.
+   * <p>此方法可以从任何线程调用。
    *
-   * @param listener The listener to register.
+   * @param listener 要注册的监听器。
    */
   void addListener(Listener listener);
 
   /**
-   * Unregister a listener registered through {@link #addListener(Listener)}. The listener will no
-   * longer receive events.
+   * 注销通过 {@link #addListener(Listener)} 注册的监听器。监听器将不再接收事件。
    *
-   * @param listener The listener to unregister.
+   * @param listener 要注销的监听器。
    */
   void removeListener(Listener listener);
 
   /**
-   * Clears the playlist, adds the specified {@linkplain MediaItem media items} and resets the
-   * position to the default position.
+   * 清除播放列表，添加指定的 {@linkplain MediaItem 媒体项}，并将位置重置为默认位置。
    *
-   * <p>To replace a span of media items (possibly seamlessly) without clearing the playlist, use
-   * {@link #replaceMediaItems}.
+   * <p>要替换播放列表中的一部分媒体项（可能无缝地）而不清除播放列表，请使用 {@link #replaceMediaItems}。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItems The new {@linkplain MediaItem media items}.
+   * @param mediaItems 新的 {@linkplain MediaItem 媒体项}。
    */
   void setMediaItems(List<MediaItem> mediaItems);
 
   /**
-   * Clears the playlist and adds the specified {@linkplain MediaItem media items}.
+   * 清除播放列表并添加指定的 {@linkplain MediaItem 媒体项}。
    *
-   * <p>To replace a span of media items (possibly seamlessly) without clearing the playlist, use
-   * {@link #replaceMediaItems}.
+   * <p>要替换播放列表中的一部分媒体项（可能无缝地）而不清除播放列表，请使用 {@link #replaceMediaItems}。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItems The new {@linkplain MediaItem media items}.
-   * @param resetPosition Whether the playback position should be reset to the default position in
-   *     the first {@link Timeline.Window}. If false, playback will start from the position defined
-   *     by {@link #getCurrentMediaItemIndex()} and {@link #getCurrentPosition()}.
+   * @param mediaItems    新的 {@linkplain MediaItem 媒体项}。
+   * @param resetPosition 是否将播放位置重置为第一个 {@link Timeline.Window} 中的默认位置。如果为 false，播放将从 {@link #getCurrentMediaItemIndex()} 和 {@link #getCurrentPosition()} 定义的位置开始。
    */
   void setMediaItems(List<MediaItem> mediaItems, boolean resetPosition);
 
   /**
-   * Clears the playlist and adds the specified {@linkplain MediaItem media items}.
+   * 清除播放列表并添加指定的 {@linkplain MediaItem 媒体项}。
    *
-   * <p>To replace a span of media items (possibly seamlessly) without clearing the playlist, use
-   * {@link #replaceMediaItems}.
+   * <p>要替换播放列表中的一部分媒体项（可能无缝地）而不清除播放列表，请使用 {@link #replaceMediaItems}。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItems The new {@linkplain MediaItem media items}.
-   * @param startIndex The {@link MediaItem} index to start playback from. If {@link C#INDEX_UNSET}
-   *     is passed, the current position is not reset.
-   * @param startPositionMs The position in milliseconds to start playback from. If {@link
-   *     C#TIME_UNSET} is passed, the default position of the given {@link MediaItem} is used. In
-   *     any case, if {@code startIndex} is set to {@link C#INDEX_UNSET}, this parameter is ignored
-   *     and the position is not reset at all.
-   * @throws IllegalSeekPositionException If the provided {@code startIndex} is not within the
-   *     bounds of the list of media items.
+   * @param mediaItems      新的 {@linkplain MediaItem 媒体项}。
+   * @param startIndex      开始播放的 {@link MediaItem} 索引。如果传递 {@link C#INDEX_UNSET}，则不会重置当前位置。
+   * @param startPositionMs 开始播放的位置（以毫秒为单位）。如果传递 {@link C#TIME_UNSET}，则使用给定 {@link MediaItem} 的默认位置。无论如何，如果 {@code startIndex} 设置为 {@link C#INDEX_UNSET}，则忽略此参数，并且不会重置位置。
+   * @throws IllegalSeekPositionException 如果提供的 {@code startIndex} 不在媒体项列表的范围内。
    */
   void setMediaItems(List<MediaItem> mediaItems, int startIndex, long startPositionMs);
 
   /**
-   * Clears the playlist, adds the specified {@link MediaItem} and resets the position to the
-   * default position.
+   * 清除播放列表，添加指定的 {@link MediaItem}，并将位置重置为默认位置。
    *
-   * <p>To replace a media item (possibly seamlessly) without clearing the playlist, use {@link
-   * #replaceMediaItem}.
+   * <p>要替换播放列表中的一个媒体项（可能无缝地）而不清除播放列表，请使用 {@link #replaceMediaItem}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItem The new {@link MediaItem}.
+   * @param mediaItem 新的 {@link MediaItem}。
    */
   void setMediaItem(MediaItem mediaItem);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaItem}.
+   * 清除播放列表并添加指定的 {@link MediaItem}。
    *
-   * <p>To replace a media item (possibly seamlessly) without clearing the playlist, use {@link
-   * #replaceMediaItem}.
+   * <p>要替换播放列表中的一个媒体项（可能无缝地）而不清除播放列表，请使用 {@link #replaceMediaItem}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItem The new {@link MediaItem}.
-   * @param startPositionMs The position in milliseconds to start playback from. If {@link
-   *     C#TIME_UNSET} is passed, the default position of the given {@link MediaItem} is used.
+   * @param mediaItem       新的 {@link MediaItem}。
+   * @param startPositionMs 开始播放的位置（以毫秒为单位）。如果传递 {@link C#TIME_UNSET}，则使用给定 {@link MediaItem} 的默认位置。
    */
   void setMediaItem(MediaItem mediaItem, long startPositionMs);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaItem}.
+   * 清除播放列表并添加指定的 {@link MediaItem}。
    *
-   * <p>To replace a media item (possibly seamlessly) without clearing the playlist, use {@link
-   * #replaceMediaItem}.
+   * <p>要替换播放列表中的一个媒体项（可能无缝地）而不清除播放列表，请使用 {@link #replaceMediaItem}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItem The new {@link MediaItem}.
-   * @param resetPosition Whether the playback position should be reset to the default position. If
-   *     false, playback will start from the position defined by {@link #getCurrentMediaItemIndex()}
-   *     and {@link #getCurrentPosition()}.
+   * @param mediaItem     新的 {@link MediaItem}。
+   * @param resetPosition 是否将播放位置重置为默认位置。如果为 false，播放将从 {@link #getCurrentMediaItemIndex()} 和 {@link #getCurrentPosition()} 定义的位置开始。
    */
   void setMediaItem(MediaItem mediaItem, boolean resetPosition);
 
   /**
-   * Adds a media item to the end of the playlist.
+   * 将一个媒体项添加到播放列表的末尾。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItem The {@link MediaItem} to add.
+   * @param mediaItem 要添加的 {@link MediaItem}。
    */
   void addMediaItem(MediaItem mediaItem);
 
   /**
-   * Adds a media item at the given index of the playlist.
+   * 将一个媒体项添加到播放列表的指定索引处。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param index The index at which to add the media item. If the index is larger than the size of
-   *     the playlist, the media item is added to the end of the playlist.
-   * @param mediaItem The {@link MediaItem} to add.
+   * @param index     要添加媒体项的索引。如果索引大于播放列表的大小，则将媒体项添加到播放列表的末尾。
+   * @param mediaItem 要添加的 {@link MediaItem}。
    */
   void addMediaItem(int index, MediaItem mediaItem);
 
   /**
-   * Adds a list of media items to the end of the playlist.
+   * 将一组媒体项添加到播放列表的末尾。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItems The {@linkplain MediaItem media items} to add.
+   * @param mediaItems 要添加的 {@linkplain MediaItem 媒体项}。
    */
   void addMediaItems(List<MediaItem> mediaItems);
 
   /**
-   * Adds a list of media items at the given index of the playlist.
+   * 将一组媒体项添加到播放列表的指定索引处。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param index The index at which to add the media items. If the index is larger than the size of
-   *     the playlist, the media items are added to the end of the playlist.
-   * @param mediaItems The {@linkplain MediaItem media items} to add.
+   * @param index      要添加媒体项的索引。如果索引大于播放列表的大小，则将媒体项添加到播放列表的末尾。
+   * @param mediaItems 要添加的 {@linkplain MediaItem 媒体项}。
    */
   void addMediaItems(int index, List<MediaItem> mediaItems);
 
   /**
-   * Moves the media item at the current index to the new index.
+   * 将播放列表中指定索引处的媒体项移动到新索引处。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param currentIndex The current index of the media item to move. If the index is larger than
-   *     the size of the playlist, the request is ignored.
-   * @param newIndex The new index of the media item. If the new index is larger than the size of
-   *     the playlist the item is moved to the end of the playlist.
+   * @param currentIndex 要移动的媒体项的当前索引。如果索引大于播放列表的大小，则忽略该请求。
+   * @param newIndex     媒体项的新索引。如果新索引大于播放列表的大小，则将媒体项移动到播放列表的末尾。
    */
   void moveMediaItem(int currentIndex, int newIndex);
 
   /**
-   * Moves the media item range to the new index.
+   * 将播放列表中指定范围的媒体项移动到新索引处。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param fromIndex The start of the range to move. If the index is larger than the size of the
-   *     playlist, the request is ignored.
-   * @param toIndex The first item not to be included in the range (exclusive). If the index is
-   *     larger than the size of the playlist, items up to the end of the playlist are moved.
-   * @param newIndex The new index of the first media item of the range. If the new index is larger
-   *     than the size of the remaining playlist after removing the range, the range is moved to the
-   *     end of the playlist.
+   * @param fromIndex 要移动范围的起始索引。如果索引大于播放列表的大小，则忽略该请求。
+   * @param toIndex   要移动范围的结束索引（不包含）。如果索引大于播放列表的大小，则移动范围到播放列表的末尾。
+   * @param newIndex  范围中第一个媒体项的新索引。如果新索引大于移除范围后剩余播放列表的大小，则将范围移动到播放列表的末尾。
    */
   void moveMediaItems(int fromIndex, int toIndex, int newIndex);
 
   /**
-   * Replaces the media item at the given index of the playlist.
+   * 替换播放列表中指定索引处的媒体项。
    *
-   * <p>Implementations of this method may attempt to seamlessly continue playback if the currently
-   * playing media item is replaced with a compatible one (e.g. same URL, only metadata has
-   * changed).
+   * <p>此方法的实现可能会尝试无缝继续播放，如果当前正在播放的媒体项被替换为兼容的媒体项（例如相同的 URL，仅元数据发生变化）。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param index The index at which to replace the media item. If the index is larger than the size
-   *     of the playlist, the request is ignored.
-   * @param mediaItem The new {@link MediaItem}.
+   * @param index     要替换媒体项的索引。如果索引大于播放列表的大小，则忽略该请求。
+   * @param mediaItem 新的 {@link MediaItem}。
    */
   void replaceMediaItem(int index, MediaItem mediaItem);
 
   /**
-   * Replaces the media items at the given range of the playlist.
+   * 替换播放列表中指定范围内的媒体项。
    *
-   * <p>Implementations of this method may attempt to seamlessly continue playback if the currently
-   * playing media item is replaced with a compatible one (e.g. same URL, only metadata has
-   * changed).
+   * <p>此方法的实现可能会尝试无缝继续播放，如果当前正在播放的媒体项被替换为兼容的媒体项（例如相同的 URL，仅元数据发生变化）。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * <p>Note that it is possible to replace a range with an arbitrary number of new items, so that
-   * the number of removed items defined by {@code fromIndex} and {@code toIndex} does not have to
-   * match the number of added items defined by {@code mediaItems}. As result, it may also change
-   * the index of subsequent items not touched by this operation.
+   * <p>请注意，可以用任意数量的新项替换范围，因此 {@code fromIndex} 和 {@code toIndex} 定义的移除项数量不必与 {@code mediaItems} 定义的添加项数量匹配。因此，它也可能更改未受此操作影响的后续项的索引。
    *
-   * @param fromIndex The start of the range. If the index is larger than the size of the playlist,
-   *     the request is ignored.
-   * @param toIndex The first item not to be included in the range (exclusive). If the index is
-   *     larger than the size of the playlist, items up to the end of the playlist are replaced.
-   * @param mediaItems The {@linkplain MediaItem media items} to replace the range with.
+   * @param fromIndex  范围的起始索引。如果索引大于播放列表的大小，则忽略该请求。
+   * @param toIndex    范围结束索引（不包含）。如果索引大于播放列表的大小，则替换范围到播放列表的末尾。
+   * @param mediaItems 用于替换范围的 {@linkplain MediaItem 媒体项}。
    */
   void replaceMediaItems(int fromIndex, int toIndex, List<MediaItem> mediaItems);
 
   /**
-   * Removes the media item at the given index of the playlist.
+   * 移除播放列表中指定索引处的媒体项。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param index The index at which to remove the media item. If the index is larger than the size
-   *     of the playlist, the request is ignored.
+   * @param index 要移除媒体项的索引。如果索引大于播放列表的大小，则忽略该请求。
    */
   void removeMediaItem(int index);
 
   /**
-   * Removes a range of media items from the playlist.
+   * 移除播放列表中指定范围内的媒体项。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param fromIndex The index at which to start removing media items. If the index is larger than
-   *     the size of the playlist, the request is ignored.
-   * @param toIndex The index of the first item to be kept (exclusive). If the index is larger than
-   *     the size of the playlist, media items up to the end of the playlist are removed.
+   * @param fromIndex 开始移除媒体项的索引。如果索引大于播放列表的大小，则忽略该请求。
+   * @param toIndex   要保留的第一个项的索引（不包含）。如果索引大于播放列表的大小，则移除范围到播放列表的末尾。
    */
   void removeMediaItems(int fromIndex, int toIndex);
 
   /**
-   * Clears the playlist.
+   * 清除播放列表。
    *
-   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_CHANGE_MEDIA_ITEMS} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void clearMediaItems();
 
   /**
-   * Returns whether the provided {@link Command} is available.
+   * 返回指定的 {@link Command} 是否可用。
    *
-   * <p>This method does not execute the command.
+   * <p>此方法不会执行命令。
    *
-   * @param command A {@link Command}.
-   * @return Whether the {@link Command} is available.
+   * @param command 一个 {@link Command}。
+   * @return 该 {@link Command} 是否可用。
    * @see Listener#onAvailableCommandsChanged(Commands)
    */
   boolean isCommandAvailable(@Command int command);
 
-  /** Returns whether the player can be used to advertise a media session. */
+  /**
+   * 返回播放器是否可用于广告媒体会话。
+   */
   boolean canAdvertiseSession();
 
   /**
-   * Returns the player's currently available {@link Commands}.
+   * 返回播放器当前可用的 {@link Commands}。
    *
-   * <p>The returned {@link Commands} are not updated when available commands change. Use {@link
-   * Listener#onAvailableCommandsChanged(Commands)} to get an update when the available commands
-   * change.
+   * <p>返回的 {@link Commands} 不会在可用命令发生变化时更新。使用 {@link Listener#onAvailableCommandsChanged(Commands)} 以在可用命令发生变化时获取更新。
    *
-   * @return The currently available {@link Commands}.
+   * @return 当前可用的 {@link Commands}。
    * @see Listener#onAvailableCommandsChanged(Commands)
    */
   Commands getAvailableCommands();
 
   /**
-   * Prepares the player.
+   * 准备播放器。
    *
-   * <p>This method must only be called if {@link #COMMAND_PREPARE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_PREPARE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * <p>This will move the player out of {@link #STATE_IDLE idle state} and the player will start
-   * loading media and acquire resources needed for playback.
+   * <p>这将使播放器从 {@link #STATE_IDLE 空闲状态} 中移出，播放器将开始加载媒体并获取播放所需的资源。
    */
   void prepare();
 
   /**
-   * Returns the current {@linkplain State playback state} of the player.
+   * 返回播放器当前的 {@linkplain State 播放状态}。
    *
-   * @return The current {@linkplain State playback state}.
+   * @return 当前的 {@linkplain State 播放状态}。
    * @see Listener#onPlaybackStateChanged(int)
    */
   @State
   int getPlaybackState();
 
   /**
-   * Returns the reason why playback is suppressed even though {@link #getPlayWhenReady()} is {@code
-   * true}, or {@link #PLAYBACK_SUPPRESSION_REASON_NONE} if playback is not suppressed.
+   * 返回即使 {@link #getPlayWhenReady()} 为 {@code true} 时播放仍被抑制的原因，如果播放未被抑制，则返回 {@link #PLAYBACK_SUPPRESSION_REASON_NONE}。
    *
-   * @return The current {@link PlaybackSuppressionReason}.
+   * @return 当前的 {@link PlaybackSuppressionReason}。
    * @see Listener#onPlaybackSuppressionReasonChanged(int)
    */
   @PlaybackSuppressionReason
   int getPlaybackSuppressionReason();
 
   /**
-   * Returns whether the player is playing, i.e. {@link #getCurrentPosition()} is advancing.
+   * 返回播放器是否正在播放，即 {@link #getCurrentPosition()} 是否在前进。
    *
-   * <p>If {@code false}, then at least one of the following is true:
+   * <p>如果为 {@code false}，则以下至少一项为 true：
    *
    * <ul>
-   *   <li>The {@link #getPlaybackState() playback state} is not {@link #STATE_READY ready}.
-   *   <li>There is no {@link #getPlayWhenReady() intention to play}.
-   *   <li>Playback is {@link #getPlaybackSuppressionReason() suppressed for other reasons}.
+   *   <li>{@link #getPlaybackState() 播放状态} 不是 {@link #STATE_READY 就绪状态}。
+   *   <li>没有 {@link #getPlayWhenReady() 播放意图}。
+   *   <li>播放被 {@link #getPlaybackSuppressionReason() 其他原因抑制}。
    * </ul>
    *
-   * @return Whether the player is playing.
+   * @return 播放器是否正在播放。
    * @see Listener#onIsPlayingChanged(boolean)
    */
   boolean isPlaying();
 
   /**
-   * Returns the error that caused playback to fail. This is the same error that will have been
-   * reported via {@link Listener#onPlayerError(PlaybackException)} at the time of failure. It can
-   * be queried using this method until the player is re-prepared.
+   * 返回导致播放失败的错误。这是播放失败时通过 {@link Listener#onPlayerError(PlaybackException)} 报告的错误。在播放器重新准备之前，可以通过此方法查询该错误。
    *
-   * <p>Note that this method will always return {@code null} if {@link #getPlaybackState()} is not
-   * {@link #STATE_IDLE}.
+   * <p>请注意，如果 {@link #getPlaybackState()} 不是 {@link #STATE_IDLE}，则此方法始终返回 {@code null}。
    *
-   * @return The error, or {@code null}.
+   * @return 错误，或 {@code null}。
    * @see Listener#onPlayerError(PlaybackException)
    */
   @Nullable
   PlaybackException getPlayerError();
 
   /**
-   * Resumes playback as soon as {@link #getPlaybackState()} == {@link #STATE_READY}. Equivalent to
-   * {@link #setPlayWhenReady(boolean) setPlayWhenReady(true)}.
+   * 当 {@link #getPlaybackState()} == {@link #STATE_READY} 时恢复播放。等同于 {@link #setPlayWhenReady(boolean) setPlayWhenReady(true)}。
    *
-   * <p>This method must only be called if {@link #COMMAND_PLAY_PAUSE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_PLAY_PAUSE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void play();
 
   /**
-   * Pauses playback. Equivalent to {@link #setPlayWhenReady(boolean) setPlayWhenReady(false)}.
+   * 暂停播放。等同于 {@link #setPlayWhenReady(boolean) setPlayWhenReady(false)}。
    *
-   * <p>This method must only be called if {@link #COMMAND_PLAY_PAUSE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_PLAY_PAUSE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void pause();
 
   /**
-   * Sets whether playback should proceed when {@link #getPlaybackState()} == {@link #STATE_READY}.
+   * 设置当 {@link #getPlaybackState()} == {@link #STATE_READY} 时是否应继续播放。
    *
-   * <p>If the player is already in the ready state then this method pauses and resumes playback.
+   * <p>如果播放器已处于就绪状态，则此方法将暂停并恢复播放。
    *
-   * <p>This method must only be called if {@link #COMMAND_PLAY_PAUSE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_PLAY_PAUSE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param playWhenReady Whether playback should proceed when ready.
+   * @param playWhenReady 当播放器就绪时是否应继续播放。
    */
   void setPlayWhenReady(boolean playWhenReady);
 
   /**
-   * Whether playback will proceed when {@link #getPlaybackState()} == {@link #STATE_READY}.
+   * 返回当 {@link #getPlaybackState()} == {@link #STATE_READY} 时是否应继续播放。
    *
-   * @return Whether playback will proceed when ready.
+   * @return 当播放器就绪时是否应继续播放。
    * @see Listener#onPlayWhenReadyChanged(boolean, int)
    */
   boolean getPlayWhenReady();
 
   /**
-   * Sets the {@link RepeatMode} to be used for playback.
+   * 设置用于播放的 {@link RepeatMode}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_REPEAT_MODE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_REPEAT_MODE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param repeatMode The repeat mode.
+   * @param repeatMode 重复模式。
    */
   void setRepeatMode(@RepeatMode int repeatMode);
 
   /**
-   * Returns the current {@link RepeatMode} used for playback.
+   * 返回当前用于播放的 {@link RepeatMode}。
    *
-   * @return The current repeat mode.
+   * @return 当前的重复模式。
    * @see Listener#onRepeatModeChanged(int)
    */
   @RepeatMode
   int getRepeatMode();
 
   /**
-   * Sets whether shuffling of media items is enabled.
+   * 设置是否启用媒体项的随机播放。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_SHUFFLE_MODE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_SHUFFLE_MODE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param shuffleModeEnabled Whether shuffling is enabled.
+   * @param shuffleModeEnabled 是否启用随机播放。
    */
   void setShuffleModeEnabled(boolean shuffleModeEnabled);
 
   /**
-   * Returns whether shuffling of media items is enabled.
+   * 返回是否启用了媒体项的随机播放。
    *
    * @see Listener#onShuffleModeEnabledChanged(boolean)
    */
   boolean getShuffleModeEnabled();
 
   /**
-   * Whether the player is currently loading the source.
+   * 播放器是否正在加载资源。
    *
-   * @return Whether the player is currently loading the source.
+   * @return 播放器是否正在加载资源。
    * @see Listener#onIsLoadingChanged(boolean)
    */
   boolean isLoading();
 
   /**
-   * Seeks to the default position associated with the current {@link MediaItem}. The position can
-   * depend on the type of media being played. For live streams it will typically be the live edge.
-   * For other streams it will typically be the start.
+   * 跳转到与当前 {@link MediaItem} 关联的默认位置。该位置可能取决于正在播放的媒体类型。对于直播流，它通常是直播边缘。对于其他流，它通常是起始位置。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_DEFAULT_POSITION} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_DEFAULT_POSITION} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekToDefaultPosition();
 
   /**
-   * Seeks to the default position associated with the specified {@link MediaItem}. The position can
-   * depend on the type of media being played. For live streams it will typically be the live edge.
-   * For other streams it will typically be the start.
+   * 跳转到与指定 {@link MediaItem} 关联的默认位置。该位置可能取决于正在播放的媒体类型。对于直播流，它通常是直播边缘。对于其他流，它通常是起始位置。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItemIndex The index of the {@link MediaItem} whose associated default position
-   *     should be seeked to. If the index is larger than the size of the playlist, the request is
-   *     ignored.
+   * @param mediaItemIndex 要跳转的 {@link MediaItem} 的索引。如果索引大于播放列表的大小，则忽略该请求。
    */
   void seekToDefaultPosition(int mediaItemIndex);
 
   /**
-   * Seeks to a position specified in milliseconds in the current {@link MediaItem}.
+   * 跳转到当前 {@link MediaItem} 中指定的位置（以毫秒为单位）。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param positionMs The seek position in the current {@link MediaItem}, or {@link C#TIME_UNSET}
-   *     to seek to the media item's default position.
+   * @param positionMs 当前 {@link MediaItem} 中的跳转位置，或 {@link C#TIME_UNSET} 以跳转到媒体项的默认位置。
    */
   void seekTo(long positionMs);
 
   /**
-   * Seeks to a position specified in milliseconds in the specified {@link MediaItem}.
+   * 跳转到指定 {@link MediaItem} 中指定的位置（以毫秒为单位）。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param mediaItemIndex The index of the {@link MediaItem}. If the index is larger than the size
-   *     of the playlist, the request is ignored.
-   * @param positionMs The seek position in the specified {@link MediaItem}, or {@link C#TIME_UNSET}
-   *     to seek to the media item's default position.
+   * @param mediaItemIndex {@link MediaItem} 的索引。如果索引大于播放列表的大小，则忽略该请求。
+   * @param positionMs     指定 {@link MediaItem} 中的跳转位置，或 {@link C#TIME_UNSET} 以跳转到媒体项的默认位置。
    */
   void seekTo(int mediaItemIndex, long positionMs);
 
   /**
-   * Returns the {@link #seekBack()} increment.
+   * 返回 {@link #seekBack()} 的增量值。
    *
-   * @return The seek back increment, in milliseconds.
+   * @return 向后跳转的增量值（以毫秒为单位）。
    * @see Listener#onSeekBackIncrementChanged(long)
    */
   long getSeekBackIncrement();
 
   /**
-   * Seeks back in the current {@link MediaItem} by {@link #getSeekBackIncrement()} milliseconds.
+   * 在当前 {@link MediaItem} 中向后跳转 {@link #getSeekBackIncrement()} 毫秒。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_BACK} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_BACK} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekBack();
 
   /**
-   * Returns the {@link #seekForward()} increment.
+   * 返回 {@link #seekForward()} 的增量值。
    *
-   * @return The seek forward increment, in milliseconds.
+   * @return 向前跳转的增量值（以毫秒为单位）。
    * @see Listener#onSeekForwardIncrementChanged(long)
    */
   long getSeekForwardIncrement();
 
   /**
-   * Seeks forward in the current {@link MediaItem} by {@link #getSeekForwardIncrement()}
-   * milliseconds.
+   * 在当前 {@link MediaItem} 中向前跳转 {@link #getSeekForwardIncrement()} 毫秒。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_FORWARD} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_FORWARD} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekForward();
 
   /**
-   * Returns whether a previous media item exists, which may depend on the current repeat mode and
-   * whether shuffle mode is enabled.
+   * 返回是否存在上一个媒体项，这可能取决于当前的重复模式和是否启用了随机播放。
    *
-   * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
-   * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
-   * details.
+   * <p>注意：当重复模式为 {@link #REPEAT_MODE_ONE} 时，此方法的行为与重复模式为 {@link #REPEAT_MODE_OFF} 时相同。有关更多详细信息，请参阅 {@link #REPEAT_MODE_ONE}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   boolean hasPreviousMediaItem();
 
   /**
-   * @deprecated Use {@link #seekToPreviousMediaItem()} instead.
+   * @deprecated 请使用 {@link #seekToPreviousMediaItem()} 代替。
    */
   @UnstableApi
   @Deprecated
   void seekToPreviousWindow();
 
   /**
-   * Seeks to the default position of the previous {@link MediaItem}, which may depend on the
-   * current repeat mode and whether shuffle mode is enabled. Does nothing if {@link
-   * #hasPreviousMediaItem()} is {@code false}.
+   * 跳转到上一个 {@link MediaItem} 的默认位置，这可能取决于当前的重复模式和是否启用了随机播放。如果 {@link #hasPreviousMediaItem()} 为 {@code false}，则不执行任何操作。
    *
-   * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
-   * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
-   * details.
+   * <p>注意：当重复模式为 {@link #REPEAT_MODE_ONE} 时，此方法的行为与重复模式为 {@link #REPEAT_MODE_OFF} 时相同。有关更多详细信息，请参阅 {@link #REPEAT_MODE_ONE}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekToPreviousMediaItem();
 
   /**
-   * Returns the maximum position for which {@link #seekToPrevious()} seeks to the previous {@link
-   * MediaItem}, in milliseconds.
+   * 返回 {@link #seekToPrevious()} 跳转到上一个 {@link MediaItem} 的最大位置（以毫秒为单位）。
    *
-   * @return The maximum seek to previous position, in milliseconds.
+   * @return 跳转到上一个媒体项的最大位置（以毫秒为单位）。
    * @see Listener#onMaxSeekToPreviousPositionChanged(long)
    */
   long getMaxSeekToPreviousPosition();
 
   /**
-   * Seeks to an earlier position in the current or previous {@link MediaItem} (if available). More
-   * precisely:
+   * 跳转到当前或上一个 {@link MediaItem} 的较早位置（如果存在）。具体行为如下：
    *
    * <ul>
-   *   <li>If the timeline is empty or seeking is not possible, does nothing.
-   *   <li>Otherwise, if the current {@link MediaItem} is {@linkplain #isCurrentMediaItemLive()
-   *       live} and {@linkplain #isCurrentMediaItemSeekable() unseekable}, then:
+   *   <li>如果时间轴为空或无法跳转，则不执行任何操作。
+   *   <li>否则，如果当前 {@link MediaItem} 是 {@linkplain #isCurrentMediaItemLive() 直播} 且 {@linkplain #isCurrentMediaItemSeekable() 不可跳转}，则：
    *       <ul>
-   *         <li>If {@linkplain #hasPreviousMediaItem() a previous media item exists}, seeks to the
-   *             default position of the previous media item.
-   *         <li>Otherwise, does nothing.
+   *         <li>如果 {@linkplain #hasPreviousMediaItem() 存在上一个媒体项}，则跳转到上一个媒体项的默认位置。
+   *         <li>否则，不执行任何操作。
    *       </ul>
-   *   <li>Otherwise, if {@linkplain #hasPreviousMediaItem() a previous media item exists} and the
-   *       {@linkplain #getCurrentPosition() current position} is less than {@link
-   *       #getMaxSeekToPreviousPosition()}, seeks to the default position of the previous {@link
-   *       MediaItem}.
-   *   <li>Otherwise, seeks to 0 in the current {@link MediaItem}.
+   *   <li>否则，如果 {@linkplain #hasPreviousMediaItem() 存在上一个媒体项} 且 {@linkplain #getCurrentPosition() 当前位置} 小于 {@link #getMaxSeekToPreviousPosition()}，则跳转到上一个 {@link MediaItem} 的默认位置。
+   *   <li>否则，跳转到当前 {@link MediaItem} 的起始位置（0）。
    * </ul>
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_PREVIOUS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_PREVIOUS} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekToPrevious();
 
   /**
-   * @deprecated Use {@link #hasNextMediaItem()} instead.
+   * @deprecated 请使用 {@link #hasNextMediaItem()} 代替。
    */
   @UnstableApi
   @Deprecated
   boolean hasNext();
 
   /**
-   * @deprecated Use {@link #hasNextMediaItem()} instead.
+   * @deprecated 请使用 {@link #hasNextMediaItem()} 代替。
    */
   @UnstableApi
   @Deprecated
   boolean hasNextWindow();
 
   /**
-   * Returns whether a next {@link MediaItem} exists, which may depend on the current repeat mode
-   * and whether shuffle mode is enabled.
+   * 返回是否存在下一个 {@link MediaItem}，这可能取决于当前的重复模式和是否启用了随机播放。
    *
-   * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
-   * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
-   * details.
+   * <p>注意：当重复模式为 {@link #REPEAT_MODE_ONE} 时，此方法的行为与重复模式为 {@link #REPEAT_MODE_OFF} 时相同。有关更多详细信息，请参阅 {@link #REPEAT_MODE_ONE}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   boolean hasNextMediaItem();
 
   /**
-   * @deprecated Use {@link #seekToNextMediaItem()} instead.
+   * @deprecated 请使用 {@link #seekToNextMediaItem()} 代替。
    */
   @UnstableApi
   @Deprecated
   void next();
 
   /**
-   * @deprecated Use {@link #seekToNextMediaItem()} instead.
+   * @deprecated 请使用 {@link #seekToNextMediaItem()} 代替。
    */
   @UnstableApi
   @Deprecated
   void seekToNextWindow();
 
   /**
-   * Seeks to the default position of the next {@link MediaItem}, which may depend on the current
-   * repeat mode and whether shuffle mode is enabled. Does nothing if {@link #hasNextMediaItem()} is
-   * {@code false}.
+   * 跳转到下一个 {@link MediaItem} 的默认位置，这可能取决于当前的重复模式和是否启用了随机播放。如果 {@link #hasNextMediaItem()} 为 {@code false}，则不执行任何操作。
    *
-   * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
-   * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
-   * details.
+   * <p>注意：当重复模式为 {@link #REPEAT_MODE_ONE} 时，此方法的行为与重复模式为 {@link #REPEAT_MODE_OFF} 时相同。有关更多详细信息，请参阅 {@link #REPEAT_MODE_ONE}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekToNextMediaItem();
 
   /**
-   * Seeks to a later position in the current or next {@link MediaItem} (if available). More
-   * precisely:
+   * 跳转到当前或下一个 {@link MediaItem} 的较晚位置（如果存在）。具体行为如下：
    *
    * <ul>
-   *   <li>If the timeline is empty or seeking is not possible, does nothing.
-   *   <li>Otherwise, if {@linkplain #hasNextMediaItem() a next media item exists}, seeks to the
-   *       default position of the next {@link MediaItem}.
-   *   <li>Otherwise, if the current {@link MediaItem} is {@linkplain #isCurrentMediaItemLive()
-   *       live} and has not ended, seeks to the live edge of the current {@link MediaItem}.
-   *   <li>Otherwise, does nothing.
+   *   <li>如果时间轴为空或无法跳转，则不执行任何操作。
+   *   <li>否则，如果 {@linkplain #hasNextMediaItem() 存在下一个媒体项}，则跳转到下一个 {@link MediaItem} 的默认位置。
+   *   <li>否则，如果当前 {@link MediaItem} 是 {@linkplain #isCurrentMediaItemLive() 直播} 且未结束，则跳转到当前 {@link MediaItem} 的直播边缘。
+   *   <li>否则，不执行任何操作。
    * </ul>
    *
-   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_NEXT} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SEEK_TO_NEXT} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void seekToNext();
 
   /**
-   * Attempts to set the playback parameters. Passing {@link PlaybackParameters#DEFAULT} resets the
-   * player to the default, which means there is no speed or pitch adjustment.
+   * 尝试设置播放参数。传递 {@link PlaybackParameters#DEFAULT} 会将播放器重置为默认值，即没有速度或音调调整。
    *
-   * <p>Playback parameters changes may cause the player to buffer. {@link
-   * Listener#onPlaybackParametersChanged(PlaybackParameters)} will be called whenever the currently
-   * active playback parameters change.
+   * <p>播放参数的变化可能会导致播放器缓冲。每当当前活动的播放参数发生变化时，将调用 {@link Listener#onPlaybackParametersChanged(PlaybackParameters)}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_SPEED_AND_PITCH} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_SPEED_AND_PITCH} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param playbackParameters The playback parameters.
+   * @param playbackParameters 播放参数。
    */
   void setPlaybackParameters(PlaybackParameters playbackParameters);
 
   /**
-   * Changes the rate at which playback occurs. The pitch is not changed.
+   * 更改播放速率。音调不会改变。
    *
-   * <p>This is equivalent to {@code
-   * setPlaybackParameters(getPlaybackParameters().withSpeed(speed))}.
+   * <p>这等同于 {@code setPlaybackParameters(getPlaybackParameters().withSpeed(speed))}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_SPEED_AND_PITCH} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_SPEED_AND_PITCH} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param speed The linear factor by which playback will be sped up. Must be higher than 0. 1 is
-   *     normal speed, 2 is twice as fast, 0.5 is half normal speed.
+   * @param speed 播放速度的线性因子。必须大于 0。1 是正常速度，2 是两倍速度，0.5 是半速。
    */
   void setPlaybackSpeed(@FloatRange(from = 0, fromInclusive = false) float speed);
 
   /**
-   * Returns the currently active playback parameters.
+   * 返回当前活动的播放参数。
    *
    * @see Listener#onPlaybackParametersChanged(PlaybackParameters)
    */
   PlaybackParameters getPlaybackParameters();
 
   /**
-   * Stops playback without resetting the playlist. Use {@link #pause()} rather than this method if
-   * the intention is to pause playback.
+   * 停止播放而不重置播放列表。如果意图是暂停播放，请使用 {@link #pause()} 而不是此方法。
    *
-   * <p>Calling this method will cause the playback state to transition to {@link #STATE_IDLE} and
-   * the player will release the loaded media and resources required for playback. The player
-   * instance can still be used by calling {@link #prepare()} again, and {@link #release()} must
-   * still be called on the player if it's no longer required.
+   * <p>调用此方法将导致播放状态转换为 {@link #STATE_IDLE}，并且播放器将释放已加载的媒体和播放所需的资源。可以通过再次调用 {@link #prepare()} 来继续使用播放器实例，如果不再需要播放器，则必须调用 {@link #release()}。
    *
-   * <p>Calling this method does not clear the playlist, reset the playback position or the playback
-   * error.
+   * <p>调用此方法不会清除播放列表、重置播放位置或播放错误。
    *
-   * <p>This method must only be called if {@link #COMMAND_STOP} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_STOP} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void stop();
 
   /**
-   * Releases the player. This method must be called when the player is no longer required. The
-   * player must not be used after calling this method.
+   * 释放播放器。当不再需要播放器时，必须调用此方法。调用此方法后，不得再使用播放器。
    *
-   * <p>This method must only be called if {@link #COMMAND_RELEASE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_RELEASE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void release();
 
   /**
-   * Returns the current tracks.
+   * 返回当前轨道。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TRACKS} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TRACKS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onTracksChanged(Tracks)
    */
   Tracks getCurrentTracks();
 
   /**
-   * Returns the parameters constraining the track selection.
+   * 返回约束轨道选择的参数。
    *
    * @see Listener#onTrackSelectionParametersChanged}
    */
   TrackSelectionParameters getTrackSelectionParameters();
 
-  // LINT.IfChange(set_track_selection_parameters)
+// LINT.IfChange(set_track_selection_parameters)
+
   /**
-   * Sets the parameters constraining the track selection.
+   * 设置约束轨道选择的参数。
    *
-   * <p>Unsupported parameters will be silently ignored.
+   * <p>不支持的参数将被静默忽略。
    *
-   * <p>Use {@link #getTrackSelectionParameters()} to retrieve the current parameters. For example,
-   * the following snippet restricts video to SD whilst keep other track selection parameters
-   * unchanged:
+   * <p>使用 {@link #getTrackSelectionParameters()} 检索当前参数。例如，以下代码片段将视频限制为标清，同时保持其他轨道选择参数不变：
    *
    * <pre>{@code
    * player.setTrackSelectionParameters(
@@ -2858,138 +2696,110 @@ public interface Player {
    *         .build())
    * }</pre>
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_TRACK_SELECTION_PARAMETERS} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_TRACK_SELECTION_PARAMETERS} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void setTrackSelectionParameters(TrackSelectionParameters parameters);
 
   /**
-   * Returns the current combined {@link MediaMetadata}, or {@link MediaMetadata#EMPTY} if not
-   * supported.
+   * 返回当前组合的 {@link MediaMetadata}，如果不支持则返回 {@link MediaMetadata#EMPTY}。
    *
-   * <p>This {@link MediaMetadata} is a combination of the {@link MediaItem#mediaMetadata MediaItem
-   * metadata}, the static metadata in the media's {@link Format#metadata Format}, and any timed
-   * metadata that has been parsed from the media and output via {@link
-   * Listener#onMetadata(Metadata)}. If a field is populated in the {@link MediaItem#mediaMetadata},
-   * it will be prioritised above the same field coming from static or timed metadata.
+   * <p>此 {@link MediaMetadata} 是 {@link MediaItem#mediaMetadata MediaItem 元数据}、媒体 {@link Format#metadata 格式} 中的静态元数据以及从媒体解析并通过 {@link Listener#onMetadata(Metadata)} 输出的任何定时元数据的组合。如果 {@link MediaItem#mediaMetadata} 中填充了某个字段，则该字段将优先于来自静态或定时元数据的相同字段。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_METADATA} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_METADATA} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onMediaMetadataChanged(MediaMetadata)
    */
   MediaMetadata getMediaMetadata();
 
   /**
-   * Returns the playlist {@link MediaMetadata}, as set by {@link
-   * #setPlaylistMetadata(MediaMetadata)}, or {@link MediaMetadata#EMPTY} if not supported.
+   * 返回播放列表的 {@link MediaMetadata}，由 {@link #setPlaylistMetadata(MediaMetadata)} 设置，如果不支持则返回 {@link MediaMetadata#EMPTY}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_METADATA} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_METADATA} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onPlaylistMetadataChanged(MediaMetadata)
    */
   MediaMetadata getPlaylistMetadata();
 
   /**
-   * Sets the playlist {@link MediaMetadata}.
+   * 设置播放列表的 {@link MediaMetadata}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_PLAYLIST_METADATA} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_PLAYLIST_METADATA} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void setPlaylistMetadata(MediaMetadata mediaMetadata);
 
   /**
-   * Returns the current manifest. The type depends on the type of media being played. May be null.
+   * 返回当前的清单（manifest）。类型取决于正在播放的媒体类型。可能为 null。
    */
   @UnstableApi
   @Nullable
   Object getCurrentManifest();
 
   /**
-   * Returns the current {@link Timeline}. Never null, but may be empty.
+   * 返回当前的 {@link Timeline}。永远不会为 null，但可能为空。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onTimelineChanged(Timeline, int)
    */
   Timeline getCurrentTimeline();
 
   /**
-   * Returns the index of the period currently being played.
+   * 返回当前正在播放的时间段（period）的索引。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getCurrentPeriodIndex();
 
   /**
-   * @deprecated Use {@link #getCurrentMediaItemIndex()} instead.
+   * @deprecated 请使用 {@link #getCurrentMediaItemIndex()} 代替。
    */
   @UnstableApi
   @Deprecated
   int getCurrentWindowIndex();
 
   /**
-   * Returns the index of the current {@link MediaItem} in the {@link #getCurrentTimeline()
-   * timeline}, or the prospective index if the {@link #getCurrentTimeline() current timeline} is
-   * empty.
+   * 返回当前 {@link MediaItem} 在 {@link #getCurrentTimeline() 时间轴} 中的索引，如果 {@link #getCurrentTimeline() 当前时间轴} 为空，则返回预期索引。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getCurrentMediaItemIndex();
 
   /**
-   * @deprecated Use {@link #getNextMediaItemIndex()} instead.
+   * @deprecated 请使用 {@link #getNextMediaItemIndex()} 代替。
    */
   @UnstableApi
   @Deprecated
   int getNextWindowIndex();
 
   /**
-   * Returns the index of the {@link MediaItem} that will be played if {@link
-   * #seekToNextMediaItem()} is called, which may depend on the current repeat mode and whether
-   * shuffle mode is enabled. Returns {@link C#INDEX_UNSET} if {@link #hasNextMediaItem()} is {@code
-   * false}.
+   * 返回调用 {@link #seekToNextMediaItem()} 时将播放的 {@link MediaItem} 的索引，这可能取决于当前的重复模式和是否启用了随机播放。如果 {@link #hasNextMediaItem()} 为 {@code false}，则返回 {@link C#INDEX_UNSET}。
    *
-   * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
-   * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
-   * details.
+   * <p>注意：当重复模式为 {@link #REPEAT_MODE_ONE} 时，此方法的行为与重复模式为 {@link #REPEAT_MODE_OFF} 时相同。有关更多详细信息，请参阅 {@link #REPEAT_MODE_ONE}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getNextMediaItemIndex();
 
   /**
-   * @deprecated Use {@link #getPreviousMediaItemIndex()} instead.
+   * @deprecated 请使用 {@link #getPreviousMediaItemIndex()} 代替。
    */
   @UnstableApi
   @Deprecated
   int getPreviousWindowIndex();
 
   /**
-   * Returns the index of the {@link MediaItem} that will be played if {@link
-   * #seekToPreviousMediaItem()} is called, which may depend on the current repeat mode and whether
-   * shuffle mode is enabled. Returns {@link C#INDEX_UNSET} if {@link #hasPreviousMediaItem()} is
-   * {@code false}.
+   * 返回调用 {@link #seekToPreviousMediaItem()} 时将播放的 {@link MediaItem} 的索引，这可能取决于当前的重复模式和是否启用了随机播放。如果 {@link #hasPreviousMediaItem()} 为 {@code false}，则返回 {@link C#INDEX_UNSET}。
    *
-   * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
-   * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
-   * details.
+   * <p>注意：当重复模式为 {@link #REPEAT_MODE_ONE} 时，此方法的行为与重复模式为 {@link #REPEAT_MODE_OFF} 时相同。有关更多详细信息，请参阅 {@link #REPEAT_MODE_ONE}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getPreviousMediaItemIndex();
 
   /**
-   * Returns the currently playing {@link MediaItem}. May be null if the timeline is empty.
+   * 返回当前正在播放的 {@link MediaItem}。如果时间轴为空，则可能为 null。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onMediaItemTransition(MediaItem, int)
    */
@@ -2997,354 +2807,283 @@ public interface Player {
   MediaItem getCurrentMediaItem();
 
   /**
-   * Returns the number of {@linkplain MediaItem media items} in the playlist.
+   * 返回播放列表中 {@linkplain MediaItem 媒体项} 的数量。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getMediaItemCount();
 
   /**
-   * Returns the {@link MediaItem} at the given index.
+   * 返回指定索引处的 {@link MediaItem}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TIMELINE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   MediaItem getMediaItemAt(int index);
 
   /**
-   * Returns the duration of the current content or ad in milliseconds, or {@link C#TIME_UNSET} if
-   * the duration is not known.
+   * 返回当前内容或广告的持续时间（以毫秒为单位），如果持续时间未知，则返回 {@link C#TIME_UNSET}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getDuration();
 
   /**
-   * Returns the playback position in the current content or ad, in milliseconds, or the prospective
-   * position in milliseconds if the {@link #getCurrentTimeline() current timeline} is empty.
+   * 返回当前内容或广告中的播放位置（以毫秒为单位），如果 {@link #getCurrentTimeline() 当前时间轴} 为空，则返回预期位置。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getCurrentPosition();
 
   /**
-   * Returns an estimate of the position in the current content or ad up to which data is buffered,
-   * in milliseconds.
+   * 返回当前内容或广告中已缓冲数据的估计位置（以毫秒为单位）。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getBufferedPosition();
 
   /**
-   * Returns an estimate of the percentage in the current content or ad up to which data is
-   * buffered, or 0 if no estimate is available.
+   * 返回当前内容或广告中已缓冲数据的估计百分比，如果无法估计，则返回 0。
    */
   @IntRange(from = 0, to = 100)
   int getBufferedPercentage();
 
   /**
-   * Returns an estimate of the total buffered duration from the current position, in milliseconds.
-   * This includes pre-buffered data for subsequent ads and {@linkplain MediaItem media items}.
+   * 返回从当前位置开始的总缓冲持续时间（以毫秒为单位）。这包括后续广告和 {@linkplain MediaItem 媒体项} 的预缓冲数据。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getTotalBufferedDuration();
 
   /**
-   * @deprecated Use {@link #isCurrentMediaItemDynamic()} instead.
+   * @deprecated 请使用 {@link #isCurrentMediaItemDynamic()} 代替。
    */
   @UnstableApi
   @Deprecated
   boolean isCurrentWindowDynamic();
 
   /**
-   * Returns whether the current {@link MediaItem} is dynamic (may change when the {@link Timeline}
-   * is updated), or {@code false} if the {@link Timeline} is empty.
+   * 返回当前 {@link MediaItem} 是否是动态的（可能在 {@link Timeline} 更新时发生变化），如果 {@link Timeline} 为空，则返回 {@code false}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Timeline.Window#isDynamic
    */
   boolean isCurrentMediaItemDynamic();
 
   /**
-   * @deprecated Use {@link #isCurrentMediaItemLive()} instead.
+   * @deprecated 请使用 {@link #isCurrentMediaItemLive()} 代替。
    */
   @UnstableApi
   @Deprecated
   boolean isCurrentWindowLive();
 
   /**
-   * Returns whether the current {@link MediaItem} is live, or {@code false} if the {@link Timeline}
-   * is empty.
+   * 返回当前 {@link MediaItem} 是否是直播，如果 {@link Timeline} 为空，则返回 {@code false}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Timeline.Window#isLive()
    */
   boolean isCurrentMediaItemLive();
 
   /**
-   * Returns the offset of the current playback position from the live edge in milliseconds, or
-   * {@link C#TIME_UNSET} if the current {@link MediaItem} {@linkplain #isCurrentMediaItemLive()
-   * isn't live} or the offset is unknown.
+   * 返回当前播放位置与直播边缘的偏移量（以毫秒为单位），如果当前 {@link MediaItem} {@linkplain #isCurrentMediaItemLive() 不是直播} 或偏移量未知，则返回 {@link C#TIME_UNSET}。
    *
-   * <p>The offset is calculated as {@code currentTime - playbackPosition}, so should usually be
-   * positive.
+   * <p>偏移量计算为 {@code currentTime - playbackPosition}，因此通常应为正数。
    *
-   * <p>Note that this offset may rely on an accurate local time, so this method may return an
-   * incorrect value if the difference between system clock and server clock is unknown.
+   * <p>请注意，此偏移量可能依赖于准确的本地时间，因此如果系统时钟和服务器时钟之间的差异未知，则此方法可能返回错误的值。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getCurrentLiveOffset();
 
   /**
-   * @deprecated Use {@link #isCurrentMediaItemSeekable()} instead.
+   * @deprecated 请使用 {@link #isCurrentMediaItemSeekable()} 代替。
    */
   @UnstableApi
   @Deprecated
   boolean isCurrentWindowSeekable();
 
   /**
-   * Returns whether the current {@link MediaItem} is seekable, or {@code false} if the {@link
-   * Timeline} is empty.
+   * 返回当前 {@link MediaItem} 是否可跳转，如果 {@link Timeline} 为空，则返回 {@code false}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Timeline.Window#isSeekable
    */
   boolean isCurrentMediaItemSeekable();
 
   /**
-   * Returns whether the player is currently playing an ad.
+   * 返回播放器当前是否正在播放广告。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   boolean isPlayingAd();
 
   /**
-   * If {@link #isPlayingAd()} returns true, returns the index of the ad group in the period
-   * currently being played. Returns {@link C#INDEX_UNSET} otherwise.
+   * 如果 {@link #isPlayingAd()} 返回 true，则返回当前正在播放的时间段中的广告组索引。否则返回 {@link C#INDEX_UNSET}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getCurrentAdGroupIndex();
 
   /**
-   * If {@link #isPlayingAd()} returns true, returns the index of the ad in its ad group. Returns
-   * {@link C#INDEX_UNSET} otherwise.
+   * 如果 {@link #isPlayingAd()} 返回 true，则返回广告在其广告组中的索引。否则返回 {@link C#INDEX_UNSET}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   int getCurrentAdIndexInAdGroup();
 
   /**
-   * If {@link #isPlayingAd()} returns {@code true}, returns the duration of the current content in
-   * milliseconds, or {@link C#TIME_UNSET} if the duration is not known. If there is no ad playing,
-   * the returned duration is the same as that returned by {@link #getDuration()}.
+   * 如果 {@link #isPlayingAd()} 返回 {@code true}，则返回当前内容的持续时间（以毫秒为单位），如果持续时间未知，则返回 {@link C#TIME_UNSET}。如果没有广告正在播放，则返回的持续时间与 {@link #getDuration()} 返回的值相同。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getContentDuration();
 
   /**
-   * If {@link #isPlayingAd()} returns {@code true}, returns the content position that will be
-   * played once all ads in the ad group have finished playing, in milliseconds. If there is no ad
-   * playing, the returned position is the same as that returned by {@link #getCurrentPosition()}.
+   * 如果 {@link #isPlayingAd()} 返回 {@code true}，则返回广告组中的所有广告播放完毕后将播放的内容位置（以毫秒为单位）。如果没有广告正在播放，则返回的位置与 {@link #getCurrentPosition()} 返回的值相同。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getContentPosition();
 
   /**
-   * If {@link #isPlayingAd()} returns {@code true}, returns an estimate of the content position in
-   * the current content up to which data is buffered, in milliseconds. If there is no ad playing,
-   * the returned position is the same as that returned by {@link #getBufferedPosition()}.
+   * 如果 {@link #isPlayingAd()} 返回 {@code true}，则返回当前内容中已缓冲数据的估计位置（以毫秒为单位）。如果没有广告正在播放，则返回的位置与 {@link #getBufferedPosition()} 返回的值相同。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   long getContentBufferedPosition();
 
   /**
-   * Returns the attributes for audio playback.
+   * 返回音频播放的属性。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_AUDIO_ATTRIBUTES} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_AUDIO_ATTRIBUTES} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onAudioAttributesChanged(AudioAttributes)
    */
   AudioAttributes getAudioAttributes();
 
   /**
-   * Sets the audio volume, valid values are between 0 (silence) and 1 (unity gain, signal
-   * unchanged), inclusive.
+   * 设置音频音量，有效值介于 0（静音）和 1（单位增益，信号不变）之间，包括两端值。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VOLUME} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VOLUME} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param volume Linear output gain to apply to all audio channels.
+   * @param volume 应用于所有音频通道的线性输出增益。
    */
   void setVolume(@FloatRange(from = 0, to = 1.0) float volume);
 
   /**
-   * Returns the audio volume, with 0 being silence and 1 being unity gain (signal unchanged).
+   * 返回音频音量，0 表示静音，1 表示单位增益（信号不变）。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_VOLUME} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_VOLUME} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @return The linear gain applied to all audio channels.
+   * @return 应用于所有音频通道的线性增益。
    * @see Listener#onVolumeChanged(float)
    */
   @FloatRange(from = 0, to = 1.0)
   float getVolume();
 
   /**
-   * Clears any {@link Surface}, {@link SurfaceHolder}, {@link SurfaceView} or {@link TextureView}
-   * currently set on the player.
+   * 清除当前设置在播放器上的任何 {@link Surface}、{@link SurfaceHolder}、{@link SurfaceView} 或 {@link TextureView}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    */
   void clearVideoSurface();
 
   /**
-   * Clears the {@link Surface} onto which video is being rendered if it matches the one passed.
-   * Else does nothing.
+   * 清除用于渲染视频的 {@link Surface}，如果它与传入的 {@link Surface} 匹配。否则不执行任何操作。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param surface The surface to clear.
+   * @param surface 要清除的 {@link Surface}。
    */
   void clearVideoSurface(@Nullable Surface surface);
 
   /**
-   * Sets the {@link Surface} onto which video will be rendered. The caller is responsible for
-   * tracking the lifecycle of the surface, and must clear the surface by calling {@code
-   * setVideoSurface(null)} if the surface is destroyed.
+   * 设置用于渲染视频的 {@link Surface}。调用者负责跟踪 {@link Surface} 的生命周期，如果 {@link Surface} 被销毁，则必须通过调用 {@code setVideoSurface(null)} 来清除它。
    *
-   * <p>If the surface is held by a {@link SurfaceView}, {@link TextureView} or {@link
-   * SurfaceHolder} then it's recommended to use {@link #setVideoSurfaceView(SurfaceView)}, {@link
-   * #setVideoTextureView(TextureView)} or {@link #setVideoSurfaceHolder(SurfaceHolder)} rather than
-   * this method, since passing the holder allows the player to track the lifecycle of the surface
-   * automatically.
+   * <p>如果 {@link Surface} 由 {@link SurfaceView}、{@link TextureView} 或 {@link SurfaceHolder} 持有，则建议使用 {@link #setVideoSurfaceView(SurfaceView)}、{@link #setVideoTextureView(TextureView)} 或 {@link #setVideoSurfaceHolder(SurfaceHolder)} 而不是此方法，因为传递持有者允许播放器自动跟踪 {@link Surface} 的生命周期。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param surface The {@link Surface}.
+   * @param surface {@link Surface}。
    */
   void setVideoSurface(@Nullable Surface surface);
 
   /**
-   * Sets the {@link SurfaceHolder} that holds the {@link Surface} onto which video will be
-   * rendered. The player will track the lifecycle of the surface automatically.
+   * 设置持有 {@link Surface} 的 {@link SurfaceHolder}，视频将渲染到该表面上。播放器将自动跟踪表面的生命周期。
    *
-   * <p>The thread that calls the {@link SurfaceHolder.Callback} methods must be the thread
-   * associated with {@link #getApplicationLooper()}.
+   * <p>调用 {@link SurfaceHolder.Callback} 方法的线程必须是与 {@link #getApplicationLooper()} 关联的线程。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param surfaceHolder The surface holder.
+   * @param surfaceHolder 表面持有者。
    */
   void setVideoSurfaceHolder(@Nullable SurfaceHolder surfaceHolder);
 
   /**
-   * Clears the {@link SurfaceHolder} that holds the {@link Surface} onto which video is being
-   * rendered if it matches the one passed. Else does nothing.
+   * 清除持有 {@link Surface} 的 {@link SurfaceHolder}，如果它与传入的 {@link SurfaceHolder} 匹配。否则不执行任何操作。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param surfaceHolder The surface holder to clear.
+   * @param surfaceHolder 要清除的表面持有者。
    */
   void clearVideoSurfaceHolder(@Nullable SurfaceHolder surfaceHolder);
 
   /**
-   * Sets the {@link SurfaceView} onto which video will be rendered. The player will track the
-   * lifecycle of the surface automatically.
+   * 设置 {@link SurfaceView}，视频将渲染到该表面上。播放器将自动跟踪表面的生命周期。
    *
-   * <p>The thread that calls the {@link SurfaceHolder.Callback} methods must be the thread
-   * associated with {@link #getApplicationLooper()}.
+   * <p>调用 {@link SurfaceHolder.Callback} 方法的线程必须是与 {@link #getApplicationLooper()} 关联的线程。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param surfaceView The surface view.
+   * @param surfaceView 表面视图。
    */
   void setVideoSurfaceView(@Nullable SurfaceView surfaceView);
 
   /**
-   * Clears the {@link SurfaceView} onto which video is being rendered if it matches the one passed.
-   * Else does nothing.
+   * 清除 {@link SurfaceView}，如果它与传入的 {@link SurfaceView} 匹配。否则不执行任何操作。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param surfaceView The texture view to clear.
+   * @param surfaceView 要清除的表面视图。
    */
   void clearVideoSurfaceView(@Nullable SurfaceView surfaceView);
 
   /**
-   * Sets the {@link TextureView} onto which video will be rendered. The player will track the
-   * lifecycle of the surface automatically.
+   * 设置 {@link TextureView}，视频将渲染到该表面上。播放器将自动跟踪表面的生命周期。
    *
-   * <p>Consider using {@link SurfaceView} via {@link #setVideoSurfaceView} instead of {@link
-   * TextureView}. {@link SurfaceView} generally causes lower battery consumption, and has better
-   * handling for HDR and secure content. See <a
-   * href="https://developer.android.com/guide/topics/media/ui/playerview#surfacetype">Choosing a
-   * surface type</a> for more information.
+   * <p>考虑使用 {@link SurfaceView} 代替 {@link TextureView}，通过 {@link #setVideoSurfaceView} 设置。{@link SurfaceView} 通常会导致更低的电池消耗，并且在处理 HDR 和安全内容时表现更好。有关更多信息，请参阅 <a href="https://developer.android.com/guide/topics/media/ui/playerview#surfacetype">选择表面类型</a>。
    *
-   * <p>The thread that calls the {@link TextureView.SurfaceTextureListener} methods must be the
-   * thread associated with {@link #getApplicationLooper()}.
+   * <p>调用 {@link TextureView.SurfaceTextureListener} 方法的线程必须是与 {@link #getApplicationLooper()} 关联的线程。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param textureView The texture view.
+   * @param textureView 纹理视图。
    */
   void setVideoTextureView(@Nullable TextureView textureView);
 
   /**
-   * Clears the {@link TextureView} onto which video is being rendered if it matches the one passed.
-   * Else does nothing.
+   * 清除 {@link TextureView}，如果它与传入的 {@link TextureView} 匹配。否则不执行任何操作。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_VIDEO_SURFACE} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param textureView The texture view to clear.
+   * @param textureView 要清除的纹理视图。
    */
   void clearVideoTextureView(@Nullable TextureView textureView);
 
   /**
-   * Gets the size of the video.
+   * 获取视频的尺寸。
    *
-   * <p>The video's width and height are {@code 0} if there is {@linkplain
-   * Tracks#isTypeSupported(int) no supported video track} or its size has not been determined yet.
+   * <p>如果 {@linkplain Tracks#isTypeSupported(int) 没有支持的视频轨道} 或其尺寸尚未确定，则视频的宽度和高度为 {@code 0}。
    *
    * @see Listener#onVideoSizeChanged(VideoSize)
    */
   VideoSize getVideoSize();
 
   /**
-   * Gets the size of the surface on which the video is rendered.
+   * 获取渲染视频的表面的尺寸。
    *
    * @see Listener#onSurfaceSizeChanged(int, int)
    */
@@ -3352,34 +3091,29 @@ public interface Player {
   Size getSurfaceSize();
 
   /**
-   * Returns the current {@link CueGroup}.
+   * 返回当前的 {@link CueGroup}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_TEXT} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_TEXT} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onCues(CueGroup)
    */
   CueGroup getCurrentCues();
 
-  /** Gets the device information. */
+  /**
+   * 获取设备信息。
+   */
   DeviceInfo getDeviceInfo();
 
   /**
-   * Gets the current volume of the device.
+   * 获取设备的当前音量。
    *
-   * <p>For devices with {@link DeviceInfo#PLAYBACK_TYPE_LOCAL local playback}, the volume returned
-   * by this method varies according to the current {@link C.StreamType stream type}. The stream
-   * type is determined by {@link AudioAttributes#usage} which can be converted to stream type with
-   * {@link Util#getStreamTypeForAudioUsage(int)}.
+   * <p>对于具有 {@link DeviceInfo#PLAYBACK_TYPE_LOCAL 本地播放} 的设备，此方法返回的音量根据当前的 {@link C.StreamType 流类型} 而变化。流类型由 {@link AudioAttributes#usage} 决定，可以通过 {@link Util#getStreamTypeForAudioUsage(int)} 转换为流类型。
    *
-   * <p>For devices with {@link DeviceInfo#PLAYBACK_TYPE_REMOTE remote playback}, the volume of the
-   * remote device is returned.
+   * <p>对于具有 {@link DeviceInfo#PLAYBACK_TYPE_REMOTE 远程播放} 的设备，返回远程设备的音量。
    *
-   * <p>Note that this method returns the volume of the device. To check the current stream volume,
-   * use {@link #getVolume()}.
+   * <p>请注意，此方法返回设备的音量。要检查当前流的音量，请使用 {@link #getVolume()}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_DEVICE_VOLUME} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_DEVICE_VOLUME} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onDeviceVolumeChanged(int, boolean)
    */
@@ -3387,125 +3121,109 @@ public interface Player {
   int getDeviceVolume();
 
   /**
-   * Gets whether the device is muted or not.
+   * 获取设备是否静音。
    *
-   * <p>Note that this method returns the mute state of the device. To check if the current stream
-   * is muted, use {@code getVolume() == 0}.
+   * <p>请注意，此方法返回设备的静音状态。要检查当前流是否静音，请使用 {@code getVolume() == 0}。
    *
-   * <p>This method must only be called if {@link #COMMAND_GET_DEVICE_VOLUME} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_GET_DEVICE_VOLUME} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
    * @see Listener#onDeviceVolumeChanged(int, boolean)
    */
   boolean isDeviceMuted();
 
   /**
-   * @deprecated Use {@link #setDeviceVolume(int, int)} instead.
+   * @deprecated 请使用 {@link #setDeviceVolume(int, int)} 代替。
    */
   @Deprecated
   void setDeviceVolume(@IntRange(from = 0) int volume);
 
   /**
-   * Sets the volume of the device with volume flags.
+   * 使用音量标志设置设备的音量。
    *
-   * <p>Note that this method affects the device volume. To change the volume of the current stream
-   * only, use {@link #setVolume}.
+   * <p>请注意，此方法影响设备音量。要仅更改当前流的音量，请使用 {@link #setVolume}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param volume The volume to set.
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   * @param volume 要设置的音量。
+   * @param flags  0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
    */
   void setDeviceVolume(@IntRange(from = 0) int volume, @C.VolumeFlags int flags);
 
   /**
-   * @deprecated Use {@link #increaseDeviceVolume(int)} instead.
+   * @deprecated 请使用 {@link #increaseDeviceVolume(int)} 代替。
    */
   @Deprecated
   void increaseDeviceVolume();
 
   /**
-   * Increases the volume of the device.
+   * 增加设备的音量。
    *
-   * <p>The {@link #getDeviceVolume()} device volume cannot be increased above {@link
-   * DeviceInfo#maxVolume}, if defined.
+   * <p>设备的音量（通过 {@link #getDeviceVolume()} 获取）不能超过 {@link DeviceInfo#maxVolume}（如果已定义）。
    *
-   * <p>Note that this method affects the device volume. To change the volume of the current stream
-   * only, use {@link #setVolume}.
+   * <p>请注意，此方法影响设备音量。要仅更改当前流的音量，请使用 {@link #setVolume}。
    *
-   * <p>This method must only be called if {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
    */
   void increaseDeviceVolume(@C.VolumeFlags int flags);
 
   /**
-   * @deprecated Use {@link #decreaseDeviceVolume(int)} instead.
+   * @deprecated 请使用 {@link #decreaseDeviceVolume(int)} 代替。
    */
   @Deprecated
   void decreaseDeviceVolume();
 
   /**
-   * Decreases the volume of the device.
+   * 降低设备的音量。
    *
-   * <p>The {@link #getDeviceVolume()} device volume cannot be decreased below {@link
-   * DeviceInfo#minVolume}.
+   * <p>设备的音量（通过 {@link #getDeviceVolume()} 获取）不能低于 {@link DeviceInfo#minVolume}。
    *
-   * <p>Note that this method affects the device volume. To change the volume of the current stream
-   * only, use {@link #setVolume}.
+   * <p>请注意，此方法影响设备音量。要仅更改当前流的音量，请使用 {@link #setVolume}。
    *
-   * <p>This method must only be called if {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
    */
   void decreaseDeviceVolume(@C.VolumeFlags int flags);
 
   /**
-   * @deprecated Use {@link #setDeviceMuted(boolean, int)} instead.
+   * @deprecated 请使用 {@link #setDeviceMuted(boolean, int)} 代替。
    */
   @Deprecated
   void setDeviceMuted(boolean muted);
 
   /**
-   * Sets the mute state of the device.
+   * 设置设备的静音状态。
    *
-   * <p>Note that this method affects the device volume. To mute just the current stream, use {@code
-   * setVolume(0)} instead.
+   * <p>请注意，此方法影响设备音量。要仅静音当前流，请使用 {@code setVolume(0)}。
    *
-   * <p>This method must only be called if {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is
-   * {@linkplain #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param muted Whether to set the device to be muted or not
-   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   * @param muted 是否将设备设置为静音。
+   * @param flags 0 或一个或多个 {@link C.VolumeFlags} 的按位组合。
    */
   void setDeviceMuted(boolean muted, @C.VolumeFlags int flags);
 
   /**
-   * Sets the attributes for audio playback, used by the underlying audio track. If not set, the
-   * default audio attributes will be used. They are suitable for general media playback.
+   * 设置音频播放的属性，供底层音频轨道使用。
+   * 如果未设置，将使用默认的音频属性，这些属性适用于一般的媒体播放。
    *
-   * <p>Setting the audio attributes during playback may introduce a short gap in audio output as
-   * the audio track is recreated. A new audio session id will also be generated.
+   * <p>在播放期间设置音频属性可能会导致音频输出出现短暂的间隙，因为音频轨道会被重新创建。
+   * 同时会生成一个新的音频会话 ID。
    *
-   * <p>If tunneling is enabled by the track selector, the specified audio attributes will be
-   * ignored, but they will take effect if audio is later played without tunneling.
+   * <p>如果轨道选择器启用了隧道模式（tunneling），则指定的音频属性将被忽略，但如果稍后在没有隧道模式的情况下播放音频，这些属性将生效。
    *
-   * <p>If the device is running a build before platform API version 21, audio attributes cannot be
-   * set directly on the underlying audio track. In this case, the usage will be mapped onto an
-   * equivalent stream type using {@link Util#getStreamTypeForAudioUsage(int)}.
+   * <p>如果设备运行的平台 API 版本低于 21，则无法直接在底层音频轨道上设置音频属性。
+   * 在这种情况下，音频用途（usage）将通过 {@link Util#getStreamTypeForAudioUsage(int)} 映射到等效的流类型。
    *
-   * <p>If audio focus should be handled, the {@link AudioAttributes#usage} must be {@link
-   * C#USAGE_MEDIA} or {@link C#USAGE_GAME}. Other usages will throw an {@link
-   * IllegalArgumentException}.
+   * <p>如果需要处理音频焦点，则 {@link AudioAttributes#usage} 必须为 {@link C#USAGE_MEDIA} 或 {@link C#USAGE_GAME}。
+   * 其他用途将抛出 {@link IllegalArgumentException}。
    *
-   * <p>This method must only be called if {@link #COMMAND_SET_AUDIO_ATTRIBUTES} is {@linkplain
-   * #getAvailableCommands() available}.
+   * <p>此方法必须仅在 {@link #COMMAND_SET_AUDIO_ATTRIBUTES} {@linkplain #getAvailableCommands() 可用} 时调用。
    *
-   * @param audioAttributes The attributes to use for audio playback.
-   * @param handleAudioFocus True if the player should handle audio focus, false otherwise.
+   * @param audioAttributes  用于音频播放的属性。
+   * @param handleAudioFocus 如果播放器应处理音频焦点，则为 true，否则为 false。
    */
   void setAudioAttributes(AudioAttributes audioAttributes, boolean handleAudioFocus);
 }
