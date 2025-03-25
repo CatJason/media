@@ -28,67 +28,59 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Represents ad group times and information on the state and URIs of ads within each ad group.
+ * 表示广告组的时间以及每个广告组中广告的状态和 URI 信息。
  *
- * <p>Instances are immutable. Call the {@code with*} methods to get new instances that have the
- * required changes.
+ * <p>实例是不可变的。调用 {@code with*} 方法以获取具有所需更改的新实例。
  */
 @UnstableApi
 public final class AdPlaybackState {
 
   /**
-   * Represents a group of ads, with information about their states.
+   * 表示一组广告及其状态信息。
    *
-   * <p>Instances are immutable. Call the {@code with*} methods to get new instances that have the
-   * required changes.
+   * <p>实例是不可变的。调用 {@code with*} 方法以获取具有所需更改的新实例。
    */
   public static final class AdGroup {
 
     /**
-     * The time of the ad group in the {@link Timeline.Period}, in microseconds, or {@link
-     * C#TIME_END_OF_SOURCE} to indicate a postroll ad.
+     * 广告组在 {@link Timeline.Period} 中的时间，以微秒为单位，或 {@link C#TIME_END_OF_SOURCE} 表示后置广告。
      */
     public final long timeUs;
 
-    /** The number of ads in the ad group, or {@link C#LENGTH_UNSET} if unknown. */
+    /** 广告组中的广告数量，或 {@link C#LENGTH_UNSET} 表示未知。 */
     public final int count;
 
     /**
-     * The original number of ads in the ad group in case the ad group is only partially available,
-     * or {@link C#LENGTH_UNSET} if unknown. An ad can be partially available when a server side
-     * inserted ad live stream is joined while an ad is already playing and some ad information is
-     * missing.
+     * 广告组中广告的原始数量（如果广告组仅部分可用），或 {@link C#LENGTH_UNSET} 表示未知。当在广告播放期间加入服务器端插入的广告直播流并且缺少部分广告信息时，广告可能部分可用。
      */
     public final int originalCount;
 
     /**
-     * @deprecated Use {@link #mediaItems} instead.
+     * @deprecated 请使用 {@link #mediaItems} 代替。
      */
     @Deprecated public final @NullableType Uri[] uris;
 
-    /** The {@link MediaItem} instances for each ad in the ad group, or null if not yet known. */
+    /** 广告组中每个广告的 {@link MediaItem} 实例，如果尚未知道则为 null。 */
     public final @NullableType MediaItem[] mediaItems;
 
-    /** The state of each ad in the ad group. */
+    /** 广告组中每个广告的状态。 */
     public final @AdState int[] states;
 
-    /** The durations of each ad in the ad group, in microseconds. */
+    /** 广告组中每个广告的持续时间，以微秒为单位。 */
     public final long[] durationsUs;
 
     /**
-     * The offset in microseconds which should be added to the content stream when resuming playback
-     * after the ad group.
+     * 在广告组之后恢复播放内容流时应添加的偏移量，以微秒为单位。
      */
     public final long contentResumeOffsetUs;
 
-    /** Whether this ad group is server-side inserted and part of the content stream. */
+    /** 此广告组是否为服务器端插入并属于内容流的一部分。 */
     public final boolean isServerSideInserted;
 
     /**
-     * Creates a new ad group with an unspecified number of ads.
+     * 创建一个广告数量未指定的新广告组。
      *
-     * @param timeUs The time of the ad group in the {@link Timeline.Period}, in microseconds, or
-     *     {@link C#TIME_END_OF_SOURCE} to indicate a postroll ad.
+     * @param timeUs 广告组在 {@link Timeline.Period} 中的时间，以微秒为单位，或 {@link C#TIME_END_OF_SOURCE} 表示后置广告。
      */
     public AdGroup(long timeUs) {
       this(
@@ -128,20 +120,16 @@ public final class AdPlaybackState {
     }
 
     /**
-     * Returns the index of the first ad in the ad group that should be played, or {@link #count} if
-     * no ads should be played.
+     * 返回广告组中应播放的第一个广告的索引，如果没有广告应播放，则返回 {@link #count}。
      */
     public int getFirstAdIndexToPlay() {
       return getNextAdIndexToPlay(-1);
     }
 
     /**
-     * Returns the index of the next ad in the ad group that should be played after playing {@code
-     * lastPlayedAdIndex}, or {@link #count} if no later ads should be played. If no ads have been
-     * played, pass -1 to get the index of the first ad to play.
+     * 返回广告组中在播放 {@code lastPlayedAdIndex} 之后应播放的下一个广告的索引，如果没有后续广告应播放，则返回 {@link #count}。如果尚未播放任何广告，传递 -1 以获取应播放的第一个广告的索引。
      *
-     * <p>Note: {@linkplain #isServerSideInserted Server side inserted ads} are always considered
-     * playable.
+     * <p>注意：{@linkplain #isServerSideInserted 服务器端插入的广告} 始终被视为可播放。
      */
     public int getNextAdIndexToPlay(@IntRange(from = -1) int lastPlayedAdIndex) {
       int nextAdIndexToPlay = lastPlayedAdIndex + 1;
@@ -156,13 +144,13 @@ public final class AdPlaybackState {
       return nextAdIndexToPlay;
     }
 
-    /** Returns whether the ad group has at least one ad that should be played. */
+    /** 返回广告组是否至少有一个应播放的广告。 */
     public boolean shouldPlayAdGroup() {
       return count == C.LENGTH_UNSET || getFirstAdIndexToPlay() < count;
     }
 
     /**
-     * Returns whether the ad group has at least one ad that is neither played, skipped, nor failed.
+     * 返回广告组是否至少有一个广告既未播放、未跳过也未失败。
      */
     public boolean hasUnplayedAds() {
       if (count == C.LENGTH_UNSET) {
@@ -212,7 +200,7 @@ public final class AdPlaybackState {
       return result;
     }
 
-    /** Returns a new instance with the {@link #timeUs} set to the specified value. */
+    /** 返回一个将 {@link #timeUs} 设置为指定值的新实例。 */
     @CheckResult
     public AdGroup withTimeUs(long timeUs) {
       return new AdGroup(
@@ -226,7 +214,7 @@ public final class AdPlaybackState {
           isServerSideInserted);
     }
 
-    /** Returns a new instance with the ad count set to {@code count}. */
+    /** 返回一个将广告数量设置为 {@code count} 的新实例。 */
     @CheckResult
     public AdGroup withAdCount(int count) {
       @AdState int[] states = copyStatesWithSpaceForAdCount(this.states, count);
@@ -244,7 +232,7 @@ public final class AdPlaybackState {
     }
 
     /**
-     * @deprecated Use {@link #withAdMediaItem} instead.
+     * @deprecated 请使用 {@link #withAdMediaItem} 代替。
      */
     @Deprecated
     @CheckResult
@@ -253,8 +241,7 @@ public final class AdPlaybackState {
     }
 
     /**
-     * Returns a new instance with the specified {@link MediaItem} set for the specified ad, and the
-     * ad marked as {@link #AD_STATE_AVAILABLE}.
+     * 返回一个将指定广告的 {@link MediaItem} 设置为指定值，并将广告标记为 {@link #AD_STATE_AVAILABLE} 的新实例。
      */
     @CheckResult
     public AdGroup withAdMediaItem(MediaItem mediaItem, @IntRange(from = 0) int index) {
@@ -278,12 +265,9 @@ public final class AdPlaybackState {
     }
 
     /**
-     * Returns a new instance with the specified ad set to the specified {@code state}. The ad
-     * specified must currently either be in {@link #AD_STATE_UNAVAILABLE} or {@link
-     * #AD_STATE_AVAILABLE}.
+     * 返回一个将指定广告的状态设置为 {@code state} 的新实例。指定的广告当前必须处于 {@link #AD_STATE_UNAVAILABLE} 或 {@link #AD_STATE_AVAILABLE} 状态。
      *
-     * <p>This instance's ad count may be unknown, in which case {@code index} must be less than the
-     * ad count specified later. Otherwise, {@code index} must be less than the current ad count.
+     * <p>此实例的广告数量可能未知，此时 {@code index} 必须小于稍后指定的广告数量。否则，{@code index} 必须小于当前广告数量。
      */
     @CheckResult
     public AdGroup withAdState(@AdState int state, @IntRange(from = 0) int index) {
@@ -314,7 +298,7 @@ public final class AdPlaybackState {
           isServerSideInserted);
     }
 
-    /** Returns a new instance with the specified ad durations, in microseconds. */
+    /** 返回一个将广告持续时间设置为指定值（以微秒为单位）的新实例。 */
     @CheckResult
     public AdGroup withAdDurationsUs(long[] durationsUs) {
       if (durationsUs.length < mediaItems.length) {
@@ -333,7 +317,7 @@ public final class AdPlaybackState {
           isServerSideInserted);
     }
 
-    /** Returns an instance with the specified {@link #contentResumeOffsetUs}. */
+    /** 返回一个将 {@link #contentResumeOffsetUs} 设置为指定值的新实例。 */
     @CheckResult
     public AdGroup withContentResumeOffsetUs(long contentResumeOffsetUs) {
       return new AdGroup(
@@ -347,7 +331,7 @@ public final class AdPlaybackState {
           isServerSideInserted);
     }
 
-    /** Returns an instance with the specified value for {@link #isServerSideInserted}. */
+    /** 返回一个将 {@link #isServerSideInserted} 设置为指定值的新实例。 */
     @CheckResult
     public AdGroup withIsServerSideInserted(boolean isServerSideInserted) {
       return new AdGroup(
